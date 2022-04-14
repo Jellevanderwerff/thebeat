@@ -305,6 +305,82 @@ class Sequence:
             plt.show()
 
 
+class SoundSequence:
+    """
+    Class for a sequence with sound.
+    """
+
+    def __init__(self, onsets):
+        print(onsets)
+
+    # INPUT
+
+    def load_stim_from_wav(self, wav_filepath):
+        pass
+
+    def load_stim_from_ogg(self, ogg_filepath):
+        pass
+
+    def make_stim(self, freq=400, duration=50, osc='sin', onramp=10, offramp=10):
+        pass
+
+    def make_audio(self):
+        pass
+
+    def load_audio(self):
+        pass
+
+    # MANIPULATION
+
+    def resample_audio(self, new_fs):
+        pass
+
+    def increase_stim_gain(self, amount):
+        pass
+
+    def decrease_stim_gain(self, amount):
+        pass
+
+    def increase_stim_pitch(self, amount):
+        pass
+
+    def decrease_stim_pitch(self, amount):
+        pass
+
+    def set_stim_pitch(self, new_frequency):
+        pass
+
+    # OUTPUT
+
+    def play(self):
+        # play sound file
+        pass
+
+
+    def get_fs(self):
+        pass
+
+    def get_duration(self):
+        pass
+
+    def write_wav(self, output_path):
+        pass
+
+    def write_ogg(self, output_path):
+        pass
+
+    def write_json(self, output_path):
+        pass
+
+
+
+sequence = Sequence.generate_random_uniform(n = 10, a = 475, b = 525)
+sequence.load_stim_from_wav('click01.wav')
+sequence.generate_audio()
+sequence.write_wav('stim_5percent.wav')
+
+
+"""
 # Example usage
 if __name__ == "__main__":
     # Manually input the IOIs and print onsets
@@ -340,3 +416,4 @@ if __name__ == "__main__":
     sequence.load_stim_from_wav('click01.wav')
     sequence.generate_audio()
     sequence.plot_audio()
+"""
