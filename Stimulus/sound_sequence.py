@@ -1,8 +1,9 @@
 import numpy as np
-from scipy.signal import resample
+from scipy.signal import resample, square
 from scipy.io import wavfile
 from core import Sequence
 import sounddevice as sd
+import matplotlib.pyplot as plt
 import os
 
 
@@ -45,7 +46,7 @@ class SoundSequence:
         if any(i < 0 for i in np.diff(onsets)):
             raise ValueError("The provided onsets are not spaced linearly in time. Check onset values.")
         else:
-            self.onsets = onsets
+            self.onsets = np.array(onsets)
         self.dtype = None  # The type of data that is read from the wav file (e.g. int16, will also be the output dtype)
         self.fs = None  # The sampling frequency of the stim file and therefore of the output file
         self.stim = None  # The stim loaded by the load_stim_from_wav function
@@ -100,6 +101,29 @@ class SoundSequence:
         else:
             print("Error occurred when comparing sampling frequencies.")
 
+    def make_stim(self, freq=440, fs=44100, duration=50, amplitude=0.8, osc='sine', onramp=10, offramp=10):
+        samples = np.linspace(0, duration / 1000, int(fs * duration / 1000), endpoint=False, dtype=np.float32)
+        if osc == 'sine':
+            signal = amplitude * np.sin(2 * np.pi * freq * samples)
+            signal = np.float32(signal)
+        elif osc == 'square':
+            signal = amplitude * square(2 * np.pi * freq * samples)
+        else:
+            raise ValueError("Choose existing oscillator (for now only 'sin')")
+
+        # Create onramp
+        onramp_amps = np.linspace(0, 1, int(onramp / 1000 * fs))
+        signal[:len(onramp_amps)] *= onramp_amps
+
+        # Create offramp
+        offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
+        signal[-len(offramp_amps):] *= offramp_amps
+
+        # Set attributes
+        self.dtype = np.float32
+        self.fs = fs
+        self.stim = signal
+
     def make_audio(self):
         """
         This function generates a Numpy 1D array containing the samples of a sequence that is generated
@@ -116,7 +140,7 @@ class SoundSequence:
         if self.stim is None:
             print("Load stimulus first via load_stim_from_wav")
         else:
-            # Generate an array of silence that has the length of all the onsets + one final stimulus
+            # Generate an array of silence that has the length of all the onsets + one final stimulus.
             # The dtype is important, because that determines the values that the magnitudes can take.
             array_length = (max(self.onsets) / 1000 * self.fs) + len(self.stim)
             audio = np.zeros(int(array_length), dtype=self.dtype)
@@ -129,36 +153,21 @@ class SoundSequence:
 
             self.audio = audio
 
-    def make_stim(self, freq=400, duration=50, osc='sin', onramp=10, offramp=10):
-        pass
-
-    def load_audio(self):
-        pass
-
     # MANIPULATION
 
-    def resample_audio(self, new_fs):
-        pass
+    def change_audio_amplitude(self, by):
+        self.audio *= by
 
-    def increase_stim_gain(self, amount):
-        pass
-
-    def decrease_stim_gain(self, amount):
-        pass
-
-    def increase_stim_pitch(self, amount):
-        pass
-
-    def decrease_stim_pitch(self, amount):
-        pass
-
-    def set_stim_pitch(self, new_frequency):
-        pass
+    def change_stim_amplitude(self, by):
+        self.stim *= by
 
     # OUTPUT
 
-    def play(self):
-        sd.play(self.audio, self.fs)
+    def play(self, loop=False):
+        if self.audio is None:
+            raise UnboundLocalError("Generate audio first using make_audio() method.")
+        else:
+            sd.play(self.audio, self.fs, loop=loop)
 
     def stop(self):
         sd.stop()
@@ -194,3 +203,107 @@ class SoundSequence:
 
     def write_json(self, out_path):
         pass
+
+    # PLOTTING
+
+    def plot_audio(self):
+        """
+        Plots the audio generated using Sequence.generate_audio with x-axis labels for each of the stimulus onsets.
+        """
+        if self.audio is None:
+            print("Generate audio first via generate_audio")
+        else:
+            frames = np.arange(self.audio.size)  # x-axis
+            plt.plot(frames, self.audio)  # x + y axis
+            plt.ylim([-1, 1])
+            plt.xticks(ticks=self.onsets * self.fs / 1000,  # location of the ticks
+                       labels=np.int_(self.onsets)),  # labels of the ticks (rounded))
+            plt.xlabel("Onsets (ms)")
+            plt.ylabel("Amplitude")
+            plt.title("Waveform of the sequence")
+            plt.show()
+
+    def plot_stim(self):
+        """
+        Plots the stimulus sound.
+        """
+        if self.stim is None:
+            print("Generate or load stimulus first.")
+        else:
+            frames = np.arange(self.stim.size)
+            plt.plot(frames, self.stim)
+            plt.ylim([-1, 1])
+            plt.ylabel("Amplitude")
+            plt.xticks(ticks=[0, self.stim.size],
+                       labels=[0, int(self.stim.size / self.fs * 1000)])
+            plt.xlabel("Time (ms)")
+            plt.title("Waveform of stimulus sound")
+            plt.show()
+
+
+# Example usage
+if __name__ == "__main__":
+    # Use the Sequence class from the core library to create a sequence on the basis of a list of IOIs.
+    sequence = Sequence([500, 400, 600])
+    print(sequence.onsets)
+
+    # These onsets we can then use to construct an instance of the SoundSequence class
+    sound_sequence = SoundSequence(sequence.onsets)
+
+    # However, we can also input a list of stimulus onset times (in ms)
+    sound_sequence = SoundSequence([0, 500, 1000, 1500])
+
+    # We can load a stimulus .wav file for use in the sequence
+    sound_sequence.load_stim_from_wav('click01.wav')
+
+    # We can also resample the input audio file. This sampling frequency will also be the output sampling frequency.
+    sound_sequence.load_stim_from_wav('click01.wav', new_fs=48000)
+
+    # We can then generate and write an audio file
+    sound_sequence.make_audio()
+    sound_sequence.write_wav('sound_sequence.wav')
+
+    # Or we could plot it
+    sound_sequence.plot_audio()
+
+    # OK, let's start over:
+    sound_sequence = SoundSequence(Sequence.generate_isochronous(n=10, ioi=500).onsets)
+
+    # Now, we can also generate a stimulus sound on the basis of a number of parameters, for instance:
+    sound_sequence.make_stim(freq=440, duration=50, onramp=10, offramp=10, osc='sine')
+    sound_sequence.make_stim(freq=440, duration=50, fs=48000, osc='square')
+
+    # And we can plot this newly created stimulus sound:
+    sound_sequence.plot_stim()
+
+    # Or we could generate the audio and write a wav file:
+    sound_sequence.make_audio()
+    sound_sequence.write_wav('sequence.wav')
+
+    # We can also play the audio (bit buggy but works ok)
+    sound_sequence.play()
+
+    # Or loop it
+    sound_sequence.play(loop=True)
+
+    # Don't forget to stop the audio using:
+    sound_sequence.stop()
+
+    # We can also change the amplitude of either the stim (before calling make_audio) or the audio (after calling
+    # make_audio)
+
+    # Of the stimulus
+    sound_sequence = SoundSequence([0, 500, 1000])
+    sound_sequence.load_stim_from_wav('click01.wav')
+    sound_sequence.plot_stim()
+    sound_sequence.change_stim_amplitude(by=0.3)
+    sound_sequence.plot_stim()
+
+    # Of the sequence
+    sound_sequence = SoundSequence([0, 500, 1000])
+    sound_sequence.load_stim_from_wav('click01.wav')
+    sound_sequence.make_audio()
+    sound_sequence.plot_audio()
+    sound_sequence.change_audio_amplitude(by=0.3)
+    sound_sequence.plot_audio()
+
