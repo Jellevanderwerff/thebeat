@@ -32,7 +32,7 @@ class Sequence:
     """
 
     def __init__(self, iois):
-        self.iois = np.array(iois)
+        self.iois = np.array(iois, dtype=np.float64)
         self.stats = {
             'ioi_mean': np.mean(self.iois),
             'ioi_median': np.median(self.iois),
@@ -43,7 +43,7 @@ class Sequence:
             'ioi_min': np.min(self.iois),
             'ioi_max': np.max(self.iois)
         }
-        self.onsets = np.cumsum(np.append(0, iois))  # The onsets calculated from the IOIs.
+        self.onsets = np.cumsum(np.append(0, iois), dtype=np.float64)  # The onsets calculated from the IOIs.
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None):
@@ -183,3 +183,32 @@ class Sequence:
         """
 
         return cls(np.round([ioi] * n))
+
+    def change_tempo(self, factor):
+        """
+        Change the tempo of the sequence.
+        A factor of 1 or bigger increases the tempo (resulting in smaller IOIs).
+        A factor between 0 and 1 decreases the tempo (resulting in larger IOIs).
+        """
+        if factor > 0:
+            self.iois /= factor
+            self.onsets /= factor
+        else:
+            raise ValueError("Please provide a factor larger than 0.")
+
+    def change_tempo_linearly(self, change_factor):
+        """
+        This function can be used for creating a ritardando or accelerando effect.
+        The factor is the total change over the entire sequence.
+        So, a factor of 2 results in a final IOI that is
+        twice as short as the first one.
+        """
+        self.iois /= np.linspace(1, change_factor, self.iois.size)
+        self.onsets = np.cumsum(np.append(0, self.iois), dtype=np.float64)
+
+
+
+sequence = Sequence.generate_isochronous(n=5, ioi=500)
+print(sequence.iois)
+sequence.change_tempo_linearly(2)
+print(sequence.iois)

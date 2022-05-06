@@ -46,7 +46,7 @@ class SoundSequence:
         if any(i < 0 for i in np.diff(onsets)):
             raise ValueError("The provided onsets are not spaced linearly in time. Check onset values.")
         else:
-            self.onsets = np.array(onsets)
+            self.onsets = np.array(onsets, dtype=np.float64)
         self.dtype = None  # The type of data that is read from the wav file (e.g. int16, will also be the output dtype)
         self.fs = None  # The sampling frequency of the stim file and therefore of the output file
         self.stim = None  # The stim loaded by the load_stim_from_wav function
