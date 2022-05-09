@@ -109,7 +109,10 @@ class Sound:
     # Visualization
 
     def play(self, loop=False):
-        sd.play(self.stim, self.fs, loop=loop)
+        # todo Check why this doesn't work.
+        sd.play(self.samples, self.fs, loop=loop)
+        # we need to wait explicitly so it also works in a script
+        sd.wait()
 
     def stop(self):
         sd.stop()
@@ -510,3 +513,4 @@ if __name__ == "__main__":
     sound_sequence.change_tempo(factor=2)
     print(sound_sequence)
 
+    sound_sequence.play()
