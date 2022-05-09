@@ -13,11 +13,12 @@ class Sound:
 
     def __init__(self, samples, fs):
         self.dtype = np.float32
-        self.fs = fs
+        self.stim = samples
         self.samples = samples
+        self.fs = fs
 
     def __str__(self):
-        return f"Object of type Sound."
+        return f"Object of type Sound.\n"
 
     @classmethod
     def from_wav(cls, wav_filepath, new_fs: int = None):
@@ -94,24 +95,27 @@ class Sound:
 
     # Manipulate
 
-    def change_amplitude(self, by):
-        self.samples *= by
+    def change_amplitude(self, factor):
+        # get original frequencies
+        self.stim *= factor
 
-    def change_pitch(self, by):
+    def change_pitch(self, factor):
         """
-        Though is this useful?
+        How to do it?
         """
-        pass
+        fourier = np.fft.rfft(self.stim)
+        print(fourier)
 
     # Visualization
 
     def play(self, loop=False):
-        sd.play(self.samples, self.fs, loop=loop)
+        sd.play(self.stim, self.fs, loop=loop)
 
     def stop(self):
         sd.stop()
 
     def plot(self):
+        plt.clf()
         frames = np.arange(self.samples.size)
         plt.plot(frames, self.samples)
         plt.ylim([-1, 1])
@@ -133,7 +137,7 @@ class Sound:
         """
         Writes audio to disk.
         """
-        wavfile.write(filename=out_path, rate=self.fs, data=self.samples)
+        wavfile.write(filename=out_path, rate=self.fs, data=self.stim)
 
     def write_ogg(self, out_path):
         pass
@@ -173,17 +177,17 @@ class Sequence:
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
         else:
-            self.iois = np.array(iois, dtype=np.float64)
+            self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
         """
         How do we want to print the object?
         """
-        return f"Object of type Sequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}"
+        return f"Object of type Sequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     @property
     def onsets(self):
-        return np.cumsum(np.append(0, self.iois), dtype=np.float64)  # The onsets calculated from the IOIs.
+        return np.cumsum(np.append(0, self.iois), dtype=np.float32)  # The onsets calculated from the IOIs.
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None):
@@ -324,6 +328,7 @@ class Sequence:
 
         return cls(np.round([ioi] * (n - 1)))
 
+    # Manipulation methods
     def change_tempo(self, factor):
         """
         Change the tempo of the sequence.
@@ -335,14 +340,16 @@ class Sequence:
         else:
             raise ValueError("Please provide a factor larger than 0.")
 
-    def change_tempo_linearly(self, change_factor):
+    def change_tempo_linearly(self, total_change):
         """
         This function can be used for creating a ritardando or accelerando effect.
-        The factor is the total change over the entire sequence.
-        So, a factor of 2 results in a final IOI that is
-        twice as short as the first one.
+        You provide the total change over the entire sequence.
+        So, total change of 2 results in a final IOI that is
+        twice as short as the first IOI.
         """
-        self.iois /= np.linspace(1, change_factor, self.iois.size)
+        self.iois /= np.linspace(1, total_change, self.iois.size)
+
+    # Descriptive methods
 
     def get_stats(self):
         return {
@@ -365,17 +372,18 @@ class SoundSequence(Sound, Sequence):
 
     def __init__(self, sound_obj, seq_obj):
 
-        # initialize parent class, so we can use self.onsets etc.
+        # Initialize parent Sequence class, so we can use self.onsets etc.
         Sequence.__init__(self, seq_obj.iois)
 
-        # Check whether a list of Sound objects was passed
+        # If list of Sound objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
+        # The all_stimuli variable will later be used to generate the audio.
         if isinstance(sound_obj, list):
             # Check whether length of sound_obj is the same as onsets
             if not len(self.onsets) == len(sound_obj):
                 raise ValueError("The number of Sound objects passed does not equal the number of onsets! "
                                  "Remember that you need one more Sound than the number of IOIs.")
 
-            all_samples = [snd.samples for snd in sound_obj]
+            all_stimuli = np.array([snd.stim for snd in sound_obj])
             all_fs = [snd.fs for snd in sound_obj]
             all_dtypes = [snd.dtype for snd in sound_obj]
 
@@ -383,57 +391,83 @@ class SoundSequence(Sound, Sequence):
             if not all(x == all_fs[0] for x in all_fs):
                 raise ValueError("The Sound objects in the passed list have different sampling frequencies!")
             else:
-                fs = all_fs[0]
+                self.fs = all_fs[0]
             # Check whether dtypes are the same
             if not all(x == all_dtypes[0] for x in all_dtypes):
                 raise ValueError("The Sound objects in the passed list have different dtypes!")
-
-            # Calculate array length
-            array_length = (max(self.onsets) / 1000 * fs) + len(all_samples[-1])
-
-            samples = np.zeros(int(array_length), dtype=all_samples[0].dtype)
-
-            samples_with_onsets = list(zip(all_samples, self.onsets))
-
-            # Check whether the sounds will overlap (i.e. whether one of the IOIs is shorter than the respective
-            # stimulus.
-
-            if any(samples_with_onsets[i][0].size / fs * 1000 > self.iois[i] for i in range(len(all_samples) - 1)):
-                raise ValueError("The duration of one of the Sounds is longer than one of the IOIs. "
-                                 "The events will overlap: "
-                                 "either use different IOIs, or use a shorter Sound.")
-
-            for sample, onset in samples_with_onsets:
-                start_pos = int(onset * fs / 1000)
-                end_pos = int(start_pos + len(sample))
-                samples[start_pos:end_pos] = sample
-
-            # Now that we have sound, we can initialize the parent Sound class:
-            Sound.__init__(self, samples, fs)
-
-        elif isinstance(sound_obj, Sound):
-            if any(x < len(sound_obj.samples) / sound_obj.fs * 1000 for x in self.iois):
-                raise ValueError("The duration of the Sound is longer than one of the IOIs. The events will overlap: "
-                                 "either use different IOIs, or use a shorter stimulus sound.")
             else:
-                # Generate an array of silence that has the length of all the onsets + one final stimulus.
-                # The dtype is important, because that determines the values that the magnitudes can take.
-                array_length = (max(self.onsets) / 1000 * sound_obj.fs) + len(sound_obj.samples)
-                samples = np.zeros(int(array_length), dtype=sound_obj.dtype)
+                self.dtype = all_dtypes[0]
 
-                # loop over the onsets, calculate the position of the first sample (onset * self.fs) and replace
-                for onset in self.onsets:
-                    start_pos = int(onset * sound_obj.fs / 1000)
-                    end_pos = int(start_pos + len(sound_obj.samples))
-                    samples[start_pos:end_pos] = sound_obj.samples
-
-                Sound.__init__(self, samples, sound_obj.fs)
+        # If a single Sound object was passed: Check a number of things (overlap etc.) and save fs and dtype.
+        # Then make an all_stimuli variable which holds the samples of the Sound object n onsets times.
+        elif isinstance(sound_obj, Sound):
+            if any(x < len(sound_obj.stim) / sound_obj.fs * 1000 for x in self.iois):
+                raise ValueError(
+                    "The duration of the Sound is longer than one of the IOIs. The events will overlap: "
+                    "either use different IOIs, or use a shorter stimulus sound.")
+            else:
+                # todo This list comprehension doesn't make sense (though it works), make better!
+                all_stimuli = [np.array(sound_obj.stim) for x in range(len(self.onsets))]
+                all_stimuli = np.array(all_stimuli)  # This is now an array with 10 rows, and X (in the example 2205)
+                                                     # columns.
+                self.fs = sound_obj.fs
+                self.dtype = sound_obj.dtype
 
         else:
-            raise AttributeError("Pass a Sound object as the second argument.")
+            raise AttributeError("Pass a Sound object or a list of Sound objects as the second argument.")
 
-    def __str__(self,):
-        return f"Object of type SoundSequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}"
+        # Make sound which saves the samples to self.samples
+        self._make_sound(all_stimuli, self.onsets)
+
+        # Initialize the Sound parent class
+        Sound.__init__(self, self.samples, self.fs)
+
+        # And save the newly created stimuli for later use
+        self.stim = all_stimuli  # todo Check whether this one is necessary, because this also happens in _make_sound
+
+    def __str__(self, ):
+        return f"Object of type SoundSequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+
+    def _make_sound(self, stimuli, onsets):
+        # todo Check for overlap, which now only happens when SoundSequence object is initialize, not when manipulating.
+        # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # The dtype is important, because that determines the values that the magnitudes can take.
+        array_length = (max(onsets) / 1000 * self.fs) + stimuli[-1][:].size  # Total duration + duration of one stimulus
+        samples = np.zeros(int(array_length), dtype=self.dtype)
+
+        stimuli_with_onsets = list(zip(stimuli, onsets))
+
+        if any(stimuli_with_onsets[i][0].size / self.fs * 1000 > np.diff(onsets)[i]
+               for i in range(len(stimuli_with_onsets) - 1)):
+            raise ValueError("The duration of one of the Sounds is longer than one of the IOIs. "
+                             "The events will overlap: "
+                             "either use different IOIs, or use a shorter Sound.")
+
+        for stimulus, onset in stimuli_with_onsets:
+            start_pos = int(onset * self.fs / 1000)
+            end_pos = int(start_pos + stimulus.size)
+            samples[start_pos:end_pos] = stimulus
+
+        # then save the sound
+        self.samples = samples
+        self.stim = stimuli
+
+    # Override Sequence and Sound manipulation methods so sound is regenerated when something changes
+    def change_tempo(self, factor):
+        super().change_tempo(factor)
+        self._make_sound(self.stim, self.onsets)
+
+    def change_tempo_linearly(self, total_change):
+        super().change_tempo_linearly(total_change)
+        self._make_sound(self.stim, self.onsets)
+
+    def change_amplitude(self, factor):
+        super().change_amplitude(factor)
+        self._make_sound(self.stim, self.onsets)
+
+    def change_pitch(self, factor):
+        super().change_pitch(factor)
+        self._make_sound(self.stim, self.onsets)
 
 
 # Example usage
@@ -443,7 +477,6 @@ if __name__ == "__main__":
     sequence = Sequence.generate_random_uniform(n=5, a=200, b=600)
     print(sequence)
     sequence.change_tempo(2)
-    print()
     print(sequence)
 
     # Example of a sound
@@ -455,7 +488,7 @@ if __name__ == "__main__":
     sound_sequence.plot()
     sound_sequence.write_wav('sequence_samesound.wav')
 
-    # Example of a sound sequence with different sounds for each event
+    # Example of a sound sequence with different sounds for each event (we pass a list of Sound objects of equal length)
     sequence = Sequence.generate_isochronous(n=5, ioi=500)
 
     tone_heights = [500, 300, 600, 100, 300]
@@ -465,8 +498,15 @@ if __name__ == "__main__":
     sound_sequence.plot()
     sound_sequence.write_wav('sound_sequence.wav')
 
-    print()
+    # All Sequence and Sound manipulation methods you can also use for SoundSequence objects:
+    sound_sequence = SoundSequence(Sound.generate(freq=440, onramp=10, offramp=10),
+                                   Sequence.generate_isochronous(n=5, ioi=500))
+    sound_sequence.plot()
+
+    sound_sequence.change_amplitude(factor=0.01)
+    sound_sequence.plot()
+
     print(sound_sequence)
-
-
+    sound_sequence.change_tempo(factor=2)
+    print(sound_sequence)
 
