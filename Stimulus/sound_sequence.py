@@ -8,24 +8,61 @@ import matplotlib.pyplot as plt
 
 class Sound:
     """
-    The Sound class.
+    Sound class that holds a Numpy 1-D array of sound that is either generated, or read from a .wav file.
+    Has some additional fun features.
+
+    Attributes
+    ----------
+    fs : int
+        Sampling frequency of the sound.
+    samples : Numpy 1-D array (float32)
+        Contains the samples of the sound.
+    dtype : Numpy data type object
+        Contains the Numpy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
+        the samples will be converted to np.float32.
+    stim : Numpy 1-D array
+        Contains the stimulus samples. In most cases this will be the same as Sound.samples.
+
+    Class methods
+    -------------
+    from_wav(wav_filepath, new_fs=None)
+        Read a .wav file from disk.
+    generate(freq=440, fs=44100, duration=50, amplitude=0.8, osc='sine', onramp=10, offramp=10)
+        Generate a sound using a sine or square oscillator.
+
+    Methods
+    -------
+    change_amplitude(factor)
+        Change the amplitude of the Sound by 'factor'. E.g. 2 will be twice as loud, 0.5 will be half as loud.
+    play(loop=False)
+        Play the Sound using sounddevice.
+    stop()
+        Stop sounddevice playback.
+    plot()
+        Plot the Sound's waveform using matplotlib.
+    get_duration()
+        Get the duration of the Sound in seconds.
+    write_wav(out_path)
+        Write the Sound to disk as a .wav file.
+
+
     """
 
-    def __init__(self, samples, fs):
+    def __init__(self, samples, fs: int):
         self.dtype = np.float32
         self.stim = samples
         self.samples = samples
         self.fs = fs
 
     def __str__(self):
-        return f"Object of type Sound.\n"
+        return f"Object of type Sound.\nSound duration: {self.get_duration()} seconds."
 
     @classmethod
     def from_wav(cls, wav_filepath, new_fs: int = None):
         """
 
-        This method loads a stimulus from a .wav file, reads in the samples and sets the
-        Sound.samples and Sound.fs properties.
+        This method loads a stimulus from a PCM .wav file, and reads in the samples.
+        It additionally converts .wav files with dtype int16 or int32 to float32.
 
         Parameters
         ----------
@@ -56,8 +93,8 @@ class Sound:
         elif samples.dtype == 'float32':
             pass
         else:
-            print("Unknown dtype for wav file. Check out scipy documentation here:")
-            print("https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+            raise ValueError("Unknown dtype for wav file. Check out scipy documentation here:"
+                   "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
         if new_fs is None or new_fs == file_fs:
             fs = file_fs
@@ -73,6 +110,22 @@ class Sound:
 
     @classmethod
     def generate(cls, freq=440, fs=44100, duration=50, amplitude=0.8, osc='sine', onramp=10, offramp=10):
+        """
+
+        Parameters
+        ----------
+        freq
+        fs
+        duration
+        amplitude
+        osc
+        onramp
+        offramp
+
+        Returns
+        -------
+
+        """
         samples = np.linspace(0, duration / 1000, int(fs * duration / 1000), endpoint=False, dtype=np.float32)
         if osc == 'sine':
             signal = amplitude * np.sin(2 * np.pi * freq * samples)
@@ -93,25 +146,17 @@ class Sound:
         # Set attributes
         return cls(signal, fs)
 
-    # Manipulate
+    # Manipulation
 
     def change_amplitude(self, factor):
         # get original frequencies
         self.stim *= factor
-
-    def change_pitch(self, factor):
-        """
-        How to do it?
-        """
-        fourier = np.fft.rfft(self.stim)
-        print(fourier)
 
     # Visualization
 
     def play(self, loop=False):
         # todo Check why this doesn't work.
         sd.play(self.samples, self.fs, loop=loop)
-        # we need to wait explicitly so it also works in a script
         sd.wait()
 
     def stop(self):
@@ -142,9 +187,6 @@ class Sound:
         """
         wavfile.write(filename=out_path, rate=self.fs, data=self.stim)
 
-    def write_ogg(self, out_path):
-        pass
-
 
 class Sequence:
     """
@@ -154,15 +196,12 @@ class Sequence:
     Attributes
     ----------
 
-    iois : list of integers
+    iois : Numpy 1-D array
         A list of the sequence's inter-onset intervals.
-    stats : dict
-        A dictionary containing some useful statistics about the sequence.
-    onsets : list of numpy.int64's
-        A list of the events' onset values (i.e. t values). t=0 is additionally added here.
 
-    Methods
+    Class methods
     -------
+
     generate_random_normal(n, mu, sigma, rng=None)
         Generate a random sequence using the normal distribution.
     generate_random_uniform(n, a, b, rng=None)
@@ -174,6 +213,10 @@ class Sequence:
     generate_isochronous(n, ioi)
         Generate an isochronous sequence using an exponential distribution.
 
+    Methods
+    -------
+
+
     """
 
     def __init__(self, iois):
@@ -183,14 +226,13 @@ class Sequence:
             self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
-        """
-        How do we want to print the object?
-        """
         return f"Object of type Sequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     @property
     def onsets(self):
-        return np.cumsum(np.append(0, self.iois), dtype=np.float32)  # The onsets calculated from the IOIs.
+        """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
+        """
+        return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None):
@@ -227,7 +269,7 @@ class Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
-        Note that there will be n-1 IOIs in a sequence.
+        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -257,7 +299,7 @@ class Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
-        Note that there will be n-1 IOIs in a sequence.
+        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -285,7 +327,7 @@ class Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
-        Note that there will be n-1 IOIs in a sequence.
+        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -313,7 +355,7 @@ class Sequence:
         """
 
         Class method that generates a sequence of isochronous inter-onset intervals.
-        Note that there will be n-1 IOIs in a sequence.
+        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
 
         Parameters
@@ -412,7 +454,7 @@ class SoundSequence(Sound, Sequence):
                 # todo This list comprehension doesn't make sense (though it works), make better!
                 all_stimuli = [np.array(sound_obj.stim) for x in range(len(self.onsets))]
                 all_stimuli = np.array(all_stimuli)  # This is now an array with 10 rows, and X (in the example 2205)
-                                                     # columns.
+                # columns.
                 self.fs = sound_obj.fs
                 self.dtype = sound_obj.dtype
 
@@ -426,7 +468,7 @@ class SoundSequence(Sound, Sequence):
         Sound.__init__(self, self.samples, self.fs)
 
         # And save the newly created stimuli for later use
-        self.stim = all_stimuli  # todo Check whether this one is necessary, because this also happens in _make_sound
+        self.stim = all_stimuli
 
     def __str__(self, ):
         return f"Object of type SoundSequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
@@ -468,14 +510,9 @@ class SoundSequence(Sound, Sequence):
         super().change_amplitude(factor)
         self._make_sound(self.stim, self.onsets)
 
-    def change_pitch(self, factor):
-        super().change_pitch(factor)
-        self._make_sound(self.stim, self.onsets)
-
 
 # Example usage
 if __name__ == "__main__":
-
     # Example of a sequence
     sequence = Sequence.generate_random_uniform(n=5, a=200, b=600)
     print(sequence)
@@ -509,8 +546,21 @@ if __name__ == "__main__":
     sound_sequence.change_amplitude(factor=0.01)
     sound_sequence.plot()
 
-    print(sound_sequence)
-    sound_sequence.change_tempo(factor=2)
-    print(sound_sequence)
+    ## Some more examples
 
-    sound_sequence.play()
+    # Accelerando
+    sequence = Sequence.generate_isochronous(n=100, ioi=500)
+    sound = Sound.generate(freq=440, osc='square', duration=10)
+    sound_sequence = SoundSequence(sound, sequence)
+    sound_sequence.plot()
+    sound_sequence.change_tempo_linearly(total_change=30)
+    sound_sequence.plot()
+    # sound_sequence.play()
+
+    # Ritardando
+    sound_sequence = SoundSequence(Sound.generate(freq=500, duration=50, onramp=20, offramp=20),
+                                   Sequence.generate_random_uniform(n=10, a=400, b=600))
+    sound_sequence.change_tempo_linearly(total_change=0.1)
+    sound_sequence.plot()
+    # sound_sequence.play()
+
