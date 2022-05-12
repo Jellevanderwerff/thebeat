@@ -1,4 +1,4 @@
-from stimulus import Stimulus, Sequence, StimulusSequence
+from stimulus import *
 
 # Example of a sequence
 sequence = Sequence.generate_random_uniform(n=5, a=200, b=600)
