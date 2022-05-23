@@ -25,10 +25,10 @@ def _all_possibilities(nums, target):
     return res
 
 
-def _all_rhythms(allowed_note_values_denoms, time_signature=(4, 4)):
-    common_denom = np.lcm(np.lcm.reduce(allowed_note_values_denoms), time_signature[1])
+def _all_rhythms(allowed_note_values, time_signature=(4, 4)):
+    common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])
 
-    allowed_numerators = common_denom // np.array(allowed_note_values_denoms)
+    allowed_numerators = common_denom // np.array(allowed_note_values)
     target = int((time_signature[0] / time_signature[1]) * common_denom)
 
     out_list = [(np.array(result) / common_denom) * (time_signature[1] / 4) for result in
