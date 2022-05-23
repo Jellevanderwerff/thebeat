@@ -224,7 +224,11 @@ class Sequence:
 
     """
 
-    def __init__(self, iois):
+    def __init__(self, iois, metrical=False):
+        # If metrical=True, that means there's an additional IOI for the final event.
+
+        self.metrical = metrical
+
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
         else:
@@ -240,7 +244,7 @@ class Sequence:
         return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @classmethod
-    def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None):
+    def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on the normal distribution.
@@ -256,6 +260,9 @@ class Sequence:
             The standard deviation of the normal distribution.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -265,9 +272,14 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
 
-        return cls(round_iois)
+        round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
     def generate_random_uniform(cls, n: int, a: int, b: int, rng=None):
@@ -410,8 +422,7 @@ class Sequence:
             'ioi_q3': np.quantile(self.iois, 0.75),
             'ioi_sd': np.std(self.iois),
             'ioi_min': np.min(self.iois),
-            'ioi_max': np.max(self.iois),
-            'ioi_entropy': entropy(self.iois)
+            'ioi_max': np.max(self.iois)
         }
 
 
@@ -520,3 +531,10 @@ class StimulusSequence(Stimulus, Sequence):
     def change_amplitude(self, factor):
         super().change_amplitude(factor)
         self._make_sound(self.stim, self.onsets)
+
+
+if __name__ == "__main__":
+    stimulus = Stimulus.generate(freq=300)
+    sequence = Sequence.generate_isochronous(n=10, ioi=500)
+    stimseq = StimulusSequence(stimulus, sequence)
+    stimseq.plot()

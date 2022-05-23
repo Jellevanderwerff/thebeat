@@ -1,7 +1,6 @@
 import numpy as np
-from stimulus import Sequence
-import random
-from functools import lru_cache
+from stimulus import Stimulus, Sequence, StimulusSequence
+from datetime import datetime
 
 
 def _all_possibilities(nums, target):
@@ -37,7 +36,7 @@ def _all_rhythms(allowed_note_values_denoms, time_signature=(4, 4)):
     return out_list
 
 
-def rrhythmic_sequence(allowed_note_values, time_signature, n_rests, ioi):
+def rrhythmic_sequence(stim, allowed_note_values, time_signature, ioi):
     """
     This function should return a SoundSequence, where:
         - A random rhythm is generated using _all_rhythms
@@ -50,5 +49,8 @@ def rrhythmic_sequence(allowed_note_values, time_signature, n_rests, ioi):
     """
 
 
-sequence = rrhythmic_sequence([4], (4, 4), ioi=500)
-print(sequence)
+if __name__ == "__main__":
+    then = datetime.now()
+    all_rhythms = _all_rhythms([2, 4, 8, 16], time_signature=(4, 4))
+    elapsed = datetime.now() - then
+    print(f"That took {elapsed.total_seconds()} seconds.")
