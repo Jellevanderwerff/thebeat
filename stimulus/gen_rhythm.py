@@ -1,6 +1,7 @@
 import numpy as np
 from stimulus import Stimulus, Sequence, StimulusSequence
 from datetime import datetime
+import random
 
 
 def _all_possibilities(nums, target):
@@ -40,17 +41,29 @@ def rrhythmic_sequence(stim, allowed_note_values, time_signature, ioi):
     """
     This function should return a SoundSequence, where:
         - A random rhythm is generated using _all_rhythms
-        - The IOIs are calculated and then the onsets
-        - The onsets minus the last one are used (because the final one - the pre-final one = note duration of final
-          sound.
-        - At random places rests are inserted (i.e. silences)
         - returns a one-bar SoundSequence
 
     """
 
+    ratios = random.choice(_all_rhythms(allowed_note_values, time_signature))
+    print(ratios)
+    # todo Reasses whether this makes sense with the time_sign
+    iois = ratios * ioi * time_signature[1]
+
+    return StimulusSequence(stim, Sequence(iois, metrical=True))
+
 
 if __name__ == "__main__":
-    then = datetime.now()
-    all_rhythms = _all_rhythms([2, 4, 8, 16], time_signature=(4, 4))
-    elapsed = datetime.now() - then
-    print(f"That took {elapsed.total_seconds()} seconds.")
+    stim = Stimulus.generate(duration=50)
+    rhythm = rrhythmic_sequence(stim, [4, 8], (4, 4), ioi=500)
+    print(rhythm)
+    rhythm.plot()
+    rhythm.write_wav('random_rhythm.wav')
+
+
+
+
+
+
+
+

@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.signal import resample, square
 from scipy.io import wavfile
-from scipy.stats import entropy
 import sounddevice as sd
 import matplotlib.pyplot as plt
+from time import sleep
 
 
 class Stimulus:
@@ -190,7 +190,7 @@ class Stimulus:
         """
         Writes audio to disk.
         """
-        wavfile.write(filename=out_path, rate=self.fs, data=self.stim)
+        wavfile.write(filename=out_path, rate=self.fs, data=self.samples)
 
 
 class Sequence:
@@ -235,13 +235,20 @@ class Sequence:
             self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
-        return f"Object of type Sequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        if self.metrical:
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        else:
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     @property
     def onsets(self):
         """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
         """
-        return np.cumsum(np.append(0, self.iois), dtype=np.float32)
+
+        if self.metrical:
+            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
+        else:
+            return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
@@ -282,7 +289,7 @@ class Sequence:
         return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_uniform(cls, n: int, a: int, b: int, rng=None):
+    def generate_random_uniform(cls, n: int, a: int, b: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
@@ -298,6 +305,9 @@ class Sequence:
             The right bound of the normal distribution.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -307,12 +317,17 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.uniform(low=a, high=b, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
 
-        return cls(round_iois)
+        round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_poisson(cls, n: int, lam: int, rng=None):
+    def generate_random_poisson(cls, n: int, lam: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
@@ -326,6 +341,9 @@ class Sequence:
             The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+                grid)
 
         Returns
         -------
@@ -335,12 +353,17 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.poisson(lam=lam, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
 
-        return cls(round_iois)
+        round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_exponential(cls, n: int, lam: int, rng=None):
+    def generate_random_exponential(cls, n: int, lam: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
@@ -354,6 +377,9 @@ class Sequence:
            The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -363,12 +389,17 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.exponential(scale=lam, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
 
-        return cls(round_iois)
+        round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_isochronous(cls, n: int, ioi: int):
+    def generate_isochronous(cls, n: int, ioi: int, metrical=False):
         """
 
         Class method that generates a sequence of isochronous inter-onset intervals.
@@ -381,6 +412,9 @@ class Sequence:
             The desired number of events in the sequence.
         ioi : int
             The inter-onset interval to be used between all events.
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -388,7 +422,12 @@ class Sequence:
 
         """
 
-        return cls(np.round([ioi] * (n - 1)))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+
+        return cls(np.round([ioi] * n_iois))
 
     # Manipulation methods
     def change_tempo(self, factor):
@@ -436,6 +475,9 @@ class StimulusSequence(Stimulus, Sequence):
         # Initialize parent Sequence class, so we can use self.onsets etc.
         Sequence.__init__(self, seq_obj.iois)
 
+        # Save whether passed sequence is metrical or not
+        self.metrical = seq_obj.metrical
+
         # Use internal _make_stim method to combine stimulus_obj and seq_obj
         # It makes stimuli which are a nested 1-D array (i.e. for each onset a 1-D array of sound samples)
         stimuli = self._make_stim(stimulus_obj)
@@ -450,7 +492,10 @@ class StimulusSequence(Stimulus, Sequence):
         self.stim = stimuli
 
     def __str__(self, ):
-        return f"Object of type StimulusSequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        if self.metrical:
+            return f"Object of type StimulusSequence (metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        else:
+            return f"Object of type StimulusSequence (non-metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     def _make_stim(self, stimulus_obj):
         # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
@@ -496,11 +541,17 @@ class StimulusSequence(Stimulus, Sequence):
                     "The duration of the Stimulus is longer than one of the IOIs. The events will overlap: "
                     "either use different IOIs, or use a shorter stimulus sound.")
 
-
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # In the case of a metrical sequence, we add the final ioi
         # The dtype is important, because that determines the values that the magnitudes can take.
-        array_length = (max(onsets) / 1000 * self.fs) + stimuli[-1].size  # Total duration + duration of one stimulus
-        samples = np.zeros(int(array_length), dtype=self.dtype)
+        if self.metrical:
+            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
+        elif not self.metrical:
+            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli[-1].size)
+        else:
+            raise ValueError("Error during calculation of array_length")
+
+        samples = np.zeros(array_length, dtype=self.dtype)
 
         stimuli_with_onsets = list(zip(stimuli, onsets))
 
@@ -534,7 +585,9 @@ class StimulusSequence(Stimulus, Sequence):
 
 
 if __name__ == "__main__":
-    stimulus = Stimulus.generate(freq=300)
-    sequence = Sequence.generate_isochronous(n=10, ioi=500)
-    stimseq = StimulusSequence(stimulus, sequence)
-    stimseq.plot()
+    # Generate metrical (or, rhythmic) sequence
+    stim = Stimulus.generate()
+    sequence = Sequence([500, 500, 500, 500], metrical=True)
+    metricalsequence = StimulusSequence(stim, sequence)
+    metricalsequence.plot()
+    metricalsequence.play(loop=True)
