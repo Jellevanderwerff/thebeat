@@ -3,7 +3,6 @@ from scipy.signal import resample, square
 from scipy.io import wavfile
 import sounddevice as sd
 import matplotlib.pyplot as plt
-from time import sleep
 
 
 class Stimulus:
@@ -437,7 +436,7 @@ class Sequence:
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(np.round([ioi] * n_iois))
+        return cls(np.round([ioi] * n_iois), metrical=metrical)
 
     # Manipulation methods
     def change_tempo(self, factor):
@@ -596,36 +595,30 @@ class StimulusSequence(Stimulus, Sequence):
 
 def join(input):
     """
-    This function should be able to join Sequences, Sounds, and Stimulu
-    This function should be able to combine multiple StimulusSequence objects into one.
-    Remember to join:
-    - The IOIs
-    - self.stim
-    - self.samples
-    - And check whether fs etc. is the same across SS objects.
+    This function can join Stimulus and metrical Sequence or StimulusSequence objects.
     """
+
     # Check whether iterable was passed
     if not hasattr(input, '__iter__'):
         raise ValueError("Please pass this function a list or other iterable object.")
 
     # Check whether all the objects are of the same type
-    if any(type(input[i+1]) != type(input[i]) for i in range(len(input)-1)):
+    if not any(type(input[i+1]) == type(input[i]) for i in range(len(input)-1)):
         raise ValueError("All passed objects should be of the same type to be able to join.")
 
-    # If the passed objects are Sequence objects:
+    # Sequence and StimulusSequence objects need to be metrical:
+    if input[0].__class__.__name__ == 'Sequence' or input[0].__class__.__name__ == 'StimulusSequence':
+        if not any(object.metrical for object in input):
+            raise ValueError("Only metrical Sequence or StimulusSequence objects can be joined. This is intentional.")
+
+    # If passed objects are Sequence objects:
     if input[0].__class__.__name__ == 'Sequence':
-        if any(input[i+1].metrical != input[i].metrical for i in range(len(input)-1)):
-            raise ValueError("The passed Sequence objects should either all be metrical or should all not be metrical.")
-
-        metrical = input[0].metrical
-
         iois = [sequence.iois for sequence in input]
         iois = np.concatenate(iois)
-
-        return Sequence(iois, metrical=metrical)
+        return Sequence(iois, metrical=True)
 
     # If the passed objects are Stimulus objects
-    elif input[0].__class__.__name__ == 'Stimulus':
+    if input[0].__class__.__name__ == 'Stimulus' or input[0].__class__.__name__ == 'StimulusSequence':
         if any(input[i+1].dtype != input[i].dtype for i in range(len(input)-1)):
             raise ValueError("The passed Sequence objects should all have the same dtype.")
         if any(input[i+1].fs != input[i].fs for i in range(len(input)-1)):
@@ -639,19 +632,24 @@ def join(input):
 
         return Stimulus(samples, fs)
 
-    # If the passed objects are StimulusSequence objects
+    # If the passed object are StimulusSequence objects
     elif input[0].__class__.__name__ == 'StimulusSequence':
+        # We maken gewoon een Sequence object met een gecombineerde lijst van ioi's
+        # dan maken we een lijst van Stimulus objects die we kunnen passen naar StimulusSequence
+
+        # Sequence object
+        iois = [stimseq.iois for stimseq in input]
+        iois = np.concatenate(iois)
+        sequence_obj = Sequence(iois, metrical=True)
+
+        # List of Stimulus objects
+        stim_samples_list = []
         for stimseq in input:
-            pass
+            for stim in stimseq.stim:
+                stim_samples_list.append(stim)
+        stim_objs_list = [Stimulus(samples, input[0].fs) for samples in stim_samples_list]
+
+        return StimulusSequence(stim_objs_list, sequence_obj)
+
     else:
-        raise ValueError("This function can only join Stimulus, Sequence, or StimulusSequence objects.")
-
-
-if __name__ == "__main__":
-    lijst = [Stimulus.generate(freq=440), Stimulus.generate(freq=330)]
-
-    joined = join(lijst)
-
-    joined.plot()
-    joined.play()
-
+        raise ValueError("This function can only join Stimulus, Sequence or metrical StimulusSequence objects.")
