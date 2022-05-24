@@ -1,14 +1,13 @@
 import numpy as np
 from scipy.signal import resample, square
 from scipy.io import wavfile
-from scipy.stats import entropy
 import sounddevice as sd
 import matplotlib.pyplot as plt
 
 
-class Sound:
+class Stimulus:
     """
-    Sound class that holds a Numpy 1-D array of sound that is either generated, or read from a .wav file.
+    Stimulus class that holds a Numpy 1-D array of sound that is either generated, or read from a .wav file.
     Has some additional fun features.
 
     Attributes
@@ -21,7 +20,7 @@ class Sound:
         Contains the Numpy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
         the samples will be converted to np.float32.
     stim : Numpy 1-D array
-        Contains the stimulus samples. In most cases this will be the same as Sound.samples.
+        Contains the stimulus samples. In most cases this will be the same as Stimulus.samples.
 
     Class methods
     -------------
@@ -33,17 +32,17 @@ class Sound:
     Methods
     -------
     change_amplitude(factor)
-        Change the amplitude of the Sound by 'factor'. E.g. 2 will be twice as loud, 0.5 will be half as loud.
+        Change the amplitude of the Stimulus by 'factor'. E.g. 2 will be twice as loud, 0.5 will be half as loud.
     play(loop=False)
-        Play the Sound using sounddevice.
+        Play the Stimulus using sounddevice.
     stop()
         Stop sounddevice playback.
     plot()
-        Plot the Sound's waveform using matplotlib.
+        Plot the Stimulus's waveform using matplotlib.
     get_duration()
-        Get the duration of the Sound in seconds.
+        Get the duration of the Stimulus in seconds.
     write_wav(out_path)
-        Write the Sound to disk as a .wav file.
+        Write the Stimulus to disk as a .wav file.
 
 
     """
@@ -55,7 +54,7 @@ class Sound:
         self.fs = fs
 
     def __str__(self):
-        return f"Object of type Sound.\nSound duration: {self.get_duration()} seconds."
+        return f"Object of type Stimulus.\nStimulus duration: {self.get_duration()} seconds."
 
     @classmethod
     def from_wav(cls, wav_filepath, new_fs: int = None):
@@ -101,12 +100,12 @@ class Sound:
             samples = resampled
             fs = new_fs
         else:
-            print("Error occurred when comparing sampling frequencies.")
+            raise ValueError("Error while comparing old and new sampling frequencies.")
 
         return cls(samples, fs)
 
     @classmethod
-    def generate(cls, freq=440, fs=44100, duration=50, amplitude=0.8, osc='sine', onramp=0, offramp=0):
+    def generate(cls, freq=440, fs=44100, duration=50, amplitude=1.0, osc='sine', onramp=0, offramp=0):
         """
 
         Parameters
@@ -190,7 +189,7 @@ class Sound:
         """
         Writes audio to disk.
         """
-        wavfile.write(filename=out_path, rate=self.fs, data=self.stim)
+        wavfile.write(filename=out_path, rate=self.fs, data=self.samples)
 
 
 class Sequence:
@@ -224,23 +223,34 @@ class Sequence:
 
     """
 
-    def __init__(self, iois):
+    def __init__(self, iois, metrical=False):
+        # If metrical=True, that means there's an additional IOI for the final event.
+
+        self.metrical = metrical
+
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
         else:
             self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
-        return f"Object of type Sequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        if self.metrical:
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        else:
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     @property
     def onsets(self):
         """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
         """
-        return np.cumsum(np.append(0, self.iois), dtype=np.float32)
+
+        if self.metrical:
+            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
+        else:
+            return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @classmethod
-    def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None):
+    def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on the normal distribution.
@@ -256,6 +266,9 @@ class Sequence:
             The standard deviation of the normal distribution.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -265,12 +278,19 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(round_iois)
+        round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_uniform(cls, n: int, a: int, b: int, rng=None):
+    def generate_random_uniform(cls, n: int, a: int, b: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
@@ -286,6 +306,9 @@ class Sequence:
             The right bound of the normal distribution.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -295,12 +318,19 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.uniform(low=a, high=b, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(round_iois)
+        round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_poisson(cls, n: int, lam: int, rng=None):
+    def generate_random_poisson(cls, n: int, lam: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
@@ -314,6 +344,9 @@ class Sequence:
             The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+                grid)
 
         Returns
         -------
@@ -323,12 +356,19 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.poisson(lam=lam, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(round_iois)
+        round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_exponential(cls, n: int, lam: int, rng=None):
+    def generate_random_exponential(cls, n: int, lam: int, rng=None, metrical=False):
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
@@ -342,6 +382,9 @@ class Sequence:
            The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -351,12 +394,19 @@ class Sequence:
         if rng is None:
             rng = np.random.default_rng()
 
-        round_iois = np.round(rng.exponential(scale=lam, size=n - 1))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(round_iois)
+        round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
+
+        return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_isochronous(cls, n: int, ioi: int):
+    def generate_isochronous(cls, n: int, ioi: int, metrical=False):
         """
 
         Class method that generates a sequence of isochronous inter-onset intervals.
@@ -369,6 +419,9 @@ class Sequence:
             The desired number of events in the sequence.
         ioi : int
             The inter-onset interval to be used between all events.
+        metrical : boolean
+            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
+            grid)
 
         Returns
         -------
@@ -376,7 +429,14 @@ class Sequence:
 
         """
 
-        return cls(np.round([ioi] * (n - 1)))
+        if metrical:
+            n_iois = n
+        elif not metrical:
+            n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+
+        return cls(np.round([ioi] * n_iois), metrical=metrical)
 
     # Manipulation methods
     def change_tempo(self, factor):
@@ -410,70 +470,75 @@ class Sequence:
             'ioi_q3': np.quantile(self.iois, 0.75),
             'ioi_sd': np.std(self.iois),
             'ioi_min': np.min(self.iois),
-            'ioi_max': np.max(self.iois),
-            'ioi_entropy': entropy(self.iois)
+            'ioi_max': np.max(self.iois)
         }
 
 
-class SoundSequence(Sound, Sequence):
+class StimulusSequence(Stimulus, Sequence):
     """
-    SoundSequence class which inherits from Sound and Sequence
+    StimulusSequence class which inherits from Stimulus and Sequence
     """
 
-    def __init__(self, sound_obj, seq_obj):
+    def __init__(self, stimulus_obj, seq_obj):
 
         # Initialize parent Sequence class, so we can use self.onsets etc.
         Sequence.__init__(self, seq_obj.iois)
 
-        # Use internal _make_stim method to combine sound_obj and seq_obj
+        # Save whether passed sequence is metrical or not
+        self.metrical = seq_obj.metrical
+
+        # Use internal _make_stim method to combine stimulus_obj and seq_obj
         # It makes stimuli which are a nested 1-D array (i.e. for each onset a 1-D array of sound samples)
-        stimuli = self._make_stim(sound_obj)
+        stimuli = self._make_stim(stimulus_obj)
 
         # Make sound which saves the samples to self.samples
         self._make_sound(stimuli, self.onsets)
 
-        # Initialize the Sound parent class
-        Sound.__init__(self, self.samples, self.fs)
+        # Initialize the Stimulus parent class
+        Stimulus.__init__(self, self.samples, self.fs)
 
         # Then save stimuli for later use
         self.stim = stimuli
 
     def __str__(self, ):
-        return f"Object of type SoundSequence.\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        if self.metrical:
+            return f"Object of type StimulusSequence (metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        else:
+            return f"Object of type StimulusSequence (non-metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
-    def _make_stim(self, sound_obj):
-        # If list of Sound objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
+    def _make_stim(self, stimulus_obj):
+        # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
         # The all_stimuli variable will later be used to generate the audio.
-        if isinstance(sound_obj, list):
-            # Check whether length of sound_obj is the same as onsets
-            if not len(self.onsets) == len(sound_obj):
-                raise ValueError("The number of Sound objects passed does not equal the number of onsets! "
-                                 "Remember that you need one more Sound than the number of IOIs.")
+        if isinstance(stimulus_obj, list):
+            # Check whether length of stimulus_obj is the same as onsets
+            if not len(self.onsets) == len(stimulus_obj):
+                raise ValueError("The number of Stimulus objects passed does not equal the number of onsets! "
+                                 "Remember that you need one more Stimulus than the number of IOIs.")
 
-            all_stimuli = np.array([snd.stim for snd in sound_obj])
-            all_fs = [snd.fs for snd in sound_obj]
-            all_dtypes = [snd.dtype for snd in sound_obj]
+            all_stimuli = np.array([snd.stim for snd in stimulus_obj])
+            all_fs = [snd.fs for snd in stimulus_obj]
+            all_dtypes = [snd.dtype for snd in stimulus_obj]
 
             # Check whether fs's are the same across the list
             if not all(x == all_fs[0] for x in all_fs):
-                raise ValueError("The Sound objects in the passed list have different sampling frequencies!")
+                raise ValueError("The Stimulus objects in the passed list have different sampling frequencies!")
             else:
                 self.fs = all_fs[0]
             # Check whether dtypes are the same
             if not all(x == all_dtypes[0] for x in all_dtypes):
-                raise ValueError("The Sound objects in the passed list have different dtypes!")
+                raise ValueError("The Stimulus objects in the passed list have different dtypes!")
             else:
                 self.dtype = all_dtypes[0]
 
-        # If a single Sound object was passed: Check a number of things (overlap etc.) and save fs and dtype.
-        # Then make an all_stimuli variable which holds the samples of the Sound object n onsets times.
-        elif isinstance(sound_obj, Sound):
-            all_stimuli = np.tile(np.array(sound_obj.stim), (len(self.onsets), 1))
-            self.fs = sound_obj.fs
-            self.dtype = sound_obj.dtype
+        # If a single Stimulus object was passed: Check a number of things (overlap etc.) and save fs and dtype.
+        # Then make an all_stimuli variable which holds the samples of the Stimulus object n onsets times.
+        elif isinstance(stimulus_obj, Stimulus):
+            all_stimuli = np.tile(np.array(stimulus_obj.stim), (len(self.onsets), 1))
+            self.fs = stimulus_obj.fs
+            self.dtype = stimulus_obj.dtype
 
         else:
-            raise AttributeError("Pass a Sound object or a list of Sound objects as the second argument.")
+            raise AttributeError("Pass a Stimulus object or a list of Stimulus objects as the second argument.")
 
         return all_stimuli
 
@@ -482,22 +547,28 @@ class SoundSequence(Sound, Sequence):
         for stim in stimuli:
             if any(ioi < len(stim) / self.fs * 1000 for ioi in self.iois):
                 raise ValueError(
-                    "The duration of the Sound is longer than one of the IOIs. The events will overlap: "
+                    "The duration of the Stimulus is longer than one of the IOIs. The events will overlap: "
                     "either use different IOIs, or use a shorter stimulus sound.")
 
-
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # In the case of a metrical sequence, we add the final ioi
         # The dtype is important, because that determines the values that the magnitudes can take.
-        array_length = (max(onsets) / 1000 * self.fs) + stimuli[-1].size  # Total duration + duration of one stimulus
-        samples = np.zeros(int(array_length), dtype=self.dtype)
+        if self.metrical:
+            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
+        elif not self.metrical:
+            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli[-1].size)
+        else:
+            raise ValueError("Error during calculation of array_length")
+
+        samples = np.zeros(array_length, dtype=self.dtype)
 
         stimuli_with_onsets = list(zip(stimuli, onsets))
 
         if any(stimuli_with_onsets[i][0].size / self.fs * 1000 > np.diff(onsets)[i]
                for i in range(len(stimuli_with_onsets) - 1)):
-            raise ValueError("The duration of one of the Sounds is longer than one of the IOIs. "
+            raise ValueError("The duration of one of the Stimuluss is longer than one of the IOIs. "
                              "The events will overlap: "
-                             "either use different IOIs, or use a shorter Sound.")
+                             "either use different IOIs, or use a shorter Stimulus.")
 
         for stimulus, onset in stimuli_with_onsets:
             start_pos = int(onset * self.fs / 1000)
@@ -508,7 +579,7 @@ class SoundSequence(Sound, Sequence):
         self.samples = samples
         self.stim = stimuli
 
-    # Override Sequence and Sound manipulation methods so sound is regenerated when something changes
+    # Override Sequence and Stimulus manipulation methods so sound is regenerated when something changes
     def change_tempo(self, factor):
         super().change_tempo(factor)
         self._make_sound(self.stim, self.onsets)
@@ -522,53 +593,63 @@ class SoundSequence(Sound, Sequence):
         self._make_sound(self.stim, self.onsets)
 
 
-# Example usage
-if __name__ == "__main__":
-    # Example of a sequence
-    sequence = Sequence.generate_random_uniform(n=5, a=200, b=600)
-    print(sequence)
-    sequence.change_tempo(2)
-    print(sequence)
+def join(input):
+    """
+    This function can join Stimulus and metrical Sequence or StimulusSequence objects.
+    """
 
-    # Example of a sound
-    sound = Sound.from_wav('click01.wav')
-    sound.plot(title="Waveform for click01.wav")
+    # Check whether iterable was passed
+    if not hasattr(input, '__iter__'):
+        raise ValueError("Please pass this function a list or other iterable object.")
 
-    # Example of a sound sequence with the same sound used throughout
-    sound_sequence = SoundSequence(sound, sequence)
-    sound_sequence.plot("SoundSequence with same sound throughout")
-    sound_sequence.write_wav('sequence_samesound.wav')
+    # Check whether all the objects are of the same type
+    if not any(type(input[i+1]) == type(input[i]) for i in range(len(input)-1)):
+        raise ValueError("All passed objects should be of the same type to be able to join.")
 
-    # Example of a sound sequence with different sounds for each event (we pass a list of Sound objects of equal length)
-    sequence = Sequence.generate_isochronous(n=5, ioi=500)
+    # Sequence and StimulusSequence objects need to be metrical:
+    if input[0].__class__.__name__ == 'Sequence' or input[0].__class__.__name__ == 'StimulusSequence':
+        if not any(object.metrical for object in input):
+            raise ValueError("Only metrical Sequence or StimulusSequence objects can be joined. This is intentional.")
 
-    tone_heights = [500, 300, 600, 100, 300]
-    sounds = [Sound.generate(freq=tone_height) for tone_height in tone_heights]
+    # If passed objects are Sequence objects:
+    if input[0].__class__.__name__ == 'Sequence':
+        iois = [sequence.iois for sequence in input]
+        iois = np.concatenate(iois)
+        return Sequence(iois, metrical=True)
 
-    sound_sequence = SoundSequence(sounds, sequence)
-    sound_sequence.plot("SoundSequence with different sounds")
-    sound_sequence.write_wav('sound_sequence.wav')
+    # If the passed objects are Stimulus objects
+    if input[0].__class__.__name__ == 'Stimulus' or input[0].__class__.__name__ == 'StimulusSequence':
+        if any(input[i+1].dtype != input[i].dtype for i in range(len(input)-1)):
+            raise ValueError("The passed Sequence objects should all have the same dtype.")
+        if any(input[i+1].fs != input[i].fs for i in range(len(input)-1)):
+            raise ValueError("The passed Sequence objects should all have the same sampling frequency.")
 
-    # All Sequence and Sound manipulation methods you can also use for SoundSequence objects:
-    sound_sequence = SoundSequence(Sound.generate(freq=440, onramp=10, offramp=10),
-                                   Sequence.generate_isochronous(n=5, ioi=500))
+        samples = [stim.samples for stim in input]
+        samples = np.concatenate(samples)
+        samples = np.array(samples, dtype=input[0].dtype)
 
-    sound_sequence.change_amplitude(factor=0.01)
-    sound_sequence.plot("Manipulation changed amplitude")
+        fs = input[0].fs
 
-    # Accelerando
-    sequence = Sequence.generate_isochronous(n=10, ioi=500)
-    sound = Sound.generate(freq=440, osc='sine', duration=10)
-    sound_sequence = SoundSequence(sound, sequence)
-    sound_sequence.plot("Accelerando before")
-    sound_sequence.change_tempo_linearly(total_change=2)
-    sound_sequence.plot("Accelerando after")
-    # sound_sequence.play()
+        return Stimulus(samples, fs)
 
-    # Ritardando
-    sound_sequence = SoundSequence(Sound.generate(freq=440, duration=50, onramp=10, offramp=10),
-                                   Sequence.generate_isochronous(n=10, ioi=500))
-    sound_sequence.plot("Ritardando before")
-    sound_sequence.change_tempo_linearly(total_change=0.5)
-    sound_sequence.plot("Ritardando after")
-    #sound_sequence.play()
+    # If the passed object are StimulusSequence objects
+    elif input[0].__class__.__name__ == 'StimulusSequence':
+        # We maken gewoon een Sequence object met een gecombineerde lijst van ioi's
+        # dan maken we een lijst van Stimulus objects die we kunnen passen naar StimulusSequence
+
+        # Sequence object
+        iois = [stimseq.iois for stimseq in input]
+        iois = np.concatenate(iois)
+        sequence_obj = Sequence(iois, metrical=True)
+
+        # List of Stimulus objects
+        stim_samples_list = []
+        for stimseq in input:
+            for stim in stimseq.stim:
+                stim_samples_list.append(stim)
+        stim_objs_list = [Stimulus(samples, input[0].fs) for samples in stim_samples_list]
+
+        return StimulusSequence(stim_objs_list, sequence_obj)
+
+    else:
+        raise ValueError("This function can only join Stimulus, Sequence or metrical StimulusSequence objects.")
