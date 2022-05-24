@@ -283,6 +283,8 @@ class Sequence:
             n_iois = n
         elif not metrical:
             n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n_iois))
 
@@ -321,6 +323,8 @@ class Sequence:
             n_iois = n
         elif not metrical:
             n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
 
@@ -357,6 +361,8 @@ class Sequence:
             n_iois = n
         elif not metrical:
             n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
 
@@ -393,6 +399,8 @@ class Sequence:
             n_iois = n
         elif not metrical:
             n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
 
@@ -426,6 +434,8 @@ class Sequence:
             n_iois = n
         elif not metrical:
             n_iois = n - 1
+        else:
+            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         return cls(np.round([ioi] * n_iois))
 
@@ -584,10 +594,17 @@ class StimulusSequence(Stimulus, Sequence):
         self._make_sound(self.stim, self.onsets)
 
 
+def ssjoin(iterator):
+    """
+    This function should be able to combine multiple StimulusSequence objects into one.
+    Remember to join:
+    - The IOIs
+    - self.stim
+    - self.samples
+    - And check whether fs etc. is the same across SS objects.
+    """
+    pass
+
+
 if __name__ == "__main__":
-    # Generate metrical (or, rhythmic) sequence
-    stim = Stimulus.generate()
-    sequence = Sequence([500, 500, 500, 500], metrical=True)
-    metricalsequence = StimulusSequence(stim, sequence)
-    metricalsequence.plot()
-    metricalsequence.play(loop=True)
+    pass
