@@ -49,6 +49,12 @@ def random_metrical_sequence(allowed_note_values, time_signature, quarternote_ms
 
     return Sequence(iois, metrical=True)
 
+def metrical_sequence(ratios, time_signature, quarternote_ms):
+    """
+    This function should return a Sequence object given a list of ratios etc.
+    """
+    pass
+
 
 if __name__ == "__main__":
     # Example of a random metrical sequence in 4/4

@@ -594,8 +594,9 @@ class StimulusSequence(Stimulus, Sequence):
         self._make_sound(self.stim, self.onsets)
 
 
-def ssjoin(iterator):
+def join(input):
     """
+    This function should be able to join Sequences, Sounds, and Stimulu
     This function should be able to combine multiple StimulusSequence objects into one.
     Remember to join:
     - The IOIs
@@ -603,8 +604,54 @@ def ssjoin(iterator):
     - self.samples
     - And check whether fs etc. is the same across SS objects.
     """
-    pass
+    # Check whether iterable was passed
+    if not hasattr(input, '__iter__'):
+        raise ValueError("Please pass this function a list or other iterable object.")
+
+    # Check whether all the objects are of the same type
+    if any(type(input[i+1]) != type(input[i]) for i in range(len(input)-1)):
+        raise ValueError("All passed objects should be of the same type to be able to join.")
+
+    # If the passed objects are Sequence objects:
+    if input[0].__class__.__name__ == 'Sequence':
+        if any(input[i+1].metrical != input[i].metrical for i in range(len(input)-1)):
+            raise ValueError("The passed Sequence objects should either all be metrical or should all not be metrical.")
+
+        metrical = input[0].metrical
+
+        iois = [sequence.iois for sequence in input]
+        iois = np.concatenate(iois)
+
+        return Sequence(iois, metrical=metrical)
+
+    # If the passed objects are Stimulus objects
+    elif input[0].__class__.__name__ == 'Stimulus':
+        if any(input[i+1].dtype != input[i].dtype for i in range(len(input)-1)):
+            raise ValueError("The passed Sequence objects should all have the same dtype.")
+        if any(input[i+1].fs != input[i].fs for i in range(len(input)-1)):
+            raise ValueError("The passed Sequence objects should all have the same sampling frequency.")
+
+        samples = [stim.samples for stim in input]
+        samples = np.concatenate(samples)
+        samples = np.array(samples, dtype=input[0].dtype)
+
+        fs = input[0].fs
+
+        return Stimulus(samples, fs)
+
+    # If the passed objects are StimulusSequence objects
+    elif input[0].__class__.__name__ == 'StimulusSequence':
+        for stimseq in input:
+            pass
+    else:
+        raise ValueError("This function can only join Stimulus, Sequence, or StimulusSequence objects.")
 
 
 if __name__ == "__main__":
-    pass
+    lijst = [Stimulus.generate(freq=440), Stimulus.generate(freq=330)]
+
+    joined = join(lijst)
+
+    joined.plot()
+    joined.play()
+
