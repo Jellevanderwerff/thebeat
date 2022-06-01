@@ -36,16 +36,17 @@ def _all_metrical_ratios(allowed_note_values, time_signature=(4, 4)):
     return out_list
 
 
-def random_metrical_sequence(allowed_note_values, time_signature, quarternote_ms):
+def random_metrical_sequence(n_bars, allowed_note_values, time_signature, quarternote_ms):
     """
-    This function returns a StimulusSequence based on a randomly generated list
-    of integer ratios, based on the given parameters.
-
+    This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
     """
 
-    ratios = random.choice(_all_metrical_ratios(allowed_note_values, time_signature))
-    # todo Check whether this makes sense w.r. to the time signature
-    iois = np.round(ratios * quarternote_ms * time_signature[1])
+    iois = np.empty(0)
+    print(iois.shape)
+
+    for bar in range(n_bars):
+        ratios = random.choice(_all_metrical_ratios(allowed_note_values, time_signature))
+        iois = np.concatenate((iois, np.round(ratios * quarternote_ms * time_signature[1])), axis=0)
 
     return Sequence(iois, metrical=True)
 

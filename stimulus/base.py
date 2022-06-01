@@ -593,63 +593,24 @@ class StimulusSequence(Stimulus, Sequence):
         self._make_sound(self.stim, self.onsets)
 
 
-def join(input):
+def join_sequences(iterator):
     """
-    This function can join Stimulus and metrical Sequence or StimulusSequence objects.
+    This function can join metrical Sequence objects.
     """
 
     # Check whether iterable was passed
-    if not hasattr(input, '__iter__'):
+    if not hasattr(iterator, '__iter__'):
         raise ValueError("Please pass this function a list or other iterable object.")
 
     # Check whether all the objects are of the same type
-    if not any(type(input[i+1]) == type(input[i]) for i in range(len(input)-1)):
-        raise ValueError("All passed objects should be of the same type to be able to join.")
+    if not all(isinstance(x, Sequence) for x in iterator):
+        raise ValueError("This function can only join multiple Sequence objects.")
 
     # Sequence and StimulusSequence objects need to be metrical:
-    if input[0].__class__.__name__ == 'Sequence' or input[0].__class__.__name__ == 'StimulusSequence':
-        if not any(object.metrical for object in input):
-            raise ValueError("Only metrical Sequence or StimulusSequence objects can be joined. This is intentional.")
+    if not all(x.metrical for x in iterator):
+        raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
 
-    # If passed objects are Sequence objects:
-    if input[0].__class__.__name__ == 'Sequence':
-        iois = [sequence.iois for sequence in input]
-        iois = np.concatenate(iois)
-        return Sequence(iois, metrical=True)
+    iois = [sequence.iois for sequence in iterator]
+    iois = np.concatenate(iois)
 
-    # If the passed objects are Stimulus objects
-    if input[0].__class__.__name__ == 'Stimulus' or input[0].__class__.__name__ == 'StimulusSequence':
-        if any(input[i+1].dtype != input[i].dtype for i in range(len(input)-1)):
-            raise ValueError("The passed Sequence objects should all have the same dtype.")
-        if any(input[i+1].fs != input[i].fs for i in range(len(input)-1)):
-            raise ValueError("The passed Sequence objects should all have the same sampling frequency.")
-
-        samples = [stim.samples for stim in input]
-        samples = np.concatenate(samples)
-        samples = np.array(samples, dtype=input[0].dtype)
-
-        fs = input[0].fs
-
-        return Stimulus(samples, fs)
-
-    # If the passed object are StimulusSequence objects
-    elif input[0].__class__.__name__ == 'StimulusSequence':
-        # We maken gewoon een Sequence object met een gecombineerde lijst van ioi's
-        # dan maken we een lijst van Stimulus objects die we kunnen passen naar StimulusSequence
-
-        # Sequence object
-        iois = [stimseq.iois for stimseq in input]
-        iois = np.concatenate(iois)
-        sequence_obj = Sequence(iois, metrical=True)
-
-        # List of Stimulus objects
-        stim_samples_list = []
-        for stimseq in input:
-            for stim in stimseq.stim:
-                stim_samples_list.append(stim)
-        stim_objs_list = [Stimulus(samples, input[0].fs) for samples in stim_samples_list]
-
-        return StimulusSequence(stim_objs_list, sequence_obj)
-
-    else:
-        raise ValueError("This function can only join Stimulus, Sequence or metrical StimulusSequence objects.")
+    return Sequence(iois, metrical=True)
