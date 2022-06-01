@@ -1,10 +1,15 @@
 from stimulus import *
+from mingus.core.scales import Major
+from mingus.containers import Note, Bar
+from mingus.extra import lilypond
+import random
+import numpy as np
 
-ratios = [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.5] * 2
-seq = metrical_sequence(ratios, (4, 4), quarternote_ms=500)
+iois = [500, 250, 250, 500, 500]
+time_signature = (4, 4)
+quarternote_ms = 500
 
-notes = notes_to_freqs('CCGGAAGFFEEDDC')
-stims = [Stimulus.generate(freq=note, onramp=10, offramp=10) for note in notes]
+note_values = iois_to_notevalues(iois, time_signature, quarternote_ms)
 
-stim_seq = StimulusSequence(stims, seq)
-stim_seq.play()
+plot_note_values('./ritme.png', note_values, time_signature)
+

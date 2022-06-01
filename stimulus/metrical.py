@@ -67,3 +67,29 @@ def metrical_sequence(ratios, time_signature, quarternote_ms):
     return Sequence(iois, metrical=True)
 
 
+def iois_to_ratios(iois, time_signature, quarternote_ms):
+    iois = np.array(iois)
+
+    return iois / quarternote_ms / time_signature[1]
+
+
+def iois_to_notevalues(iois, time_signature, quarternote_ms):
+    iois = np.array(iois)
+    ratios = iois / quarternote_ms / time_signature[1]
+
+    note_values = np.array([1 // ratio for ratio in ratios])
+
+    return note_values
+
+
+if __name__ == "__main__":
+    iois = [500, 250, 250, 500, 500]
+    time_signature = (4, 4)
+    quarternote_ms = 500
+
+    print(iois_to_notevalues(iois, time_signature, quarternote_ms))
+
+
+
+
+
