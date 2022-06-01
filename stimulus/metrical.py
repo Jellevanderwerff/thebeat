@@ -1,6 +1,7 @@
 import numpy as np
 from stimulus import Sequence
 import random
+import warnings
 
 
 def _all_possibilities(nums, target):
@@ -55,9 +56,14 @@ def metrical_sequence(ratios, time_signature, quarternote_ms):
     """
     This function should return a Sequence object given a list of ratios etc.
     """
+
+    ratios = np.array(ratios)
+
+    if np.sum(ratios) % (time_signature[0]/time_signature[1]) != 0:
+        warnings.warn("The provided ratios do not result in a sequence with only whole bars.")
+
     iois = np.round(ratios * quarternote_ms * time_signature[1])
 
     return Sequence(iois, metrical=True)
-
 
 
