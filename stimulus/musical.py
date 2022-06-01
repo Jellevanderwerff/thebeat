@@ -1,6 +1,5 @@
-from mingus.containers import Note, Bar
+from mingus.containers import Note
 from mingus.core.scales import Major, NaturalMinor
-from mingus.extra import lilypond
 import re
 import os
 
@@ -48,22 +47,5 @@ def get_minor_scale_freqs(starting_note):
     return [note.to_hertz() for note in notes]
 
 
-def plot_note_values(filename, note_values, time_signature):
-
-    b = Bar(meter=time_signature)
-
-    for note_value in note_values:
-        b.place_notes('G-4', note_value)
-
-    lp = lilypond.from_Bar(
-        b) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
-
-    lilypond.save_string_and_execute_LilyPond(lp, filename, '-dbackend=eps -dresolution=600 --png -s')
-
-    filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi']
-    filenames = [filename[:-4] + x for x in filenames]
-
-    for file in filenames:
-        os.remove(file)
 
 

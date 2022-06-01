@@ -1,7 +1,12 @@
+from mingus.containers import Bar
+from mingus.extra import lilypond
 import numpy as np
 from stimulus import Sequence
 import random
 import warnings
+import os
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 
 def _all_possibilities(nums, target):
@@ -43,7 +48,6 @@ def random_metrical_sequence(n_bars, allowed_note_values, time_signature, quarte
     """
 
     iois = np.empty(0)
-    print(iois.shape)
 
     for bar in range(n_bars):
         ratios = random.choice(_all_metrical_ratios(allowed_note_values, time_signature))
@@ -82,12 +86,30 @@ def iois_to_notevalues(iois, time_signature, quarternote_ms):
     return note_values
 
 
-if __name__ == "__main__":
-    iois = [500, 250, 250, 500, 500]
-    time_signature = (4, 4)
-    quarternote_ms = 500
+def plot_note_values(filename, note_values, time_signature):
 
-    print(iois_to_notevalues(iois, time_signature, quarternote_ms))
+    b = Bar(meter=time_signature)
+
+    for note_value in note_values:
+        b.place_notes('G-4', note_value)
+
+    lp = lilypond.from_Bar(
+        b) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
+
+    lilypond.save_string_and_execute_LilyPond(lp, filename, '-dbackend=eps -dresolution=600 --png -s')
+
+    filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi']
+    filenames = [filename[:-4] + x for x in filenames]
+
+    for file in filenames:
+        os.remove(file)
+
+    img = mpimg.imread(filename)
+    plt.imshow(img)
+    plt.axis('off')
+    plt.show()
+
+
 
 
 

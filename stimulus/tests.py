@@ -5,11 +5,9 @@ from mingus.extra import lilypond
 import random
 import numpy as np
 
-iois = [500, 250, 250, 500, 500]
-time_signature = (4, 4)
-quarternote_ms = 500
+ran_seq = random_metrical_sequence(1, [4, 8, 16], (4, 4), 500)
+note_values = iois_to_notevalues(ran_seq.iois, (4, 4), 500)
 
-note_values = iois_to_notevalues(iois, time_signature, quarternote_ms)
+plot_note_values('./ritme.png', note_values, (4, 4))
 
-plot_note_values('./ritme.png', note_values, time_signature)
 
