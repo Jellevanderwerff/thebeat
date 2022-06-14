@@ -7,6 +7,7 @@ seq.plot_rhythm()
 stim = Stimulus.generate()
 
 stim_seq = StimulusSequence(stim, seq)
+print(stim_seq)
 
 stim_seq.play(loop=True, metronome=True, metronome_amplitude=0.5)
 

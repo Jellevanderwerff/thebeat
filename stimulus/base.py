@@ -715,11 +715,22 @@ class StimulusSequence(Stimulus, Sequence):
             ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
             samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
         else:
-            print('hoi')
             samples = self.samples
 
         sd.play(samples, self.fs, loop=loop)
         sd.wait()
+
+    def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
+        """
+        Writes audio to disk.
+        """
+        if metronome is True and self.time_sig and self.quarternote_ms:
+            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
+            samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
+        else:
+            samples = self.samples
+
+        wavfile.write(filename=out_path, rate=self.fs, data=samples)
 
 
 def join_sequences(iterator):
