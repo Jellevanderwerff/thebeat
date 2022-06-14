@@ -171,7 +171,7 @@ class Stimulus:
     def stop(self):
         sd.stop()
 
-    def plot(self, title="Waveform of sound"):
+    def plot_waveform(self, title="Waveform of sound"):
         plt.clf()
         frames = np.arange(self.samples.size)
         plt.plot(frames, self.samples)
@@ -261,11 +261,13 @@ class Sequence:
 
     @property
     def note_values(self):
-        if self.metrical and self.time_sig and self.quarternote_ms:
-            pass
-        else:
-            raise ValueError("This is not a metrical sequence. Use class method Sequence.from_note_values or one of "
-                             "the metrical sequence generation methods.")
+        """
+        Get note values from the IOIs, based on quarternote_ms.
+        """
+        if not self.metrical or not self.time_sig or not self.quarternote_ms:
+            raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g."
+                             "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
+                             "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
 
         ratios = self.iois / self.quarternote_ms / 4
 
@@ -475,7 +477,11 @@ class Sequence:
 
         iois = ratios * quarternote_ms
 
-        return cls(iois, metrical=True, time_sig=time_signature, quarternote_ms=quarternote_ms, n_bars=n_bars)
+        return cls(iois,
+                   metrical=True,
+                   time_sig=time_signature,
+                   quarternote_ms=quarternote_ms,
+                   n_bars=n_bars)
 
     # Manipulation methods
     def change_tempo(self, factor):
@@ -512,11 +518,20 @@ class Sequence:
             'ioi_max': np.max(self.iois)
         }
 
-    def plot_rhythm(self):
+    def plot_rhythm(self, out_filepath=None):
 
-        if not self.metrical or not self.time_sig or not self.n_bars:
-            raise ValueError('This is not a metrical sequence. Use Sequence.from_note_values or one of the'
-                             'random metrical sequence methods to generate a sequence.')
+        if not self.metrical or not self.time_sig or not self.quarternote_ms:
+            raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g. "
+                             "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
+                             "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
+
+        if out_filepath:
+            location, filename = os.path.split(out_filepath)
+            if location == '':
+                location = '.'
+        else:
+            location = '.'
+            filename = 'temp.png'
 
         # We want to split up the notes into bars first
 
@@ -539,25 +554,41 @@ class Sequence:
 
             note_i += 1
 
+        # make lilypond string
         lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
 
-        with open('temp.ly', 'w') as file:
+        # write lilypond string to file
+        with open(os.path.join(location, filename[:-4]+'.ly'), 'w') as file:
             file.write(lp)
 
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o "temp" "temp.ly"'
+        # run subprocess
+        if filename.endswith('.eps'):
+            command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
+            to_be_removed = ['.ly']
+        elif filename.endswith('.png'):
+            command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
+            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
+        else:
+            raise ValueError("Can only export .png or .eps files.")
 
-        p = subprocess.Popen(command, shell=True).wait()
+        p = subprocess.Popen(command, shell=True, cwd=location).wait()
 
-        img = mpimg.imread('temp.png')
-        plt.imshow(img)
-        plt.axis('off')
-        plt.show()
+        # show plot
+        if not out_filepath:
+            img = mpimg.imread(os.path.join(location, filename))
+            plt.imshow(img)
+            plt.axis('off')
+            plt.show()
 
-        filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.png', '.ly']
-        filenames = ['temp' + x for x in filenames]
+        # remove files
+        if out_filepath:
+            filenames = [filename[:-4] + x for x in to_be_removed]
+        else:
+            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
+            filenames = ['temp' + x for x in to_be_removed]
 
         for file in filenames:
-            os.remove(file)
+            os.remove(os.path.join(location, file))
 
 
 class StimulusSequence(Stimulus, Sequence):
@@ -590,10 +621,12 @@ class StimulusSequence(Stimulus, Sequence):
         self.stim = stimuli
 
     def __str__(self, ):
-        if self.metrical:
-            return f"Object of type StimulusSequence (metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        if self.metrical and not self.time_sig:
+            return f"Object of type StimulusSequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
+            return f"Object of type StimulusSequence (metrical version):\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
         else:
-            return f"Object of type StimulusSequence (non-metrical version).\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type StimulusSequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     def _make_stim(self, stimulus_obj):
         # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
@@ -675,9 +708,13 @@ class StimulusSequence(Stimulus, Sequence):
         n_metronome_clicks = int(duration // ioi)  # We want all the metronome clicks that fit in the seq.
         onsets = np.concatenate((np.array([0]), np.cumsum([ioi] * (n_metronome_clicks - 1))))
 
-
-        # todo resample if fs is not same as self.fs (
         fs, metronome_samples = wavfile.read('metronome.wav')
+
+        if fs != self.fs:
+            resample_factor = float(self.fs) / float(fs)
+            resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
+            metronome_samples = resampled
+            fs = self.fs
 
         # change amplitude if necessary
         metronome_samples *= metronome_amplitude
@@ -711,7 +748,7 @@ class StimulusSequence(Stimulus, Sequence):
         pass
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        if metronome is True and self.time_sig and self.quarternote_ms:
+        if metronome and self.time_sig and self.quarternote_ms:
             ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
             samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
         else:
