@@ -2,7 +2,11 @@ import numpy as np
 from scipy.signal import resample, square
 from scipy.io import wavfile
 import sounddevice as sd
+from mingus.containers import Bar, Track
+from mingus.extra import lilypond
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import os
 
 
 class Stimulus:
@@ -223,10 +227,13 @@ class Sequence:
 
     """
 
-    def __init__(self, iois, metrical=False):
+    def __init__(self, iois, metrical=False, n_bars=None, time_sig=None, quarternote_ms=None):
         # If metrical=True, that means there's an additional IOI for the final event.
 
         self.metrical = metrical
+        self.time_sig = time_sig  # Used for metrical sequences
+        self.quarternote_ms = quarternote_ms  # Used for metrical sequences
+        self.n_bars = n_bars
 
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
@@ -234,8 +241,10 @@ class Sequence:
             self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
-        if self.metrical:
+        if self.metrical and not self.time_sig:
             return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
+            return f"Object of type Sequence (metrical version):\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
         else:
             return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
@@ -248,6 +257,20 @@ class Sequence:
             return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
         else:
             return np.cumsum(np.append(0, self.iois), dtype=np.float32)
+
+    @property
+    def note_values(self):
+        if self.metrical and self.time_sig and self.quarternote_ms:
+            pass
+        else:
+            raise ValueError("This is not a metrical sequence. Use class method Sequence.from_note_values or one of "
+                             "the metrical sequence generation methods.")
+
+        ratios = self.iois / self.quarternote_ms / self.time_sig[1]
+
+        note_values = np.array([1 // ratio for ratio in ratios])
+
+        return note_values
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
@@ -438,6 +461,21 @@ class Sequence:
 
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
+    @classmethod
+    def from_note_values(cls, note_values, time_signature, quarternote_ms):
+        ratios = np.array([1/note * time_signature[1] for note in note_values])
+
+        n_bars = np.sum(ratios) / time_signature[0]
+
+        if n_bars % 1 != 0:
+            raise ValueError("The provided note values do not amount to whole bars.")
+        else:
+            n_bars = int(n_bars)
+
+        iois = ratios * quarternote_ms
+
+        return cls(iois, metrical=True, time_sig=time_signature, quarternote_ms=quarternote_ms, n_bars=n_bars)
+
     # Manipulation methods
     def change_tempo(self, factor):
         """
@@ -472,6 +510,41 @@ class Sequence:
             'ioi_min': np.min(self.iois),
             'ioi_max': np.max(self.iois)
         }
+
+    def plot_notes(self):
+        # We want to split up the notes into bars first
+
+        t = Track()
+
+        # create initial bar
+        b = Bar(meter=self.time_sig)
+        # keep track of the index of the note_values
+        note_i = 0
+        # loop over the note values of the sequence
+        for note_value in self.note_values:
+            b.place_notes('G-4', self.note_values[note_i])
+            # if bar is full, create new bar and add bar to track
+            if b.current_beat == 1:
+                t.add_bar(b)
+                b = Bar(meter=self.time_sig)
+
+            note_i += 1
+
+        lp = lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
+
+        lilypond.save_string_and_execute_LilyPond(lp, 'temp.png', '-dbackend=eps -dresolution=600 --png -s')
+
+        img = mpimg.imread('temp.png')
+        plt.imshow(img)
+        plt.axis('off')
+        plt.show()
+
+        filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.png']
+        filenames = ['temp' + x for x in filenames]
+
+        for file in filenames:
+            os.remove(file)
+
 
 
 class StimulusSequence(Stimulus, Sequence):
