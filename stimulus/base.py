@@ -266,7 +266,7 @@ class Sequence:
             raise ValueError("This is not a metrical sequence. Use class method Sequence.from_note_values or one of "
                              "the metrical sequence generation methods.")
 
-        ratios = self.iois / self.quarternote_ms / self.time_sig[1]
+        ratios = self.iois / self.quarternote_ms / 4
 
         note_values = np.array([1 // ratio for ratio in ratios])
 
@@ -511,20 +511,27 @@ class Sequence:
             'ioi_max': np.max(self.iois)
         }
 
-    def plot_notes(self):
+    def plot_rhythm(self):
         # We want to split up the notes into bars first
+
+        if not self.metrical or not self.time_sig or not self.n_bars:
+            raise ValueError('This is not a metrical sequence. Use Sequence.from_note_values or one of the'
+                             'random metrical sequence methods to generate a sequence.')
+
+        # e.g. for (4, 4) that's 1, for (4, 8), that's 0.5 etc.
+        full_bar = self.time_sig[0] * (1/self.time_sig[1])
 
         t = Track()
 
         # create initial bar
         b = Bar(meter=self.time_sig)
-        # keep track of the index of the note_values
+        # keep track of the index of the note_value
         note_i = 0
         # loop over the note values of the sequence
         for note_value in self.note_values:
             b.place_notes('G-4', self.note_values[note_i])
             # if bar is full, create new bar and add bar to track
-            if b.current_beat == 1:
+            if b.current_beat == full_bar:
                 t.add_bar(b)
                 b = Bar(meter=self.time_sig)
 
@@ -532,7 +539,7 @@ class Sequence:
 
         lp = lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
 
-        lilypond.save_string_and_execute_LilyPond(lp, 'temp.png', '-dbackend=eps -dresolution=600 --png -s')
+        lilypond.save_string_and_execute_LilyPond(lp, 'temp.png', '-dbackend=eps -dresolution=600 --png --silent')
 
         img = mpimg.imread('temp.png')
         plt.imshow(img)
@@ -544,7 +551,6 @@ class Sequence:
 
         for file in filenames:
             os.remove(file)
-
 
 
 class StimulusSequence(Stimulus, Sequence):
@@ -664,6 +670,13 @@ class StimulusSequence(Stimulus, Sequence):
     def change_amplitude(self, factor):
         super().change_amplitude(factor)
         self._make_sound(self.stim, self.onsets)
+
+    def plot_music(self):
+        """
+        I think i want a musical=True flag, so that the notes are saved when generating random notes.
+        Then combined with metrical=True etc., we know of a sequence whether we can plot it as music.
+        """
+        pass
 
 
 def join_sequences(iterator):
