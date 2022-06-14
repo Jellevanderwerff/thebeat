@@ -7,6 +7,7 @@ from mingus.extra import lilypond
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
+import subprocess
 
 
 class Stimulus:
@@ -512,11 +513,12 @@ class Sequence:
         }
 
     def plot_rhythm(self):
-        # We want to split up the notes into bars first
 
         if not self.metrical or not self.time_sig or not self.n_bars:
             raise ValueError('This is not a metrical sequence. Use Sequence.from_note_values or one of the'
                              'random metrical sequence methods to generate a sequence.')
+
+        # We want to split up the notes into bars first
 
         # e.g. for (4, 4) that's 1, for (4, 8), that's 0.5 etc.
         full_bar = self.time_sig[0] * (1/self.time_sig[1])
@@ -537,16 +539,21 @@ class Sequence:
 
             note_i += 1
 
-        lp = lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
+        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
 
-        lilypond.save_string_and_execute_LilyPond(lp, 'temp.png', '-dbackend=eps -dresolution=600 --png --silent')
+        with open('temp.ly', 'w') as file:
+            file.write(lp)
+
+        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o "temp" "temp.ly"'
+
+        p = subprocess.Popen(command, shell=True).wait()
 
         img = mpimg.imread('temp.png')
         plt.imshow(img)
         plt.axis('off')
         plt.show()
 
-        filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.png']
+        filenames = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.png', '.ly']
         filenames = ['temp' + x for x in filenames]
 
         for file in filenames:
@@ -565,6 +572,9 @@ class StimulusSequence(Stimulus, Sequence):
 
         # Save whether passed sequence is metrical or not
         self.metrical = seq_obj.metrical
+        self.time_sig = seq_obj.time_sig
+        self.quarternote_ms = seq_obj.quarternote_ms
+        self.n_bars = seq_obj.n_bars
 
         # Use internal _make_stim method to combine stimulus_obj and seq_obj
         # It makes stimuli which are a nested 1-D array (i.e. for each onset a 1-D array of sound samples)
@@ -658,6 +668,28 @@ class StimulusSequence(Stimulus, Sequence):
         self.samples = samples
         self.stim = stimuli
 
+    def _get_sound_with_metronome(self, ioi, metronome_amplitude):
+        current_samples = self.samples
+        duration = self.get_duration() * 1000
+
+        n_metronome_clicks = int(duration // ioi)  # We want all the metronome clicks that fit in the seq.
+        onsets = np.concatenate((np.array([0]), np.cumsum([ioi] * (n_metronome_clicks - 1))))
+
+
+        # todo resample if fs is not same as self.fs (
+        fs, metronome_samples = wavfile.read('metronome.wav')
+
+        # change amplitude if necessary
+        metronome_samples *= metronome_amplitude
+
+        for onset in onsets:
+            start_pos = int(onset * self.fs / 1000)
+            end_pos = int(start_pos + metronome_samples.size)
+            new_samples = current_samples[start_pos:end_pos] + metronome_samples
+            current_samples[start_pos:end_pos] = new_samples   # we add the metronome sound to the existing sound
+
+        return current_samples
+
     # Override Sequence and Stimulus manipulation methods so sound is regenerated when something changes
     def change_tempo(self, factor):
         super().change_tempo(factor)
@@ -677,6 +709,17 @@ class StimulusSequence(Stimulus, Sequence):
         Then combined with metrical=True etc., we know of a sequence whether we can plot it as music.
         """
         pass
+
+    def play(self, loop=False, metronome=False, metronome_amplitude=1):
+        if metronome is True and self.time_sig and self.quarternote_ms:
+            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
+            samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
+        else:
+            print('hoi')
+            samples = self.samples
+
+        sd.play(samples, self.fs, loop=loop)
+        sd.wait()
 
 
 def join_sequences(iterator):
