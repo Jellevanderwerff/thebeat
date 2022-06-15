@@ -2,13 +2,8 @@ import numpy as np
 from scipy.signal import resample, square
 from scipy.io import wavfile
 import sounddevice as sd
-from mingus.containers import Bar, Track
-from mingus.extra import lilypond
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import os
-import subprocess
-from stimulus import *
+import stimulus
 
 
 class Stimulus:
@@ -156,6 +151,12 @@ class Stimulus:
 
         # Return class
         return cls(signal, fs)
+
+    @classmethod
+    def rest(cls, duration=50, fs=44100):
+        samples = np.zeros(duration // (1000 * fs), dtype='float32')
+
+        return cls(samples, fs)
 
     # Manipulation
 
@@ -527,13 +528,16 @@ class StimulusSequence(Stimulus, Sequence):
     def _make_stim(self, stimulus_obj):
         # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
         # The all_stimuli variable will later be used to generate the audio.
-        if isinstance(stimulus_obj, list):
+        if isinstance(stimulus_obj, (list)):
             # Check whether length of stimulus_obj is the same as onsets
+
+            # If we're importing a Melody object, we need to access the list of stims inside it
+
             if not len(self.onsets) == len(stimulus_obj):
                 raise ValueError("The number of Stimulus objects passed does not equal the number of onsets! "
                                  "Remember that you need one more Stimulus than the number of IOIs.")
 
-            all_stimuli = np.array([snd.stim for snd in stimulus_obj])
+            all_stimuli = np.array([snd.stim for snd in stimulus_obj], dtype=object)
             all_fs = [snd.fs for snd in stimulus_obj]
             all_dtypes = [snd.dtype for snd in stimulus_obj]
 
@@ -556,7 +560,8 @@ class StimulusSequence(Stimulus, Sequence):
             self.dtype = stimulus_obj.dtype
 
         else:
-            raise AttributeError("Pass a Stimulus object or a list of Stimulus objects as the second argument.")
+            raise AttributeError("Pass a Stimulus object, a Melody object, or a list of Stimulus objects as the "
+                                 "second argument.")
 
         return all_stimuli
 
