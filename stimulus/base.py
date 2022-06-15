@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
 import subprocess
+from stimulus import *
 
 
 class Stimulus:
@@ -228,13 +229,10 @@ class Sequence:
 
     """
 
-    def __init__(self, iois, metrical=False, n_bars=None, time_sig=None, quarternote_ms=None):
+    def __init__(self, iois, metrical=False):
         # If metrical=True, that means there's an additional IOI for the final event.
 
         self.metrical = metrical
-        self.time_sig = time_sig  # Used for metrical sequences
-        self.quarternote_ms = quarternote_ms  # Used for metrical sequences
-        self.n_bars = n_bars
 
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
@@ -242,10 +240,8 @@ class Sequence:
             self.iois = np.array(iois, dtype=np.float32)
 
     def __str__(self):
-        if self.metrical and not self.time_sig:
+        if self.metrical:
             return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
-        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
-            return f"Object of type Sequence (metrical version):\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
         else:
             return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
@@ -258,22 +254,6 @@ class Sequence:
             return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
         else:
             return np.cumsum(np.append(0, self.iois), dtype=np.float32)
-
-    @property
-    def note_values(self):
-        """
-        Get note values from the IOIs, based on quarternote_ms.
-        """
-        if not self.metrical or not self.time_sig or not self.quarternote_ms:
-            raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g."
-                             "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
-                             "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
-
-        ratios = self.iois / self.quarternote_ms / 4
-
-        note_values = np.array([1 // ratio for ratio in ratios])
-
-        return note_values
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
@@ -464,25 +444,6 @@ class Sequence:
 
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
-    @classmethod
-    def from_note_values(cls, note_values, time_signature, quarternote_ms):
-        ratios = np.array([1/note * time_signature[1] for note in note_values])
-
-        n_bars = np.sum(ratios) / time_signature[0]
-
-        if n_bars % 1 != 0:
-            raise ValueError("The provided note values do not amount to whole bars.")
-        else:
-            n_bars = int(n_bars)
-
-        iois = ratios * quarternote_ms
-
-        return cls(iois,
-                   metrical=True,
-                   time_sig=time_signature,
-                   quarternote_ms=quarternote_ms,
-                   n_bars=n_bars)
-
     # Manipulation methods
     def change_tempo(self, factor):
         """
@@ -518,78 +479,6 @@ class Sequence:
             'ioi_max': np.max(self.iois)
         }
 
-    def plot_rhythm(self, out_filepath=None):
-
-        if not self.metrical or not self.time_sig or not self.quarternote_ms:
-            raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g. "
-                             "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
-                             "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
-
-        if out_filepath:
-            location, filename = os.path.split(out_filepath)
-            if location == '':
-                location = '.'
-        else:
-            location = '.'
-            filename = 'temp.png'
-
-        # We want to split up the notes into bars first
-
-        # e.g. for (4, 4) that's 1, for (4, 8), that's 0.5 etc.
-        full_bar = self.time_sig[0] * (1/self.time_sig[1])
-
-        t = Track()
-
-        # create initial bar
-        b = Bar(meter=self.time_sig)
-        # keep track of the index of the note_value
-        note_i = 0
-        # loop over the note values of the sequence
-        for note_value in self.note_values:
-            b.place_notes('G-4', self.note_values[note_i])
-            # if bar is full, create new bar and add bar to track
-            if b.current_beat == full_bar:
-                t.add_bar(b)
-                b = Bar(meter=self.time_sig)
-
-            note_i += 1
-
-        # make lilypond string
-        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n}'
-
-        # write lilypond string to file
-        with open(os.path.join(location, filename[:-4]+'.ly'), 'w') as file:
-            file.write(lp)
-
-        # run subprocess
-        if filename.endswith('.eps'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['.ly']
-        elif filename.endswith('.png'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-        else:
-            raise ValueError("Can only export .png or .eps files.")
-
-        p = subprocess.Popen(command, shell=True, cwd=location).wait()
-
-        # show plot
-        if not out_filepath:
-            img = mpimg.imread(os.path.join(location, filename))
-            plt.imshow(img)
-            plt.axis('off')
-            plt.show()
-
-        # remove files
-        if out_filepath:
-            filenames = [filename[:-4] + x for x in to_be_removed]
-        else:
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-            filenames = ['temp' + x for x in to_be_removed]
-
-        for file in filenames:
-            os.remove(os.path.join(location, file))
-
 
 class StimulusSequence(Stimulus, Sequence):
     """
@@ -603,9 +492,16 @@ class StimulusSequence(Stimulus, Sequence):
 
         # Save whether passed sequence is metrical or not
         self.metrical = seq_obj.metrical
-        self.time_sig = seq_obj.time_sig
-        self.quarternote_ms = seq_obj.quarternote_ms
-        self.n_bars = seq_obj.n_bars
+
+        # If we inherit from Rhythm class, save time_sig etc. as well.
+        if seq_obj.__class__.__name__ == "Rhythm":
+            self.time_sig = seq_obj.time_sig
+            self.quarternote_ms = seq_obj.quarternote_ms
+            self.n_bars = seq_obj.n_bars
+        else:
+            self.time_sig = None
+            self.quarternote_ms = None
+            self.n_bars = None
 
         # Use internal _make_stim method to combine stimulus_obj and seq_obj
         # It makes stimuli which are a nested 1-D array (i.e. for each onset a 1-D array of sound samples)
