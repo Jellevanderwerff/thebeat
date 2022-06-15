@@ -91,7 +91,7 @@ class Stimulus:
             pass
         else:
             raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
-                   "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+                             "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
         if new_fs is None or new_fs == file_fs:
             fs = file_fs
@@ -124,7 +124,7 @@ class Stimulus:
 
         """
         t = duration / 1000
-        samples = np.linspace(0, t, int(fs*t), endpoint=False, dtype=np.float32)
+        samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float32)
         if osc == 'sine':
             signal = amplitude * np.sin(2 * np.pi * freq * samples)
         elif osc == 'square':
@@ -230,7 +230,7 @@ class Sequence:
 
     """
 
-    def __init__(self, iois, metrical=False):
+    def __init__(self, iois, metrical=False, played=None):
         # If metrical=True, that means there's an additional IOI for the final event.
 
         self.metrical = metrical
@@ -240,11 +240,20 @@ class Sequence:
         else:
             self.iois = np.array(iois, dtype=np.float32)
 
+        # Deal with 'played'
+        if played is None:
+            self.played = [True] * len(self.onsets)
+        elif len(played) == len(self.onsets):
+            self.played = played
+        else:
+            raise ValueError("The 'played' list should contain an equal number of "
+                             "booleans as the number of onsets.")
+
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played}"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played} "
 
     @property
     def onsets(self):
@@ -486,15 +495,22 @@ class StimulusSequence(Stimulus, Sequence):
     StimulusSequence class which inherits from Stimulus and Sequence
     """
 
-    def __init__(self, stimulus_obj, seq_obj):
+    def __init__(self, stimulus_obj, seq_obj, played=None):
 
         # Initialize parent Sequence class, so we can use self.onsets etc.
-        Sequence.__init__(self, seq_obj.iois)
+        Sequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
+
+        # If no list of booleans is passed during instantiation of StimulusSequence, we use the one from
+        # the passed seq_obj. If one is passed, we use that one.
+        if played is None:
+            self.played = seq_obj.played
+        else:
+            self.played = played
 
         # Save whether passed sequence is metrical or not
         self.metrical = seq_obj.metrical
 
-        # If we inherit from Rhythm class, save time_sig etc. as well.
+        # If passed a Rhythm object, save some additional attributes:
         if seq_obj.__class__.__name__ == "Rhythm":
             self.time_sig = seq_obj.time_sig
             self.quarternote_ms = seq_obj.quarternote_ms
@@ -528,7 +544,7 @@ class StimulusSequence(Stimulus, Sequence):
     def _make_stim(self, stimulus_obj):
         # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
         # The all_stimuli variable will later be used to generate the audio.
-        if isinstance(stimulus_obj, (list)):
+        if isinstance(stimulus_obj, list):
             # Check whether length of stimulus_obj is the same as onsets
 
             # If we're importing a Melody object, we need to access the list of stims inside it
@@ -585,18 +601,21 @@ class StimulusSequence(Stimulus, Sequence):
 
         samples = np.zeros(array_length, dtype=self.dtype)
 
-        stimuli_with_onsets = list(zip(stimuli, onsets))
+        stimuli_with_onsets_played = list(zip(stimuli, onsets, self.played))
 
-        if any(stimuli_with_onsets[i][0].size / self.fs * 1000 > np.diff(onsets)[i]
-               for i in range(len(stimuli_with_onsets) - 1)):
-            raise ValueError("The duration of one of the Stimuluss is longer than one of the IOIs. "
+        if any(stimuli_with_onsets_played[i][0].size / self.fs * 1000 > np.diff(onsets)[i]
+               for i in range(len(stimuli_with_onsets_played) - 1)):
+            raise ValueError("The duration of one of the Stimulus objects is longer than one of the IOIs. "
                              "The events will overlap: "
                              "either use different IOIs, or use a shorter Stimulus.")
 
-        for stimulus, onset in stimuli_with_onsets:
+        for stimulus, onset, played in stimuli_with_onsets_played:
             start_pos = int(onset * self.fs / 1000)
             end_pos = int(start_pos + stimulus.size)
-            samples[start_pos:end_pos] = stimulus
+            if played is True:
+                samples[start_pos:end_pos] = stimulus
+            elif played is False:
+                samples[start_pos:end_pos] = np.zeros(stimulus.size)
 
         # then save the sound
         self.samples = samples
@@ -624,7 +643,7 @@ class StimulusSequence(Stimulus, Sequence):
             start_pos = int(onset * self.fs / 1000)
             end_pos = int(start_pos + metronome_samples.size)
             new_samples = current_samples[start_pos:end_pos] + metronome_samples
-            current_samples[start_pos:end_pos] = new_samples   # we add the metronome sound to the existing sound
+            current_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
 
         return current_samples
 
@@ -640,13 +659,6 @@ class StimulusSequence(Stimulus, Sequence):
     def change_amplitude(self, factor):
         super().change_amplitude(factor)
         self._make_sound(self.stim, self.onsets)
-
-    def plot_music(self):
-        """
-        I think i want a musical=True flag, so that the notes are saved when generating random notes.
-        Then combined with metrical=True etc., we know of a sequence whether we can plot it as music.
-        """
-        pass
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         if metronome and self.time_sig and self.quarternote_ms:
@@ -684,7 +696,7 @@ def join_sequences(iterator):
     if not all(isinstance(x, Sequence) for x in iterator):
         raise ValueError("This function can only join multiple Sequence objects.")
 
-    # Sequence and StimulusSequence objects need to be metrical:
+    # Sequence objects need to be metrical:
     if not all(x.metrical for x in iterator):
         raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
 
