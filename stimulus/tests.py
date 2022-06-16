@@ -7,7 +7,11 @@ from skimage import io, img_as_float
 import matplotlib.pyplot as plt
 
 
-rhythm = Rhythm.from_note_values([4, 4, 4, 4], (4, 4), quarternote_ms=500)
+rhythm = random_rhythmic_sequence(1, [4, 8, 16], (4, 4), 500)
 
-rhythm.plot_rhythm()
+rhythm.plot_rhythm(print_staff=False)
+
+
+
+
 

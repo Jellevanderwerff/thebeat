@@ -95,7 +95,7 @@ class Rhythm(Sequence):
                    n_bars=n_bars,
                    played=played)
 
-    def plot_rhythm(self, out_filepath=None):
+    def plot_rhythm(self, out_filepath=None, print_staff=True):
 
         # create initial bar
         t = Track()
@@ -131,7 +131,7 @@ class Rhythm(Sequence):
             b.place_rest(rest_value)
             t.add_bar(b)
 
-        _plot_lp(t, out_filepath, print_staff=False)
+        _plot_lp(t, out_filepath, print_staff=print_staff)
 
 
 def _all_possibilities(nums, target):

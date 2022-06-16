@@ -9,6 +9,7 @@ import subprocess
 from mingus.extra import lilypond
 from mingus.containers import Track, Bar, Note
 import os
+import skimage
 
 
 class Stimulus:
@@ -747,12 +748,13 @@ def _plot_lp(t, out_filepath, print_staff: bool):
         location = '.'
         filename = 'temp.png'
 
+
     # make lilypond string
     if print_staff is True:
         lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
                                                             '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
                                                             '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    if print_staff is False:
+    elif print_staff is False:
         lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
                                                                 '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
                                                                 '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
@@ -775,12 +777,33 @@ def _plot_lp(t, out_filepath, print_staff: bool):
 
     p = subprocess.Popen(command, shell=True, cwd=location).wait()
 
+    image = skimage.img_as_float(skimage.io.imread(filename))
+
+    # Select all pixels almost equal to white
+    # (almost, because there are some edge effects in jpegs
+    # so the boundaries may not be exactly white)
+    white = np.array([1, 1, 1])
+    mask = np.abs(image - white).sum(axis=2) < 0.05
+
+    # Find the bounding box of those pixels
+    coords = np.array(np.nonzero(~mask))
+    top_left = np.min(coords, axis=1)
+    bottom_right = np.max(coords, axis=1)
+
+    out = image[top_left[0]:bottom_right[0],
+          top_left[1]:bottom_right[1]]
+
     # show plot
     if not out_filepath:
-        img = mpimg.imread(os.path.join(location, filename))
-        plt.imshow(img)
+        plt.imshow(out)
         plt.axis('off')
         plt.show()
+    elif filename.endswith('.png'):
+        plt.imshow(out)
+        plt.axis('off')
+        plt.savefig(filename, bbox_inches='tight')
+    else:
+        pass
 
     # remove files
     if out_filepath:
