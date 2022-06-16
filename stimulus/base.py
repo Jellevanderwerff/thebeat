@@ -66,7 +66,9 @@ class Stimulus:
         return f"Object of type Stimulus.\nStimulus duration: {self.get_duration()} seconds."
 
     @classmethod
-    def from_wav(cls, wav_filepath: Union[Path, str], new_fs: int = None):
+    def from_wav(cls, wav_filepath: Union[os.PathLike, str],
+                 new_fs: int = None,
+                 known_hz: int = None):
         """
 
         This method loads a stimulus from a PCM .wav file, and reads in the samples.
@@ -74,7 +76,7 @@ class Stimulus:
 
         Parameters
         ----------
-        freq
+        known_hz
         wav_filepath : str or Path object
             The path to the wave file
         new_fs : int
@@ -112,7 +114,7 @@ class Stimulus:
         else:
             raise ValueError("Error while comparing old and new sampling frequencies.")
 
-        return cls(samples, fs)
+        return cls(samples, fs, known_hz)
 
     @classmethod
     def generate(cls, freq=440, fs=44100, duration=50, amplitude=1.0, osc='sine', onramp=0, offramp=0):
