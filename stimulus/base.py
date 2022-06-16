@@ -4,9 +4,7 @@ from scipy.io import wavfile
 import sounddevice as sd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import stimulus
 from typing import Union
-from pathlib import Path
 import subprocess
 from mingus.extra import lilypond
 from mingus.containers import Track, Bar, Note
@@ -119,20 +117,6 @@ class Stimulus:
     @classmethod
     def generate(cls, freq=440, fs=44100, duration=50, amplitude=1.0, osc='sine', onramp=0, offramp=0):
         """
-
-        Parameters
-        ----------
-        freq
-        fs
-        duration
-        amplitude
-        osc
-        onramp
-        offramp
-
-        Returns
-        -------
-
         """
         t = duration / 1000
         samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float32)
@@ -750,7 +734,10 @@ class StimulusSequence(Stimulus, Sequence):
         wavfile.write(filename=out_path, rate=self.fs, data=samples)
 
 
-def _plot_lp(t, out_filepath):
+def _plot_lp(t, out_filepath, print_staff: bool):
+    """
+    Internal method for plotting a mingus Track object via lilypond.
+    """
     # This is the same each time:
     if out_filepath:
         location, filename = os.path.split(out_filepath)
@@ -761,9 +748,16 @@ def _plot_lp(t, out_filepath):
         filename = 'temp.png'
 
     # make lilypond string
-    lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
+    if print_staff is True:
+        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
                                                             '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
                                                             '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
+    if print_staff is False:
+        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
+                                                                '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
+                                                                '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
+    else:
+        raise ValueError("Wrong value specified for print_staff.")
 
     # write lilypond string to file
     with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:

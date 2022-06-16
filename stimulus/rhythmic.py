@@ -131,7 +131,7 @@ class Rhythm(Sequence):
             b.place_rest(rest_value)
             t.add_bar(b)
 
-        _plot_lp(t, out_filepath)
+        _plot_lp(t, out_filepath, print_staff=False)
 
 
 def _all_possibilities(nums, target):
@@ -170,7 +170,7 @@ def _all_rhythmic_ratios(allowed_note_values, time_signature):
     return out_list
 
 
-def random_rhythmic_sequence(n_bars, allowed_note_values, time_signature, quarternote_ms, random_rests=False):
+def random_rhythmic_sequence(n_bars, allowed_note_values, time_signature, quarternote_ms, n_random_rests=0):
     """
     This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
     """
@@ -185,8 +185,11 @@ def random_rhythmic_sequence(n_bars, allowed_note_values, time_signature, quarte
 
         iois = np.concatenate((iois, new_iois), axis=None)
 
-    if random_rests:
-        played = random.choices([True, False], k=len(iois))
+    if n_random_rests > 0:
+        if n_random_rests > len(iois):
+            raise ValueError("You asked for more rests than there were events in the sequence.")
+        played = [True] * (len(iois) - n_random_rests) + [False] * n_random_rests
+        random.shuffle(played)
     else:
         played = [True] * len(iois)
 
