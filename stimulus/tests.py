@@ -1,22 +1,13 @@
 from stimulus import *
+import random
+from mingus.containers import Note
 
-rhythm1 = random_rhythmic_sequence(1,
-                                   allowed_note_values=[4, 8, 16],
-                                   time_signature=(4, 4),
-                                   quarternote_ms=500)
+notes = get_major_scale_freqs('G')
 
-rhythm2 = random_rhythmic_sequence(1,
-                                   allowed_note_values=[4, 8, 16],
-                                   time_signature=(4, 4),
-                                   quarternote_ms=500)
+seq = random_rhythmic_sequence(1, [2, 4, 8, 16], (3, 4), quarternote_ms=500)
+stims = [Stimulus.generate(freq=random.choice(notes), offramp=10) for onset in seq.onsets]
 
+stimseq = StimulusSequence(stims, seq)
 
-rhythm_joined = join_rhythms([rhythm1, rhythm2])
-
-
-print(rhythm_joined.onsets)
-
-stimseq = StimulusSequence(Stimulus.generate(), rhythm_joined)
-
-stimseq.play()
-
+stimseq.plot_music(key='G')
+stimseq.play(metronome=True)

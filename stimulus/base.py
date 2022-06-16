@@ -3,7 +3,14 @@ from scipy.signal import resample, square
 from scipy.io import wavfile
 import sounddevice as sd
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import stimulus
+from typing import Union
+from pathlib import Path
+import subprocess
+from mingus.extra import lilypond
+from mingus.containers import Track, Bar, Note
+import os
 
 
 class Stimulus:
@@ -48,17 +55,18 @@ class Stimulus:
 
     """
 
-    def __init__(self, samples, fs: int):
+    def __init__(self, samples, fs: int, freq: int = None):
         self.dtype = np.float32
         self.stim = samples
         self.samples = samples
         self.fs = fs
+        self.freq = freq
 
     def __str__(self):
         return f"Object of type Stimulus.\nStimulus duration: {self.get_duration()} seconds."
 
     @classmethod
-    def from_wav(cls, wav_filepath, new_fs: int = None):
+    def from_wav(cls, wav_filepath: Union[Path, str], new_fs: int = None):
         """
 
         This method loads a stimulus from a PCM .wav file, and reads in the samples.
@@ -66,6 +74,7 @@ class Stimulus:
 
         Parameters
         ----------
+        freq
         wav_filepath : str or Path object
             The path to the wave file
         new_fs : int
@@ -149,8 +158,8 @@ class Stimulus:
         elif onramp == 0:
             pass
 
-        # Return class
-        return cls(signal, fs)
+        # Return class, and save the used frequency
+        return cls(signal, fs, freq=freq)
 
     @classmethod
     def rest(cls, duration=50, fs=44100):
@@ -533,6 +542,9 @@ class StimulusSequence(Stimulus, Sequence):
         # Then save stimuli for later use
         self.stim = stimuli
 
+        # Also save note_values
+        self.note_values = seq_obj.note_values
+
     def __str__(self, ):
         if self.metrical and not self.time_sig:
             return f"Object of type StimulusSequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
@@ -568,12 +580,22 @@ class StimulusSequence(Stimulus, Sequence):
             else:
                 self.dtype = all_dtypes[0]
 
+            # Check whether Stimulus objects were generated and whether they contain a
+            # frequency. If so, save those freqs for later use (e.g. in plotting).
+            if all(x.freq for x in stimulus_obj):
+                self.freqs = [x.freq for x in stimulus_obj]
+
         # If a single Stimulus object was passed: Check a number of things (overlap etc.) and save fs and dtype.
         # Then make an all_stimuli variable which holds the samples of the Stimulus object n onsets times.
         elif isinstance(stimulus_obj, Stimulus):
             all_stimuli = np.tile(np.array(stimulus_obj.stim), (len(self.onsets), 1))
             self.fs = stimulus_obj.fs
             self.dtype = stimulus_obj.dtype
+
+            # Check whether Stimulus objects was generated and whether it contains a
+            # frequency. If so, save a list of those freqs for later use (e.g. in plotting).
+            if stimulus_obj.freq:
+                self.freqs = [stimulus_obj.freq] * len(self.onsets)
 
         else:
             raise AttributeError("Pass a Stimulus object, a Melody object, or a list of Stimulus objects as the "
@@ -661,7 +683,7 @@ class StimulusSequence(Stimulus, Sequence):
         self._make_sound(self.stim, self.onsets)
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        if metronome and self.time_sig and self.quarternote_ms:
+        if metronome is True and self.time_sig and self.quarternote_ms:
             ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
             samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
         else:
@@ -669,6 +691,49 @@ class StimulusSequence(Stimulus, Sequence):
 
         sd.play(samples, self.fs, loop=loop)
         sd.wait()
+
+    def plot_music(self, out_filepath=None, key='C'):
+        if not self.freqs:
+            raise ValueError("Can, for now, only plot Stimulus objects that were generated using Stimulus.generate(), "
+                             "and")
+
+        # create initial bar
+        t = Track()
+        b = Bar(key=key, meter=self.time_sig)
+
+        # keep track of the index of the note_value
+        note_i = 0
+
+        values_freqs_played = list(zip(self.note_values, self.freqs, self.played))
+
+        for note_value, freq, played in values_freqs_played:
+            if played is True:
+                note = Note()
+                note.from_hertz(freq)
+                b.place_notes(note.name, self.note_values[note_i])
+            elif played is False:
+                b.place_rest(self.note_values[note_i])
+
+            # if bar is full, create new bar and add bar to track
+            if b.current_beat == b.length:
+                t.add_bar(b)
+                b = Bar(meter=self.time_sig)
+
+            note_i += 1
+
+        # If final bar was not full yet, add a rest for the remaining duration
+        if b.current_beat % 1 != 0:
+            rest_value = 1 / b.space_left()
+            if round(rest_value) != rest_value:
+                raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
+                                 "be (easily) captured in musical notation. This for instance happens when "
+                                 "using one of the tempo manipulation methods.")
+
+            b.place_rest(rest_value)
+            t.add_bar(b)
+
+        # Call internal plot method to plot the track
+        _plot_lp(t, out_filepath)
 
     def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
         """
@@ -681,6 +746,55 @@ class StimulusSequence(Stimulus, Sequence):
             samples = self.samples
 
         wavfile.write(filename=out_path, rate=self.fs, data=samples)
+
+
+def _plot_lp(t, out_filepath):
+    # This is the same each time:
+    if out_filepath:
+        location, filename = os.path.split(out_filepath)
+        if location == '':
+            location = '.'
+    else:
+        location = '.'
+        filename = 'temp.png'
+
+    # make lilypond string
+    lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
+                                                            '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
+                                                            '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
+
+    # write lilypond string to file
+    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
+        file.write(lp)
+
+    # run subprocess
+    if filename.endswith('.eps'):
+        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
+        to_be_removed = ['.ly']
+    elif filename.endswith('.png'):
+        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
+        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
+    else:
+        raise ValueError("Can only export .png or .eps files.")
+
+    p = subprocess.Popen(command, shell=True, cwd=location).wait()
+
+    # show plot
+    if not out_filepath:
+        img = mpimg.imread(os.path.join(location, filename))
+        plt.imshow(img)
+        plt.axis('off')
+        plt.show()
+
+    # remove files
+    if out_filepath:
+        filenames = [filename[:-4] + x for x in to_be_removed]
+    else:
+        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
+        filenames = ['temp' + x for x in to_be_removed]
+
+    for file in filenames:
+        os.remove(os.path.join(location, file))
 
 
 def join_sequences(iterator):

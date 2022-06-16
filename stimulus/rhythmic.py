@@ -2,12 +2,8 @@ from mingus.containers import Bar, Track, Instrument
 from mingus.extra import lilypond
 import numpy as np
 from stimulus import Sequence
+from stimulus.base import _plot_lp
 import random
-import warnings
-import os
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import subprocess
 
 
 class Rhythm(Sequence):
@@ -101,19 +97,8 @@ class Rhythm(Sequence):
 
     def plot_rhythm(self, out_filepath=None):
 
-        if out_filepath:
-            location, filename = os.path.split(out_filepath)
-            if location == '':
-                location = '.'
-        else:
-            location = '.'
-            filename = 'temp.png'
-
-        # We want to split up the notes into bars first
-
-        t = Track()
-
         # create initial bar
+        t = Track()
         b = Bar(meter=self.time_sig)
 
         # keep track of the index of the note_value
@@ -146,43 +131,7 @@ class Rhythm(Sequence):
             b.place_rest(rest_value)
             t.add_bar(b)
 
-        # make lilypond string
-        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-
-        # write lilypond string to file
-        with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-            file.write(lp)
-
-        # run subprocess
-        if filename.endswith('.eps'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['.ly']
-        elif filename.endswith('.png'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-        else:
-            raise ValueError("Can only export .png or .eps files.")
-
-        p = subprocess.Popen(command, shell=True, cwd=location).wait()
-
-        # show plot
-        if not out_filepath:
-            img = mpimg.imread(os.path.join(location, filename))
-            plt.imshow(img)
-            plt.axis('off')
-            plt.show()
-
-        # remove files
-        if out_filepath:
-            filenames = [filename[:-4] + x for x in to_be_removed]
-        else:
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-            filenames = ['temp' + x for x in to_be_removed]
-
-        for file in filenames:
-            os.remove(os.path.join(location, file))
+        _plot_lp(t, out_filepath)
 
 
 def _all_possibilities(nums, target):
