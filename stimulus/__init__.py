@@ -1,3 +1,3 @@
 from .base import *
-from .rhythm import *
+from .rhythmic import *
 from .melodic import *
