@@ -251,6 +251,10 @@ class Sequence:
         else:
             return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played} "
 
+    def __add__(self, other):
+        return join_sequences([self, other])
+
+
     @property
     def onsets(self):
         """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
@@ -679,7 +683,7 @@ class StimulusSequence(Stimulus, Sequence):
         sd.play(samples, self.fs, loop=loop)
         sd.wait()
 
-    def plot_music(self, out_filepath=None, key='C'):
+    def plot_music(self, out_filepath=None, key='C', print_staff=True):
         if not self.freqs:
             raise ValueError("Can, for now, only plot Stimulus objects that were generated using Stimulus.generate(), "
                              "and")
@@ -704,7 +708,7 @@ class StimulusSequence(Stimulus, Sequence):
             # if bar is full, create new bar and add bar to track
             if b.current_beat == b.length:
                 t.add_bar(b)
-                b = Bar(meter=self.time_sig)
+                b = Bar(key=key, meter=self.time_sig)
 
             note_i += 1
 
@@ -720,7 +724,7 @@ class StimulusSequence(Stimulus, Sequence):
             t.add_bar(b)
 
         # Call internal plot method to plot the track
-        _plot_lp(t, out_filepath)
+        _plot_lp(t, out_filepath, print_staff)
 
     def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
         """
@@ -837,3 +841,10 @@ def join_sequences(iterator):
     iois = np.concatenate(iois)
 
     return Sequence(iois, metrical=True)
+
+
+def join_stimseqs(iterator):
+    pass
+
+def join_stimuli(iterator):
+    pass

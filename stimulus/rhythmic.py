@@ -1,3 +1,5 @@
+import warnings
+
 from mingus.containers import Bar, Track, Instrument
 from mingus.extra import lilypond
 import numpy as np
@@ -22,6 +24,9 @@ class Rhythm(Sequence):
         return f"Object of type Rhythm.\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (" \
                f"ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\n" \
                f"Onsets:{self.onsets}\nOnsets played: {self.played}"
+
+    def __add__(self, other):
+        return join_rhythms([self, other])
 
     @property
     def note_values(self):
@@ -95,7 +100,49 @@ class Rhythm(Sequence):
                    n_bars=n_bars,
                    played=played)
 
-    def plot_rhythm(self, out_filepath=None, print_staff=True):
+    @classmethod
+    def generate_random_rhythm(cls, n_bars, allowed_note_values, time_signature, quarternote_ms, n_random_rests=0):
+        """
+        This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
+        """
+
+        iois = np.empty(0)
+
+        for bar in range(n_bars):
+            all_rhythmic_ratios = _all_rhythmic_ratios(allowed_note_values, time_signature)
+            ratios = random.choice(all_rhythmic_ratios)
+
+            new_iois = ratios * 4 * quarternote_ms
+
+            iois = np.concatenate((iois, new_iois), axis=None)
+
+        if n_random_rests > 0:
+            if n_random_rests > len(iois):
+                raise ValueError("You asked for more rests than there were events in the sequence.")
+            played = [True] * (len(iois) - n_random_rests) + [False] * n_random_rests
+            random.shuffle(played)
+        else:
+            played = [True] * len(iois)
+
+        return cls(iois, time_sig=time_signature, quarternote_ms=quarternote_ms, n_bars=n_bars, played=played)
+
+    @classmethod
+    def generate_isochronous(cls, n_bars, time_sig, quarternote_ms, played=None):
+
+        n_iois = time_sig[0] * n_bars
+
+        if played is None:
+            played = [True] * n_iois
+
+        iois = n_iois * [quarternote_ms]
+
+        return cls(iois=iois,
+                   n_bars=n_bars,
+                   time_sig=time_sig,
+                   quarternote_ms=quarternote_ms,
+                   played=played)
+
+    def plot_rhythm(self, out_filepath=None, print_staff=False):
 
         # create initial bar
         t = Track()
@@ -125,13 +172,37 @@ class Rhythm(Sequence):
             rest_value = 1 / b.space_left()
             if round(rest_value) != rest_value:
                 raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
-                                 "be (easily) captured in musical notation. This for instance happens when "
+                                 "be (easily) captured in musical notation. This for instance happens after "
                                  "using one of the tempo manipulation methods.")
 
             b.place_rest(rest_value)
             t.add_bar(b)
 
         _plot_lp(t, out_filepath, print_staff=print_staff)
+
+    @classmethod
+    def generate_random_uniform(self):
+        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
+                         "Either use it with a Sequence object, "
+                         "or use the Rhythm.generate_random_rhythm class method.")
+
+    @classmethod
+    def generate_random_normal(self):
+        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
+                         "Either use it with a Sequence object, "
+                         "or use the Rhythm.generate_random_rhythm class method.")
+
+    @classmethod
+    def generate_random_exponential(self):
+        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
+                         "Either use it with a Sequence object, "
+                         "or use the Rhythm.generate_random_rhythm class method.")
+
+    @classmethod
+    def generate_random_poisson(self):
+        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
+                         "Either use it with a Sequence object, "
+                         "or use the Rhythm.generate_random_rhythm class method.")
 
 
 def _all_possibilities(nums, target):
@@ -168,32 +239,6 @@ def _all_rhythmic_ratios(allowed_note_values, time_signature):
                 all_possibilities]
 
     return out_list
-
-
-def random_rhythmic_sequence(n_bars, allowed_note_values, time_signature, quarternote_ms, n_random_rests=0):
-    """
-    This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
-    """
-
-    iois = np.empty(0)
-
-    for bar in range(n_bars):
-        all_rhythmic_ratios = _all_rhythmic_ratios(allowed_note_values, time_signature)
-        ratios = random.choice(all_rhythmic_ratios)
-
-        new_iois = ratios * 4 * quarternote_ms
-
-        iois = np.concatenate((iois, new_iois), axis=None)
-
-    if n_random_rests > 0:
-        if n_random_rests > len(iois):
-            raise ValueError("You asked for more rests than there were events in the sequence.")
-        played = [True] * (len(iois) - n_random_rests) + [False] * n_random_rests
-        random.shuffle(played)
-    else:
-        played = [True] * len(iois)
-
-    return Rhythm(iois, time_sig=time_signature, quarternote_ms=quarternote_ms, n_bars=n_bars, played=played)
 
 
 def join_rhythms(iterator):
