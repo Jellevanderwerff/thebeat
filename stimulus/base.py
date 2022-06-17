@@ -195,7 +195,31 @@ class Stimulus:
         wavfile.write(filename=out_path, rate=self.fs, data=self.samples)
 
 
-class Sequence:
+class BaseSequence:
+    """Base Sequence class that holds the most basic methods and attributes. """
+
+    def __init__(self, iois, metrical=False, played=None):
+        # If metrical=True, that means there's an additional IOI for the final event.
+        self.metrical = metrical
+        self.played = played
+
+        if any(ioi < 0 for ioi in iois):
+            raise ValueError("IOIs cannot be negative.")
+        else:
+            self.iois = np.array(iois, dtype=np.float32)
+
+    @property
+    def onsets(self):
+        """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
+        """
+
+        if self.metrical:
+            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
+        else:
+            return np.cumsum(np.append(0, self.iois), dtype=np.float32)
+
+
+class Sequence(BaseSequence):
     """
     Sequence class that holds a sequence of inter-onset intervals (IOIs) and stimulus onsets.
     Additionally has class methods that can be used for generating a new sequence.
@@ -227,14 +251,9 @@ class Sequence:
     """
 
     def __init__(self, iois, metrical=False, played=None):
-        # If metrical=True, that means there's an additional IOI for the final event.
 
-        self.metrical = metrical
-
-        if any(ioi < 0 for ioi in iois):
-            raise ValueError("IOIs cannot be negative.")
-        else:
-            self.iois = np.array(iois, dtype=np.float32)
+        # Call super init method
+        BaseSequence.__init__(iois, metrical)
 
         # Deal with 'played'
         if played is None:
@@ -253,17 +272,6 @@ class Sequence:
 
     def __add__(self, other):
         return join_sequences([self, other])
-
-
-    @property
-    def onsets(self):
-        """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
-        """
-
-        if self.metrical:
-            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
-        else:
-            return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
@@ -476,7 +484,6 @@ class Sequence:
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
     # Descriptive methods
-
     def get_stats(self):
         return {
             'ioi_mean': np.mean(self.iois),
@@ -752,16 +759,16 @@ def _plot_lp(t, out_filepath, print_staff: bool):
         location = '.'
         filename = 'temp.png'
 
-
     # make lilypond string
     if print_staff is True:
         lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                            '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                            '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    elif print_staff is False:
-        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
                                                                 '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
                                                                 '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
+    elif print_staff is False:
+        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[
+                                                                                            1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
+                                                                                                  '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
+                                                                                                  '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
     else:
         raise ValueError("Wrong value specified for print_staff.")
 
@@ -845,6 +852,7 @@ def join_sequences(iterator):
 
 def join_stimseqs(iterator):
     pass
+
 
 def join_stimuli(iterator):
     pass
