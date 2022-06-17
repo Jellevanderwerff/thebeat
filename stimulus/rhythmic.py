@@ -17,9 +17,6 @@ class Rhythm(BaseSequence):
         self.n_bars = n_bars
         self.played = played
 
-        if played is None:
-            played = [True] * len(self.onsets)
-
         # Call initializer of super class
         BaseSequence.__init__(self, iois, metrical=True, played=played)
 

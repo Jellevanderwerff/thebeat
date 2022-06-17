@@ -10,6 +10,7 @@ from mingus.extra import lilypond
 from mingus.containers import Track, Bar, Note
 import os
 import skimage
+import parselmouth
 
 
 class Stimulus:
@@ -62,7 +63,7 @@ class Stimulus:
         self.freq = freq
 
     def __str__(self):
-        return f"Object of type Stimulus.\nStimulus duration: {self.get_duration()} seconds."
+        return f"Object of type Stimulus.\nStimulus duration: {self.get_duration()} seconds.\nSaved frequency: {self.freq} Hz. "
 
     @classmethod
     def from_wav(cls, wav_filepath: Union[os.PathLike, str],
@@ -154,6 +155,26 @@ class Stimulus:
 
         return cls(samples, fs)
 
+    @classmethod
+    def from_parselmouth(cls, snd_obj, save_avg_pitch=False):
+        if not snd_obj.__class__.__name__ == "Sound":
+            raise ValueError("Please provide a parselmouth.Sound object.")
+
+        if snd_obj.n_channels != 1:
+            raise ValueError("For now can only import mono sounds. "
+                             "Please convert first, for instance using parselmouth Sound.convert_to_mono")
+
+        fs = snd_obj.sampling_frequency
+        samples = snd_obj.values[0]
+
+        if save_avg_pitch is True:
+            pitch = snd_obj.to_pitch()
+            mean_pitch = round(parselmouth.praat.call(pitch, "Get mean...", 0, 0.0, 'Hertz'))
+
+            return cls(samples, fs, freq=mean_pitch)
+        else:
+            return cls(samples, fs)
+
     # Manipulation
 
     def change_amplitude(self, factor):
@@ -169,7 +190,7 @@ class Stimulus:
     def stop(self):
         sd.stop()
 
-    def plot_waveform(self, title="Waveform of sound"):
+    def plot(self, title="Waveform of sound"):
         plt.clf()
         frames = np.arange(self.samples.size)
         plt.plot(frames, self.samples)
@@ -199,9 +220,19 @@ class BaseSequence:
     """Base Sequence class that holds the most basic methods and attributes. """
 
     def __init__(self, iois, metrical=False, played=None):
+        self.iois = iois
         # If metrical=True, that means there's an additional IOI for the final event.
         self.metrical = metrical
         self.played = played
+
+        # Deal with 'played'
+        if played is None:
+            self.played = [True] * len(self.onsets)
+        elif len(played) == len(self.onsets):
+            self.played = played
+        else:
+            raise ValueError("The 'played' list should contain an equal number of "
+                             "booleans as the number of onsets.")
 
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
@@ -213,7 +244,7 @@ class BaseSequence:
         """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
         """
 
-        if self.metrical:
+        if self.metrical is True:
             return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
         else:
             return np.cumsum(np.append(0, self.iois), dtype=np.float32)
@@ -253,16 +284,7 @@ class Sequence(BaseSequence):
     def __init__(self, iois, metrical=False, played=None):
 
         # Call super init method
-        BaseSequence.__init__(iois, metrical)
-
-        # Deal with 'played'
-        if played is None:
-            self.played = [True] * len(self.onsets)
-        elif len(played) == len(self.onsets):
-            self.played = played
-        else:
-            raise ValueError("The 'played' list should contain an equal number of "
-                             "booleans as the number of onsets.")
+        BaseSequence.__init__(self, iois=iois, metrical=metrical, played=played)
 
     def __str__(self):
         if self.metrical:
@@ -848,11 +870,3 @@ def join_sequences(iterator):
     iois = np.concatenate(iois)
 
     return Sequence(iois, metrical=True)
-
-
-def join_stimseqs(iterator):
-    pass
-
-
-def join_stimuli(iterator):
-    pass
