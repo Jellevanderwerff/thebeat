@@ -3,22 +3,25 @@ import warnings
 from mingus.containers import Bar, Track, Instrument
 from mingus.extra import lilypond
 import numpy as np
-from stimulus import Sequence
+from stimulus import Sequence, BaseSequence
 from stimulus.base import _plot_lp
 import random
 
 
-class Rhythm(Sequence):
+class Rhythm(BaseSequence):
 
-    def __init__(self, iois, n_bars, time_sig, quarternote_ms, played):
+    def __init__(self, iois, n_bars, time_sig, quarternote_ms, played=None):
         # Save attributes
         self.time_sig = time_sig  # Used for metrical sequences
         self.quarternote_ms = quarternote_ms  # Used for metrical sequences
         self.n_bars = n_bars
         self.played = played
 
+        if played is None:
+            played = [True] * len(self.onsets)
+
         # Call initializer of super class
-        Sequence.__init__(self, iois, metrical=True, played=played)
+        BaseSequence.__init__(self, iois, metrical=True, played=played)
 
     def __str__(self):
         return f"Object of type Rhythm.\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (" \
@@ -142,7 +145,7 @@ class Rhythm(Sequence):
                    quarternote_ms=quarternote_ms,
                    played=played)
 
-    def plot_rhythm(self, out_filepath=None, print_staff=False):
+    def plot(self, out_filepath=None, print_staff=False):
 
         # create initial bar
         t = Track()
@@ -179,30 +182,6 @@ class Rhythm(Sequence):
             t.add_bar(b)
 
         _plot_lp(t, out_filepath, print_staff=print_staff)
-
-    @classmethod
-    def generate_random_uniform(self):
-        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
-                         "Either use it with a Sequence object, "
-                         "or use the Rhythm.generate_random_rhythm class method.")
-
-    @classmethod
-    def generate_random_normal(self):
-        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
-                         "Either use it with a Sequence object, "
-                         "or use the Rhythm.generate_random_rhythm class method.")
-
-    @classmethod
-    def generate_random_exponential(self):
-        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
-                         "Either use it with a Sequence object, "
-                         "or use the Rhythm.generate_random_rhythm class method.")
-
-    @classmethod
-    def generate_random_poisson(self):
-        raise ValueError("\n\nThis operation does not make sense for a Rhythm object.\n"
-                         "Either use it with a Sequence object, "
-                         "or use the Rhythm.generate_random_rhythm class method.")
 
 
 def _all_possibilities(nums, target):

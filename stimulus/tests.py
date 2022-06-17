@@ -2,8 +2,14 @@ from stimulus import *
 import random
 
 
-seq1 = Sequence.generate_isochronous(n=10, ioi=500, metrical=True)
-seq2 = Sequence.generate_isochronous(n=10, ioi=400, metrical=True)
+rhythm1 = Rhythm.from_iois([500, 500, 500, 500],
+                          time_signature=(4, 4),
+                          quarternote_ms=500)
 
-seq_joined = seq1 + seq2
+rhythm2 = Rhythm.from_note_values([4, 8, 8, 4, 4], time_signature=(4, 4), quarternote_ms=500)
+
+rhythm = rhythm1 + rhythm2
+
+rhythm.plot()
+
 
