@@ -13,13 +13,7 @@ import skimage
 import parselmouth
 from collections.abc import Iterable
 from pathlib import Path
-
-
-# todo Consider whether BaseStim is really necessary
-# todo Consider whether we want Stimuli to be iterable? Using __iter__ and __next__
-# todo Consider data structure. For now, I have a 2-D array where the rows are the samples for each stim (in Stimuli),
-#  cols are the samples, and I would say that in the future the second sound channel can be in the third dimension.
-#  Alternatively, we follow the scipy convention; col1 is left channel, col2 is right channel, then do one dim per stim
+import re
 
 
 class Stimulus:
@@ -156,12 +150,14 @@ class Stimulus:
         if not snd_obj.__class__.__name__ == "Sound":
             raise ValueError("Please provide a parselmouth.Sound object.")
 
-        if snd_obj.n_channels != 1:
-            raise ValueError("For now can only import mono sounds. "
-                             "Please convert first, for instance using parselmouth Sound.convert_to_mono")
-
         fs = snd_obj.sampling_frequency
-        samples = snd_obj.values[0]
+
+        if snd_obj.samples.ndim == 1:
+            samples = snd_obj.values[0]
+        elif snd_obj.samples.ndim == 2:
+            samples = snd_obj.values
+        else:
+            raise ValueError("Incorrect number of dimensions in samples. Should be 1 (mono) or 2 (stereo).")
 
         if extract_pitch is True:
             pitch = _extract_pitch(samples, fs)
@@ -185,16 +181,7 @@ class Stimulus:
         sd.stop()
 
     def plot(self, title="Waveform of sound"):
-        plt.clf()
-        frames = np.arange(self.samples.size)
-        plt.plot(frames, self.samples)
-        plt.ylim([-1, 1])
-        plt.ylabel("Amplitude")
-        plt.xticks(ticks=[0, self.samples.size],
-                   labels=[0, int(self.samples.size / self.fs * 1000)])
-        plt.xlabel("Time (ms)")
-        plt.title(title)
-        plt.show()
+        _plot_waveform(self.samples, self.fs, title)
 
     # Stats
     @property
@@ -303,6 +290,42 @@ class Stimuli:
             stim_objects.append(Stimulus(samples, fs, known_pitch=pitch))
 
         return cls(stim_objects)
+
+    @classmethod
+    def from_notes(cls, notes_str, event_duration=50, onramp=0, offramp=0):
+        """
+        Get stimulus objects on the basis of a provided string of notes.
+        For instance: 'CDEC' returns a list of four Stimulus objects.
+        Alternatively, one can use 'C4D4E4C4'. In place of
+        silences one can use an 'X'.
+
+        """
+        notes = re.findall(r"[A-Z][0-9]?", notes_str)
+
+        freqs = []
+
+        for note in notes:
+            if len(note) > 1:
+                note, num = tuple(note)
+                freqs.append(Note(note, int(num)).to_hertz())
+            else:
+                if note == 'X':
+                    freqs.append(None)
+                else:
+                    freqs.append(Note(note).to_hertz())
+
+        stims = []
+
+        for freq in freqs:
+            if freq is None:
+                stims.append(Stimulus.rest(event_duration))
+            else:
+                stims.append(Stimulus.generate(freq=freq,
+                                               duration=event_duration,
+                                               onramp=onramp,
+                                               offramp=offramp))
+
+        return cls(stims)
 
 
 class BaseSequence:
@@ -608,15 +631,15 @@ class Sequence(BaseSequence):
         }
 
 
-class StimulusSequence(Stimulus, Sequence):
+class StimuliSequence(BaseSequence):
     """
     StimulusSequence class which inherits from Stimulus and Sequence
     """
 
-    def __init__(self, stimulus_obj, seq_obj, played=None):
-
-        # Initialize parent Sequence class, so we can use self.onsets etc.
-        Sequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
+    def __init__(self,
+                 stimuli: Stimuli,
+                 seq_obj,
+                 played: Iterable = None):
 
         # If no list of booleans is passed during instantiation of StimulusSequence, we use the one from
         # the passed seq_obj. If one is passed, we use that one.
@@ -633,26 +656,27 @@ class StimulusSequence(Stimulus, Sequence):
             self.time_sig = seq_obj.time_sig
             self.quarternote_ms = seq_obj.quarternote_ms
             self.n_bars = seq_obj.n_bars
+            self.note_values = seq_obj.note_values
         else:
             self.time_sig = None
             self.quarternote_ms = None
             self.n_bars = None
+            self.note_values = None
 
-        # Use internal _make_stim method to combine stimulus_obj and seq_obj
-        # It makes stimuli which are a nested 1-D array (i.e. for each onset a 1-D array of sound samples)
-        stimuli = self._make_stim(stimulus_obj)
+        # Save fs, dtype, note values, and pitch
+        self.fs = stimuli.fs
+        self.dtype = stimuli.dtype
+        self.n_channels = stimuli.n_channels
+        self.pitch = stimuli.pitch
+
+        # Initialize Sequence class
+        BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical, played=seq_obj.played)
 
         # Make sound which saves the samples to self.samples
         self._make_sound(stimuli, self.onsets)
 
-        # Initialize the Stimulus parent class
-        Stimulus.__init__(self, self.samples, self.fs)
-
-        # Then save stimuli for later use
+        # Then save list of Stimulus objects for later use
         self.stim = stimuli
-
-        # Also save note_values
-        self.note_values = seq_obj.note_values
 
     def __str__(self, ):
         if self.metrical and not self.time_sig:
@@ -662,41 +686,18 @@ class StimulusSequence(Stimulus, Sequence):
         else:
             return f"Object of type StimulusSequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
-    def _make_stim(self, stimulus_obj):
-        # todo this function can probably go completely.
-        # If list of Stimulus objects was passed: Check a number of things (overlap etc.) and save fs and dtype.
-        # The all_stimuli variable will later be used to generate the audio.
-        if isinstance(stimulus_obj, list):
-            pass
-            # Check whether length of stimulus_obj is the same as onsets
-
-            # If we're importing a Melody object, we need to access the list of stims inside it
-
-        # If a single Stimulus object was passed: Check a number of things (overlap etc.) and save fs and dtype.
-        # Then make an all_stimuli variable which holds the samples of the Stimulus object n onsets times.
-        elif isinstance(stimulus_obj, Stimulus):
-            all_stimuli = np.tile(np.array(stimulus_obj.stim), (len(self.onsets), 1))
-            self.fs = stimulus_obj.fs
-            self.dtype = stimulus_obj.dtype
-
-            # Check whether Stimulus objects was generated and whether it contains a
-            # frequency. If so, save a list of those freqs for later use (e.g. in plotting).
-            if stimulus_obj.freq:
-                self.freqs = [stimulus_obj.freq] * len(self.onsets)
-
-        else:
-            raise AttributeError("Pass a Stimulus object, a Melody object, or a list of Stimulus objects as the "
-                                 "second argument.")
-
-        return all_stimuli
-
     def _make_sound(self, stimuli, onsets):
         # Check for overlap
-        for stim in stimuli:
-            if any(ioi < len(stim) / self.fs * 1000 for ioi in self.iois):
-                raise ValueError(
-                    "The duration of the Stimulus is longer than one of the IOIs. The events will overlap: "
-                    "either use different IOIs, or use a shorter stimulus sound.")
+        for i in range(len(onsets)):
+            stim_duration = stimuli.samples[i].shape[0] / self.fs * 1000
+            try:
+                ioi_after_onset = onsets[i + 1] - onsets[i]
+                if ioi_after_onset < stim_duration:
+                    raise ValueError(
+                        "The duration of the Stimulus is longer than one of the IOIs. The events will overlap: "
+                        "either use different IOIs, or use a shorter stimulus sound.")
+            except IndexError:
+                pass
 
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
         # In the case of a metrical sequence, we add the final ioi
@@ -704,31 +705,28 @@ class StimulusSequence(Stimulus, Sequence):
         if self.metrical:
             array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
         elif not self.metrical:
-            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli[-1].size)
+            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli.samples[-1].shape[0])
         else:
             raise ValueError("Error during calculation of array_length")
 
-        samples = np.zeros(array_length, dtype=self.dtype)
+        if self.n_channels == 1:
+            samples = np.zeros(array_length, dtype=self.dtype)
+        else:
+            samples = np.zeros((array_length, 2), dtype=self.dtype)
 
-        stimuli_with_onsets_played = list(zip(stimuli, onsets, self.played))
+        samples_with_onsets_played = list(zip(stimuli.samples, onsets, self.played))
 
-        if any(stimuli_with_onsets_played[i][0].size / self.fs * 1000 > np.diff(onsets)[i]
-               for i in range(len(stimuli_with_onsets_played) - 1)):
-            raise ValueError("The duration of one of the Stimulus objects is longer than one of the IOIs. "
-                             "The events will overlap: "
-                             "either use different IOIs, or use a shorter Stimulus.")
-
-        for stimulus, onset, played in stimuli_with_onsets_played:
-            start_pos = int(onset * self.fs / 1000)
-            end_pos = int(start_pos + stimulus.size)
+        for stimulus, onset, played in samples_with_onsets_played:
             if played is True:
-                samples[start_pos:end_pos] = stimulus
-            elif played is False:
-                samples[start_pos:end_pos] = np.zeros(stimulus.size)
+                start_pos = int(onset * self.fs / 1000)
+                end_pos = int(start_pos + stimulus.shape[0])
+                if self.n_channels == 1:
+                    samples[start_pos:end_pos] = stimulus
+                elif self.n_channels == 2:
+                    samples[start_pos:end_pos, :2] = stimulus
 
         # then save the sound
         self.samples = samples
-        self.stim = stimuli
 
     def _get_sound_with_metronome(self, ioi, metronome_amplitude):
         current_samples = self.samples
@@ -780,9 +778,10 @@ class StimulusSequence(Stimulus, Sequence):
         sd.wait()
 
     def plot_music(self, out_filepath=None, key='C', print_staff=True):
-        if not self.freqs:
-            raise ValueError("Can, for now, only plot Stimulus objects that were generated using Stimulus.generate(), "
-                             "and")
+        if self.pitch is None:
+            raise ValueError("The pitches of the stimuli are unknown. Either"
+                             "import using the extract_pitch=True flag, or"
+                             "provide the values yourself as StimuliSequence.pitch")
 
         # create initial bar
         t = Track()
@@ -791,7 +790,7 @@ class StimulusSequence(Stimulus, Sequence):
         # keep track of the index of the note_value
         note_i = 0
 
-        values_freqs_played = list(zip(self.note_values, self.freqs, self.played))
+        values_freqs_played = list(zip(self.note_values, self.pitch, self.played))
 
         for note_value, freq, played in values_freqs_played:
             if played is True:
@@ -821,6 +820,9 @@ class StimulusSequence(Stimulus, Sequence):
 
         # Call internal plot method to plot the track
         _plot_lp(t, out_filepath, print_staff)
+
+    def plot_waveform(self, title):
+        _plot_waveform(self.samples, self.fs, title)
 
     def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
         """
@@ -916,6 +918,20 @@ def _plot_lp(t, out_filepath, print_staff: bool):
         os.remove(os.path.join(location, file))
 
 
+def _plot_waveform(samples, fs, title):
+    plt.clf()
+    frames = np.arange(samples.shape[0])
+    plt.plot(frames, samples)
+    plt.ylim([-1, 1])
+    plt.ylabel("Amplitude")
+    plt.xticks(ticks=[0, samples.shape[0]],
+               labels=[0, int(samples.size / fs * 1000)])
+    plt.xlabel("Time (ms)")
+    plt.title(title)
+    plt.show()
+
+
+
 def _extract_pitch(samples, fs):
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
@@ -927,10 +943,8 @@ def _read_wavfile(wav_filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: int = None,
                   extract_pitch: bool = False):
-    file_fs, samples = wavfile.read(wav_filepath)
 
-    if samples.ndim != 1:
-        print("Input file was stereo. Please convert to mono first.")
+    file_fs, samples = wavfile.read(wav_filepath)
 
     # Change dtype so we always have float32
     if samples.dtype == 'int16':
