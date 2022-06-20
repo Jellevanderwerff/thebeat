@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import resample, square
+from scipy.signal import resample, square, hanning
 from scipy.io import wavfile
 import sounddevice as sd
 import matplotlib.pyplot as plt
@@ -79,7 +79,7 @@ class Stimulus:
 
     @classmethod
     def from_wav(cls,
-                 wav_filepath: Union[PathLike, str],
+                 filepath: Union[PathLike, str],
                  new_fs: int = None,
                  extract_pitch: bool = False):
         """
@@ -89,10 +89,8 @@ class Stimulus:
 
         Parameters
         ----------
-        extract_pitch
-
-        wav_filepath : str or Path object
-            The path to the wave file
+        filepath: str or PathLike object
+        extract_pitch: bool
         new_fs : int
             If resampling is required, you can provide the target sampling frequency
 
@@ -102,12 +100,19 @@ class Stimulus:
         """
 
         # Read in the sampling frequency and all the samples from the wav file
-        samples, fs, pitch = _read_wavfile(wav_filepath, new_fs, extract_pitch)
+        samples, fs, pitch = _read_wavfile(filepath, new_fs, extract_pitch)
 
         return cls(samples, fs, known_pitch=pitch)
 
     @classmethod
-    def generate(cls, freq=440, fs=44100, duration=50, amplitude=1.0, osc='sine', onramp=0, offramp=0):
+    def generate(cls, freq=440,
+                 fs=44100,
+                 duration=50,
+                 amplitude=1.0,
+                 osc='sine',
+                 onramp=0,
+                 offramp=0,
+                 ramp='linear'):
         """
         """
         t = duration / 1000
@@ -118,10 +123,22 @@ class Stimulus:
             signal = amplitude * square(2 * np.pi * freq * samples)
         else:
             raise ValueError("Choose existing oscillator (for now only 'sin')")
+
+
         # Create onramp
         if onramp > 0:
-            onramp_amps = np.linspace(0, 1, int(onramp / 1000 * fs))
-            signal[:len(onramp_amps)] *= onramp_amps
+            onramp_samples_len = int(onramp / 1000 * fs)
+            end_point = onramp_samples_len
+
+            if ramp == 'linear':
+                onramp_amps = np.linspace(0, 1, onramp_samples_len)
+
+            elif ramp == 'raised-cosine':
+                hanning_complete = hanning(onramp_samples_len * 2)
+                onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+
+            signal[:end_point] *= onramp_amps
+
         elif onramp < 0:
             raise ValueError("Onramp cannot be negative")
         elif onramp == 0:
@@ -129,11 +146,20 @@ class Stimulus:
 
         # Create offramp
         if offramp > 0:
-            offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
-            signal[-len(offramp_amps):] *= offramp_amps
-        elif onramp < 0:
-            raise ValueError("Onramp cannot be negative")
-        elif onramp == 0:
+            offramp_samples_len = int(onramp / 1000 * fs)
+            start_point = signal.shape[0] - offramp_samples_len
+
+            if ramp == 'linear':
+                offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
+            elif ramp == 'raised-cosine':
+                hanning_complete = hanning(offramp_samples_len * 2)
+                offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+
+            signal[start_point:] *= offramp_amps
+
+        elif offramp < 0:
+            raise ValueError("Offramp cannot be negative")
+        elif offramp == 0:
             pass
 
         # Return class, and save the used frequency
@@ -183,14 +209,15 @@ class Stimulus:
     def plot(self, title="Waveform of sound"):
         _plot_waveform(self.samples, self.fs, title)
 
+
     # Stats
     @property
     def duration_s(self) -> float:
-        return self.samples.size / self.fs
+        return self.samples.shape[0] / self.fs
 
     @property
     def duration_ms(self) -> float:
-        return self.samples.size / self.fs * 1000
+        return self.samples.shape[0] / self.fs * 1000
 
     # Out
     def write_wav(self, out_path: Union[str, PathLike]):
@@ -326,6 +353,14 @@ class Stimuli:
                                                offramp=offramp))
 
         return cls(stims)
+
+    def write_wavs(self, path: Union[str, PathLike], filenames: list[str] = None):
+
+        if filenames is None:
+            filenames = [f"{str(i)}.wav" for i in range(1, len(self.samples) + 1)]
+
+        for samples, filename in zip(self.samples, filenames):
+            wavfile.write(os.path.join(path, filename), self.fs, samples)
 
 
 class BaseSequence:
@@ -631,9 +666,9 @@ class Sequence(BaseSequence):
         }
 
 
-class StimuliSequence(BaseSequence):
+class StimSequence(BaseSequence):
     """
-    StimulusSequence class which inherits from Stimulus and Sequence
+    StimSequence class which inherits only the most basic functions from BaseSequence
     """
 
     def __init__(self,
@@ -730,18 +765,18 @@ class StimuliSequence(BaseSequence):
 
     def _get_sound_with_metronome(self, ioi, metronome_amplitude):
         current_samples = self.samples
-        duration = self.get_duration() * 1000
+        duration = current_samples.shape[0] / self.fs * 1000
 
-        n_metronome_clicks = int(duration // ioi)  # We want all the metronome clicks that fit in the seq.
+        n_metronome_clicks = duration // ioi  # We want all the metronome clicks that fit in the seq.
         onsets = np.concatenate((np.array([0]), np.cumsum([ioi] * (n_metronome_clicks - 1))))
 
         fs, metronome_samples = wavfile.read('metronome.wav')
 
+        # resample if metronome sound has different sampling frequency
         if fs != self.fs:
             resample_factor = float(self.fs) / float(fs)
             resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
             metronome_samples = resampled
-            fs = self.fs
 
         # change amplitude if necessary
         metronome_samples *= metronome_amplitude
@@ -777,7 +812,7 @@ class StimuliSequence(BaseSequence):
         sd.play(samples, self.fs, loop=loop)
         sd.wait()
 
-    def plot_music(self, out_filepath=None, key='C', print_staff=True):
+    def plot_music(self, filepath=None, key='C', print_staff=True):
         if self.pitch is None:
             raise ValueError("The pitches of the stimuli are unknown. Either"
                              "import using the extract_pitch=True flag, or"
@@ -819,10 +854,11 @@ class StimuliSequence(BaseSequence):
             t.add_bar(b)
 
         # Call internal plot method to plot the track
-        _plot_lp(t, out_filepath, print_staff)
+        _plot_lp(t, filepath, print_staff)
 
     def plot_waveform(self, title):
         _plot_waveform(self.samples, self.fs, title)
+
 
     def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
         """
@@ -837,18 +873,18 @@ class StimuliSequence(BaseSequence):
         wavfile.write(filename=out_path, rate=self.fs, data=samples)
 
 
-def _plot_lp(t, out_filepath, print_staff: bool):
+def _plot_lp(t, filepath, print_staff: bool):
     """
     Internal method for plotting a mingus Track object via lilypond.
     """
     # This is the same each time:
-    if out_filepath:
-        location, filename = os.path.split(out_filepath)
+    if filepath:
+        location, filename = os.path.split(filepath)
         if location == '':
             location = '.'
     else:
         location = '.'
-        filename = 'temp.png'
+        filename = 'rhythm.png'
 
     # make lilypond string
     if print_staff is True:
@@ -896,7 +932,7 @@ def _plot_lp(t, out_filepath, print_staff: bool):
           top_left[1]:bottom_right[1]]
 
     # show plot
-    if not out_filepath:
+    if not filepath:
         plt.imshow(out)
         plt.axis('off')
         plt.show()
@@ -908,11 +944,11 @@ def _plot_lp(t, out_filepath, print_staff: bool):
         pass
 
     # remove files
-    if out_filepath:
+    if filepath:
         filenames = [filename[:-4] + x for x in to_be_removed]
     else:
         to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-        filenames = ['temp' + x for x in to_be_removed]
+        filenames = ['rhythm' + x for x in to_be_removed]
 
     for file in filenames:
         os.remove(os.path.join(location, file))
@@ -931,7 +967,6 @@ def _plot_waveform(samples, fs, title):
     plt.show()
 
 
-
 def _extract_pitch(samples, fs):
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
@@ -939,12 +974,12 @@ def _extract_pitch(samples, fs):
     return mean_pitch
 
 
-def _read_wavfile(wav_filepath: Union[str, PathLike],
+def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: int = None,
                   extract_pitch: bool = False):
 
-    file_fs, samples = wavfile.read(wav_filepath)
+    file_fs, samples = wavfile.read(filepath)
 
     # Change dtype so we always have float32
     if samples.dtype == 'int16':
