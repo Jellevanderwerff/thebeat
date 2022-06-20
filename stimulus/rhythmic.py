@@ -142,7 +142,7 @@ class Rhythm(BaseSequence):
                    quarternote_ms=quarternote_ms,
                    played=played)
 
-    def plot(self, out_filepath=None, print_staff=False):
+    def plot(self, filepath=None, print_staff=False):
 
         # create initial bar
         t = Track()
@@ -178,7 +178,9 @@ class Rhythm(BaseSequence):
             b.place_rest(rest_value)
             t.add_bar(b)
 
-        _plot_lp(t, out_filepath, print_staff=print_staff)
+        plt = _plot_lp(t, filepath, print_staff=print_staff)
+
+        return plt
 
 
 def _all_possibilities(nums, target):
