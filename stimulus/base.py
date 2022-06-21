@@ -14,7 +14,6 @@ import parselmouth
 from collections.abc import Iterable
 from pathlib import Path
 import re
-from random import shuffle
 
 
 class Stimulus:
@@ -1184,13 +1183,14 @@ def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: float = None,
                   extract_pitch: bool = False):
+
     file_fs, samples = wavfile.read(filepath)
 
     # Change dtype so we always have float32
     if samples.dtype == 'int16':
-        samples = samples.astype(np.float32) / 32768
+        samples = samples.astype(np.float32, order='C') / 32768.0
     elif samples.dtype == 'int32':
-        samples = samples.astype(np.float32) / 2147483648
+        samples = samples.astype(np.float32, order='C') / 2147483648.0
     elif samples.dtype == 'float32':
         pass
     else:

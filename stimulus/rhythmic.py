@@ -1,9 +1,6 @@
-import warnings
-
-from mingus.containers import Bar, Track, Instrument
-from mingus.extra import lilypond
+from mingus.containers import Bar, Track
 import numpy as np
-from stimulus import Sequence, BaseSequence
+from stimulus import BaseSequence
 from stimulus.base import _plot_lp
 import random
 
@@ -101,7 +98,12 @@ class Rhythm(BaseSequence):
                    played=played)
 
     @classmethod
-    def generate_random_rhythm(cls, n_bars, allowed_note_values, time_signature, quarternote_ms, n_random_rests=0):
+    def generate_random_rhythm(cls, n_bars,
+                               allowed_note_values,
+                               time_signature,
+                               quarternote_ms,
+                               events_per_bar=None,
+                               n_random_rests=0):
         """
         This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
         """
@@ -109,7 +111,7 @@ class Rhythm(BaseSequence):
         iois = np.empty(0)
 
         for bar in range(n_bars):
-            all_rhythmic_ratios = _all_rhythmic_ratios(allowed_note_values, time_signature)
+            all_rhythmic_ratios = _all_rhythmic_ratios(allowed_note_values, time_signature, target_n=events_per_bar)
             ratios = random.choice(all_rhythmic_ratios)
 
             new_iois = ratios * 4 * quarternote_ms
@@ -187,6 +189,7 @@ def _all_possibilities(nums, target):
     """
     I stole this code
     """
+
     res = []
     nums.sort()
 
@@ -204,7 +207,7 @@ def _all_possibilities(nums, target):
     return res
 
 
-def _all_rhythmic_ratios(allowed_note_values, time_signature):
+def _all_rhythmic_ratios(allowed_note_values, time_signature, target_n: int = None):
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])
 
     allowed_numerators = common_denom // np.array(allowed_note_values)
@@ -215,6 +218,12 @@ def _all_rhythmic_ratios(allowed_note_values, time_signature):
 
     out_list = [(np.array(result) / common_denom) for result in
                 all_possibilities]
+
+    if target_n is not None:
+        out_list = [rhythm for rhythm in out_list if len(rhythm) == target_n]
+        if len(out_list) == 0:
+            raise ValueError("No random rhythms exist that adhere to these parameters. "
+                             "Try providing different parameters.")
 
     return out_list
 
