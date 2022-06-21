@@ -1,8 +1,7 @@
 from stimulus import *
-import parselmouth
-from scipy.io import wavfile
-import numpy as np
-import os
-import matplotlib.pyplot as plt
+from numpy.random import default_rng
 
+
+stim_u = Stimulus.from_wav('test_files/u.wav', name='u', extract_pitch=True)
+stim_e = Stimulus.from_wav('test_files/e.wav', name='e', extract_pitch=True)
 

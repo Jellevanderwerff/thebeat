@@ -98,6 +98,7 @@ class Stimulus:
                  filepath: Union[PathLike, str],
                  name=None,
                  new_fs: int = None,
+                 known_pitch: float = None,
                  extract_pitch: bool = False):
         """
 
@@ -117,7 +118,7 @@ class Stimulus:
         """
 
         # Read in the sampling frequency and all the samples from the wav file
-        samples, fs, pitch = _read_wavfile(filepath, new_fs, extract_pitch)
+        samples, fs, pitch = _read_wavfile(filepath, new_fs, known_pitch, extract_pitch)
 
         return cls(samples, fs, name, pitch)
 
@@ -150,12 +151,12 @@ class Stimulus:
 
     @classmethod
     def rest(cls,
-             stim_name=None,
+             name=None,
              duration=50,
              fs=44100):
         samples = np.zeros(duration // (1000 * fs), dtype='float32')
 
-        return cls(samples, fs, stim_name)
+        return cls(samples, fs, name)
 
     @classmethod
     def from_parselmouth(cls, snd_obj, stim_name=None, extract_pitch=False):
@@ -286,8 +287,11 @@ class Stimuli:
         else:
             raise StopIteration
 
+    def __len__(self):
+        return self.n
+
     def __str__(self):
-        return f"Object of type Stimuli.\nThis object contains {self.n} Stimulus objects.\nStimulus names: " \
+        return f"Object of type Stimuli.\nNumber of stimuli: {self.n}\nStimulus names: " \
                f"{self.stim_names}\nSampling frequency: {self.fs} Hz\nPitch frequencies: {self.pitch} " \
                f"Hz\nNumber of channels: {self.n_channels}"
 
@@ -299,26 +303,11 @@ class Stimuli:
     @classmethod
     def from_stims(cls,
                    stims: Iterable[Stimulus],
-                   desired_n_events: int,
-                   randomize: bool = False,
-                   rng=None):
+                   repeats: int = 1):
+
         stims = list(stims)
 
-        if desired_n_events % len(stims) != 0:
-            raise ValueError("Please provide a desired number of events that is a multiple of the number of "
-                             "Stimulus objects in the passed iterable.")
-
-        n_tiles = desired_n_events / len(stims)
-
-        out_stims = stims * int(n_tiles)
-
-        if randomize is True:
-            if rng is None:
-                rng = np.random.default_rng()
-            else:
-                rng = rng
-
-            rng.shuffle(out_stims)
+        out_stims = stims * int(repeats)
 
         return cls(out_stims)
 
@@ -355,7 +344,8 @@ class Stimuli:
         return cls(stim_objects)
 
     @classmethod
-    def from_notes(cls, notes_str, event_duration=50, onramp=0, offramp=0):
+    def from_notes(cls, notes_str, event_duration=50, onramp=0, offramp=0, ramp='linear',
+                   stim_names: Iterable[str] = None):
         """
         Get stimulus objects on the basis of a provided string of notes.
         For instance: 'CDEC' returns a list of four Stimulus objects.
@@ -364,6 +354,15 @@ class Stimuli:
 
         """
         notes = re.findall(r"[A-Z][0-9]?", notes_str)
+
+        if stim_names is None:
+            stim_names = notes
+        else:
+            stim_names = list(stim_names)
+            if len(stim_names) != len(notes):
+                raise ValueError("Please provide an equal number of stim_names as the number of notes.")
+            else:
+                stim_names = stim_names
 
         freqs = []
 
@@ -379,13 +378,32 @@ class Stimuli:
 
         stims = []
 
-        for freq in freqs:
+        freq_names = list(zip(freqs, stim_names))
+
+        for freq, stim_name in freq_names:
             if freq is None:
-                stims.append(Stimulus.rest(event_duration))
+                stims.append(Stimulus.rest(name=stim_name, duration=event_duration))
             else:
-                stims.append(Stimulus.generate(freq=freq, duration=event_duration, onramp=onramp, offramp=offramp))
+                stims.append(Stimulus.generate(freq=freq,
+                                               duration=event_duration,
+                                               onramp=onramp,
+                                               offramp=offramp,
+                                               ramp=ramp,
+                                               name=stim_name))
 
         return cls(stims)
+
+    def randomize(self, rng=None):
+        if rng is None:
+            rng = np.random.default_rng()
+        else:
+            rng = rng
+
+        zipped = list(zip(self.samples, self.stim_names, self.pitch))
+        rng.shuffle(zipped)
+
+        samples, stim_names, pitch = zip(*zipped)
+        self.samples, self.stim_names, self.pitch = list(samples), np.array(stim_names), np.array(pitch)
 
     def write_wavs(self, path: Union[str, PathLike], filenames: list[str] = None):
 
@@ -726,7 +744,7 @@ class StimSequence(BaseSequence):
             pass
 
         # Type checking for sequence
-        if not seq_obj.__class__.__name__ == "Sequence" or not "Rhythm":
+        if not seq_obj.__class__.__name__ == "Sequence" and not "Rhythm":
             raise ValueError("Please provide a Sequence or Rhythm object as the second argument.")
 
         # If no list of booleans is passed during instantiation of StimSequence, we use the one from
@@ -745,11 +763,13 @@ class StimSequence(BaseSequence):
             self.quarternote_ms = seq_obj.quarternote_ms
             self.n_bars = seq_obj.n_bars
             self.note_values = seq_obj.note_values
+            self.rhythmic = True
         else:
             self.time_sig = None
             self.quarternote_ms = None
             self.n_bars = None
             self.note_values = None
+            self.rhythmic = False
 
         # Save fs, dtype, note values, and pitch
         self.fs = stimuli.fs
@@ -831,8 +851,8 @@ Stimulus played: {self.played}
                 ioi_after_onset = onsets[i + 1] - onsets[i]
                 if ioi_after_onset < stim_duration:
                     raise ValueError(
-                        "The duration of the Stimulus is longer than one of the IOIs. The events will overlap: "
-                        "either use different IOIs, or use a shorter stimulus sound.")
+                        "The duration of one or more stimuli is longer than its respective IOI. "
+                        "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
             except IndexError:
                 pass
 
@@ -865,11 +885,17 @@ Stimulus played: {self.played}
         # then save the sound
         self.samples = samples
 
-    def _get_sound_with_metronome(self, ioi, metronome_amplitude):
+    def _get_sound_with_metronome(self, metronome_amplitude):
+        if self.time_sig and self.quarternote_ms:
+            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
+        elif self.quarternote_ms:
+            ioi = self.quarternote_ms
+        else:
+            ioi = np.mean(self.iois)
         current_samples = self.samples
         duration = current_samples.shape[0] / self.fs * 1000
 
-        n_metronome_clicks = duration // ioi  # We want all the metronome clicks that fit in the seq.
+        n_metronome_clicks = int(duration // ioi)  # We want all the metronome clicks that fit in the seq.
         onsets = np.concatenate((np.array([0]), np.cumsum([ioi] * (n_metronome_clicks - 1))))
 
         fs, metronome_samples = wavfile.read('metronome.wav')
@@ -905,9 +931,8 @@ Stimulus played: {self.played}
         self._make_sound(self.stim, self.onsets)
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        if metronome is True and self.time_sig and self.quarternote_ms:
-            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
-            samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
+        if metronome is True:
+            samples = self._get_sound_with_metronome(metronome_amplitude=metronome_amplitude)
         else:
             samples = self.samples
 
@@ -915,6 +940,10 @@ Stimulus played: {self.played}
         sd.wait()
 
     def plot_music(self, filepath=None, key='C', print_staff=True):
+        if self.rhythmic is False:
+            raise ValueError("Please initialize this StimSequence object using a Rhythm as the"
+                             "second argument. Otherwise, the time signature etc. are unknown.")
+
         if self.pitch is None:
             raise ValueError("The pitches of the stimuli are unknown. Either"
                              "import using the extract_pitch=True flag, or"
@@ -1099,10 +1128,10 @@ def _plot_waveform(samples, fs, n_channels, title):
     plt.show()
 
 
-def _extract_pitch(samples, fs):
+def _extract_pitch(samples, fs) -> float:
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
-    mean_pitch = round(parselmouth.praat.call(pitch, "Get mean...", 0, 0.0, 'Hertz'))
+    mean_pitch = float(parselmouth.praat.call(pitch, "Get mean...", 0, 0.0, 'Hertz'))
     return mean_pitch
 
 
@@ -1153,7 +1182,7 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 
 def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
-                  known_pitch: int = None,
+                  known_pitch: float = None,
                   extract_pitch: bool = False):
     file_fs, samples = wavfile.read(filepath)
 
