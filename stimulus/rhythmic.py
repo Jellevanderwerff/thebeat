@@ -1,8 +1,9 @@
 from mingus.containers import Bar, Track
 import numpy as np
 from stimulus import BaseSequence
-from stimulus.base import _plot_lp
+from stimulus.base import _plot_lp, _plot_waveform
 import random
+from scipy.io import wavfile
 
 
 class Rhythm(BaseSequence):
@@ -183,6 +184,50 @@ class Rhythm(BaseSequence):
         plt = _plot_lp(t, filepath, print_staff=print_staff)
 
         return plt
+
+
+class RhythmTrial:
+
+    def __init__(self, rhythm, stims, name=None):
+        # General attributes
+        self.events = list(zip(rhythm.onsets, stims.samples, stims.stim_names, rhythm.played))
+        self.name = name
+
+        # Save rhythmic attributes
+        self.time_sig = rhythm.time_sig
+        self.quarternote_ms = rhythm.quarternote_ms
+        self.n_bars = rhythm.n_bars
+        self.note_values = rhythm.note_values
+
+        # Save stimulus attributes
+        self.fs = stims.fs
+        self.n_channels = stims.n_channels
+
+        # make initial sound that saves samples to self.samples
+        self.samples = self._make_sound(self.events)
+
+    def _make_sound(self, events):
+        # todo This one will probably be quite different from the one in base. If not, make it a function and share
+        #  it between classes.
+        samples = np.zeros(100)
+        return samples
+
+    def plot_music(self):
+        # todo This one will probably be quite different from the one in base. If not, make it a function and share
+        #  it between classes.
+        pass
+
+    def plot_waveform(self, title=None):
+        if title:
+            title = title
+        else:
+            if self.name:
+                title = f"Waveform of {self.name}"
+            else:
+                title = "Waveform of StimSequence"
+
+        _plot_waveform(self.samples, self.fs, self.n_channels, title)
+
 
 
 def _all_possibilities(nums, target):

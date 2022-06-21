@@ -2,11 +2,14 @@ from stimulus import *
 from numpy.random import default_rng
 from scipy.io import wavfile
 
-stims = Stimuli.from_notes('AAAAAAAAGG')
+stims = Stimuli.from_notes('AAGG')
 
-seq = Sequence.generate_isochronous(n=10, ioi=500)
+rhythm = Rhythm.generate_isochronous(1, time_sig=(4, 4), quarternote_ms=500)
 
-stimtrial = StimTrial(stims, seq, name="Trial 1")
 
-print(stimtrial)
+trial = RhythmTrial(rhythm, stims)
+
+
+
+
 
