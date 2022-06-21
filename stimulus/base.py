@@ -80,8 +80,18 @@ class Stimulus:
         self.stim_name = name
 
     def __str__(self):
-        return f"Object of type Stimulus.\nStimulus duration: {self.duration_s} seconds.\nPitch frequency: " \
-               f"{self.pitch} Hz."
+        if self.stim_name:
+            name = self.stim_name
+        else:
+            name = "Not provided"
+
+        if self.pitch is not None:
+            pitch = f"{self.pitch} Hz"
+        else:
+            pitch = "Unknown"
+
+        return f"Object of type Stimulus.\n\nStimulus name: {name}\nStimulus duration: {self.duration_ms} milliseconds." \
+               f"\nPitch frequency: {pitch}"
 
     @classmethod
     def from_wav(cls,
@@ -284,7 +294,7 @@ class Stimuli:
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
 
-        return cls([Stimulus(stim.samples, stim.fs, stim.pitch)] * repeats)
+        return cls([Stimulus(stim.samples, stim.fs, stim.stim_name, stim.pitch)] * repeats)
 
     @classmethod
     def from_stims(cls,
@@ -707,7 +717,19 @@ class StimSequence(BaseSequence):
                  name: str = None,
                  played: Iterable = None):
 
-        # If no list of booleans is passed during instantiation of StimulusSequence, we use the one from
+        # Type checking for stimuli
+        if isinstance(stimuli, Stimulus):
+            raise ValueError("Please provide a Stimuli object instead of a Stimulus object as the first argument.")
+        elif not isinstance(stimuli, Stimuli):
+            raise ValueError("Please provide a Stimuli object as the first argument.")
+        else:
+            pass
+
+        # Type checking for sequence
+        if not seq_obj.__class__.__name__ == "Sequence" or not "Rhythm":
+            raise ValueError("Please provide a Sequence or Rhythm object as the second argument.")
+
+        # If no list of booleans is passed during instantiation of StimSequence, we use the one from
         # the passed seq_obj. If one is passed, we use that one.
         if played is None:
             self.played = seq_obj.played
@@ -746,13 +768,60 @@ class StimSequence(BaseSequence):
         # Then save list of Stimulus objects for later use
         self.stim = stimuli
 
-    def __str__(self, ):
-        if self.metrical and not self.time_sig:
-            return f"Object of type StimSequence (metrical version):\nStimSequence name: {self.stimseq_name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
-        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
-            return f"Object of type StimSequence (metrical version):\nStimSequence name: {self.stimseq_name}\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
+    def __str__(self):
+
+        if self.stimseq_name:
+            name = self.stimseq_name
         else:
-            return f"Object of type StimSequence (non-metrical version):\nStimSequence name: {self.stimseq_name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
+            name = "Not provided"
+
+        if not all(pitch is None for pitch in self.pitch):
+            pitch = f"{self.pitch} Hz"
+        else:
+            pitch = "Unknown"
+
+        if self.stim_names:
+            stim_names = self.stim_names
+        else:
+            stim_names = "Not provided"
+
+        if self.metrical and not self.time_sig:
+            return f"""
+Object of type StimSequence (metrical version):
+StimSequence name: {name}
+{len(self.onsets)} events
+IOIs: {self.iois}
+Onsets:{self.onsets}
+Stimulus names: {stim_names}
+Pitch frequencies: {pitch}
+Stimulus played: {self.played}
+            """
+
+        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
+            return f"""
+Object of type StimSequence (metrical version):
+StimSequence name: {name}
+Time signature: {self.time_sig}
+Number of bars: {self.n_bars}
+Quarternote (ms): {self.quarternote_ms}
+Number of events: {len(self.onsets)}
+IOIs: {self.iois}
+Onsets:{self.onsets}
+Stimulus names: {stim_names}
+Pitch frequencies: {pitch}
+Stimulus played: {self.played}
+            """
+        else:
+            return f"""
+Object of type StimSequence (non-metrical version):
+StimSequence name: {name}
+{len(self.onsets)} events
+IOIs: {self.iois}
+Onsets:{self.onsets}
+Stimulus names: {stim_names}
+Pitch frequencies: {pitch}
+Stimulus played: {self.played}
+            """
 
     def _make_sound(self, stimuli, onsets):
         # Check for overlap
