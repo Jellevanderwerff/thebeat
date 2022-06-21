@@ -917,17 +917,6 @@ Stimulus played: {self.played}
         return current_samples
 
     # Override Sequence and Stimulus manipulation methods so sound is regenerated when something changes
-    def change_tempo(self, factor):
-        super().change_tempo(factor)
-        self._make_sound(self.stim, self.onsets)
-
-    def change_tempo_linearly(self, total_change):
-        super().change_tempo_linearly(total_change)
-        self._make_sound(self.stim, self.onsets)
-
-    def change_amplitude(self, factor):
-        super().change_amplitude(factor)
-        self._make_sound(self.stim, self.onsets)
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         if metronome is True:
@@ -1006,7 +995,7 @@ Stimulus played: {self.played}
         """
         if metronome is True and self.time_sig and self.quarternote_ms:
             ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
-            samples = self._get_sound_with_metronome(ioi, metronome_amplitude=metronome_amplitude)
+            samples = self._get_sound_with_metronome(metronome_amplitude=metronome_amplitude)
         else:
             samples = self.samples
 
@@ -1115,6 +1104,8 @@ def _plot_waveform(samples, fs, n_channels, title):
         alph = 1
     elif n_channels == 2:
         alph = 0.5
+    else:
+        raise ValueError('Unexpected number of channels.')
     plt.plot(frames, samples, alpha=alph)
     if n_channels == 2:
         plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
