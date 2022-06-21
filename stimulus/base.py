@@ -14,6 +14,7 @@ import parselmouth
 from collections.abc import Iterable
 from pathlib import Path
 import re
+from random import shuffle
 
 
 class Stimulus:
@@ -124,43 +125,7 @@ class Stimulus:
         else:
             raise ValueError("Choose existing oscillator (for now only 'sin')")
 
-
-        # Create onramp
-        if onramp > 0:
-            onramp_samples_len = int(onramp / 1000 * fs)
-            end_point = onramp_samples_len
-
-            if ramp == 'linear':
-                onramp_amps = np.linspace(0, 1, onramp_samples_len)
-
-            elif ramp == 'raised-cosine':
-                hanning_complete = hanning(onramp_samples_len * 2)
-                onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
-
-            signal[:end_point] *= onramp_amps
-
-        elif onramp < 0:
-            raise ValueError("Onramp cannot be negative")
-        elif onramp == 0:
-            pass
-
-        # Create offramp
-        if offramp > 0:
-            offramp_samples_len = int(onramp / 1000 * fs)
-            start_point = signal.shape[0] - offramp_samples_len
-
-            if ramp == 'linear':
-                offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
-            elif ramp == 'raised-cosine':
-                hanning_complete = hanning(offramp_samples_len * 2)
-                offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
-
-            signal[start_point:] *= offramp_amps
-
-        elif offramp < 0:
-            raise ValueError("Offramp cannot be negative")
-        elif offramp == 0:
-            pass
+        signal, fs = _make_ramps(signal, fs, onramp, offramp, ramp)
 
         # Return class, and save the used frequency
         return cls(signal, fs, known_pitch=freq)
@@ -193,7 +158,6 @@ class Stimulus:
         return cls(samples, fs, known_pitch=pitch)
 
     # Manipulation
-
     def change_amplitude(self, factor):
         # get original frequencies
         self.samples *= factor
@@ -208,7 +172,6 @@ class Stimulus:
 
     def plot(self, title="Waveform of sound"):
         _plot_waveform(self.samples, self.fs, title)
-
 
     # Stats
     @property
@@ -267,6 +230,7 @@ class Stimuli:
         self.dtype = dtype
         self.pitch = pitch
         self.n_channels = n_channels
+        self.n = len(samples)
 
     def __iter__(self):
         self.i = 0
@@ -281,10 +245,40 @@ class Stimuli:
         else:
             raise StopIteration
 
+    def __str__(self):
+        return f"Object of type Stimuli.\nThis object contains {self.n} Stimulus objects.\nSampling frequency: " \
+               f"{self.fs} Hz\nPitch frequencies: {self.pitch} Hz\nNumber of channels: {self.n_channels}"
+
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
 
         return cls([Stimulus(stim.samples, stim.fs, stim.pitch)] * repeats)
+
+    @classmethod
+    def from_stims(cls,
+                   stims: Iterable[Stimulus],
+                   desired_n_events: int,
+                   randomize: bool = False,
+                   rng=None):
+        stims = list(stims)
+
+        if desired_n_events % len(stims) != 0:
+            raise ValueError("Please provide a desired number of events that is a multiple of the number of "
+                             "Stimulus objects in the passed iterable.")
+
+        n_tiles = desired_n_events / len(stims)
+
+        out_stims = stims * int(n_tiles)
+
+        if randomize is True:
+            if rng is None:
+                rng = np.random.default_rng()
+            else:
+                rng = rng
+
+            rng.shuffle(out_stims)
+
+        return cls(out_stims)
 
     @classmethod
     def from_dir(cls,
@@ -972,6 +966,51 @@ def _extract_pitch(samples, fs):
     pitch = pm_snd_obj.to_pitch()
     mean_pitch = round(parselmouth.praat.call(pitch, "Get mean...", 0, 0.0, 'Hertz'))
     return mean_pitch
+
+
+def _make_ramps(signal, fs, onramp, offramp, ramp):
+    # Create onramp
+    if onramp > 0:
+        onramp_samples_len = int(onramp / 1000 * fs)
+        end_point = onramp_samples_len
+
+        if ramp == 'linear':
+            onramp_amps = np.linspace(0, 1, onramp_samples_len)
+
+        elif ramp == 'raised-cosine':
+            hanning_complete = hanning(onramp_samples_len * 2)
+            onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+
+        signal[:end_point] *= onramp_amps
+
+    elif onramp < 0:
+        raise ValueError("Onramp cannot be negative")
+    elif onramp == 0:
+        pass
+    else:
+        raise ValueError("Wrong value supplied to onramp argument.")
+
+    # Create offramp
+    if offramp > 0:
+        offramp_samples_len = int(offramp / 1000 * fs)
+        start_point = signal.shape[0] - offramp_samples_len
+
+        if ramp == 'linear':
+            offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
+        elif ramp == 'raised-cosine':
+            hanning_complete = hanning(offramp_samples_len * 2)
+            offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+
+        signal[start_point:] *= offramp_amps
+
+    elif offramp < 0:
+        raise ValueError("Offramp cannot be negative")
+    elif offramp == 0:
+        pass
+    else:
+        raise ValueError("Wrong value supplied to offramp argument.")
+
+    return signal, fs
 
 
 def _read_wavfile(filepath: Union[str, PathLike],

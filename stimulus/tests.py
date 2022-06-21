@@ -5,9 +5,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-seq = Rhythm.from_note_values(note_values=[4, 4, 4, 4, 4, 4, 2, 4, 4, 4, 4, 4, 4, 2],
-                              time_signature=(4, 4),
-                              quarternote_ms=500)
+seq = Sequence.generate_isochronous(n=10, ioi=500)
 
-stim = Stimulus.generate(onramp=10, offramp=10, ramp='raised-cosine')
-stim.plot()
+stim1 = Stimulus.generate(freq=440, offramp=25, ramp='raised-cosine')
+stim1.plot()
