@@ -38,10 +38,7 @@ class Melody(Stimuli):
             if freq is None:
                 stims.append(Stimulus.rest(event_duration))
             else:
-                stims.append(Stimulus.generate(freq=freq,
-                                               duration=event_duration,
-                                               onramp=onramp,
-                                               offramp=offramp))
+                stims.append(Stimulus.generate(freq=freq, duration=event_duration, onramp=onramp, offramp=offramp))
 
         return cls(stims)
 

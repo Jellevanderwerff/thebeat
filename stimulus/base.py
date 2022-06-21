@@ -58,7 +58,11 @@ class Stimulus:
 
     """
 
-    def __init__(self, samples: np.ndarray, fs: int, known_pitch: int = None):
+    def __init__(self,
+                 samples: np.ndarray,
+                 fs: int,
+                 name: str = None,
+                 known_pitch: int = None):
         # check number of dimensions
         if samples.ndim == 1:
             n_channels = 1
@@ -67,12 +71,13 @@ class Stimulus:
         else:
             raise ValueError("Wrong number of dimensions in given samples. Can only be 1 (mono) or 2 (stereo).")
 
-        # Save all variables
+        # Save all attributes
         self.samples = samples
         self.fs = fs
         self.dtype = samples.dtype
         self.pitch = known_pitch
         self.n_channels = n_channels
+        self.stim_name = name
 
     def __str__(self):
         return f"Object of type Stimulus.\nStimulus duration: {self.duration_s} seconds.\nPitch frequency: " \
@@ -81,6 +86,7 @@ class Stimulus:
     @classmethod
     def from_wav(cls,
                  filepath: Union[PathLike, str],
+                 name=None,
                  new_fs: int = None,
                  extract_pitch: bool = False):
         """
@@ -103,10 +109,12 @@ class Stimulus:
         # Read in the sampling frequency and all the samples from the wav file
         samples, fs, pitch = _read_wavfile(filepath, new_fs, extract_pitch)
 
-        return cls(samples, fs, known_pitch=pitch)
+        return cls(samples, fs, name, pitch)
 
     @classmethod
-    def generate(cls, freq=440,
+    def generate(cls,
+                 name=None,
+                 freq=440,
                  fs=44100,
                  duration=50,
                  amplitude=1.0,
@@ -128,16 +136,19 @@ class Stimulus:
         signal, fs = _make_ramps(signal, fs, onramp, offramp, ramp)
 
         # Return class, and save the used frequency
-        return cls(signal, fs, known_pitch=freq)
+        return cls(signal, fs, name, known_pitch=freq)
 
     @classmethod
-    def rest(cls, duration=50, fs=44100):
+    def rest(cls,
+             stim_name=None,
+             duration=50,
+             fs=44100):
         samples = np.zeros(duration // (1000 * fs), dtype='float32')
 
-        return cls(samples, fs)
+        return cls(samples, fs, stim_name)
 
     @classmethod
-    def from_parselmouth(cls, snd_obj, extract_pitch=False):
+    def from_parselmouth(cls, snd_obj, stim_name=None, extract_pitch=False):
         if not snd_obj.__class__.__name__ == "Sound":
             raise ValueError("Please provide a parselmouth.Sound object.")
 
@@ -155,7 +166,7 @@ class Stimulus:
         else:
             pitch = None
 
-        return cls(samples, fs, known_pitch=pitch)
+        return cls(samples, fs, stim_name, pitch)
 
     # Manipulation
     def change_amplitude(self, factor):
@@ -170,8 +181,16 @@ class Stimulus:
     def stop(self):
         sd.stop()
 
-    def plot(self, title="Waveform of sound"):
-        _plot_waveform(self.samples, self.fs, title)
+    def plot(self, title=None):
+        if title:
+            title = title
+        else:
+            if self.stim_name:
+                title = f"Waveform of {self.stim_name}"
+            else:
+                title = "Waveform of Stimulus"
+
+        _plot_waveform(self.samples, self.fs, self.n_channels, title)
 
     # Stats
     @property
@@ -187,13 +206,23 @@ class Stimulus:
         """
         Writes audio to disk.
         """
-        wavfile.write(filename=out_path, rate=self.fs, data=self.samples)
+        out_path = str(out_path)
+        if out_path.endswith('.wav'):
+            path, filename = os.path.split(out_path)
+        elif os.path.isdir(out_path):
+            path = out_path
+            filename = f"{self.stim_name}.wav"
+        else:
+            raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
+
+        wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=self.samples)
 
 
 class Stimuli:
     """Class that contains multiple stimuli"""
 
-    def __init__(self, stim_objects: Iterable[Stimulus]):
+    def __init__(self,
+                 stim_objects: Iterable[Stimulus]):
 
         stim_objects = list(stim_objects)
 
@@ -222,6 +251,7 @@ class Stimuli:
         # Make list of stimulus samples Numpy arrays.
         samples = [stim.samples for stim in stim_objects]
 
+        # Make array of pitch frequencies
         pitch = np.array([x.pitch for x in stim_objects])
 
         # Save attributes
@@ -231,6 +261,7 @@ class Stimuli:
         self.pitch = pitch
         self.n_channels = n_channels
         self.n = len(samples)
+        self.stim_names = [stim.stim_name for stim in stim_objects]
 
     def __iter__(self):
         self.i = 0
@@ -246,8 +277,9 @@ class Stimuli:
             raise StopIteration
 
     def __str__(self):
-        return f"Object of type Stimuli.\nThis object contains {self.n} Stimulus objects.\nSampling frequency: " \
-               f"{self.fs} Hz\nPitch frequencies: {self.pitch} Hz\nNumber of channels: {self.n_channels}"
+        return f"Object of type Stimuli.\nThis object contains {self.n} Stimulus objects.\nStimulus names: " \
+               f"{self.stim_names}\nSampling frequency: {self.fs} Hz\nPitch frequencies: {self.pitch} " \
+               f"Hz\nNumber of channels: {self.n_channels}"
 
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
@@ -341,17 +373,21 @@ class Stimuli:
             if freq is None:
                 stims.append(Stimulus.rest(event_duration))
             else:
-                stims.append(Stimulus.generate(freq=freq,
-                                               duration=event_duration,
-                                               onramp=onramp,
-                                               offramp=offramp))
+                stims.append(Stimulus.generate(freq=freq, duration=event_duration, onramp=onramp, offramp=offramp))
 
         return cls(stims)
 
     def write_wavs(self, path: Union[str, PathLike], filenames: list[str] = None):
 
         if filenames is None:
-            filenames = [f"{str(i)}.wav" for i in range(1, len(self.samples) + 1)]
+            if all(name is None for name in self.stim_names):
+                filenames = [f"{str(i)}.wav" for i in range(1, len(self.samples) + 1)]
+            else:
+                filenames = []
+                for i, name in enumerate(self.stim_names):
+                    filenames.append(f"{i+1}-{name}.wav")
+        else:
+            filenames = filenames
 
         for samples, filename in zip(self.samples, filenames):
             wavfile.write(os.path.join(path, filename), self.fs, samples)
@@ -668,6 +704,7 @@ class StimSequence(BaseSequence):
     def __init__(self,
                  stimuli: Stimuli,
                  seq_obj,
+                 name: str = None,
                  played: Iterable = None):
 
         # If no list of booleans is passed during instantiation of StimulusSequence, we use the one from
@@ -697,6 +734,8 @@ class StimSequence(BaseSequence):
         self.dtype = stimuli.dtype
         self.n_channels = stimuli.n_channels
         self.pitch = stimuli.pitch
+        self.stimseq_name = name
+        self.stim_names = stimuli.stim_names
 
         # Initialize Sequence class
         BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical, played=seq_obj.played)
@@ -709,11 +748,11 @@ class StimSequence(BaseSequence):
 
     def __str__(self, ):
         if self.metrical and not self.time_sig:
-            return f"Object of type StimulusSequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type StimSequence (metrical version):\nStimSequence name: {self.stimseq_name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
         elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
-            return f"Object of type StimulusSequence (metrical version):\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type StimSequence (metrical version):\nStimSequence name: {self.stimseq_name}\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
         else:
-            return f"Object of type StimulusSequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type StimSequence (non-metrical version):\nStimSequence name: {self.stimseq_name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nStimulus names: {self.stim_names}"
 
     def _make_sound(self, stimuli, onsets):
         # Check for overlap
@@ -850,11 +889,21 @@ class StimSequence(BaseSequence):
         # Call internal plot method to plot the track
         _plot_lp(t, filepath, print_staff)
 
-    def plot_waveform(self, title):
-        _plot_waveform(self.samples, self.fs, title)
+    def plot_waveform(self, title=None):
+        if title:
+            title = title
+        else:
+            if self.stimseq_name:
+                title = f"Waveform of {self.stimseq_name}"
+            else:
+                title = "Waveform of StimSequence"
 
 
-    def write_wav(self, out_path, metronome=False, metronome_amplitude=1):
+        _plot_waveform(self.samples, self.fs, self.n_channels, title)
+
+    def write_wav(self, out_path='.',
+                  metronome=False,
+                  metronome_amplitude=1):
         """
         Writes audio to disk.
         """
@@ -864,7 +913,21 @@ class StimSequence(BaseSequence):
         else:
             samples = self.samples
 
-        wavfile.write(filename=out_path, rate=self.fs, data=samples)
+        out_path = str(out_path)
+
+        if out_path.endswith('.wav'):
+            path, filename = os.path.split(out_path)
+        elif os.path.isdir(out_path):
+            path = out_path
+            if self.stimseq_name:
+                filename = f"{self.stimseq_name}.wav"
+            else:
+                filename = f"stim_sequence.wav"
+
+        else:
+            raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
+
+        wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=samples)
 
 
 def _plot_lp(t, filepath, print_staff: bool):
@@ -948,10 +1011,16 @@ def _plot_lp(t, filepath, print_staff: bool):
         os.remove(os.path.join(location, file))
 
 
-def _plot_waveform(samples, fs, title):
+def _plot_waveform(samples, fs, n_channels, title):
     plt.clf()
     frames = np.arange(samples.shape[0])
-    plt.plot(frames, samples)
+    if n_channels == 1:
+        alph = 1
+    elif n_channels == 2:
+        alph = 0.5
+    plt.plot(frames, samples, alpha=alph)
+    if n_channels == 2:
+        plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
     plt.ylim([-1, 1])
     plt.ylabel("Amplitude")
     plt.xticks(ticks=[0, samples.shape[0]],
@@ -1017,7 +1086,6 @@ def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: int = None,
                   extract_pitch: bool = False):
-
     file_fs, samples = wavfile.read(filepath)
 
     # Change dtype so we always have float32

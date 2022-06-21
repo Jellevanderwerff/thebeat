@@ -35,7 +35,7 @@ stimulus_sequence.plot("Manipulation changed amplitude")
 
 # Accelerando
 sequence = Sequence.generate_isochronous(n=10, ioi=500)
-stimulus = Stimulus.generate(freq=440, osc='sine', duration=10)
+stimulus = Stimulus.generate(freq=440, duration=10, osc='sine')
 stimulus_sequence = StimulusSequence(stimulus, sequence)
 stimulus_sequence.plot("Accelerando before")
 stimulus_sequence.change_tempo_linearly(total_change=2)
