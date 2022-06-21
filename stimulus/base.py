@@ -723,7 +723,7 @@ class Sequence(BaseSequence):
         }
 
 
-class StimSequence(BaseSequence):
+class StimTrial(BaseSequence):
     """
     StimSequence class which inherits only the most basic functions from BaseSequence
     """
@@ -806,8 +806,8 @@ class StimSequence(BaseSequence):
 
         if self.metrical and not self.time_sig:
             return f"""
-Object of type StimSequence (metrical version):
-StimSequence name: {name}
+Object of type StimTrial (metrical version):
+StimTrial name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
 Onsets:{self.onsets}
@@ -818,8 +818,8 @@ Stimulus played: {self.played}
 
         elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
             return f"""
-Object of type StimSequence (metrical version):
-StimSequence name: {name}
+Object of type StimTrial (metrical version):
+StimTrial name: {name}
 Time signature: {self.time_sig}
 Number of bars: {self.n_bars}
 Quarternote (ms): {self.quarternote_ms}
@@ -832,8 +832,8 @@ Stimulus played: {self.played}
             """
         else:
             return f"""
-Object of type StimSequence (non-metrical version):
-StimSequence name: {name}
+Object of type StimTrial (non-metrical version):
+StimTrial name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
 Onsets:{self.onsets}
@@ -916,8 +916,6 @@ Stimulus played: {self.played}
 
         return current_samples
 
-    # Override Sequence and Stimulus manipulation methods so sound is regenerated when something changes
-
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         if metronome is True:
             samples = self._get_sound_with_metronome(metronome_amplitude=metronome_amplitude)
@@ -929,7 +927,7 @@ Stimulus played: {self.played}
 
     def plot_music(self, filepath=None, key='C', print_staff=True):
         if self.rhythmic is False:
-            raise ValueError("Please initialize this StimSequence object using a Rhythm as the"
+            raise ValueError("Please initialize this StimTrial object using a Rhythm as the"
                              "second argument. Otherwise, the time signature etc. are unknown.")
 
         if self.pitch is None:
@@ -1105,7 +1103,8 @@ def _plot_waveform(samples, fs, n_channels, title):
     elif n_channels == 2:
         alph = 0.5
     else:
-        raise ValueError('Unexpected number of channels.')
+        raise ValueError("Unexpected number of channels.")
+
     plt.plot(frames, samples, alpha=alph)
     if n_channels == 2:
         plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
