@@ -236,11 +236,12 @@ class Stimuli:
     def __init__(self,
                  stim_objects: Iterable[Stimulus]):
 
-        stim_objects = list(stim_objects)
+        stim_objects = [stim for stim in stim_objects]
 
         # Check consistency
-        all_fs = [snd.fs for snd in stim_objects]
-        all_dtypes = [snd.dtype for snd in stim_objects]
+        all_fs = [snd.fs for snd in stim_objects if snd is not None]
+        all_dtypes = [snd.dtype for snd in stim_objects if snd is not None]
+        all_n_channels = [snd.n_channels for snd in stim_objects if snd is not None]
 
         # Check whether fs's are the same across the list
         if not all(x == all_fs[0] for x in all_fs):
@@ -255,16 +256,25 @@ class Stimuli:
             dtype = all_dtypes[0]
 
         # Check equal number of channels
-        if not all(x.n_channels == stim_objects[0].n_channels for x in stim_objects):
+        if not all(channels == all_n_channels[0] for channels in all_n_channels):
             raise ValueError("The Stimulus objects in the passed list have differing number of channels!")
         else:
-            n_channels = stim_objects[0].n_channels
+            n_channels = all_n_channels[0]
 
-        # Make list of stimulus samples Numpy arrays.
-        samples = [stim.samples for stim in stim_objects]
+        # Make list of stimulus samples Numpy arrays and array of pitch frequencies.
+        samples = []
+        pitch = []
 
-        # Make array of pitch frequencies
-        pitch = np.array([x.pitch for x in stim_objects])
+        for stim in stim_objects:
+            if stim is None:
+                samples.append(None)
+                pitch.append(None)
+            else:
+                samples.append(stim.samples)
+                pitch.append(stim.pitch)
+
+        # Convert to array
+        pitch = np.array(pitch)
 
         # Save attributes
         self.samples = samples
@@ -273,7 +283,7 @@ class Stimuli:
         self.pitch = pitch
         self.n_channels = n_channels
         self.n = len(samples)
-        self.stim_names = [stim.stim_name for stim in stim_objects]
+        self.stim_names = [stim.stim_name for stim in stim_objects if stim is not None]
 
     def __iter__(self):
         self.i = 0
@@ -281,9 +291,13 @@ class Stimuli:
 
     def __next__(self):
         if self.i != len(self.samples):
-            stim_obj = Stimulus(self.samples[self.i], self.fs, self.pitch[self.i])
-            self.i += 1
-            return stim_obj
+            if self.samples[self.i] is not None:
+                stim_obj = Stimulus(self.samples[self.i], self.fs, self.pitch[self.i])
+                self.i += 1
+                return stim_obj
+            else:
+                self.i += 1
+                return None
 
         else:
             raise StopIteration
@@ -298,6 +312,7 @@ class Stimuli:
 
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
+        # todo Consider removing this one.
 
         return cls([Stimulus(stim.samples, stim.fs, stim.stim_name, stim.pitch)] * repeats)
 
@@ -983,7 +998,6 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 
 
 def _normalize_audio(samples):
-    warnings.warn("THIS CODE IS UNTESTED! Also check how it works for stereo!")
     samples /= np.max(np.abs(samples), axis=0)
     return samples
 
