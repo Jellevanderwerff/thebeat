@@ -1,17 +1,17 @@
-from mingus.containers import Bar, Track
+from mingus.containers import Bar, Track, Note
 import numpy as np
-from stimulus import BaseSequence
-from stimulus.base import _plot_lp, _plot_waveform
+from stimulus.base import BaseSequence, Stimuli, _plot_lp, _plot_waveform, _normalize_audio, _play_samples, _write_wav
 import random
 from scipy.io import wavfile
+from collections import namedtuple
 
 
 class Rhythm(BaseSequence):
 
-    def __init__(self, iois, n_bars, time_sig, quarternote_ms, played=None):
+    def __init__(self, iois, n_bars, time_sig, beat_ms, played=None):
         # Save attributes
         self.time_sig = time_sig  # Used for metrical sequences
-        self.quarternote_ms = quarternote_ms  # Used for metrical sequences
+        self.beat_ms = beat_ms  # Used for metrical sequences
         self.n_bars = n_bars
         self.played = played
 
@@ -20,7 +20,7 @@ class Rhythm(BaseSequence):
 
     def __str__(self):
         return f"Object of type Rhythm.\nTime signature: {self.time_sig}\nNumber of bars: {self.n_bars}\nQuarternote (" \
-               f"ms): {self.quarternote_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\n" \
+               f"ms): {self.beat_ms}\nNumber of events: {len(self.onsets)}\nIOIs: {self.iois}\n" \
                f"Onsets:{self.onsets}\nOnsets played: {self.played}"
 
     def __add__(self, other):
@@ -29,21 +29,21 @@ class Rhythm(BaseSequence):
     @property
     def note_values(self):
         """
-        Get note values from the IOIs, based on quarternote_ms.
+        Get note values from the IOIs, based on beat_ms.
         """
-        if not self.metrical or not self.time_sig or not self.quarternote_ms:
+        if not self.metrical or not self.time_sig or not self.beat_ms:
             raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g."
                              "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
                              "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
 
-        ratios = self.iois / self.quarternote_ms / 4
+        ratios = self.iois / self.beat_ms / 4
 
         note_values = np.array([1 // ratio for ratio in ratios])
 
         return note_values
 
     @classmethod
-    def from_note_values(cls, note_values, time_signature, quarternote_ms, played=None):
+    def from_note_values(cls, note_values, time_signature=(4, 4), beat_ms=500, played=None):
         """
         Almost same as standard initialization, except that we don't provide the number of bars but calculate those.
 
@@ -65,16 +65,16 @@ class Rhythm(BaseSequence):
         else:
             n_bars = int(n_bars)
 
-        iois = ratios * quarternote_ms
+        iois = ratios * beat_ms
 
         return cls(iois,
                    time_sig=time_signature,
-                   quarternote_ms=quarternote_ms,
+                   beat_ms=beat_ms,
                    n_bars=n_bars,
                    played=played)
 
     @classmethod
-    def from_iois(cls, iois, time_signature, quarternote_ms, played=None):
+    def from_iois(cls, iois, time_signature, beat_ms, played=None):
         if played is None:
             played = [True] * len(iois)
         elif len(played) == len(iois):
@@ -83,7 +83,7 @@ class Rhythm(BaseSequence):
             raise ValueError("The 'played' argument should contain an equal number of "
                              "booleans as the number of note_values.")
 
-        note_values = np.array([ioi / quarternote_ms * time_signature[1] for ioi in iois])
+        note_values = np.array([ioi / beat_ms * time_signature[1] for ioi in iois])
 
         n_bars = np.sum(note_values) / time_signature[0]
 
@@ -94,7 +94,7 @@ class Rhythm(BaseSequence):
 
         return cls(iois,
                    time_sig=time_signature,
-                   quarternote_ms=quarternote_ms,
+                   beat_ms=beat_ms,
                    n_bars=n_bars,
                    played=played)
 
@@ -102,7 +102,7 @@ class Rhythm(BaseSequence):
     def generate_random_rhythm(cls, n_bars,
                                allowed_note_values,
                                time_signature,
-                               quarternote_ms,
+                               beat_ms,
                                events_per_bar=None,
                                n_random_rests=0):
         """
@@ -115,7 +115,7 @@ class Rhythm(BaseSequence):
             all_rhythmic_ratios = _all_rhythmic_ratios(allowed_note_values, time_signature, target_n=events_per_bar)
             ratios = random.choice(all_rhythmic_ratios)
 
-            new_iois = ratios * 4 * quarternote_ms
+            new_iois = ratios * 4 * beat_ms
 
             iois = np.concatenate((iois, new_iois), axis=None)
 
@@ -127,22 +127,22 @@ class Rhythm(BaseSequence):
         else:
             played = [True] * len(iois)
 
-        return cls(iois, time_sig=time_signature, quarternote_ms=quarternote_ms, n_bars=n_bars, played=played)
+        return cls(iois, time_sig=time_signature, beat_ms=beat_ms, n_bars=n_bars, played=played)
 
     @classmethod
-    def generate_isochronous(cls, n_bars, time_sig, quarternote_ms, played=None):
+    def generate_isochronous(cls, n_bars, time_sig, beat_ms, played=None):
 
         n_iois = time_sig[0] * n_bars
 
         if played is None:
             played = [True] * n_iois
 
-        iois = n_iois * [quarternote_ms]
+        iois = n_iois * [beat_ms]
 
         return cls(iois=iois,
                    n_bars=n_bars,
                    time_sig=time_sig,
-                   quarternote_ms=quarternote_ms,
+                   beat_ms=beat_ms,
                    played=played)
 
     def plot(self, filepath=None, print_staff=False):
@@ -188,34 +188,131 @@ class Rhythm(BaseSequence):
 
 class RhythmTrial:
 
-    def __init__(self, rhythm, stims, name=None):
-        # General attributes
-        self.events = list(zip(rhythm.onsets, stims.samples, stims.stim_names, rhythm.played))
+    def __init__(self,
+                 rhythm: Rhythm,
+                 stims: Stimuli,
+                 name: str = None,
+                 first_layer_id: int = 0):
+
+        # Check if right objects were passed
+        if not isinstance(rhythm, Rhythm) or not isinstance(stims, Stimuli):
+            raise ValueError("Please provide a Rhythm object as the first argument, and a Stimuli object as the second "
+                             "argument.")
+
+        # Initialize namedtuple
+        self.Event = namedtuple('Event', 'onset ioi duration samples layer played')
+
+        # Then add events as namedtuples to self.events
+        events = []
+        self.events = self._add_events(events, rhythm, stims, first_layer_id)
+
+        # Save provided trial name
         self.name = name
 
         # Save rhythmic attributes
         self.time_sig = rhythm.time_sig
-        self.quarternote_ms = rhythm.quarternote_ms
+        self.beat_ms = rhythm.beat_ms
         self.n_bars = rhythm.n_bars
         self.note_values = rhythm.note_values
+        self.bar_duration = np.sum(rhythm.iois) / rhythm.n_bars
+        self.total_duration = np.sum(rhythm.iois)
 
         # Save stimulus attributes
         self.fs = stims.fs
         self.n_channels = stims.n_channels
 
-        # make initial sound that saves samples to self.samples
+        # Make initial sound
         self.samples = self._make_sound(self.events)
 
     def _make_sound(self, events):
-        # todo This one will probably be quite different from the one in base. If not, make it a function and share
-        #  it between classes.
-        samples = np.zeros(100)
-        return samples
+        # todo Don't forget to normalize sound
+        array_length = int(self.total_duration / 1000 * self.fs)
+        samples = np.zeros(array_length)
 
-    def plot_music(self):
-        # todo This one will probably be quite different from the one in base. If not, make it a function and share
-        #  it between classes.
-        pass
+        for event in events:
+            if event.played is True:
+                start_point = int(event.onset / 1000 * self.fs)
+                end_point = int(start_point + (event.duration / 1000 * self.fs))
+                samples[start_point:end_point] += event.samples
+
+        return _normalize_audio(samples)
+
+    def _add_events(self, current_events, rhythm, stims, layer_id):
+
+        events = current_events
+
+        # Make some additional variables
+        layer = [layer_id] * stims.n
+        event_duration = [stim.duration_ms for stim in stims]
+
+        # Save each event to self.events as a named tuple
+        for event in zip(rhythm.onsets, rhythm.iois, event_duration, stims.samples, layer, rhythm.played):
+            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
+            events.append(entry)
+
+        return events
+
+    def add_layer(self, rhythm: Rhythm, stims: Stimuli, layer_id: int):
+        # Check if right objects were passed
+        if not isinstance(rhythm, Rhythm) or not isinstance(stims, Stimuli):
+            raise ValueError("Please provide a Rhythm object as the first argument, and a Stimuli object as the second "
+                             "argument.")
+
+        # todo Add checks to see if time_sig, beat_ms, sampling frequency all that are the same!
+        # Add new layer to events
+
+        # todo Check whether layer already exists
+        self.events = self._add_events(self.events, rhythm, stims, layer_id)
+        # make sound and save to self.samples
+        self.samples = self._make_sound(self.events)
+
+    def play(self, loop=False, metronome=False, metronome_amplitude=1):
+        _play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
+
+    def plot_music(self, filepath=None, key='C', print_staff=True):
+
+        if self.pitch is None:
+            raise ValueError("The pitches of the stimuli are unknown. Either"
+                             "import using the extract_pitch=True flag, or"
+                             "provide the values yourself as StimuliSequence.pitch")
+
+        # create initial bar
+        t = Track()
+        b = Bar(key=key, meter=self.time_sig)
+
+        # keep track of the index of the note_value
+        note_i = 0
+
+        values_freqs_played = list(zip(self.note_values, self.pitch, self.played))
+
+        for note_value, freq, played in values_freqs_played:
+            if played is True:
+                note = Note()
+                note.from_hertz(freq)
+                b.place_notes(note.name, self.note_values[note_i])
+            elif played is False:
+                b.place_rest(self.note_values[note_i])
+
+            # if bar is full, create new bar and add bar to track
+            if b.current_beat == b.length:
+                t.add_bar(b)
+                b = Bar(key=key, meter=self.time_sig)
+
+            note_i += 1
+
+        # If final bar was not full yet, add a rest for the remaining duration
+        if b.current_beat % 1 != 0:
+            rest_value = 1 / b.space_left()
+            if round(rest_value) != rest_value:
+                raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
+                                 "be (easily) captured in musical notation. This for instance happens when "
+                                 "using one of the tempo manipulation methods.")
+
+            b.place_rest(rest_value)
+            t.add_bar(b)
+
+        # Call internal plot method to plot the track
+        _plot_lp(t, filepath, print_staff)
 
     def plot_waveform(self, title=None):
         if title:
@@ -224,10 +321,18 @@ class RhythmTrial:
             if self.name:
                 title = f"Waveform of {self.name}"
             else:
-                title = "Waveform of StimSequence"
+                title = "Waveform of RhythmTrial"
 
         _plot_waveform(self.samples, self.fs, self.n_channels, title)
 
+    def write_wav(self, out_path='.',
+                  metronome=False,
+                  metronome_amplitude=1):
+        """
+        Writes audio to disk.
+        """
+
+        _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.beat_ms, metronome_amplitude)
 
 
 def _all_possibilities(nums, target):
@@ -289,8 +394,8 @@ def join_rhythms(iterator):
     if not all(rhythm.time_sig == iterator[0].time_sig for rhythm in iterator):
         raise ValueError("Provided rhythms should have the same time signatures.")
 
-    if not all(rhythm.quarternote_ms == iterator[0].quarternote_ms for rhythm in iterator):
-        raise ValueError("Provided rhythms should have same tempo (quarternote_ms).")
+    if not all(rhythm.beat_ms == iterator[0].beat_ms for rhythm in iterator):
+        raise ValueError("Provided rhythms should have same tempo (beat_ms).")
 
     iois = [rhythm.iois for rhythm in iterator]
     iois = np.concatenate(iois)
@@ -302,5 +407,5 @@ def join_rhythms(iterator):
     return Rhythm(iois,
                   n_bars=n_bars,
                   time_sig=iterator[0].time_sig,
-                  quarternote_ms=iterator[0].quarternote_ms,
+                  beat_ms=iterator[0].beat_ms,
                   played=played)

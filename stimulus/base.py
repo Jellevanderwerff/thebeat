@@ -14,6 +14,8 @@ import parselmouth
 from collections.abc import Iterable
 from pathlib import Path
 import re
+import warnings
+import soundfile
 
 
 class Stimulus:
@@ -853,51 +855,6 @@ Stimulus played: {self.played}
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
 
-    def plot_music(self, filepath=None, key='C', print_staff=True):
-
-        if self.pitch is None:
-            raise ValueError("The pitches of the stimuli are unknown. Either"
-                             "import using the extract_pitch=True flag, or"
-                             "provide the values yourself as StimuliSequence.pitch")
-
-        # create initial bar
-        t = Track()
-        b = Bar(key=key, meter=self.time_sig)
-
-        # keep track of the index of the note_value
-        note_i = 0
-
-        values_freqs_played = list(zip(self.note_values, self.pitch, self.played))
-
-        for note_value, freq, played in values_freqs_played:
-            if played is True:
-                note = Note()
-                note.from_hertz(freq)
-                b.place_notes(note.name, self.note_values[note_i])
-            elif played is False:
-                b.place_rest(self.note_values[note_i])
-
-            # if bar is full, create new bar and add bar to track
-            if b.current_beat == b.length:
-                t.add_bar(b)
-                b = Bar(key=key, meter=self.time_sig)
-
-            note_i += 1
-
-        # If final bar was not full yet, add a rest for the remaining duration
-        if b.current_beat % 1 != 0:
-            rest_value = 1 / b.space_left()
-            if round(rest_value) != rest_value:
-                raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
-                                 "be (easily) captured in musical notation. This for instance happens when "
-                                 "using one of the tempo manipulation methods.")
-
-            b.place_rest(rest_value)
-            t.add_bar(b)
-
-        # Call internal plot method to plot the track
-        _plot_lp(t, filepath, print_staff)
-
     def plot_waveform(self, title=None):
         if title:
             title = title
@@ -905,7 +862,7 @@ Stimulus played: {self.played}
             if self.name:
                 title = f"Waveform of {self.name}"
             else:
-                title = "Waveform of StimSequence"
+                title = "Waveform of StimTrial"
 
         _plot_waveform(self.samples, self.fs, self.n_channels, title)
 
@@ -1021,6 +978,12 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
     return signal, fs
 
 
+def _normalize_audio(samples):
+    warnings.warn("THIS CODE IS UNTESTED! Also check how it works for stereo!")
+    samples /= np.max(np.abs(samples), axis=0)
+    return samples
+
+
 def _play_samples(samples, fs, mean_ioi, loop, metronome, metronome_amplitude):
     if metronome is True:
         samples = _get_sound_with_metronome(samples, fs, mean_ioi,
@@ -1126,7 +1089,6 @@ def _plot_waveform(samples, fs, n_channels, title):
     plt.plot(frames, samples, alpha=alph)
     if n_channels == 2:
         plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
-    plt.ylim([-1, 1])
     plt.ylabel("Amplitude")
     plt.xticks(ticks=[0, samples.shape[0]],
                labels=[0, int(samples.size / fs * 1000)])
@@ -1139,18 +1101,18 @@ def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: float = None,
                   extract_pitch: bool = False):
-    file_fs, samples = wavfile.read(filepath)
+    samples, file_fs = soundfile.read(filepath, dtype='float32')
 
-    # Change dtype so we always have float32
-    if samples.dtype == 'int16':
-        samples = samples.astype(np.float32, order='C') / 32768.0
-    elif samples.dtype == 'int32':
-        samples = samples.astype(np.float32, order='C') / 2147483648.0
-    elif samples.dtype == 'float32':
-        pass
-    else:
-        raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
-                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+    # # Change dtype so we always have float32
+    # if samples.dtype == 'int16':
+    #     samples = samples.astype(np.float32, order='C') / 32768.0
+    # elif samples.dtype == 'int32':
+    #     samples = samples.astype(np.float32, order='C') / 2147483648.0
+    # elif samples.dtype == 'float32':
+    #     pass
+    # else:
+    #     raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
+    #                      "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
     # Resample if necessary
     if new_fs is None:
