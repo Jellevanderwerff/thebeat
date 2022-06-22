@@ -1,7 +1,7 @@
 from stimulus import *
 
-kick = Stimulus.from_wav('../test_files/kick mono.wav')
-snare = Stimulus.from_wav('../test_files/snare mono.wav')
+kick = Stimulus.from_wav('../test_files/kick.wav')
+snare = Stimulus.from_wav('../test_files/snare.wav')
 
 
 rhythm_kick = Rhythm.from_note_values([4, 4, 4, 4])

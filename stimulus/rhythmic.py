@@ -4,6 +4,7 @@ from stimulus.base import BaseSequence, Stimuli, _plot_lp, _plot_waveform, _norm
 import random
 from scipy.io import wavfile
 from collections import namedtuple
+import warnings
 
 
 class Rhythm(BaseSequence):
@@ -225,17 +226,28 @@ class RhythmTrial:
         self.samples = self._make_sound(self.events)
 
     def _make_sound(self, events):
-        # todo Don't forget to normalize sound
         array_length = int(self.total_duration / 1000 * self.fs)
-        samples = np.zeros(array_length)
+        if self.n_channels == 1:
+            samples = np.zeros(array_length)
+        else:
+            samples = np.zeros((array_length, 2))
 
         for event in events:
             if event.played is True:
-                start_point = int(event.onset / 1000 * self.fs)
-                end_point = int(start_point + (event.duration / 1000 * self.fs))
-                samples[start_point:end_point] += event.samples
+                start_pos = int(event.onset / 1000 * self.fs)
+                end_pos = int(start_pos + (event.duration / 1000 * self.fs))
+                if self.n_channels == 1:
+                    samples[start_pos:end_pos] = event.samples
+                elif self.n_channels == 2:
+                    samples[start_pos:end_pos, :2] = event.samples
 
-        return _normalize_audio(samples)
+        if np.max(samples) > 1:
+            warnings.warn("Sound was normalized")
+            return _normalize_audio(samples)
+        else:
+            return samples
+
+
 
     def _add_events(self, current_events, rhythm, stims, layer_id):
 

@@ -850,7 +850,11 @@ Stimulus played: {self.played}
                 samples[start_pos:end_pos, :2] = stimulus
 
         # return sound
-        return samples
+        if np.max(samples) > 1:
+            warnings.warn("Sound was normalized")
+            return _normalize_audio(samples)
+        else:
+            return samples
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
