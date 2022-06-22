@@ -3,15 +3,16 @@ from numpy.random import default_rng
 from scipy.io import wavfile
 
 kick = Stimulus.from_wav('test_files/kick.wav')
+snare = Stimulus.from_wav('test_files/snare.wav')
 
-stims1 = Stimuli.from_notes('AAAA')
-rhythm1 = Rhythm.from_note_values([4, 4, 4, 4], time_signature=(4, 4), beat_ms=500)
+rhythm_kick = Rhythm.from_note_values([4, 4, 4, 4])
+stims_kick = Stimuli.from_stims([kick, kick, kick, kick])
 
-stims2 = Stimuli.from_notes('XGXGXGXG')
-rhythm2 = Rhythm.from_note_values([8, 8, 8, 8, 8, 8, 8, 8], time_signature=(4, 4), beat_ms=500)
+rhythm_snare = Rhythm.from_note_values([4, 4, 4, 4])
+stims_snare = Stimuli.from_stims([None, snare, None, snare])
 
-rhythmtrial = RhythmTrial(rhythm1, stims1, name="test")
+trial = RhythmTrial(rhythm_kick, stims_kick)
 
-#rhythmtrial.add_layer(rhythm2, stims2, layer_id=1)
-
-rhythmtrial.play()
+trial.add_layer(rhythm_snare, stims_snare, layer_id=1)
+trial.plot_waveform()
+trial.play()

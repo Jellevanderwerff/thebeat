@@ -201,7 +201,7 @@ class RhythmTrial:
                              "argument.")
 
         # Initialize namedtuple
-        self.Event = namedtuple('Event', 'onset ioi duration samples layer played')
+        self.Event = namedtuple('Event', 'onset ioi duration samples layer')
 
         # Then add events as namedtuples to self.events
         events = []
@@ -233,21 +233,19 @@ class RhythmTrial:
             samples = np.zeros((array_length, 2))
 
         for event in events:
-            if event.played is True:
+            if event.samples is not None:
                 start_pos = int(event.onset / 1000 * self.fs)
                 end_pos = int(start_pos + (event.duration / 1000 * self.fs))
                 if self.n_channels == 1:
-                    samples[start_pos:end_pos] = event.samples
+                    samples[start_pos:end_pos] += event.samples
                 elif self.n_channels == 2:
-                    samples[start_pos:end_pos, :2] = event.samples
+                    samples[start_pos:end_pos, :2] += event.samples
 
         if np.max(samples) > 1:
-            warnings.warn("Sound was normalized")
+            warnings.warn("\nSound was normalized to avoid distortion. If undesirable, change amplitude of the stims.")
             return _normalize_audio(samples)
         else:
             return samples
-
-
 
     def _add_events(self, current_events, rhythm, stims, layer_id):
 
@@ -255,11 +253,16 @@ class RhythmTrial:
 
         # Make some additional variables
         layer = [layer_id] * stims.n
-        event_duration = [stim.duration_ms for stim in stims]
+        event_duration = []
+        for stim in stims:
+            if stim is not None:
+                event_duration.append(stim.duration_ms)
+            else:
+                event_duration.append(None)
 
         # Save each event to self.events as a named tuple
-        for event in zip(rhythm.onsets, rhythm.iois, event_duration, stims.samples, layer, rhythm.played):
-            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
+        for event in zip(rhythm.onsets, rhythm.iois, event_duration, stims.samples, layer):
+            entry = self.Event(event[0], event[1], event[2], event[3], event[4])
             events.append(entry)
 
         return events
@@ -282,49 +285,10 @@ class RhythmTrial:
         _play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
 
     def plot_music(self, filepath=None, key='C', print_staff=True):
-
-        if self.pitch is None:
-            raise ValueError("The pitches of the stimuli are unknown. Either"
-                             "import using the extract_pitch=True flag, or"
-                             "provide the values yourself as StimuliSequence.pitch")
-
-        # create initial bar
-        t = Track()
-        b = Bar(key=key, meter=self.time_sig)
-
-        # keep track of the index of the note_value
-        note_i = 0
-
-        values_freqs_played = list(zip(self.note_values, self.pitch, self.played))
-
-        for note_value, freq, played in values_freqs_played:
-            if played is True:
-                note = Note()
-                note.from_hertz(freq)
-                b.place_notes(note.name, self.note_values[note_i])
-            elif played is False:
-                b.place_rest(self.note_values[note_i])
-
-            # if bar is full, create new bar and add bar to track
-            if b.current_beat == b.length:
-                t.add_bar(b)
-                b = Bar(key=key, meter=self.time_sig)
-
-            note_i += 1
-
-        # If final bar was not full yet, add a rest for the remaining duration
-        if b.current_beat % 1 != 0:
-            rest_value = 1 / b.space_left()
-            if round(rest_value) != rest_value:
-                raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
-                                 "be (easily) captured in musical notation. This for instance happens when "
-                                 "using one of the tempo manipulation methods.")
-
-            b.place_rest(rest_value)
-            t.add_bar(b)
+        pass
 
         # Call internal plot method to plot the track
-        _plot_lp(t, filepath, print_staff)
+        #_plot_lp(t, filepath, print_staff)
 
     def plot_waveform(self, title=None):
         if title:
