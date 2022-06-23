@@ -1,5 +1,10 @@
 from stimulus import *
 
+"""
+In this example we generate a random rhythm from a number of allowed note values.
+Then, we create a stimuli, and make a RhythmTrial out of it, which we can play.
+"""
+
 # Generate random rhythm with 1/4th, 1/8th, or 1/16th notes
 rhythm = Rhythm.generate_random_rhythm(allowed_note_values=[4, 8, 16], beat_ms=1000)
 

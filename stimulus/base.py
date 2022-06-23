@@ -309,7 +309,12 @@ class Stimuli:
         self.pitch = pitch
         self.n_channels = n_channels
         self.n = len(samples)
-        self.names = [stim.name for stim in stim_objects if stim is not None]
+        self.names = []
+        for stim in stim_objects:
+            if stim is None:
+                self.names.append(None)
+            else:
+                self.names.append(stim.name)
 
     def __iter__(self):
         self.i = 0
