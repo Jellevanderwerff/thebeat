@@ -26,4 +26,5 @@ stims_hihat = Stimuli.from_stims([hihat] * 32)
 trial.add_layer(rhythm_hihat, stims_hihat)
 
 trial.plot_waveform()
+trial.write_wav('drum_beat.wav')
 trial.play()
