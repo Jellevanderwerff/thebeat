@@ -18,7 +18,8 @@ seq_joined = seq1 + seq2
 print(seq_joined)
 
 # Now let's create a stimtrial, this time using stims that we get from a number of notes
-stims = Stimuli.from_notes('CCCGGG')
+# The on- and offramps make the sounds sound a little better
+stims = Stimuli.from_notes('CCCGGG', onramp=5, offramp=5)
 trial = StimTrial(stims, seq_joined, name="joined metrical sequences")
 
 # And play/plot etc.
