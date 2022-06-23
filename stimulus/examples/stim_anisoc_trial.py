@@ -5,10 +5,11 @@ In this example we create a simple trial that uses an imported sound and plays t
 """
 
 # First we create a sequence of 10 events that uses random inter-onset intervals sampled from a uniform distribution
-seq = Sequence.generate_random_uniform(n=10, a=400, b=600)
+seq = Sequence.generate_random_uniform(n=10, a=100, b=900)
 
 # Then, let's use one stimulus sound that we get from a .wav file
-stim = Stimulus.from_wav('click01.wav')
+stim = Stimulus.from_wav('resources/click01.wav')
+
 # Repeat it 10 times, notice how we now create a Stimuli (not Stimulus) object
 stims = Stimuli.from_stim(stim, repeats=10)
 
@@ -16,4 +17,4 @@ stims = Stimuli.from_stim(stim, repeats=10)
 trial = StimTrial(stims, seq, name="random trial")
 trial.plot_waveform()
 trial.write_wav('anisoc_trial.wav')
-trial.play(metronome=True)
+trial.play()
