@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import warnings
 import soundfile
+import sys
 
 
 class Stimulus:
@@ -78,11 +79,11 @@ class Stimulus:
         self.dtype = samples.dtype
         self.pitch = known_pitch
         self.n_channels = n_channels
-        self.stim_name = name
+        self.name = name
 
     def __str__(self):
-        if self.stim_name:
-            name = self.stim_name
+        if self.name:
+            name = self.name
         else:
             name = "Not provided"
 
@@ -151,6 +152,31 @@ class Stimulus:
         return cls(signal, fs, name, known_pitch=freq)
 
     @classmethod
+    def from_note(cls, note_str, event_duration=50, onramp=0, offramp=0, ramp='linear',
+                  name: str = None):
+        """
+        Get stimulus objects on the basis of a provided string of notes.
+        For instance: 'CDEC' returns a list of four Stimulus objects.
+        Alternatively, one can use 'C4D4E4C4'. In place of
+        silences one can use an 'X'.
+
+        """
+
+        note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
+        note_strings = [string for string in note_strings if string != '']
+
+        if len(note_strings) == 1:
+            freq = Note(note_strings[0]).to_hertz()
+
+        elif len(note_strings) == 2:
+            note, num = tuple(note_strings)
+            freq = Note(note, int(num)).to_hertz()
+        else:
+            raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
+
+        return Stimulus.generate(name, freq=freq, duration=event_duration, onramp=onramp, offramp=offramp, ramp=ramp)
+
+    @classmethod
     def rest(cls,
              name=None,
              duration=50,
@@ -197,8 +223,8 @@ class Stimulus:
         if title:
             title = title
         else:
-            if self.stim_name:
-                title = f"Waveform of {self.stim_name}"
+            if self.name:
+                title = f"Waveform of {self.name}"
             else:
                 title = "Waveform of Stimulus"
 
@@ -223,7 +249,7 @@ class Stimulus:
             path, filename = os.path.split(out_path)
         elif os.path.isdir(out_path):
             path = out_path
-            filename = f"{self.stim_name}.wav"
+            filename = f"{self.name}.wav"
         else:
             raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
 
@@ -283,7 +309,7 @@ class Stimuli:
         self.pitch = pitch
         self.n_channels = n_channels
         self.n = len(samples)
-        self.stim_names = [stim.stim_name for stim in stim_objects if stim is not None]
+        self.names = [stim.name for stim in stim_objects if stim is not None]
 
     def __iter__(self):
         self.i = 0
@@ -292,7 +318,7 @@ class Stimuli:
     def __next__(self):
         if self.i != len(self.samples):
             if self.samples[self.i] is not None:
-                stim_obj = Stimulus(self.samples[self.i], self.fs, self.pitch[self.i])
+                stim_obj = Stimulus(self.samples[self.i], self.fs, self.names[self.i], self.pitch[self.i])
                 self.i += 1
                 return stim_obj
             else:
@@ -307,14 +333,14 @@ class Stimuli:
 
     def __str__(self):
         return f"Object of type Stimuli.\nNumber of stimuli: {self.n}\nStimulus names: " \
-               f"{self.stim_names}\nSampling frequency: {self.fs} Hz\nPitch frequencies: {self.pitch} " \
+               f"{self.names}\nSampling frequency: {self.fs} Hz\nPitch frequencies: {self.pitch} " \
                f"Hz\nNumber of channels: {self.n_channels}"
 
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
         # todo Consider removing this one.
 
-        return cls([Stimulus(stim.samples, stim.fs, stim.stim_name, stim.pitch)] * repeats)
+        return cls([Stimulus(stim.samples, stim.fs, stim.name, stim.pitch)] * repeats)
 
     @classmethod
     def from_stims(cls,
@@ -376,7 +402,7 @@ class Stimuli:
         else:
             stim_names = list(stim_names)
             if len(stim_names) != len(notes):
-                raise ValueError("Please provide an equal number of stim_names as the number of notes.")
+                raise ValueError("Please provide an equal number of names as the number of notes.")
             else:
                 stim_names = stim_names
 
@@ -415,20 +441,20 @@ class Stimuli:
         else:
             rng = rng
 
-        zipped = list(zip(self.samples, self.stim_names, self.pitch))
+        zipped = list(zip(self.samples, self.names, self.pitch))
         rng.shuffle(zipped)
 
         samples, stim_names, pitch = zip(*zipped)
-        self.samples, self.stim_names, self.pitch = list(samples), np.array(stim_names), np.array(pitch)
+        self.samples, self.names, self.pitch = list(samples), np.array(stim_names), np.array(pitch)
 
     def write_wavs(self, path: Union[str, PathLike], filenames: list[str] = None):
 
         if filenames is None:
-            if all(name is None for name in self.stim_names):
+            if all(name is None for name in self.names):
                 filenames = [f"{str(i)}.wav" for i in range(1, len(self.samples) + 1)]
             else:
                 filenames = []
-                for i, name in enumerate(self.stim_names):
+                for i, name in enumerate(self.names):
                     filenames.append(f"{i + 1}-{name}.wav")
         else:
             filenames = filenames
@@ -761,7 +787,7 @@ class StimTrial(BaseSequence):
         self.n_channels = stimuli.n_channels
         self.pitch = stimuli.pitch
         self.name = name
-        self.stim_names = stimuli.stim_names
+        self.stim_names = stimuli.names
 
         # Initialize Sequence class
         BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
@@ -784,10 +810,15 @@ class StimTrial(BaseSequence):
         else:
             pitch = "Unknown"
 
-        if self.stim_names:
-            stim_names = self.stim_names
+        if all(stim_name is None for stim_name in self.stim_names):
+            stim_names = "None provided"
         else:
-            stim_names = "Not provided"
+            stim_names = []
+            for stim_name in self.stim_names:
+                if stim_name is None:
+                    stim_names.append("Unknown")
+                else:
+                    stim_names.append(stim_name)
 
         if self.metrical:
             return f"""
@@ -795,7 +826,7 @@ Object of type StimTrial (metrical version):
 StimTrial name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
-Onsets:{self.onsets}
+Onsets: {self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
             """
@@ -805,7 +836,7 @@ Object of type StimTrial (non-metrical version):
 StimTrial name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
-Onsets:{self.onsets}
+Onsets: {self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
             """
@@ -883,7 +914,6 @@ Pitch frequencies: {pitch}
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
 
-# noinspection PyArgumentList,PyTypeChecker
 def _extract_pitch(samples, fs) -> float:
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
@@ -898,7 +928,8 @@ def _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude):
     n_metronome_clicks = int(duration // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
     onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
 
-    metronome_fs, metronome_samples = wavfile.read('metronome.wav')
+    metronome_path = os.path.join(sys.path[1], 'stimulus', 'resources', 'metronome.wav')
+    metronome_fs, metronome_samples = wavfile.read(metronome_path)
 
     # resample if metronome sound has different sampling frequency
     if metronome_fs != fs:
