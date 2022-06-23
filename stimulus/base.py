@@ -3,13 +3,10 @@ from scipy.signal import resample, square, hanning
 from scipy.io import wavfile
 import sounddevice as sd
 import matplotlib.pyplot as plt
-from typing import Union, Iterator
-import subprocess
-from mingus.extra import lilypond
-from mingus.containers import Track, Bar, Note
+from typing import Union
+from mingus.containers import Note
 import os
 from os import PathLike
-import skimage
 import parselmouth
 from collections.abc import Iterable
 from pathlib import Path

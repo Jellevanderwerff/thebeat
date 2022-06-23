@@ -1,8 +1,7 @@
-from mingus.containers import Bar, Track, Note, Composition
+from mingus.containers import Bar, Track
 import numpy as np
 from stimulus.base import BaseSequence, Stimuli, _plot_waveform, _normalize_audio, _play_samples, _write_wav
 import random
-from scipy.io import wavfile
 from collections import namedtuple
 import warnings
 import os

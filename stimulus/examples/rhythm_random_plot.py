@@ -3,6 +3,13 @@ from stimulus import *
 """
 In this example we generate a random rhythm from a number of allowed note values.
 Then, we create a stimuli, and make a RhythmTrial out of it, which we can play.
+
+For plotting rhythms you need to have LilyPond installed and it needs to be in your environment variables.
+For Linux, do: apt-install lilypond (I'd say)
+For Mac, do: brew install lilypond
+For Windows, check out installation instructions here: http://lilypond.org/windows.en.html 
+(and follow instructions 'Running on the command-line'
+
 """
 
 # Generate random rhythm with 1/4th, 1/8th, or 1/16th notes
