@@ -440,20 +440,10 @@ class Stimuli:
 class BaseSequence:
     """Base Sequence class that holds the most basic methods and attributes. """
 
-    def __init__(self, iois, metrical=False, played=None):
+    def __init__(self, iois, metrical=False):
         self.iois = iois
         # If metrical=True, that means there's an additional IOI for the final event.
         self.metrical = metrical
-        self.played = played
-
-        # Deal with 'played'
-        if played is None:
-            self.played = [True] * len(self.onsets)
-        elif len(played) == len(self.onsets):
-            self.played = played
-        else:
-            raise ValueError("The 'played' list should contain an equal number of "
-                             "booleans as the number of onsets.")
 
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
@@ -505,13 +495,13 @@ class Sequence(BaseSequence):
     def __init__(self, iois, metrical=False):
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, metrical=metrical, played=None)
+        BaseSequence.__init__(self, iois=iois, metrical=metrical)
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played}"
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played} "
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     def __add__(self, other):
         return join_sequences([self, other])
@@ -808,7 +798,6 @@ IOIs: {self.iois}
 Onsets:{self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
-Stimulus played: {self.played}
             """
         else:
             return f"""
@@ -819,7 +808,6 @@ IOIs: {self.iois}
 Onsets:{self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
-Stimulus played: {self.played}
             """
 
     @property
@@ -854,9 +842,9 @@ Stimulus played: {self.played}
         else:
             samples = np.zeros((array_length, 2), dtype=self.dtype)
 
-        samples_with_onsets_played = list(zip(stimuli.samples, onsets))
+        samples_with_onsets = list(zip(stimuli.samples, onsets))
 
-        for stimulus, onset in samples_with_onsets_played:
+        for stimulus, onset in samples_with_onsets:
             start_pos = int(onset * self.fs / 1000)
             end_pos = int(start_pos + stimulus.shape[0])
             if self.n_channels == 1:
@@ -895,6 +883,7 @@ Stimulus played: {self.played}
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
 
+# noinspection PyArgumentList,PyTypeChecker
 def _extract_pitch(samples, fs) -> float:
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
@@ -965,6 +954,9 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
             hanning_complete = hanning(onramp_samples_len * 2)
             onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
 
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+
         signal[:end_point] *= onramp_amps
 
     elif onramp < 0:
@@ -984,6 +976,8 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
         elif ramp == 'raised-cosine':
             hanning_complete = hanning(offramp_samples_len * 2)
             offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
         signal[start_point:] *= offramp_amps
 
@@ -1011,87 +1005,6 @@ def _play_samples(samples, fs, mean_ioi, loop, metronome, metronome_amplitude):
 
     sd.play(samples, fs, loop=loop)
     sd.wait()
-
-
-def _plot_lp(t, filepath, print_staff: bool):
-    """
-    Internal method for plotting a mingus Track object via lilypond.
-    """
-    # This is the same each time:
-    if filepath:
-        location, filename = os.path.split(filepath)
-        if location == '':
-            location = '.'
-    else:
-        location = '.'
-        filename = 'rhythm.png'
-
-    # make lilypond string
-    if print_staff is True:
-        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    elif print_staff is False:
-        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[
-                                                                                            1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                                                  '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                                                  '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    else:
-        raise ValueError("Wrong value specified for print_staff.")
-
-    # write lilypond string to file
-    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-        file.write(lp)
-
-    # run subprocess
-    if filename.endswith('.eps'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['.ly']
-    elif filename.endswith('.png'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-    else:
-        raise ValueError("Can only export .png or .eps files.")
-
-    p = subprocess.Popen(command, shell=True, cwd=location).wait()
-
-    image = skimage.img_as_float(skimage.io.imread(filename))
-
-    # Select all pixels almost equal to white
-    # (almost, because there are some edge effects in jpegs
-    # so the boundaries may not be exactly white)
-    white = np.array([1, 1, 1])
-    mask = np.abs(image - white).sum(axis=2) < 0.05
-
-    # Find the bounding box of those pixels
-    coords = np.array(np.nonzero(~mask))
-    top_left = np.min(coords, axis=1)
-    bottom_right = np.max(coords, axis=1)
-
-    out = image[top_left[0]:bottom_right[0],
-          top_left[1]:bottom_right[1]]
-
-    # show plot
-    if not filepath:
-        plt.imshow(out)
-        plt.axis('off')
-        plt.show()
-    elif filename.endswith('.png'):
-        plt.imshow(out)
-        plt.axis('off')
-        plt.savefig(filename, bbox_inches='tight')
-    else:
-        pass
-
-    # remove files
-    if filepath:
-        filenames = [filename[:-4] + x for x in to_be_removed]
-    else:
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-        filenames = ['rhythm' + x for x in to_be_removed]
-
-    for file in filenames:
-        os.remove(os.path.join(location, file))
 
 
 def _plot_waveform(samples, fs, n_channels, title):

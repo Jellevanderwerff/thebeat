@@ -1,18 +1,15 @@
 from stimulus import *
 from numpy.random import default_rng
 from scipy.io import wavfile
+from mingus.containers import Track, Bar, Note, NoteContainer
 
-kick = Stimulus.from_wav('test_files/kick.wav')
-snare = Stimulus.from_wav('test_files/snare.wav')
+rhythm = Rhythm.generate_random_rhythm(allowed_note_values=[4, 8, 16], beat_ms=1000)
+rhythm.plot_rhythm()
 
-rhythm_kick = Rhythm.from_note_values([4, 4, 4, 4])
-stims_kick = Stimuli.from_stims([kick, kick, kick, kick])
+stim = Stimulus.generate()
 
-rhythm_snare = Rhythm.from_note_values([4, 4, 4, 4])
-stims_snare = Stimuli.from_stims([None, snare, None, snare])
+stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
 
-trial = RhythmTrial(rhythm_kick, stims_kick)
-
-trial.add_layer(rhythm_snare, stims_snare, layer_id=1)
-trial.plot_waveform()
+trial = RhythmTrial(rhythm, stims)
 trial.play()
+
