@@ -13,7 +13,7 @@ stim = Stimulus.from_wav('resources/click01.wav')
 # Repeat it 10 times, notice how we now create a Stimuli (not Stimulus) object
 stims = Stimuli.from_stim(stim, repeats=10)
 
-# Now we can create a stimtrial, plot it, write it, and play it with a metronome sound
+# Now we can create a stimtrial, plot it, write it, and play it
 trial = StimTrial(stims, seq, name="random trial")
 trial.plot_waveform()
 trial.write_wav('anisoc_trial.wav')
