@@ -1,12 +1,15 @@
 from stimulus import *
 from numpy.random import default_rng
 from scipy.io import wavfile
+from mingus.containers import Track, Bar, Note, NoteContainer
 
-stims = Stimuli.from_notes('AAAAAAAAGG')
+rhythm = Rhythm.generate_random_rhythm(allowed_note_values=[4, 8, 16], beat_ms=1000)
+rhythm.plot_rhythm()
 
-seq = Sequence.generate_isochronous(n=10, ioi=500)
+stim = Stimulus.generate()
 
-stimtrial = StimTrial(stims, seq, name="Trial 1")
+stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
 
-print(stimtrial)
+trial = RhythmTrial(rhythm, stims)
+trial.play()
 

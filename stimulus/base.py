@@ -14,6 +14,8 @@ import parselmouth
 from collections.abc import Iterable
 from pathlib import Path
 import re
+import warnings
+import soundfile
 
 
 class Stimulus:
@@ -234,11 +236,12 @@ class Stimuli:
     def __init__(self,
                  stim_objects: Iterable[Stimulus]):
 
-        stim_objects = list(stim_objects)
+        stim_objects = [stim for stim in stim_objects]
 
         # Check consistency
-        all_fs = [snd.fs for snd in stim_objects]
-        all_dtypes = [snd.dtype for snd in stim_objects]
+        all_fs = [snd.fs for snd in stim_objects if snd is not None]
+        all_dtypes = [snd.dtype for snd in stim_objects if snd is not None]
+        all_n_channels = [snd.n_channels for snd in stim_objects if snd is not None]
 
         # Check whether fs's are the same across the list
         if not all(x == all_fs[0] for x in all_fs):
@@ -253,16 +256,25 @@ class Stimuli:
             dtype = all_dtypes[0]
 
         # Check equal number of channels
-        if not all(x.n_channels == stim_objects[0].n_channels for x in stim_objects):
+        if not all(channels == all_n_channels[0] for channels in all_n_channels):
             raise ValueError("The Stimulus objects in the passed list have differing number of channels!")
         else:
-            n_channels = stim_objects[0].n_channels
+            n_channels = all_n_channels[0]
 
-        # Make list of stimulus samples Numpy arrays.
-        samples = [stim.samples for stim in stim_objects]
+        # Make list of stimulus samples Numpy arrays and array of pitch frequencies.
+        samples = []
+        pitch = []
 
-        # Make array of pitch frequencies
-        pitch = np.array([x.pitch for x in stim_objects])
+        for stim in stim_objects:
+            if stim is None:
+                samples.append(None)
+                pitch.append(None)
+            else:
+                samples.append(stim.samples)
+                pitch.append(stim.pitch)
+
+        # Convert to array
+        pitch = np.array(pitch)
 
         # Save attributes
         self.samples = samples
@@ -271,7 +283,7 @@ class Stimuli:
         self.pitch = pitch
         self.n_channels = n_channels
         self.n = len(samples)
-        self.stim_names = [stim.stim_name for stim in stim_objects]
+        self.stim_names = [stim.stim_name for stim in stim_objects if stim is not None]
 
     def __iter__(self):
         self.i = 0
@@ -279,9 +291,13 @@ class Stimuli:
 
     def __next__(self):
         if self.i != len(self.samples):
-            stim_obj = Stimulus(self.samples[self.i], self.fs, self.pitch[self.i])
-            self.i += 1
-            return stim_obj
+            if self.samples[self.i] is not None:
+                stim_obj = Stimulus(self.samples[self.i], self.fs, self.pitch[self.i])
+                self.i += 1
+                return stim_obj
+            else:
+                self.i += 1
+                return None
 
         else:
             raise StopIteration
@@ -296,6 +312,7 @@ class Stimuli:
 
     @classmethod
     def from_stim(cls, stim: Stimulus, repeats: int):
+        # todo Consider removing this one.
 
         return cls([Stimulus(stim.samples, stim.fs, stim.stim_name, stim.pitch)] * repeats)
 
@@ -412,7 +429,7 @@ class Stimuli:
             else:
                 filenames = []
                 for i, name in enumerate(self.stim_names):
-                    filenames.append(f"{i+1}-{name}.wav")
+                    filenames.append(f"{i + 1}-{name}.wav")
         else:
             filenames = filenames
 
@@ -423,20 +440,10 @@ class Stimuli:
 class BaseSequence:
     """Base Sequence class that holds the most basic methods and attributes. """
 
-    def __init__(self, iois, metrical=False, played=None):
+    def __init__(self, iois, metrical=False):
         self.iois = iois
         # If metrical=True, that means there's an additional IOI for the final event.
         self.metrical = metrical
-        self.played = played
-
-        # Deal with 'played'
-        if played is None:
-            self.played = [True] * len(self.onsets)
-        elif len(played) == len(self.onsets):
-            self.played = played
-        else:
-            raise ValueError("The 'played' list should contain an equal number of "
-                             "booleans as the number of onsets.")
 
         if any(ioi < 0 for ioi in iois):
             raise ValueError("IOIs cannot be negative.")
@@ -485,16 +492,16 @@ class Sequence(BaseSequence):
 
     """
 
-    def __init__(self, iois, metrical=False, played=None):
+    def __init__(self, iois, metrical=False):
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, metrical=metrical, played=played)
+        BaseSequence.__init__(self, iois=iois, metrical=metrical)
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played}"
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\nOnsets played: {self.played} "
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
 
     def __add__(self, other):
         return join_sequences([self, other])
@@ -731,8 +738,7 @@ class StimTrial(BaseSequence):
     def __init__(self,
                  stimuli: Stimuli,
                  seq_obj,
-                 name: str = None,
-                 played: Iterable = None):
+                 name: str = None):
 
         # Type checking for stimuli
         if isinstance(stimuli, Stimulus):
@@ -743,54 +749,33 @@ class StimTrial(BaseSequence):
             pass
 
         # Type checking for sequence
-        if not seq_obj.__class__.__name__ == "Sequence" and not "Rhythm":
+        if not seq_obj.__class__.__name__ == "Sequence":
             raise ValueError("Please provide a Sequence or Rhythm object as the second argument.")
-
-        # If no list of booleans is passed during instantiation of StimSequence, we use the one from
-        # the passed seq_obj. If one is passed, we use that one.
-        if played is None:
-            self.played = seq_obj.played
-        else:
-            self.played = played
 
         # Save whether passed sequence is metrical or not
         self.metrical = seq_obj.metrical
-
-        # If passed a Rhythm object, save some additional attributes:
-        if seq_obj.__class__.__name__ == "Rhythm":
-            self.time_sig = seq_obj.time_sig
-            self.quarternote_ms = seq_obj.quarternote_ms
-            self.n_bars = seq_obj.n_bars
-            self.note_values = seq_obj.note_values
-            self.rhythmic = True
-        else:
-            self.time_sig = None
-            self.quarternote_ms = None
-            self.n_bars = None
-            self.note_values = None
-            self.rhythmic = False
 
         # Save fs, dtype, note values, and pitch
         self.fs = stimuli.fs
         self.dtype = stimuli.dtype
         self.n_channels = stimuli.n_channels
         self.pitch = stimuli.pitch
-        self.stimseq_name = name
+        self.name = name
         self.stim_names = stimuli.stim_names
 
         # Initialize Sequence class
-        BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical, played=seq_obj.played)
+        BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
 
         # Make sound which saves the samples to self.samples
-        self._make_sound(stimuli, self.onsets)
+        self.samples = self._make_sound(stimuli, self.onsets)
 
         # Then save list of Stimulus objects for later use
         self.stim = stimuli
 
     def __str__(self):
 
-        if self.stimseq_name:
-            name = self.stimseq_name
+        if self.name:
+            name = self.name
         else:
             name = "Not provided"
 
@@ -804,7 +789,7 @@ class StimTrial(BaseSequence):
         else:
             stim_names = "Not provided"
 
-        if self.metrical and not self.time_sig:
+        if self.metrical:
             return f"""
 Object of type StimTrial (metrical version):
 StimTrial name: {name}
@@ -813,22 +798,6 @@ IOIs: {self.iois}
 Onsets:{self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
-Stimulus played: {self.played}
-            """
-
-        elif self.metrical and self.time_sig and self.quarternote_ms and self.n_bars:
-            return f"""
-Object of type StimTrial (metrical version):
-StimTrial name: {name}
-Time signature: {self.time_sig}
-Number of bars: {self.n_bars}
-Quarternote (ms): {self.quarternote_ms}
-Number of events: {len(self.onsets)}
-IOIs: {self.iois}
-Onsets:{self.onsets}
-Stimulus names: {stim_names}
-Pitch frequencies: {pitch}
-Stimulus played: {self.played}
             """
         else:
             return f"""
@@ -839,8 +808,11 @@ IOIs: {self.iois}
 Onsets:{self.onsets}
 Stimulus names: {stim_names}
 Pitch frequencies: {pitch}
-Stimulus played: {self.played}
             """
+
+    @property
+    def mean_ioi(self):
+        return np.mean(self.iois)
 
     def _make_sound(self, stimuli, onsets):
         # Check for overlap
@@ -870,118 +842,34 @@ Stimulus played: {self.played}
         else:
             samples = np.zeros((array_length, 2), dtype=self.dtype)
 
-        samples_with_onsets_played = list(zip(stimuli.samples, onsets, self.played))
+        samples_with_onsets = list(zip(stimuli.samples, onsets))
 
-        for stimulus, onset, played in samples_with_onsets_played:
-            if played is True:
-                start_pos = int(onset * self.fs / 1000)
-                end_pos = int(start_pos + stimulus.shape[0])
-                if self.n_channels == 1:
-                    samples[start_pos:end_pos] = stimulus
-                elif self.n_channels == 2:
-                    samples[start_pos:end_pos, :2] = stimulus
-
-        # then save the sound
-        self.samples = samples
-
-    def _get_sound_with_metronome(self, metronome_amplitude):
-        if self.time_sig and self.quarternote_ms:
-            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
-        elif self.quarternote_ms:
-            ioi = self.quarternote_ms
-        else:
-            ioi = np.mean(self.iois)
-        current_samples = self.samples
-        duration = current_samples.shape[0] / self.fs * 1000
-
-        n_metronome_clicks = int(duration // ioi)  # We want all the metronome clicks that fit in the seq.
-        onsets = np.concatenate((np.array([0]), np.cumsum([ioi] * (n_metronome_clicks - 1))))
-
-        fs, metronome_samples = wavfile.read('metronome.wav')
-
-        # resample if metronome sound has different sampling frequency
-        if fs != self.fs:
-            resample_factor = float(self.fs) / float(fs)
-            resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
-            metronome_samples = resampled
-
-        # change amplitude if necessary
-        metronome_samples *= metronome_amplitude
-
-        for onset in onsets:
+        for stimulus, onset in samples_with_onsets:
             start_pos = int(onset * self.fs / 1000)
-            end_pos = int(start_pos + metronome_samples.size)
-            new_samples = current_samples[start_pos:end_pos] + metronome_samples
-            current_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
+            end_pos = int(start_pos + stimulus.shape[0])
+            if self.n_channels == 1:
+                samples[start_pos:end_pos] = stimulus
+            elif self.n_channels == 2:
+                samples[start_pos:end_pos, :2] = stimulus
 
-        return current_samples
+        # return sound
+        if np.max(samples) > 1:
+            warnings.warn("Sound was normalized")
+            return _normalize_audio(samples)
+        else:
+            return samples
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        if metronome is True:
-            samples = self._get_sound_with_metronome(metronome_amplitude=metronome_amplitude)
-        else:
-            samples = self.samples
-
-        sd.play(samples, self.fs, loop=loop)
-        sd.wait()
-
-    def plot_music(self, filepath=None, key='C', print_staff=True):
-        if self.rhythmic is False:
-            raise ValueError("Please initialize this StimTrial object using a Rhythm as the"
-                             "second argument. Otherwise, the time signature etc. are unknown.")
-
-        if self.pitch is None:
-            raise ValueError("The pitches of the stimuli are unknown. Either"
-                             "import using the extract_pitch=True flag, or"
-                             "provide the values yourself as StimuliSequence.pitch")
-
-        # create initial bar
-        t = Track()
-        b = Bar(key=key, meter=self.time_sig)
-
-        # keep track of the index of the note_value
-        note_i = 0
-
-        values_freqs_played = list(zip(self.note_values, self.pitch, self.played))
-
-        for note_value, freq, played in values_freqs_played:
-            if played is True:
-                note = Note()
-                note.from_hertz(freq)
-                b.place_notes(note.name, self.note_values[note_i])
-            elif played is False:
-                b.place_rest(self.note_values[note_i])
-
-            # if bar is full, create new bar and add bar to track
-            if b.current_beat == b.length:
-                t.add_bar(b)
-                b = Bar(key=key, meter=self.time_sig)
-
-            note_i += 1
-
-        # If final bar was not full yet, add a rest for the remaining duration
-        if b.current_beat % 1 != 0:
-            rest_value = 1 / b.space_left()
-            if round(rest_value) != rest_value:
-                raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
-                                 "be (easily) captured in musical notation. This for instance happens when "
-                                 "using one of the tempo manipulation methods.")
-
-            b.place_rest(rest_value)
-            t.add_bar(b)
-
-        # Call internal plot method to plot the track
-        _plot_lp(t, filepath, print_staff)
+        _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
 
     def plot_waveform(self, title=None):
         if title:
             title = title
         else:
-            if self.stimseq_name:
-                title = f"Waveform of {self.stimseq_name}"
+            if self.name:
+                title = f"Waveform of {self.name}"
             else:
-                title = "Waveform of StimSequence"
-
+                title = "Waveform of StimTrial"
 
         _plot_waveform(self.samples, self.fs, self.n_channels, title)
 
@@ -991,137 +879,66 @@ Stimulus played: {self.played}
         """
         Writes audio to disk.
         """
-        if metronome is True and self.time_sig and self.quarternote_ms:
-            ioi = int((self.time_sig[1] / 4) * self.quarternote_ms)
-            samples = self._get_sound_with_metronome(metronome_amplitude=metronome_amplitude)
-        else:
-            samples = self.samples
 
-        out_path = str(out_path)
-
-        if out_path.endswith('.wav'):
-            path, filename = os.path.split(out_path)
-        elif os.path.isdir(out_path):
-            path = out_path
-            if self.stimseq_name:
-                filename = f"{self.stimseq_name}.wav"
-            else:
-                filename = f"stim_sequence.wav"
-
-        else:
-            raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
-
-        wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=samples)
+        _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
 
-def _plot_lp(t, filepath, print_staff: bool):
-    """
-    Internal method for plotting a mingus Track object via lilypond.
-    """
-    # This is the same each time:
-    if filepath:
-        location, filename = os.path.split(filepath)
-        if location == '':
-            location = '.'
-    else:
-        location = '.'
-        filename = 'rhythm.png'
-
-    # make lilypond string
-    if print_staff is True:
-        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    elif print_staff is False:
-        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[
-                                                                                            1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                                                  '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                                                  '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    else:
-        raise ValueError("Wrong value specified for print_staff.")
-
-    # write lilypond string to file
-    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-        file.write(lp)
-
-    # run subprocess
-    if filename.endswith('.eps'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['.ly']
-    elif filename.endswith('.png'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-    else:
-        raise ValueError("Can only export .png or .eps files.")
-
-    p = subprocess.Popen(command, shell=True, cwd=location).wait()
-
-    image = skimage.img_as_float(skimage.io.imread(filename))
-
-    # Select all pixels almost equal to white
-    # (almost, because there are some edge effects in jpegs
-    # so the boundaries may not be exactly white)
-    white = np.array([1, 1, 1])
-    mask = np.abs(image - white).sum(axis=2) < 0.05
-
-    # Find the bounding box of those pixels
-    coords = np.array(np.nonzero(~mask))
-    top_left = np.min(coords, axis=1)
-    bottom_right = np.max(coords, axis=1)
-
-    out = image[top_left[0]:bottom_right[0],
-          top_left[1]:bottom_right[1]]
-
-    # show plot
-    if not filepath:
-        plt.imshow(out)
-        plt.axis('off')
-        plt.show()
-    elif filename.endswith('.png'):
-        plt.imshow(out)
-        plt.axis('off')
-        plt.savefig(filename, bbox_inches='tight')
-    else:
-        pass
-
-    # remove files
-    if filepath:
-        filenames = [filename[:-4] + x for x in to_be_removed]
-    else:
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-        filenames = ['rhythm' + x for x in to_be_removed]
-
-    for file in filenames:
-        os.remove(os.path.join(location, file))
-
-
-def _plot_waveform(samples, fs, n_channels, title):
-    plt.clf()
-    frames = np.arange(samples.shape[0])
-    if n_channels == 1:
-        alph = 1
-    elif n_channels == 2:
-        alph = 0.5
-    else:
-        raise ValueError("Unexpected number of channels.")
-
-    plt.plot(frames, samples, alpha=alph)
-    if n_channels == 2:
-        plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
-    plt.ylim([-1, 1])
-    plt.ylabel("Amplitude")
-    plt.xticks(ticks=[0, samples.shape[0]],
-               labels=[0, int(samples.size / fs * 1000)])
-    plt.xlabel("Time (ms)")
-    plt.title(title)
-    plt.show()
-
-
+# noinspection PyArgumentList,PyTypeChecker
 def _extract_pitch(samples, fs) -> float:
     pm_snd_obj = parselmouth.Sound(values=samples, sampling_frequency=fs)
     pitch = pm_snd_obj.to_pitch()
     mean_pitch = float(parselmouth.praat.call(pitch, "Get mean...", 0, 0.0, 'Hertz'))
     return mean_pitch
+
+
+def _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude):
+    sound_samples = samples
+    duration = sound_samples.shape[0] / fs * 1000
+
+    n_metronome_clicks = int(duration // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
+    onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
+
+    metronome_fs, metronome_samples = wavfile.read('metronome.wav')
+
+    # resample if metronome sound has different sampling frequency
+    if metronome_fs != fs:
+        resample_factor = float(fs) / float(metronome_fs)
+        resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
+        metronome_samples = resampled
+
+    # change amplitude if necessary
+    metronome_samples *= metronome_amplitude
+
+    for onset in onsets:
+        start_pos = int(onset * fs / 1000)
+        end_pos = int(start_pos + metronome_samples.size)
+        new_samples = sound_samples[start_pos:end_pos] + metronome_samples
+        sound_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
+
+    return sound_samples
+
+
+def join_sequences(iterator):
+    """
+    This function can join metrical Sequence objects.
+    """
+
+    # Check whether iterable was passed
+    if not hasattr(iterator, '__iter__'):
+        raise ValueError("Please pass this function a list or other iterable object.")
+
+    # Check whether all the objects are of the same type
+    if not all(isinstance(x, Sequence) for x in iterator):
+        raise ValueError("This function can only join multiple Sequence objects.")
+
+    # Sequence objects need to be metrical:
+    if not all(x.metrical for x in iterator):
+        raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
+
+    iois = [sequence.iois for sequence in iterator]
+    iois = np.concatenate(iois)
+
+    return Sequence(iois, metrical=True)
 
 
 def _make_ramps(signal, fs, onramp, offramp, ramp):
@@ -1136,6 +953,9 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
         elif ramp == 'raised-cosine':
             hanning_complete = hanning(onramp_samples_len * 2)
             onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
         signal[:end_point] *= onramp_amps
 
@@ -1156,6 +976,8 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
         elif ramp == 'raised-cosine':
             hanning_complete = hanning(offramp_samples_len * 2)
             offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
         signal[start_point:] *= offramp_amps
 
@@ -1169,23 +991,59 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
     return signal, fs
 
 
+def _normalize_audio(samples):
+    samples /= np.max(np.abs(samples), axis=0)
+    return samples
+
+
+def _play_samples(samples, fs, mean_ioi, loop, metronome, metronome_amplitude):
+    if metronome is True:
+        samples = _get_sound_with_metronome(samples, fs, mean_ioi,
+                                            metronome_amplitude=metronome_amplitude)
+    else:
+        samples = samples
+
+    sd.play(samples, fs, loop=loop)
+    sd.wait()
+
+
+def _plot_waveform(samples, fs, n_channels, title):
+    plt.clf()
+    frames = np.arange(samples.shape[0])
+    if n_channels == 1:
+        alph = 1
+    elif n_channels == 2:
+        alph = 0.5
+    else:
+        raise ValueError("Unexpected number of channels.")
+
+    plt.plot(frames, samples, alpha=alph)
+    if n_channels == 2:
+        plt.legend(["Left channel", "Right channel"], loc=0, frameon=True)
+    plt.ylabel("Amplitude")
+    plt.xticks(ticks=[0, samples.shape[0]],
+               labels=[0, int(samples.size / fs * 1000)])
+    plt.xlabel("Time (ms)")
+    plt.title(title)
+    plt.show()
+
+
 def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: float = None,
                   extract_pitch: bool = False):
+    samples, file_fs = soundfile.read(filepath, dtype='float32')
 
-    file_fs, samples = wavfile.read(filepath)
-
-    # Change dtype so we always have float32
-    if samples.dtype == 'int16':
-        samples = samples.astype(np.float32, order='C') / 32768.0
-    elif samples.dtype == 'int32':
-        samples = samples.astype(np.float32, order='C') / 2147483648.0
-    elif samples.dtype == 'float32':
-        pass
-    else:
-        raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
-                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+    # # Change dtype so we always have float32
+    # if samples.dtype == 'int16':
+    #     samples = samples.astype(np.float32, order='C') / 32768.0
+    # elif samples.dtype == 'int32':
+    #     samples = samples.astype(np.float32, order='C') / 2147483648.0
+    # elif samples.dtype == 'float32':
+    #     pass
+    # else:
+    #     raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
+    #                      "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
     # Resample if necessary
     if new_fs is None:
@@ -1219,24 +1077,24 @@ def _resample(samples, input_fs, output_fs):
     return samples, fs
 
 
-def join_sequences(iterator):
-    """
-    This function can join metrical Sequence objects.
-    """
+def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
+    if metronome is True:
+        samples = _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+    else:
+        samples = samples
 
-    # Check whether iterable was passed
-    if not hasattr(iterator, '__iter__'):
-        raise ValueError("Please pass this function a list or other iterable object.")
+    out_path = str(out_path)
 
-    # Check whether all the objects are of the same type
-    if not all(isinstance(x, Sequence) for x in iterator):
-        raise ValueError("This function can only join multiple Sequence objects.")
+    if out_path.endswith('.wav'):
+        path, filename = os.path.split(out_path)
+    elif os.path.isdir(out_path):
+        path = out_path
+        if name:
+            filename = f"{name}.wav"
+        else:
+            filename = f"stim_sequence.wav"
 
-    # Sequence objects need to be metrical:
-    if not all(x.metrical for x in iterator):
-        raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
+    else:
+        raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
 
-    iois = [sequence.iois for sequence in iterator]
-    iois = np.concatenate(iois)
-
-    return Sequence(iois, metrical=True)
+    wavfile.write(filename=os.path.join(path, filename), rate=fs, data=samples)
