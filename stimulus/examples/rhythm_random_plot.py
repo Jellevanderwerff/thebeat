@@ -13,7 +13,8 @@ rhythm.plot_rhythm()
 rhythm.plot_rhythm(print_staff=True)
 
 # Make a stimulus
-stim = Stimulus.generate()
+stim = Stimulus.generate(offramp=10, ramp='raised-cosine')
+
 # We need multiple stimuli, so make a Stimuli object from a repeated Stimulus
 # (number of repeats is the number of onsets in the rhythm)
 stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
