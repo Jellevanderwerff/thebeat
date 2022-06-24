@@ -35,10 +35,6 @@ class Rhythm(BaseSequence):
         """
         Get note values from the IOIs, based on beat_ms.
         """
-        if not self.metrical or not self.time_sig or not self.beat_ms:
-            raise ValueError("This is not a rhythmic sequence. Use class method Sequence.from_note_values or e.g."
-                             "random_rhythmic_sequence(). Alternatively, you can set the following properties manually: "
-                             "Sequence.metrical (boolean), Sequence.time_sig (tuple), Sequence.n_bars (int).")
 
         ratios = self.iois / self.beat_ms / 4
 
