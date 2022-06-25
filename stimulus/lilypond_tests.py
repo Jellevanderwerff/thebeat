@@ -35,8 +35,6 @@ for layer in range(trial.n_layers):
 
     layers_list.append(bars)
 
-
-
 voice_names = ['voiceOne', 'voiceTwo', 'voiceThree']
 layer_names = ['uno', 'dos', 'tres']
 
