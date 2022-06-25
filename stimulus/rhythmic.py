@@ -163,7 +163,7 @@ class RhythmTrial:
                              "argument.")
 
         # Initialize namedtuple
-        self.Event = namedtuple('Event', 'onset ioi duration samples layer')
+        self.Event = namedtuple('Event', 'layer onset ioi duration note_value samples')
 
         # Then add events as namedtuples to self.events
         events = []
@@ -204,8 +204,8 @@ class RhythmTrial:
                 event_duration.append(None)
 
         # Save each event to self.events as a named tuple
-        for event in zip(rhythm.onsets, rhythm.iois, event_duration, stims.samples, layer_id):
-            entry = self.Event(event[0], event[1], event[2], event[3], event[4])
+        for event in zip(layer_id, rhythm.onsets, rhythm.iois, event_duration, rhythm.note_values, stims.samples):
+            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
             events.append(entry)
 
         return events
