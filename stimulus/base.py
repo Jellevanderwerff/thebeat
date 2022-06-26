@@ -12,7 +12,6 @@ from collections.abc import Iterable
 from pathlib import Path
 import re
 import warnings
-import soundfile
 import sys
 
 
@@ -1065,18 +1064,18 @@ def _read_wavfile(filepath: Union[str, PathLike],
                   new_fs: int,
                   known_pitch: float = None,
                   extract_pitch: bool = False):
-    samples, file_fs = soundfile.read(filepath, dtype='float32')
+    file_fs, samples = wavfile.read(filepath)
 
-    # # Change dtype so we always have float32
-    # if samples.dtype == 'int16':
-    #     samples = samples.astype(np.float32, order='C') / 32768.0
-    # elif samples.dtype == 'int32':
-    #     samples = samples.astype(np.float32, order='C') / 2147483648.0
-    # elif samples.dtype == 'float32':
-    #     pass
-    # else:
-    #     raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
-    #                      "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+    # Change dtype so we always have float32
+    if samples.dtype == 'int16':
+        samples = samples.astype(np.float32, order='C') / 32768.0
+    elif samples.dtype == 'int32':
+        samples = samples.astype(np.float32, order='C') / 2147483648.0
+    elif samples.dtype == 'float32':
+        pass
+    else:
+        raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
+                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
     # Resample if necessary
     if new_fs is None:

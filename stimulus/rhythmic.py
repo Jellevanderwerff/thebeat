@@ -212,21 +212,31 @@ class RhythmTrial:
 
         return events
 
-    def _make_sound(self, events):
+    def _make_sound(self, provided_events):
         array_length = int(self.total_duration / 1000 * self.fs)
         if self.n_channels == 1:
             samples = np.zeros(array_length)
         else:
             samples = np.zeros((array_length, 2))
 
-        for event in events:
+        for event in provided_events:
             if event.samples is not None:
-                start_pos = int(event.onset / 1000 * self.fs)
-                end_pos = int(start_pos + (event.duration / 1000 * self.fs))
                 if self.n_channels == 1:
-                    samples[start_pos:end_pos] += event.samples
+                    start_pos = int(event.onset / 1000 * self.fs)
+                    end_pos = int(start_pos + event.samples.shape[0])
+                    try:
+                        samples[start_pos:end_pos] = samples[start_pos:end_pos] + event.samples
+                    except ValueError:
+                        raise ValueError("Could not make sound. Probably the final stimulus is longer than the "
+                                         "final note value.")
                 elif self.n_channels == 2:
-                    samples[start_pos:end_pos, :2] += event.samples
+                    start_pos = int(event.onset / 1000 * self.fs)
+                    end_pos = int(start_pos + (event.duration / 1000 * self.fs))
+                    try:
+                        samples[start_pos:end_pos, :2] = samples[start_pos:end_pos, :2] + event.samples
+                    except ValueError:
+                        raise ValueError("Could not make sound. Probably the final stimulus is longer than the "
+                                         "final note value.")
 
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized to avoid distortion. If undesirable, change amplitude of the stims.")
@@ -271,11 +281,12 @@ class RhythmTrial:
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         _play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
 
-    def plot_rhythm(self, filepath=None, print_staff=True, lilypond_percussion_notes=None):
+    def plot_rhythm(self, filepath=None, print_staff=True, lilypond_percussion_notes=None, stem_directions=None):
         """
 
         Parameters
         ----------
+        stem_directions
         filepath
         print_staff
         lilypond_percussion_notes : List of lilypond percussion notes for each layer.
@@ -294,7 +305,9 @@ class RhythmTrial:
                                  self.n_layers,
                                  self.time_sig,
                                  print_staff=print_staff,
-                                 lilypond_percussion_notes=lilypond_percussion_notes)
+                                 lilypond_percussion_notes=lilypond_percussion_notes,
+                                 stem_directions=stem_directions)
+
 
         _plot_lp(lp, filepath=filepath)
 
@@ -385,9 +398,15 @@ def _get_lp_from_events(provided_events,
                         n_layers: int,
                         time_signature: tuple,
                         print_staff: bool = True,
-                        lilypond_percussion_notes=None):
+                        lilypond_percussion_notes=None,
+                        stem_directions=None):
     if lilypond_percussion_notes is None:
         lilypond_percussion_notes = ['bd', 'snare', 'hihat']
+
+    if stem_directions is None:
+        stem_directions = ['', '', '']
+    else:
+        stem_directions = ['\override Stem.direction = #' + stem_direction for stem_direction in stem_directions]
 
     if n_layers > 3:
         raise ValueError("Can only do three layers unfortunately.")
@@ -430,7 +449,7 @@ def _get_lp_from_events(provided_events,
     for layer_i in range(len(layers_list)):
         bars = ' '.join(layers_list[layer_i])
         bars = print_staff_lp + bars
-        layer_string = f"{layer_names[layer_i]} = \drummode {{ {bars} }} \n"
+        layer_string = f"{layer_names[layer_i]} = \drummode {{ {stem_directions[layer_i]} {bars} }} \n"
         string_firstbit += layer_string
         staves_string = "\\new DrumVoice { \\%s \\%s }\n" % (voice_names[layer_i], layer_names[layer_i])
         string_secondbit += staves_string
