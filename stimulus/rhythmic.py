@@ -38,7 +38,7 @@ class Rhythm(BaseSequence):
 
         ratios = self.iois / self.beat_ms / 4
 
-        note_values = np.array([1 // ratio for ratio in ratios])
+        note_values = np.array([int(1 // ratio) for ratio in ratios])
 
         return note_values
 
@@ -147,7 +147,9 @@ class Rhythm(BaseSequence):
             b.place_rest(rest_value)
             t.add_bar(b)
 
-        _plot_rhythm_lp(t, filepath, print_staff=print_staff)
+        lp = _get_lp_from_track(t, print_staff=print_staff)
+
+        _plot_lp(lp, filepath)
 
 
 class RhythmTrial:
@@ -210,13 +212,6 @@ class RhythmTrial:
 
         return events
 
-    def _make_mingus_track_from_events(self, events, placable_notes):
-        """Conceptually, I can't get my head around how to do this with NoteContainers etc.
-        I think it will only be possible if the note durations for the notes that are played simultaneously
-        are the same for the multiple layers. I don't think mingus supports different note durations for notes
-        that start at the same moment."""
-        pass
-
     def _make_sound(self, events):
         array_length = int(self.total_duration / 1000 * self.fs)
         if self.n_channels == 1:
@@ -262,6 +257,8 @@ class RhythmTrial:
             raise ValueError("The provided rhythm has a different time signature than the rhythm "
                              "currently in this trial.")
 
+        # todo Build in check to see if there's an equal number of notes/bars etc. to the other layers
+
         layer_id = [self.n_layers] * stims.n  # Because we start counting from 0, but length is 0 + 1
 
         self.events = self._add_events(self.events, rhythm, stims, layer_id)
@@ -274,8 +271,32 @@ class RhythmTrial:
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         _play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
 
-    def plot_rhythm(self, filepath=None, print_staff=True):
-        pass
+    def plot_rhythm(self, filepath=None, print_staff=True, lilypond_percussion_notes=None):
+        """
+
+        Parameters
+        ----------
+        filepath
+        print_staff
+        lilypond_percussion_notes : List of lilypond percussion notes for each layer.
+                                    Defaults to ['bd', 'snare', 'hihat']
+                                    See possible options here:
+                                    https://lilypond.org/doc/v2.23/Documentation/notation/percussion-notes
+
+        Returns
+        -------
+
+        """
+
+        warnings.warn("RhythmTrial plotting is still experimental. Please manually check whether the plot makes sense.")
+
+        lp = _get_lp_from_events(self.events,
+                                 self.n_layers,
+                                 self.time_sig,
+                                 print_staff=print_staff,
+                                 lilypond_percussion_notes=lilypond_percussion_notes)
+
+        _plot_lp(lp, filepath=filepath)
 
     def plot_waveform(self, title=None):
         if title:
@@ -341,10 +362,92 @@ def _all_rhythmic_ratios(allowed_note_values, time_signature, target_n: int = No
     return out_list
 
 
-def _plot_rhythm_lp(t, filepath, print_staff: bool):
+def _get_lp_from_track(t, print_staff: bool):
     """
     Internal method for plotting a mingus Track object via lilypond.
     """
+
+    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+    remove_staff = '{ \stopStaff \override Staff.Clef.color = #white'
+
+    if print_staff is True:
+        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + remove_footers
+    elif print_staff is False:
+        lp = '\\version "2.10.33"\n' + remove_staff + lilypond.from_Track(t)[1:] + remove_footers
+    else:
+        raise ValueError("Wrong value specified for print_staff.")
+
+    return lp
+
+
+def _get_lp_from_events(provided_events,
+                        n_layers: int,
+                        time_signature: tuple,
+                        print_staff: bool = True,
+                        lilypond_percussion_notes=None):
+    if lilypond_percussion_notes is None:
+        lilypond_percussion_notes = ['bd', 'snare', 'hihat']
+
+    if n_layers > 3:
+        raise ValueError("Can only do three layers unfortunately.")
+
+    if print_staff is True:
+        print_staff_lp = ""
+    else:
+        print_staff_lp = "\\stopStaff \override Staff.Clef.color = #white "
+
+    layers_list = []
+
+    for layer in range(n_layers):
+        bars = []
+        events = [event for event in provided_events if event.layer == layer]
+
+        bar = ''
+        b = Bar(meter=time_signature)
+
+        for event in events:
+            note_value = event.note_value
+            b.place_rest(note_value)  # This is only to keep track of the number of notes in a bar
+            if event.samples is not None:
+                note = lilypond_percussion_notes[layer] + str(note_value) + ' '
+            else:
+                note = 's' + str(note_value) + ' '
+            bar += note
+            if b.current_beat == b.length:
+                bars.append("{ " + bar + "}\n")
+                b = Bar(meter=time_signature)
+                bar = ''
+
+        layers_list.append(bars)
+
+    voice_names = ['voiceOne', 'voiceTwo', 'voiceThree']
+    layer_names = ['uno', 'dos', 'tres']
+
+    string_firstbit = ''
+    string_secondbit = '\\new DrumStaff << '
+
+    for layer_i in range(len(layers_list)):
+        bars = ' '.join(layers_list[layer_i])
+        bars = print_staff_lp + bars
+        layer_string = f"{layer_names[layer_i]} = \drummode {{ {bars} }} \n"
+        string_firstbit += layer_string
+        staves_string = "\\new DrumVoice { \\%s \\%s }\n" % (voice_names[layer_i], layer_names[layer_i])
+        string_secondbit += staves_string
+
+    string_secondbit += ' >>'
+
+    out_string = string_firstbit + string_secondbit
+
+    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+
+    lp = '\\version "2.10.33"\n' + out_string + remove_footers
+
+    return lp
+
+
+def _plot_lp(lp, filepath):
     # This is the same each time:
     if filepath:
         location, filename = os.path.split(filepath)
@@ -354,72 +457,59 @@ def _plot_rhythm_lp(t, filepath, print_staff: bool):
         location = '.'
         filename = 'rhythm.png'
 
-    # make lilypond string
-    if print_staff is True:
-        lp = '\\version "2.10.33"\n' + lilypond.from_Track(t) + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    elif print_staff is False:
-        lp = '\\version "2.10.33"\n' + '{ \stopStaff \override Staff.Clef.color = #white' + lilypond.from_Track(t)[
-                                                                                            1:] + '\n\paper {\nindent = 0\mm\nline-width = ' \
-                                                                                                  '110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ' \
-                                                                                                  '""\noddFooterMarkup = ""\nevenFooterMarkup = ""\n} '
-    else:
-        raise ValueError("Wrong value specified for print_staff.")
+        # write lilypond string to file
+        with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
+            file.write(lp)
 
-    # write lilypond string to file
-    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-        file.write(lp)
+        # run subprocess
+        if filename.endswith('.eps'):
+            command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
+            to_be_removed = ['.ly']
+        elif filename.endswith('.png'):
+            command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
+            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
+        else:
+            raise ValueError("Can only export .png or .eps files.")
 
-    # run subprocess
-    if filename.endswith('.eps'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['.ly']
-    elif filename.endswith('.png'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-    else:
-        raise ValueError("Can only export .png or .eps files.")
+        p = subprocess.Popen(command, shell=True, cwd=location).wait()
 
-    p = subprocess.Popen(command, shell=True, cwd=location).wait()
+        image = skimage.img_as_float(skimage.io.imread(filename))
 
-    image = skimage.img_as_float(skimage.io.imread(filename))
+        # Select all pixels almost equal to white
+        # (almost, because there are some edge effects in jpegs
+        # so the boundaries may not be exactly white)
+        white = np.array([1, 1, 1])
+        mask = np.abs(image - white).sum(axis=2) < 0.05
 
-    # Select all pixels almost equal to white
-    # (almost, because there are some edge effects in jpegs
-    # so the boundaries may not be exactly white)
-    white = np.array([1, 1, 1])
-    mask = np.abs(image - white).sum(axis=2) < 0.05
+        # Find the bounding box of those pixels
+        coords = np.array(np.nonzero(~mask))
+        top_left = np.min(coords, axis=1)
+        bottom_right = np.max(coords, axis=1)
 
-    # Find the bounding box of those pixels
-    coords = np.array(np.nonzero(~mask))
-    top_left = np.min(coords, axis=1)
-    bottom_right = np.max(coords, axis=1)
+        out = image[top_left[0]:bottom_right[0],
+              top_left[1]:bottom_right[1]]
 
-    out = image[top_left[0]:bottom_right[0],
-          top_left[1]:bottom_right[1]]
+        # show plot
+        if not filepath:
+            plt.imshow(out)
+            plt.axis('off')
+            plt.show()
+        elif filename.endswith('.png'):
+            plt.imshow(out)
+            plt.axis('off')
+            plt.savefig(filename, bbox_inches='tight')
+        else:
+            pass
 
-    # show plot
-    if not filepath:
-        plt.imshow(out)
-        plt.axis('off')
-        plt.show()
-    elif filename.endswith('.png'):
-        plt.imshow(out)
-        plt.axis('off')
-        plt.savefig(filename, bbox_inches='tight')
-    else:
-        pass
+        # remove files
+        if filepath:
+            filenames = [filename[:-4] + x for x in to_be_removed]
+        else:
+            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
+            filenames = ['rhythm' + x for x in to_be_removed]
 
-    # remove files
-    if filepath:
-        filenames = [filename[:-4] + x for x in to_be_removed]
-    else:
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-        filenames = ['rhythm' + x for x in to_be_removed]
-
-    for file in filenames:
-        os.remove(os.path.join(location, file))
+        for file in filenames:
+            os.remove(os.path.join(location, file))
 
 
 def join_rhythms(iterator):

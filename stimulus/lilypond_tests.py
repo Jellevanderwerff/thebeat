@@ -1,54 +1,25 @@
 from stimulus import *
 from mingus.extra import lilypond
 
-rhythm = Rhythm.from_note_values([4] * 4)
-stim = Stimulus.generate(freq=440, offramp=10)
-stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
-trial = RhythmTrial(rhythm, stims)
-trial.add_layer(rhythm, stims)
-rhythm2 = Rhythm.from_note_values([16] * 16)
-stims2 = Stimuli.from_stim(stim, repeats=len(rhythm2.onsets))
-trial.add_layer(rhythm2, stims2)
+# get stims
+kick = Stimulus.from_wav('examples/resources/kick.wav')
+snare = Stimulus.from_wav('examples/resources/snare.wav')
+hihat = Stimulus.from_wav('examples/resources/hihat.wav')
 
-layers_list = []
-layers_dict = {0: 'bd', 1: 'snare', 2: 'hihat'}
+# first layer
+rhythm_kick = Rhythm.from_note_values([4] * 4)
+stims_kick = Stimuli.from_stims([kick] * 4)
+trial = RhythmTrial(rhythm_kick, stims_kick)
 
-if trial.n_layers > 3:
-    raise ValueError("Can only do three layers unfortunately.")
+# second layer
+rhythm_snare = Rhythm.from_note_values([4] * 4)
+stims_snare = Stimuli.from_stims([None, snare, None, snare])
+trial.add_layer(rhythm_snare, stims_snare)
 
-for layer in range(trial.n_layers):
-    bars = []
-    events = [event for event in trial.events if event.layer == layer]
-    print(events)
-    bar = ''
-    b = Bar(meter=trial.time_sig)
-    for event in events:
-        note_value = int(event.note_value)
-        print(note_value)
-        b.place_rest(note_value)
-        note = layers_dict[layer] + str(note_value) + ' '
-        bar += note
-        if b.current_beat == b.length:
-            bars.append("{ " + bar + "}")
-            b = Bar(meter=trial.time_sig)
-            bar = ''
-
-    layers_list.append(bars)
-
-voice_names = ['voiceOne', 'voiceTwo', 'voiceThree']
-layer_names = ['uno', 'dos', 'tres']
-
-string_firstbit = ''
-string_secondbit = '\\new DrumStaff << '
-
-for layer_i in range(len(layers_list)):
-    bars = ' '.join(layers_list[layer_i])
-    layer_string = f"{layer_names[layer_i]} = \drummode {{ {bars} }} "
-    string_firstbit += layer_string
-    staves_string = "\\new DrumVoice { \\%s \\%s }" % (voice_names[layer_i], layer_names[layer_i])
-    string_secondbit += staves_string
+# third layer
+rhythm_hihat = Rhythm.from_note_values([16] * 16)
+stims_hihat = Stimuli.from_stims([hihat] * 16)
+trial.add_layer(rhythm_hihat, stims_hihat)
 
 
-string_secondbit += ' >>'
-
-out_string = string_firstbit + string_secondbit
+trial.plot_rhythm(print_staff=True, lilypond_percussion_notes=['bd', 'snare', 'hihat'])
