@@ -17,7 +17,6 @@ rhythm = Rhythm.generate_random_rhythm(allowed_note_values=[4, 8, 16], beat_ms=1
 
 # Plot, either with or without staff
 rhythm.plot_rhythm()
-rhythm.plot_rhythm(print_staff=True)
 
 # Make a stimulus
 stim = Stimulus.generate(offramp=10, ramp='raised-cosine')
@@ -28,4 +27,6 @@ stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
 
 # Make a RhythmTrial and play!
 trial = RhythmTrial(rhythm, stims)
-trial.play()
+trial.plot_rhythm()
+
+

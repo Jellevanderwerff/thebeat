@@ -299,15 +299,12 @@ class RhythmTrial:
 
         """
 
-        warnings.warn("RhythmTrial plotting is still experimental. Please manually check whether the plot makes sense.")
-
         lp = _get_lp_from_events(self.events,
                                  self.n_layers,
                                  self.time_sig,
                                  print_staff=print_staff,
                                  lilypond_percussion_notes=lilypond_percussion_notes,
                                  stem_directions=stem_directions)
-
 
         _plot_lp(lp, filepath=filepath)
 
@@ -400,6 +397,10 @@ def _get_lp_from_events(provided_events,
                         print_staff: bool = True,
                         lilypond_percussion_notes=None,
                         stem_directions=None):
+    if any(event.samples is None for event in provided_events):
+        warnings.warn("'Rests' are plotted as empty spaces, not as rests. Please check manually whether"
+                      "the plot makes sense.")
+
     if lilypond_percussion_notes is None:
         lilypond_percussion_notes = ['bd', 'snare', 'hihat']
 
@@ -409,7 +410,7 @@ def _get_lp_from_events(provided_events,
         stem_directions = ['\override Stem.direction = #' + stem_direction for stem_direction in stem_directions]
 
     if n_layers > 3:
-        raise ValueError("Can only do three layers unfortunately.")
+        raise ValueError("Can maximally plot three layers.")
 
     if print_staff is True:
         print_staff_lp = ""
@@ -468,6 +469,7 @@ oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
 def _plot_lp(lp, filepath):
     # This is the same each time:
+
     if filepath:
         location, filename = os.path.split(filepath)
         if location == '':
@@ -476,59 +478,59 @@ def _plot_lp(lp, filepath):
         location = '.'
         filename = 'rhythm.png'
 
-        # write lilypond string to file
-        with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-            file.write(lp)
+    # run subprocess
+    if filename.endswith('.eps'):
+        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
+        to_be_removed = ['.ly']
+    elif filename.endswith('.png'):
+        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
+        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
+    else:
+        raise ValueError("Can only export .png or .eps files.")
 
-        # run subprocess
-        if filename.endswith('.eps'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['.ly']
-        elif filename.endswith('.png'):
-            command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-        else:
-            raise ValueError("Can only export .png or .eps files.")
+    # write lilypond string to file
+    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
+        file.write(lp)
 
-        p = subprocess.Popen(command, shell=True, cwd=location).wait()
+    p = subprocess.Popen(command, shell=True, cwd=location).wait()
 
-        image = skimage.img_as_float(skimage.io.imread(filename))
+    image = skimage.img_as_float(skimage.io.imread(filename))
 
-        # Select all pixels almost equal to white
-        # (almost, because there are some edge effects in jpegs
-        # so the boundaries may not be exactly white)
-        white = np.array([1, 1, 1])
-        mask = np.abs(image - white).sum(axis=2) < 0.05
+    # Select all pixels almost equal to white
+    # (almost, because there are some edge effects in jpegs
+    # so the boundaries may not be exactly white)
+    white = np.array([1, 1, 1])
+    mask = np.abs(image - white).sum(axis=2) < 0.05
 
-        # Find the bounding box of those pixels
-        coords = np.array(np.nonzero(~mask))
-        top_left = np.min(coords, axis=1)
-        bottom_right = np.max(coords, axis=1)
+    # Find the bounding box of those pixels
+    coords = np.array(np.nonzero(~mask))
+    top_left = np.min(coords, axis=1)
+    bottom_right = np.max(coords, axis=1)
 
-        out = image[top_left[0]:bottom_right[0],
-              top_left[1]:bottom_right[1]]
+    out = image[top_left[0]:bottom_right[0],
+                top_left[1]:bottom_right[1]]
 
-        # show plot
-        if not filepath:
-            plt.imshow(out)
-            plt.axis('off')
-            plt.show()
-        elif filename.endswith('.png'):
-            plt.imshow(out)
-            plt.axis('off')
-            plt.savefig(filename, bbox_inches='tight')
-        else:
-            pass
+    # show plot
+    if not filepath:
+        plt.imshow(out)
+        plt.axis('off')
+        plt.show()
+    elif filename.endswith('.png'):
+        plt.imshow(out)
+        plt.axis('off')
+        plt.savefig(filename, bbox_inches='tight')
+    else:
+        pass
 
-        # remove files
-        if filepath:
-            filenames = [filename[:-4] + x for x in to_be_removed]
-        else:
-            to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-            filenames = ['rhythm' + x for x in to_be_removed]
+    # remove files
+    if filepath:
+        filenames = [filename[:-4] + x for x in to_be_removed]
+    else:
+        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
+        filenames = ['rhythm' + x for x in to_be_removed]
 
-        for file in filenames:
-            os.remove(os.path.join(location, file))
+    for file in filenames:
+        os.remove(os.path.join(location, file))
 
 
 def join_rhythms(iterator):

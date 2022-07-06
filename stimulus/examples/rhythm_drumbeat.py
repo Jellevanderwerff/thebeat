@@ -9,6 +9,7 @@ kick = Stimulus.from_wav('resources/kick.wav')
 snare = Stimulus.from_wav('resources/snare.wav')
 hihat = Stimulus.from_wav('resources/hihat.wav')
 
+
 # first layer
 rhythm_kick = Rhythm.from_note_values([4] * 8)
 stims_kick = Stimuli.from_stims([kick] * 8)
@@ -24,6 +25,6 @@ rhythm_hihat = Rhythm.from_note_values([16] * 32)
 stims_hihat = Stimuli.from_stims([hihat] * 32)
 trial.add_layer(rhythm_hihat, stims_hihat)
 
-trial.plot_waveform()
-trial.write_wav('drum_beat.wav')
+trial.plot_rhythm()
 trial.play()
+
