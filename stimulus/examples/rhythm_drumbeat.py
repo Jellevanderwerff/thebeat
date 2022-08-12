@@ -13,7 +13,7 @@ hihat = Stimulus.from_wav('resources/hihat.wav')
 # first layer
 rhythm_kick = Rhythm.from_note_values([4] * 8)
 stims_kick = Stimuli.from_stims([kick] * 8)
-trial = RhythmTrial(rhythm_kick, stims_kick)
+trial = RhythmTrial(stims_kick, rhythm_kick)
 
 # second layer
 rhythm_snare = Rhythm.from_note_values([4] * 8)

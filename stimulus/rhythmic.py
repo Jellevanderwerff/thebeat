@@ -155,8 +155,8 @@ class Rhythm(BaseSequence):
 class RhythmTrial:
 
     def __init__(self,
-                 rhythm: Rhythm,
                  stims: Stimuli,
+                 rhythm: Rhythm,
                  name: str = None):
 
         # Check if right objects were passed
@@ -307,6 +307,8 @@ class RhythmTrial:
                                  stem_directions=stem_directions)
 
         _plot_lp(lp, filepath=filepath)
+
+        warnings.warn("Time signatures aren't implemented here yet! Forgot that...")
 
     def plot_waveform(self, title=None):
         if title:

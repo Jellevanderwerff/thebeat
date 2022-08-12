@@ -8,7 +8,7 @@ stim = Stimulus.generate(freq=440)
 rhythm = Rhythm.generate_random_rhythm(n_bars=8, allowed_note_values=[4, 8])
 stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
 
-trial = RhythmTrial(rhythm, stims)
+trial = RhythmTrial(stims, rhythm)
 
 
 # second layer

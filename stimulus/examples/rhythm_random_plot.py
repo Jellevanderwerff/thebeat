@@ -26,7 +26,7 @@ stim = Stimulus.generate(offramp=10, ramp='raised-cosine')
 stims = Stimuli.from_stim(stim, repeats=len(rhythm.onsets))
 
 # Make a RhythmTrial and play!
-trial = RhythmTrial(rhythm, stims)
+trial = RhythmTrial(stims, rhythm)
 trial.plot_rhythm()
 
 
