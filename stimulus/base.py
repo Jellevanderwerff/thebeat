@@ -722,6 +722,11 @@ class Sequence(BaseSequence):
 
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
+    @classmethod
+    def from_integer_ratios(cls, denominators, value_of_one_in_ms, metrical=False):
+        denominators = np.array(denominators)
+        return cls(denominators * value_of_one_in_ms, metrical=metrical)
+
     # Manipulation methods
     def change_tempo(self, factor):
         """
@@ -742,6 +747,18 @@ class Sequence(BaseSequence):
         twice as short as the first IOI.
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
+
+    def get_integer_ratios(self):
+        # todo Add in rounding allowance. E.g. an ioi of 490 ms with rounding allowance 10 ms, will be counted
+        #      as 500 ms.
+        total_duration = np.sum(self.iois)
+
+        floats = self.iois / total_duration
+        denoms = np.int32(1 // floats)
+
+        lcm = np.lcm.reduce(denoms)
+
+        return lcm / denoms
 
     # Descriptive methods
     def get_stats(self):
