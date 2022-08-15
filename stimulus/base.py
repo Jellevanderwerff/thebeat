@@ -758,6 +758,12 @@ class Sequence(BaseSequence):
         This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
         so this function returns [1, 2, 4, 1].
 
+        For an example of this method being used, see:
+        Jacoby, N., & McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm
+            Revealed Cross-culturally by Iterated Reproduction.
+            Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
+
+
         """
         # todo Add in rounding allowance. E.g. an ioi of 490 ms with rounding allowance 10 ms, will be counted
         #      as 500 ms.
@@ -770,7 +776,7 @@ class Sequence(BaseSequence):
 
         return lcm / denoms
 
-    def get_integer_ratios_from_dyads(self, output):
+    def get_interval_ratios_from_dyads(self):
         """
         This function returns sequential integer ratios,
         calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
@@ -785,19 +791,7 @@ class Sequence(BaseSequence):
         """
         floats = np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois)-1)])
 
-        if output == 'floats':
-            return floats
-
-        elif output == 'fractions':
-            denoms = np.int32(1 // floats)
-            if list(denoms) != list(1 / floats):
-                warnings.warn("Integer ratios were rounded off. Try using output='floats'.")
-
-            lcm = np.lcm.reduce(denoms)
-            return lcm / denoms
-
-        else:
-            raise ValueError("Please specify the output format as either 'floats' or 'fractions' in the argument.")
+        return floats
 
     # Descriptive methods
     def get_stats(self):
