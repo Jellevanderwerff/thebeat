@@ -748,7 +748,17 @@ class Sequence(BaseSequence):
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
-    def get_integer_ratios(self):
+    def get_integer_ratios_from_total_duration(self):
+        """
+        This function calculates how to describe a sequence of IOIs in integer ratio numerators from
+        the total duration of the sequence, by finding the least common multiple.
+
+        Example:
+        A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
+        This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
+        so this function returns [1, 2, 4, 1].
+
+        """
         # todo Add in rounding allowance. E.g. an ioi of 490 ms with rounding allowance 10 ms, will be counted
         #      as 500 ms.
         total_duration = np.sum(self.iois)
@@ -759,6 +769,35 @@ class Sequence(BaseSequence):
         lcm = np.lcm.reduce(denoms)
 
         return lcm / denoms
+
+    def get_integer_ratios_from_dyads(self, output):
+        """
+        This function returns sequential integer ratios,
+        calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
+
+        Note that for n IOIs this function returns n-1 ratios.
+
+        It follows the methodology from:
+        Roeske, T. C., Tchernichovski, O., Poeppel, D., & Jacoby, N. (2020).
+            Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
+            3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
+
+        """
+        floats = np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois)-1)])
+
+        if output == 'floats':
+            return floats
+
+        elif output == 'fractions':
+            denoms = np.int32(1 // floats)
+            if list(denoms) != list(1 / floats):
+                warnings.warn("Integer ratios were rounded off. Try using output='floats'.")
+
+            lcm = np.lcm.reduce(denoms)
+            return lcm / denoms
+
+        else:
+            raise ValueError("Please specify the output format as either 'floats' or 'fractions' in the argument.")
 
     # Descriptive methods
     def get_stats(self):
