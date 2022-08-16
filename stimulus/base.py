@@ -723,9 +723,9 @@ class Sequence(BaseSequence):
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
     @classmethod
-    def from_integer_ratios(cls, denominators, value_of_one_in_ms, metrical=False):
-        denominators = np.array(denominators)
-        return cls(denominators * value_of_one_in_ms, metrical=metrical)
+    def from_integer_ratios(cls, numerators, value_of_one_in_ms, metrical=False):
+        numerators = np.array(numerators)
+        return cls(numerators * value_of_one_in_ms, metrical=metrical)
 
     # Manipulation methods
     def change_tempo(self, factor):
@@ -748,7 +748,8 @@ class Sequence(BaseSequence):
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
-    def get_integer_ratios_from_total_duration(self):
+    @property
+    def integer_ratios_from_total_duration(self):
         """
         This function calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence, by finding the least common multiple.
@@ -756,7 +757,7 @@ class Sequence(BaseSequence):
         Example:
         A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
         This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
-        so this function returns [1, 2, 4, 1].
+        so this function returns the numerators [1, 2, 4, 1].
 
         For an example of this method being used, see:
         Jacoby, N., & McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm
@@ -770,15 +771,16 @@ class Sequence(BaseSequence):
         total_duration = np.sum(self.iois)
 
         floats = self.iois / total_duration
-        denoms = np.int32(1 // floats)
+        numerators = np.int32(1 // floats)
 
-        lcm = np.lcm.reduce(denoms)
+        lcm = np.lcm.reduce(numerators)
 
-        return lcm / denoms
+        return lcm / numerators
 
-    def get_interval_ratios_from_dyads(self):
+    @property
+    def interval_ratios_from_dyads(self):
         """
-        This function returns sequential integer ratios,
+        This function returns sequential interval ratios,
         calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
 
         Note that for n IOIs this function returns n-1 ratios.
@@ -789,9 +791,8 @@ class Sequence(BaseSequence):
             3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
 
         """
-        floats = np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois)-1)])
 
-        return floats
+        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois)-1)])
 
     # Descriptive methods
     def get_stats(self):

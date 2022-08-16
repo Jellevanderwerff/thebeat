@@ -5,8 +5,6 @@ from mingus.containers import Track, Bar, Note, NoteContainer
 
 from stimulus import *
 
+seq = Sequence.from_integer_ratios([4, 4, 2, 1], value_of_one_in_ms=500)
 
-seq = Sequence(iois=[500, 500, 1000, 1000])
-values = seq.get_integer_ratios_from_dyads(output='floats')  # output = [0.5, 0.333334, 0.5]
-
-
+print(seq)
