@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import warnings
 import sys
+from fractions import Fraction
+from math import lcm
 
 
 class Stimulus:
@@ -526,9 +528,9 @@ class Sequence(BaseSequence):
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
         return join_sequences([self, other])
@@ -749,6 +751,14 @@ class Sequence(BaseSequence):
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
     @property
+    def duration_ms(self):
+        return np.sum(self.iois)
+
+    @property
+    def duration_s(self):
+        return np.sum(self.iois) / 1000
+
+    @property
     def integer_ratios_from_total_duration(self):
         """
         This function calculates how to describe a sequence of IOIs in integer ratio numerators from
@@ -766,16 +776,13 @@ class Sequence(BaseSequence):
 
 
         """
-        # todo Add in rounding allowance. E.g. an ioi of 490 ms with rounding allowance 10 ms, will be counted
-        #      as 500 ms.
-        total_duration = np.sum(self.iois)
 
-        floats = self.iois / total_duration
-        numerators = np.int32(1 // floats)
+        fractions = [Fraction(int(ioi), int(self.duration_ms)) for ioi in self.iois]
+        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
 
-        lcm = np.lcm.reduce(numerators)
+        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
 
-        return lcm / numerators
+        return vals
 
     @property
     def interval_ratios_from_dyads(self):
@@ -792,7 +799,7 @@ class Sequence(BaseSequence):
 
         """
 
-        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois)-1)])
+        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
 
     # Descriptive methods
     def get_stats(self):
