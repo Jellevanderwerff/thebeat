@@ -1,4 +1,4 @@
-
+import pytest
 
 import stimulus
 
@@ -14,4 +14,16 @@ def test_isochronous():
 	sequence = stimulus.Sequence.generate_isochronous(n=10, ioi=500)
 	assert len(sequence.iois) == 9
 	assert len(sequence.onsets) == 10
+
+
+def test_exception_demo():
+	sequence = stimulus.Sequence.generate_isochronous(n=10, ioi=500)
+	sequence.change_tempo(0.5)
+	with pytest.raises(ValueError, match="Please provide a factor larger than 0."):
+		sequence.change_tempo(-1)
+
+
+def test_exception_demo_without():
+	sequence = stimulus.Sequence.generate_isochronous(n=10, ioi=500)
+	sequence.change_tempo(-42)
 
