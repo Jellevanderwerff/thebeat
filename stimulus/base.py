@@ -516,7 +516,13 @@ class Sequence(BaseSequence):
     Methods
     -------
 
-
+    Examples
+    --------
+    >>> sequence = Sequence.generate_random_uniform(n=5, a=200, b=600)
+    >>> len(sequence.iois)
+    4
+    >>> len(sequence.onsets)
+    5
     """
 
     def __init__(self, iois, metrical=False):
