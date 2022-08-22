@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import warnings
 import sys
+from fractions import Fraction
+from math import lcm
 
 
 class Stimulus:
@@ -526,9 +528,9 @@ class Sequence(BaseSequence):
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets:{self.onsets}\n"
+            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
         return join_sequences([self, other])
@@ -722,6 +724,11 @@ class Sequence(BaseSequence):
 
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
+    @classmethod
+    def from_integer_ratios(cls, numerators, value_of_one_in_ms, metrical=False):
+        numerators = np.array(numerators)
+        return cls(numerators * value_of_one_in_ms, metrical=metrical)
+
     # Manipulation methods
     def change_tempo(self, factor):
         """
@@ -742,6 +749,57 @@ class Sequence(BaseSequence):
         twice as short as the first IOI.
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
+
+    @property
+    def duration_ms(self):
+        return np.sum(self.iois)
+
+    @property
+    def duration_s(self):
+        return np.sum(self.iois) / 1000
+
+    @property
+    def integer_ratios_from_total_duration(self):
+        """
+        This function calculates how to describe a sequence of IOIs in integer ratio numerators from
+        the total duration of the sequence, by finding the least common multiple.
+
+        Example:
+        A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
+        This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
+        so this function returns the numerators [1, 2, 4, 1].
+
+        For an example of this method being used, see:
+        Jacoby, N., & McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm
+            Revealed Cross-culturally by Iterated Reproduction.
+            Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
+
+
+        """
+
+        fractions = [Fraction(int(ioi), int(self.duration_ms)) for ioi in self.iois]
+        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
+
+        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
+
+        return vals
+
+    @property
+    def interval_ratios_from_dyads(self):
+        """
+        This function returns sequential interval ratios,
+        calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
+
+        Note that for n IOIs this function returns n-1 ratios.
+
+        It follows the methodology from:
+        Roeske, T. C., Tchernichovski, O., Poeppel, D., & Jacoby, N. (2020).
+            Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
+            3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
+
+        """
+
+        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
 
     # Descriptive methods
     def get_stats(self):
