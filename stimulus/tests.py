@@ -6,6 +6,11 @@ from fractions import Fraction
 
 from stimulus import *
 
-seq = Sequence.from_integer_ratios([4, 2, 2, 3, 1, 1], value_of_one_in_ms=500)
-print(seq.interval_ratios_from_dyads)
+seq = Rhythm.from_note_values([4, 4, 4, 4], time_signature=(4, 4), beat_ms=500)
+seq.plot_rhythm()
+stim = Stimulus.generate()
+stims = Stimuli.from_stims([stim, None, stim, None])
+trial = RhythmTrial(stims, seq)
 
+
+trial.plot_rhythm()

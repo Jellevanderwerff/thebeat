@@ -16,7 +16,7 @@ stims_kick = Stimuli.from_stims([kick] * 8)
 trial = RhythmTrial(stims_kick, rhythm_kick)
 
 # second layer
-rhythm_snare = Rhythm.from_note_values([4] * 8)
+rhythm_snare = Rhythm.from_note_values([4] * 8, played=[True, True, False, True])
 stims_snare = Stimuli.from_stims([None, snare, None, snare] * 2)
 trial.add_layer(rhythm_snare, stims_snare)
 

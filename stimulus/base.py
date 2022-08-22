@@ -502,7 +502,7 @@ class Sequence(BaseSequence):
         A list of the sequence's inter-onset intervals.
 
     Class methods
-    -------
+    -------------
 
     generate_random_normal(n, mu, sigma, rng=None)
         Generate a random sequence using the normal distribution.
