@@ -1,0 +1,235 @@
+from scipy.io import wavfile
+from scipy.signal import resample
+import sounddevice as sd
+from sequence import BaseSequence
+from stimulus import Stimulus, Stimuli
+import numpy as np
+import warnings
+from .helpers import _plot_waveform
+import os
+import sys
+
+
+class StimTrial(BaseSequence):
+    """
+    StimSequence class which inherits only the most basic functions from BaseSequence
+    """
+
+    def __init__(self,
+                 stimuli: Stimuli,
+                 seq_obj,
+                 name: str = None):
+
+        # Type checking for stimuli
+        if isinstance(stimuli, Stimulus):
+            raise ValueError("Please provide a Stimuli object instead of a Stimulus object as the first argument.")
+        elif not isinstance(stimuli, Stimuli):
+            raise ValueError("Please provide a Stimuli object as the first argument.")
+        else:
+            pass
+
+        # Type checking for sequence
+        if not seq_obj.__class__.__name__ == "Sequence":
+            raise ValueError("Please provide a Sequence or Rhythm object as the second argument.")
+
+        # Save whether passed sequence is metrical or not
+        self.metrical = seq_obj.metrical
+
+        # Save fs, dtype, note values, and pitch
+        self.fs = stimuli.fs
+        self.dtype = stimuli.dtype
+        self.n_channels = stimuli.n_channels
+        self.pitch = stimuli.pitch
+        self.name = name
+        self.stim_names = stimuli.names
+
+        # Initialize Sequence class
+        BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
+
+        # Make sound which saves the samples to self.samples
+        self.samples = self._make_sound(stimuli, self.onsets)
+
+        # Then save list of Stimulus objects for later use
+        self.stim = stimuli
+
+    def __str__(self):
+
+        if self.name:
+            name = self.name
+        else:
+            name = "Not provided"
+
+        if not all(pitch is None for pitch in self.pitch):
+            pitch = f"{self.pitch} Hz"
+        else:
+            pitch = "Unknown"
+
+        if all(stim_name is None for stim_name in self.stim_names):
+            stim_names = "None provided"
+        else:
+            stim_names = []
+            for stim_name in self.stim_names:
+                if stim_name is None:
+                    stim_names.append("Unknown")
+                else:
+                    stim_names.append(stim_name)
+
+        if self.metrical:
+            return f"""
+Object of type StimTrial (metrical version):
+StimTrial name: {name}
+{len(self.onsets)} events
+IOIs: {self.iois}
+Onsets: {self.onsets}
+Stimulus names: {stim_names}
+Pitch frequencies: {pitch}
+            """
+        else:
+            return f"""
+Object of type StimTrial (non-metrical version):
+StimTrial name: {name}
+{len(self.onsets)} events
+IOIs: {self.iois}
+Onsets: {self.onsets}
+Stimulus names: {stim_names}
+Pitch frequencies: {pitch}
+            """
+
+    @property
+    def mean_ioi(self):
+        return np.mean(self.iois)
+
+    def _make_sound(self, stimuli, onsets):
+        # Check for overlap
+        for i in range(len(onsets)):
+            stim_duration = stimuli.samples[i].shape[0] / self.fs * 1000
+            try:
+                ioi_after_onset = onsets[i + 1] - onsets[i]
+                if ioi_after_onset < stim_duration:
+                    raise ValueError(
+                        "The duration of one or more stimuli is longer than its respective IOI. "
+                        "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
+            except IndexError:
+                pass
+
+        # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # In the case of a metrical sequence, we add the final ioi
+        # The dtype is important, because that determines the values that the magnitudes can take.
+        if self.metrical:
+            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
+        elif not self.metrical:
+            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli.samples[-1].shape[0])
+        else:
+            raise ValueError("Error during calculation of array_length")
+
+        if self.n_channels == 1:
+            samples = np.zeros(array_length, dtype=self.dtype)
+        else:
+            samples = np.zeros((array_length, 2), dtype=self.dtype)
+
+        samples_with_onsets = list(zip(stimuli.samples, onsets))
+
+        for stimulus, onset in samples_with_onsets:
+            start_pos = int(onset * self.fs / 1000)
+            end_pos = int(start_pos + stimulus.shape[0])
+            if self.n_channels == 1:
+                samples[start_pos:end_pos] = stimulus
+            elif self.n_channels == 2:
+                samples[start_pos:end_pos, :2] = stimulus
+
+        # return sound
+        if np.max(samples) > 1:
+            warnings.warn("Sound was normalized")
+            return _normalize_audio(samples)
+        else:
+            return samples
+
+    def play(self, loop=False, metronome=False, metronome_amplitude=1):
+        _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
+
+    def plot_waveform(self, title=None):
+        if title:
+            title = title
+        else:
+            if self.name:
+                title = f"Waveform of {self.name}"
+            else:
+                title = "Waveform of StimTrial"
+
+        _plot_waveform(self.samples, self.fs, self.n_channels, title)
+
+    def write_wav(self, out_path='.',
+                  metronome=False,
+                  metronome_amplitude=1):
+        """
+        Writes audio to disk.
+        """
+
+        _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
+
+
+def _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude):
+    sound_samples = samples
+    duration = sound_samples.shape[0] / fs * 1000
+
+    n_metronome_clicks = int(duration // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
+    onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
+
+    metronome_path = os.path.join(sys.path[1], 'stimulus', 'resources', 'metronome.wav')
+    metronome_fs, metronome_samples = wavfile.read(metronome_path)
+
+    # resample if metronome sound has different sampling frequency
+    if metronome_fs != fs:
+        resample_factor = float(fs) / float(metronome_fs)
+        resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
+        metronome_samples = resampled
+
+    # change amplitude if necessary
+    metronome_samples *= metronome_amplitude
+
+    for onset in onsets:
+        start_pos = int(onset * fs / 1000)
+        end_pos = int(start_pos + metronome_samples.size)
+        new_samples = sound_samples[start_pos:end_pos] + metronome_samples
+        sound_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
+
+    return sound_samples
+
+
+def _normalize_audio(samples):
+    samples /= np.max(np.abs(samples), axis=0)
+    return samples
+
+
+def _play_samples(samples, fs, mean_ioi, loop, metronome, metronome_amplitude):
+    if metronome is True:
+        samples = _get_sound_with_metronome(samples, fs, mean_ioi,
+                                            metronome_amplitude=metronome_amplitude)
+    else:
+        samples = samples
+
+    sd.play(samples, fs, loop=loop)
+    sd.wait()
+
+
+def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
+    if metronome is True:
+        samples = _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+    else:
+        samples = samples
+
+    out_path = str(out_path)
+
+    if out_path.endswith('.wav'):
+        path, filename = os.path.split(out_path)
+    elif os.path.isdir(out_path):
+        path = out_path
+        if name:
+            filename = f"{name}.wav"
+        else:
+            filename = f"stim_sequence.wav"
+
+    else:
+        raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
+
+    wavfile.write(filename=os.path.join(path, filename), rate=fs, data=samples)
