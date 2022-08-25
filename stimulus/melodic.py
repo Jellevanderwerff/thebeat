@@ -1,6 +1,8 @@
 from mingus.containers import Note
 from mingus.core.scales import Major, NaturalMinor
-from stimulus import *
+from stimulus import Stimuli, Stimulus
+import re
+
 
 
 class Melody(Stimuli):
