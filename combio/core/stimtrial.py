@@ -1,13 +1,14 @@
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from sequence import BaseSequence
-from stimulus import Stimulus, Stimuli
+from .sequence import BaseSequence, Sequence
+from .stimulus import Stimulus
 import numpy as np
 import warnings
 from .helpers import _plot_waveform
 import os
 import sys
+from typing import Iterable, Union
 
 
 class StimTrial(BaseSequence):
@@ -16,41 +17,43 @@ class StimTrial(BaseSequence):
     """
 
     def __init__(self,
-                 stimuli: Stimuli,
-                 seq_obj,
+                 stimuli: Union[Stimulus, Iterable],
+                 sequence_object: Sequence,
                  name: str = None):
 
-        # Type checking for stimuli
+        # If a single Stimulus object is passed, repeat that stimulus for each onset
         if isinstance(stimuli, Stimulus):
-            raise ValueError("Please provide a Stimuli object instead of a Stimulus object as the first argument.")
-        elif not isinstance(stimuli, Stimuli):
-            raise ValueError("Please provide a Stimuli object as the first argument.")
-        else:
-            pass
+            stimuli = [stimuli] * len(sequence_object.onsets)
 
         # Type checking for sequence
-        if not seq_obj.__class__.__name__ == "Sequence":
-            raise ValueError("Please provide a Sequence or Rhythm object as the second argument.")
+        if not isinstance(sequence_object, Sequence):
+            raise ValueError("Please provide a Sequence object as the second argument.")
 
-        # Save whether passed sequence is metrical or not
-        self.metrical = seq_obj.metrical
+        # Check whether fs, dtype, and n_channels are the same for all stimuli
+        all_fs = [snd.fs for snd in stimuli]
+        all_dtypes = [snd.dtype for snd in stimuli]
+        all_n_channels = [snd.n_channels for snd in stimuli]
 
-        # Save fs, dtype, note values, and pitch
-        self.fs = stimuli.fs
-        self.dtype = stimuli.dtype
-        self.n_channels = stimuli.n_channels
-        self.pitch = stimuli.pitch
+        if not all(fs == all_fs[0] for fs in all_fs):
+            raise ValueError("The Stimulus objects in the passed list have different sampling frequencies!")
+        elif not all(dtype == all_dtypes[0] for dtype in all_dtypes):
+            raise ValueError("The Stimulus objects in the passed list have different dtypes!")
+        elif not all(n_channels == all_n_channels[0] for n_channels in all_n_channels):
+            raise ValueError("The Stimulus objects in the passed list have differing number of channels!")
+
+        # Save attributes
+        self.fs = stimuli[0].fs
+        self.dtype = stimuli[0].dtype
+        self.n_channels = stimuli[0].n_channels
         self.name = name
-        self.stim_names = stimuli.names
+        self.stim_names = [stimulus.name for stimulus in stimuli]
+        self.metrical = sequence_object.metrical
 
         # Initialize Sequence class
-        BaseSequence.__init__(self, seq_obj.iois, metrical=seq_obj.metrical)
+        BaseSequence.__init__(self, sequence_object.iois, metrical=sequence_object.metrical)
 
         # Make sound which saves the samples to self.samples
         self.samples = self._make_sound(stimuli, self.onsets)
-
-        # Then save list of Stimulus objects for later use
-        self.stim = stimuli
 
     def __str__(self):
 
@@ -58,11 +61,6 @@ class StimTrial(BaseSequence):
             name = self.name
         else:
             name = "Not provided"
-
-        if not all(pitch is None for pitch in self.pitch):
-            pitch = f"{self.pitch} Hz"
-        else:
-            pitch = "Unknown"
 
         if all(stim_name is None for stim_name in self.stim_names):
             stim_names = "None provided"
@@ -82,7 +80,6 @@ StimTrial name: {name}
 IOIs: {self.iois}
 Onsets: {self.onsets}
 Stimulus names: {stim_names}
-Pitch frequencies: {pitch}
             """
         else:
             return f"""
@@ -92,57 +89,11 @@ StimTrial name: {name}
 IOIs: {self.iois}
 Onsets: {self.onsets}
 Stimulus names: {stim_names}
-Pitch frequencies: {pitch}
             """
 
     @property
     def mean_ioi(self):
         return np.mean(self.iois)
-
-    def _make_sound(self, stimuli, onsets):
-        # Check for overlap
-        for i in range(len(onsets)):
-            stim_duration = stimuli.samples[i].shape[0] / self.fs * 1000
-            try:
-                ioi_after_onset = onsets[i + 1] - onsets[i]
-                if ioi_after_onset < stim_duration:
-                    raise ValueError(
-                        "The duration of one or more stimuli is longer than its respective IOI. "
-                        "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
-            except IndexError:
-                pass
-
-        # Generate an array of silence that has the length of all the onsets + one final stimulus.
-        # In the case of a metrical sequence, we add the final ioi
-        # The dtype is important, because that determines the values that the magnitudes can take.
-        if self.metrical:
-            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
-        elif not self.metrical:
-            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli.samples[-1].shape[0])
-        else:
-            raise ValueError("Error during calculation of array_length")
-
-        if self.n_channels == 1:
-            samples = np.zeros(array_length, dtype=self.dtype)
-        else:
-            samples = np.zeros((array_length, 2), dtype=self.dtype)
-
-        samples_with_onsets = list(zip(stimuli.samples, onsets))
-
-        for stimulus, onset in samples_with_onsets:
-            start_pos = int(onset * self.fs / 1000)
-            end_pos = int(start_pos + stimulus.shape[0])
-            if self.n_channels == 1:
-                samples[start_pos:end_pos] = stimulus
-            elif self.n_channels == 2:
-                samples[start_pos:end_pos, :2] = stimulus
-
-        # return sound
-        if np.max(samples) > 1:
-            warnings.warn("Sound was normalized")
-            return _normalize_audio(samples)
-        else:
-            return samples
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
@@ -166,6 +117,51 @@ Pitch frequencies: {pitch}
         """
 
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
+
+    def _make_sound(self, stimuli, onsets):
+        # Check for overlap
+        for i in range(len(onsets)):
+            stim_duration = stimuli[i].samples.shape[0] / self.fs * 1000
+            try:
+                ioi_after_onset = onsets[i + 1] - onsets[i]
+                if ioi_after_onset < stim_duration:
+                    raise ValueError(
+                        "The duration of one or more stimuli is longer than its respective IOI. "
+                        "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
+            except IndexError:
+                pass
+
+        # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # In the case of a metrical sequence, we add the final ioi
+        # The dtype is important, because that determines the values that the magnitudes can take.
+        if self.metrical:
+            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
+        elif not self.metrical:
+            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0])
+        else:
+            raise ValueError("Error during calculation of array_length")
+
+        if self.n_channels == 1:
+            samples = np.zeros(array_length, dtype=self.dtype)
+        else:
+            samples = np.zeros((array_length, 2), dtype=self.dtype)
+
+        samples_with_onsets = list(zip([stimulus.samples for stimulus in stimuli], onsets))
+
+        for stimulus, onset in samples_with_onsets:
+            start_pos = int(onset * self.fs / 1000)
+            end_pos = int(start_pos + stimulus.shape[0])
+            if self.n_channels == 1:
+                samples[start_pos:end_pos] = stimulus
+            elif self.n_channels == 2:
+                samples[start_pos:end_pos, :2] = stimulus
+
+        # return sound
+        if np.max(samples) > 1:
+            warnings.warn("Sound was normalized")
+            return _normalize_audio(samples)
+        else:
+            return samples
 
 
 def _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude):
@@ -227,7 +223,7 @@ def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_
         if name:
             filename = f"{name}.wav"
         else:
-            filename = f"stim_sequence.wav"
+            filename = f"out.wav"
 
     else:
         raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
