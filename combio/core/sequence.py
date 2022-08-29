@@ -80,6 +80,9 @@ class Sequence(BaseSequence):
     def __add__(self, other):
         return _join_sequences([self, other])
 
+    def __len__(self):
+        return len(self.onsets)
+
     @classmethod
     def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
         """
