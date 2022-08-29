@@ -21,3 +21,10 @@ def test_iois(rng):
     integer_ratios = [1, 5, 8, 2, 5, 4, 4, 2, 1]
     seq = Sequence.from_integer_ratios(numerators=integer_ratios, value_of_one_in_ms=500)
     assert seq.integer_ratios == integer_ratios
+
+
+def test_exception():
+    seq = Sequence.generate_isochronous(n=10, ioi=500)
+    seq.change_tempo(0.5)
+    with pytest.raises(ValueError):
+        seq.change_tempo(-1)
