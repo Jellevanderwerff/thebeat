@@ -1,13 +1,10 @@
 from scipy.io import wavfile
-from scipy.signal import resample
-import sounddevice as sd
 from .sequence import BaseSequence, Sequence
 from .stimulus import Stimulus
 import numpy as np
+from combio.core.helpers import play_samples, plot_waveform, normalize_audio, get_sound_with_metronome
 import warnings
-from .helpers import _plot_waveform
 import os
-import sys
 from typing import Iterable, Union
 
 
@@ -96,7 +93,7 @@ Stimulus names: {stim_names}
         return np.mean(self.iois)
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        _play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
+        play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
 
     def plot_waveform(self, title=None):
         if title:
@@ -107,7 +104,7 @@ Stimulus names: {stim_names}
             else:
                 title = "Waveform of StimTrial"
 
-        _plot_waveform(self.samples, self.fs, self.n_channels, title)
+        plot_waveform(self.samples, self.fs, self.n_channels, title)
 
     def write_wav(self, out_path='.',
                   metronome=False,
@@ -159,58 +156,14 @@ Stimulus names: {stim_names}
         # return sound
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
-            return _normalize_audio(samples)
+            return normalize_audio(samples)
         else:
             return samples
 
 
-def _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude):
-    sound_samples = samples
-    duration = sound_samples.shape[0] / fs * 1000
-
-    n_metronome_clicks = int(duration // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
-    onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
-
-    metronome_path = os.path.join(sys.path[1], 'stimulus', 'resources', 'metronome.wav')
-    metronome_fs, metronome_samples = wavfile.read(metronome_path)
-
-    # resample if metronome sound has different sampling frequency
-    if metronome_fs != fs:
-        resample_factor = float(fs) / float(metronome_fs)
-        resampled = resample(metronome_samples, int(len(metronome_samples) * resample_factor))
-        metronome_samples = resampled
-
-    # change amplitude if necessary
-    metronome_samples *= metronome_amplitude
-
-    for onset in onsets:
-        start_pos = int(onset * fs / 1000)
-        end_pos = int(start_pos + metronome_samples.size)
-        new_samples = sound_samples[start_pos:end_pos] + metronome_samples
-        sound_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
-
-    return sound_samples
-
-
-def _normalize_audio(samples):
-    samples /= np.max(np.abs(samples), axis=0)
-    return samples
-
-
-def _play_samples(samples, fs, mean_ioi, loop, metronome, metronome_amplitude):
-    if metronome is True:
-        samples = _get_sound_with_metronome(samples, fs, mean_ioi,
-                                            metronome_amplitude=metronome_amplitude)
-    else:
-        samples = samples
-
-    sd.play(samples, fs, loop=loop)
-    sd.wait()
-
-
 def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
     if metronome is True:
-        samples = _get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+        samples = get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
     else:
         samples = samples
 

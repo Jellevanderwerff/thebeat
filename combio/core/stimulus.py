@@ -1,14 +1,12 @@
-import re
 import os
-from pathlib import Path
-from typing import Union, Iterable
+import re
+from typing import Union
 import numpy as np
-import parselmouth
-from mingus.containers import Note
 import sounddevice as sd
+from mingus.containers import Note
 from scipy.io import wavfile
 from scipy.signal import resample
-from .helpers import _plot_waveform
+from .helpers import plot_waveform
 
 
 class Stimulus:
@@ -53,8 +51,7 @@ class Stimulus:
     def __init__(self,
                  samples: np.ndarray,
                  fs: int,
-                 name: str = None,
-                 known_pitch: int = None):
+                 name: str = None):
         # check number of dimensions
         if samples.ndim == 1:
             n_channels = 1
@@ -67,7 +64,6 @@ class Stimulus:
         self.samples = samples
         self.fs = fs
         self.dtype = samples.dtype
-        self.pitch = known_pitch
         self.n_channels = n_channels
         self.name = name
 
@@ -77,21 +73,13 @@ class Stimulus:
         else:
             name = "Not provided"
 
-        if self.pitch is not None:
-            pitch = f"{self.pitch} Hz"
-        else:
-            pitch = "Unknown"
-
-        return f"Object of type Stimulus.\n\nStimulus name: {name}\nStimulus duration: {self.duration_ms} milliseconds." \
-               f"\nPitch frequency: {pitch}"
+        return f"Object of type Stimulus.\n\nStimulus name: {name}\nStimulus duration: {self.duration_ms} milliseconds."
 
     @classmethod
     def from_wav(cls,
                  filepath: Union[os.PathLike, str],
                  name=None,
-                 new_fs: int = None,
-                 known_pitch: float = None,
-                 extract_pitch: bool = False):
+                 new_fs: int = None):
         """
 
         This method loads a stimulus from a PCM .wav file, and reads in the samples.
@@ -100,9 +88,7 @@ class Stimulus:
         Parameters
         ----------
         name
-        known_pitch
         filepath: str or PathLike object
-        extract_pitch: bool
         new_fs : int
             If resampling is required, you can provide the target sampling frequency
 
@@ -112,9 +98,9 @@ class Stimulus:
         """
 
         # Read in the sampling frequency and all the samples from the wav file
-        samples, fs, pitch = _read_wavfile(filepath, new_fs, known_pitch, extract_pitch)
+        samples, fs = _read_wavfile(filepath, new_fs)
 
-        return cls(samples, fs, name, pitch)
+        return cls(samples, fs, name)
 
     @classmethod
     def generate(cls,
@@ -140,8 +126,8 @@ class Stimulus:
 
         signal, fs = _make_ramps(signal, fs, onramp, offramp, ramp)
 
-        # Return class, and save the used frequency
-        return cls(signal, fs, name, known_pitch=freq)
+        # Return class
+        return cls(signal, fs, name)
 
     @classmethod
     def from_note(cls, note_str, event_duration=50, onramp=0, offramp=0, ramp='linear',
@@ -191,7 +177,7 @@ class Stimulus:
         else:
             raise ValueError("Incorrect number of dimensions in samples. Should be 1 (mono) or 2 (stereo).")
 
-        return cls(samples, fs, stim_name, pitch)
+        return cls(samples, fs, stim_name)
 
     # Manipulation
     def change_amplitude(self, factor):
@@ -215,7 +201,7 @@ class Stimulus:
             else:
                 title = "Waveform of Stimulus"
 
-        _plot_waveform(self.samples, self.fs, self.n_channels, title)
+        plot_waveform(self.samples, self.fs, self.n_channels, title)
 
     # Stats
     @property
@@ -231,7 +217,6 @@ class Stimulus:
         """
         Writes audio to disk.
         """
-
 
 
 def _make_ramps(signal, fs, onramp, offramp, ramp):
@@ -285,9 +270,7 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],
-                  new_fs: int,
-                  known_pitch: float = None,
-                  extract_pitch: bool = False):
+                  new_fs: int):
     file_fs, samples = wavfile.read(filepath)
 
     # Change dtype so we always have float32
@@ -307,15 +290,7 @@ def _read_wavfile(filepath: Union[str, os.PathLike],
     else:
         samples, fs = _resample(samples, file_fs, new_fs)
 
-    # Extract pitch if necessary
-    if extract_pitch is True:
-        pitch = _extract_pitch(samples, fs)
-    elif known_pitch:
-        pitch = known_pitch
-    else:
-        pitch = None
-
-    return samples, fs, pitch
+    return samples, fs
 
 
 def _resample(samples, input_fs, output_fs):
