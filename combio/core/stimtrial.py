@@ -153,6 +153,9 @@ Stimulus names: {stim_names}
             elif self.n_channels == 2:
                 samples[start_pos:end_pos, :2] = stimulus
 
+        # set self.event_durations
+        self.event_durations = np.array([stim.duration_ms for stim in stimuli])
+
         # return sound
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
