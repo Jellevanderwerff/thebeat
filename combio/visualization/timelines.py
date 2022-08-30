@@ -32,7 +32,7 @@ def event_plot_single(sequence: Union[Sequence, StimTrial],
     return fig, ax
 
 
-def event_plot_multiple(sequences,
+def event_plot_multiple(sequences: Union,
                         style: str = 'seaborn',
                         bar_names: Iterable[str] = None,
                         linewidth: int = None,

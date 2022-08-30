@@ -8,4 +8,5 @@ from combio.visualization import event_plot_multiple, event_plot_single
 
 seq = Sequence.generate_random_normal(10, 500, 25)
 
-event_plot_multiple([seq, seq], bar_names=['Poep', 'Poepje'], linewidth=50)
+event_plot_single(seq)
+
