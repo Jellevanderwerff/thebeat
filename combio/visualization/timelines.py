@@ -6,7 +6,8 @@ from typing import Union, Iterable
 
 def event_plot_single(sequence: Union[Sequence, StimTrial],
                       style: str = 'seaborn',
-                      linewidth=10):
+                      linewidth=10,
+                      suppress_display: bool = False):
     # Input validation and setting line widths
     if isinstance(sequence, Sequence):
         linewidths = linewidth
@@ -24,7 +25,8 @@ def event_plot_single(sequence: Union[Sequence, StimTrial],
         ax.axes.set_xlabel("Time (ms)")
 
     # Show plot
-    plt.show()
+    if not suppress_display:
+        plt.show()
 
     # Additionally return plot
     return fig, ax
@@ -33,7 +35,8 @@ def event_plot_single(sequence: Union[Sequence, StimTrial],
 def event_plot_multiple(sequences,
                         style: str = 'seaborn',
                         bar_names: Iterable[str] = None,
-                        linewidth: int = None):
+                        linewidth: int = None,
+                        suppress_display: bool = False):
 
     # Input validation
     if not all(isinstance(sequence, Sequence) for sequence in sequences) and not all(
@@ -51,7 +54,7 @@ def event_plot_multiple(sequences,
     # default to 10 points).
     if linewidth is None:
         if isinstance(sequences[0], Sequence):
-            linewidths = 10 * len(sequences)
+            linewidths = [10] * len(sequences)
         elif isinstance(sequences[0], StimTrial):
             linewidths = [trial.event_durations for trial in sequences]
 
@@ -62,13 +65,9 @@ def event_plot_multiple(sequences,
         for seq, label, linewidths in zip(sequences, bar_names, linewidths):
             ax.barh(y=label, width=linewidths, left=seq.onsets)
 
-        plt.show()
+        if not suppress_display:
+            plt.show()
 
     return fig, ax
-
-
-"""
-
-"""
 
 
