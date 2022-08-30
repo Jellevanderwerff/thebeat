@@ -1,30 +1,39 @@
 import numpy as np
 from fractions import Fraction
+from typing import Iterable
 
 
 class BaseSequence:
     """Base Sequence class that holds only IOIs and calculates onset values. """
 
-    def __init__(self, iois, metrical=False):
-        self._iois = None
+    def __init__(self,
+                 iois: Iterable,
+                 metrical: bool = False):
+
         self.iois = iois
+
+        # Save metrical attribute
         self.metrical = metrical
 
     @property
     def iois(self):
-        return self._iois
+        # Return a copy of self._iois
+        return np.array(self._iois, dtype=np.float32).copy()
 
     @iois.setter
-    def iois(self, value):
-        # check
-        if any(ioi < 0 for ioi in value):
-            raise ValueError("Inter-onset intervals (IOIs) cannot be negative.")
-        else:
-            self._iois = value
+    def iois(self, values):
+
+        # Make input
+        iois = np.array(values, dtype=np.float32)
+
+        if np.any(iois <= 0):
+            raise ValueError("Inter-onset intervals (IOIs) cannot be zero or negative.")
+
+        self._iois = iois
 
     @property
     def onsets(self):
-        """Get the event onsets. These is the cumulative sum of Sequence.iois, with 0 additionally prepended.
+        """Get the event onsets. This is the cumulative sum of Sequence.iois, with 0 additionally prepended.
         """
 
         if self.metrical is True:
@@ -33,13 +42,20 @@ class BaseSequence:
             return np.cumsum(np.append(0, self.iois), dtype=np.float32)
 
     @onsets.setter
-    def onsets(self, value):
-        # TODO From set of onsets, and sort here, instead of requiring?
-        if value[0] != 0:
+    def onsets(self, values):
+
+        # Onsets may be in the wrong order, so sort first
+        np.sort(values)
+
+        # Check whether first onset is 0 (requirement of this package)
+        if values[0] != 0:
             raise ValueError("First onset is not 0")
-        if np.any(value[:-1] > value[1:]):
-            raise ValueError("Non-monotonic onsets")
-        self.iois = np.diff(value)
+
+        if np.any(values[:-1] == values[1:]):
+            raise ValueError("Cannot have two onsets that occur simultaneously.")
+
+        # Set the IOIs
+        self.iois = np.diff(values)
 
 
 class Sequence(BaseSequence):
@@ -283,6 +299,12 @@ class Sequence(BaseSequence):
     def from_integer_ratios(cls, numerators, value_of_one_in_ms, metrical=False):
         numerators = np.array(numerators)
         return cls(numerators * value_of_one_in_ms, metrical=metrical)
+
+    @classmethod
+    def from_onsets(cls, onsets, metrical=False):
+        iois = np.diff(onsets)
+
+        return cls(iois, metrical=metrical)
 
     # Manipulation methods
     def change_tempo(self, factor):

@@ -2,6 +2,4 @@ from combio.core import *
 from combio.rhythm import *
 
 
-seq = Sequence([50, 50, 50])
-seq.iois = [-20]
-
+sequence = Sequence.from_onsets([1, 20, 21])
