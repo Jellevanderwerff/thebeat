@@ -28,6 +28,9 @@ def test_iois(rng):
     iois[0] = -42
     assert s.iois[0] != -42
 
+    seq = Sequence.generate_isochronous(4, 500, metrical=True)
+    with pytest.raises(ValueError):
+        seq.onsets = [0, 50, 100]
 
 
 def test_exception():

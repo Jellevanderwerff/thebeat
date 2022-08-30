@@ -23,7 +23,7 @@ class BaseSequence:
     @iois.setter
     def iois(self, values):
 
-        # Make input
+        # Change into numpy array
         iois = np.array(values, dtype=np.float32)
 
         if np.any(iois <= 0):
@@ -55,6 +55,10 @@ class BaseSequence:
             raise ValueError("Cannot have two onsets that occur simultaneously.")
 
         # Set the IOIs
+        if self.metrical is True:
+            raise ValueError("Cannot change onsets of metrical sequences. This is because we need to know the final "
+                             "IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.")
+
         self.iois = np.diff(values)
 
 
@@ -301,10 +305,10 @@ class Sequence(BaseSequence):
         return cls(numerators * value_of_one_in_ms, metrical=metrical)
 
     @classmethod
-    def from_onsets(cls, onsets, metrical=False):
+    def from_onsets(cls, onsets):
         iois = np.diff(onsets)
 
-        return cls(iois, metrical=metrical)
+        return cls(iois, metrical=False)
 
     # Manipulation methods
     def change_tempo(self, factor):
