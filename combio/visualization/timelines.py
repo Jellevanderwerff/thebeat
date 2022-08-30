@@ -8,6 +8,7 @@ def event_plot(sequence: Union[Sequence, StimTrial],
                style: str = 'seaborn',
                linewidth=10):
 
+    # Input validation and setting line widths
     if isinstance(sequence, Sequence):
         linewidths = linewidth
     elif isinstance(sequence, StimTrial):
@@ -15,6 +16,7 @@ def event_plot(sequence: Union[Sequence, StimTrial],
     else:
         raise ValueError("Pass either a Sequence or a StimTrial option as the first argument.")
 
+    # Make plot
     with plt.style.context(style):
         fig, ax = plt.subplots()
         ax.set_ylim(0, 1)
@@ -22,8 +24,10 @@ def event_plot(sequence: Union[Sequence, StimTrial],
         ax.axes.yaxis.set_visible(False)
         ax.axes.set_xlabel("Time (ms)")
 
+    # Show plot
     plt.show()
 
+    # Additionally return plot
     return fig, ax
 
 

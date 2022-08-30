@@ -3,17 +3,24 @@ from fractions import Fraction
 
 
 class BaseSequence:
-    """Base Sequence class that holds the most basic methods and attributes. """
+    """Base Sequence class that holds only IOIs and calculates onset values. """
 
     def __init__(self, iois, metrical=False):
+        self._iois = None
         self.iois = iois
-        # If metrical=True, that means there's an additional IOI for the final event.
         self.metrical = metrical
 
-        if any(ioi < 0 for ioi in iois):
-            raise ValueError("IOIs cannot be negative.")
+    @property
+    def iois(self):
+        return self._iois
+
+    @iois.setter
+    def iois(self, value):
+        # check
+        if any(ioi < 0 for ioi in value):
+            raise ValueError("Inter-onset intervals (IOIs) cannot be negative.")
         else:
-            self.iois = np.array(iois, dtype=np.float32)
+            self._iois = value
 
     @property
     def onsets(self):
