@@ -17,8 +17,8 @@ def test_event_plot_multiple():
     trials = []
 
     for x in range(10):
-        seq = Sequence.generate_random_uniform(n=10, a=400, b=600)
-        stims = [Stimulus.generate(duration=random.randint(10, 250)) for y in range(10)]
+        seq = Sequence.generate_random_uniform(n=10, a=400, b=600)  # = 10 stimuli, 9 IOIs
+        stims = [Stimulus.generate(duration=random.randint(10, 350)) for y in range(10)]  # = 10 stimuli
         trials.append(StimTrial(stims, seq))
 
     fig, ax = event_plot_multiple(trials, style='ggplot', suppress_display=True)

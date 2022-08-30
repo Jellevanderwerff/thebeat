@@ -6,7 +6,7 @@ from typing import Union, Iterable
 
 def event_plot_single(sequence: Union[Sequence, StimTrial],
                       style: str = 'seaborn',
-                      linewidth=10,
+                      linewidth=50,
                       suppress_display: bool = False):
     # Input validation and setting line widths
     if isinstance(sequence, Sequence):
@@ -54,9 +54,11 @@ def event_plot_multiple(sequences,
     # default to 10 points).
     if linewidth is None:
         if isinstance(sequences[0], Sequence):
-            linewidths = [10] * len(sequences)
+            linewidths = [50] * len(sequences)
         elif isinstance(sequences[0], StimTrial):
             linewidths = [trial.event_durations for trial in sequences]
+    else:
+        linewidths = [linewidth] * len(sequences)
 
     # Plot
     with plt.style.context(style):
