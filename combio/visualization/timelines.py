@@ -6,23 +6,30 @@ from typing import Union, Iterable
 
 def event_plot_single(sequence: Union[Sequence, StimTrial],
                       style: str = 'seaborn',
-                      linewidth=50,
+                      linewidth=None,
+                      figsize=None,
                       suppress_display: bool = False):
-    # Input validation and setting line widths
-    if isinstance(sequence, Sequence):
-        linewidths = linewidth
-    elif isinstance(sequence, StimTrial):
-        linewidths = sequence.event_durations
+
+    # Input validation
+    if not isinstance(sequence, Sequence) and not isinstance(sequence, StimTrial):
+        raise ValueError("Please pass either a Sequence or StimTrial object as the first argument.")
+
+    # Setting linewidths
+    if linewidth is None:
+        if isinstance(sequence, Sequence):
+            linewidths = 50
+        elif isinstance(sequence, StimTrial):
+            linewidths = sequence.event_durations
     else:
-        raise ValueError("Pass either a Sequence or a StimTrial object as the first argument.")
+        linewidths = linewidth
 
     # Make plot
     with plt.style.context(style):
-        fig, ax = plt.subplots()
-        ax.set_ylim(0, 1)
-        ax.barh(0.5, width=linewidths, height=0.3, left=sequence.onsets)
-        ax.axes.yaxis.set_visible(False)
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
         ax.axes.set_xlabel("Time (ms)")
+        ax.set_ylim(0, 1)
+        ax.barh(0.5, width=linewidths, height=1.0, left=sequence.onsets)
+        ax.axes.yaxis.set_visible(False)
 
     # Show plot
     if not suppress_display:
