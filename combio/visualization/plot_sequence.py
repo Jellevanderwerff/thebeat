@@ -1,15 +1,14 @@
-from combio.core import Sequence, StimTrial, Stimulus
+from combio.core import Sequence, StimTrial
 import matplotlib.pyplot as plt
-import numpy as np
 from typing import Union, Iterable
+from matplotlib.ticker import AutoMinorLocator, AutoLocator
 
 
-def event_plot_single(sequence: Union[Sequence, StimTrial],
-                      style: str = 'seaborn',
-                      linewidth=None,
-                      figsize=None,
-                      suppress_display: bool = False):
-
+def plot_sequence_single(sequence: Union[Sequence, StimTrial],
+                         style: str = 'seaborn',
+                         linewidth=None,
+                         figsize=None,
+                         suppress_display: bool = False):
     # Input validation
     if not isinstance(sequence, Sequence) and not isinstance(sequence, StimTrial):
         raise ValueError("Please pass either a Sequence or StimTrial object as the first argument.")
@@ -26,9 +25,11 @@ def event_plot_single(sequence: Union[Sequence, StimTrial],
     # Make plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+
         ax.axes.set_xlabel("Time (ms)")
         ax.set_ylim(0, 1)
         ax.barh(0.5, width=linewidths, height=1.0, left=sequence.onsets)
+
         ax.axes.yaxis.set_visible(False)
 
     # Show plot
@@ -39,12 +40,12 @@ def event_plot_single(sequence: Union[Sequence, StimTrial],
     return fig, ax
 
 
-def event_plot_multiple(sequences: Union,
-                        style: str = 'seaborn',
-                        bar_names: Iterable[str] = None,
-                        linewidth: int = None,
-                        suppress_display: bool = False):
-
+def plot_sequence_multiple(sequences: Union,
+                           style: str = 'seaborn',
+                           sequence_names: Iterable[str] = None,
+                           linewidth: int = None,
+                           figsize: tuple = None,
+                           suppress_display: bool = False):
     # Input validation
     if not all(isinstance(sequence, Sequence) for sequence in sequences) and not all(
             isinstance(sequence, StimTrial) for sequence in sequences):
@@ -52,13 +53,13 @@ def event_plot_multiple(sequences: Union,
 
     # Make names for the bars
     n_bars = len(sequences)
-    if bar_names is None:
-        bar_names = [str(i) for i in range(1, n_bars+1)]
-    elif len(bar_names) != len(sequences):
+    if sequence_names is None:
+        sequence_names = [str(i) for i in range(1, n_bars + 1)]
+    elif len(sequence_names) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
-    # default to 10 points).
+    # default to 50 points).
     if linewidth is None:
         if isinstance(sequences[0], Sequence):
             linewidths = [50] * len(sequences)
@@ -69,14 +70,14 @@ def event_plot_multiple(sequences: Union,
 
     # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
-        for seq, label, linewidths in zip(sequences, bar_names, linewidths):
+        ax.axes.set_xlabel("Time (ms)")
+
+        for seq, label, linewidths in zip(sequences, sequence_names, linewidths):
             ax.barh(y=label, width=linewidths, left=seq.onsets)
 
         if not suppress_display:
             plt.show()
 
     return fig, ax
-
-

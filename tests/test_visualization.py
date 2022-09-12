@@ -1,5 +1,5 @@
 from combio.core import Stimulus, StimTrial, Sequence
-from combio.visualization import event_plot_single, event_plot_multiple
+from combio.visualization import plot_sequence_single, plot_sequence_multiple
 import random
 
 
@@ -10,7 +10,7 @@ def test_event_plot_single():
              Stimulus.generate(duration=200),
              Stimulus.generate(duration=200)]
     trial = StimTrial(stims, seq)
-    event_plot_single(trial, style='seaborn', suppress_display=True)
+    plot_sequence_single(trial, style='seaborn', suppress_display=True)
 
 
 def test_event_plot_multiple():
@@ -21,13 +21,13 @@ def test_event_plot_multiple():
         stims = [Stimulus.generate(duration=random.randint(10, 350)) for y in range(10)]  # = 10 stimuli
         trials.append(StimTrial(stims, seq))
 
-    fig, ax = event_plot_multiple(trials, style='ggplot', suppress_display=True)
+    fig, ax = plot_sequence_multiple(trials, style='ggplot', suppress_display=True)
 
     assert fig
     assert ax
 
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25) for x in range(10)]
-    event_plot_multiple(seqs, suppress_display=True)
+    plot_sequence_multiple(seqs, suppress_display=True)
 
 
 
