@@ -20,7 +20,7 @@ def test_iois(rng):
     # from and to integer ratios
     integer_ratios = [1, 5, 8, 2, 5, 4, 4, 2, 1]
     seq = Sequence.from_integer_ratios(numerators=integer_ratios, value_of_one_in_ms=500)
-    assert seq.integer_ratios == integer_ratios
+    assert np.all(seq.integer_ratios == integer_ratios)
 
     # test whether copy of IOIs is returned instead of object itself
     s = Sequence([1, 2, 3, 4])
