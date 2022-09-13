@@ -6,10 +6,14 @@ import random
 from combio.visualization import plot_sequence_single, plot_sequence_multiple
 import os
 
+seq = Sequence([464., 435., 492., 500., 457., 475., 472., 597., 527.])
 
-seq1 = Sequence.generate_isochronous(n=10, ioi=500)
-seq2 = Sequence.generate_random_normal(n=10, mu=500, sigma=50)
+trials = []
 
-plot_sequence_multiple([seq1, seq2],
-                       sequence_names=['Isochronous', 'Random normal'],
-                       figsize=(8, 4))
+for x in range(1000):
+    seq = Sequence.generate_random_uniform(n=10, a=400, b=600)  # = 10 stimuli, 9 IOIs
+    stims = [Stimulus.generate(duration=random.randint(10, 350)) for y in range(10)]  # = 10 stimuli
+    try:
+        trials.append(StimTrial(stims, seq))
+    except ValueError as e:
+        raise Exception from e

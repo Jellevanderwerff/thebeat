@@ -1,1 +1,2 @@
-from .ioi_stats import *
+from .ugof import *
+from .ks import *

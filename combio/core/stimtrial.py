@@ -132,11 +132,18 @@ Stimulus names: {stim_names}
         # In the case of a metrical sequence, we add the final ioi
         # The dtype is important, because that determines the values that the magnitudes can take.
         if self.metrical:
-            array_length = int((onsets[-1] + self.iois[-1]) / 1000 * self.fs)
+            length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
         elif not self.metrical:
-            array_length = int((onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0])
+            length = (onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0]
         else:
             raise ValueError("Error during calculation of array_length")
+
+        if int(length) != length:  # let's avoid rounding issues
+            warnings.warn("Number of frames was rounded off to nearest integer ceiling. "
+                          "This shouldn't be much of a problem.")
+
+        # Round off array length to ceiling if necessary
+        array_length = int(np.ceil(length))
 
         if self.n_channels == 1:
             samples = np.zeros(array_length, dtype=self.dtype)
@@ -146,8 +153,10 @@ Stimulus names: {stim_names}
         samples_with_onsets = list(zip([stimulus.samples for stimulus in stimuli], onsets))
 
         for stimulus, onset in samples_with_onsets:
+
             start_pos = int(onset * self.fs / 1000)
             end_pos = int(start_pos + stimulus.shape[0])
+
             if self.n_channels == 1:
                 samples[start_pos:end_pos] = stimulus
             elif self.n_channels == 2:

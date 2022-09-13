@@ -106,7 +106,7 @@ class Stimulus:
     def generate(cls,
                  name=None,
                  freq=440,
-                 fs=44100,
+                 fs=48000,
                  duration=50,
                  amplitude=1.0,
                  osc='sine',

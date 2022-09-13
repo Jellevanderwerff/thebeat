@@ -73,7 +73,17 @@ class RhythmTrial:
         return events
 
     def _make_sound(self, provided_events):
-        array_length = int(self.total_duration / 1000 * self.fs)
+        # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # In the case of a metrical sequence, we add the final ioi
+        # The dtype is important, because that determines the values that the magnitudes can take.
+
+        length = self.total_duration / 1000 * self.fs
+        if int(length) != length:  # let's avoid rounding issues
+            warnings.warn("Number of frames was rounded off to nearest integer ceiling. "
+                          "This shouldn't be much of a problem.")
+
+        array_length = int(np.ceil(length))
+
         if self.n_channels == 1:
             samples = np.zeros(array_length)
         else:

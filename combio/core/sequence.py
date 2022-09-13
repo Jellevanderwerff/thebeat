@@ -332,12 +332,12 @@ class Sequence(BaseSequence):
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
     @property
-    def duration_ms(self):
-        return np.sum(self.iois)
+    def duration_ms(self) -> np.float32:
+        return np.float32(np.sum(self.iois))
 
     @property
-    def duration_s(self):
-        return np.sum(self.iois) / 1000
+    def duration_s(self) -> np.float32:
+        return np.float32(np.sum(self.iois) / 1000)
 
     @property
     def integer_ratios(self):
@@ -363,7 +363,7 @@ class Sequence(BaseSequence):
 
         vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
 
-        return vals
+        return np.array(vals)
 
     @property
     def interval_ratios_from_dyads(self):
