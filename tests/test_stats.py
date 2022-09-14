@@ -21,7 +21,9 @@ def test_npvi():
 
 def test_acf():
     rng = np.random.default_rng(seed=123)
-    seq = Sequence.generate_random_uniform(n=100, a=400, b=600, rng=rng)
-    acf_seq = acf(seq)
+    seq = Sequence.generate_random_uniform(n=10, a=450, b=550, rng=rng)
+    fig, ax = acf_plot(seq, 1, 250, 20, suppress_display=True)
+    assert fig
+    assert ax
 
-    assert acf(seq)[1] == 0.04246320575329873
+

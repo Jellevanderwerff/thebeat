@@ -147,7 +147,7 @@ oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
     return lp
 
 
-def plot_lp(lp, filepath):
+def plot_lp(lp, filepath, suppress_display):
     # This is the same each time:
 
     if filepath:
@@ -191,11 +191,11 @@ def plot_lp(lp, filepath):
                 top_left[1]:bottom_right[1]]
 
     # show plot
-    if not filepath:
+    if not filepath and not suppress_display:
         plt.imshow(out)
         plt.axis('off')
         plt.show()
-    elif filename.endswith('.png'):
+    elif filename.endswith('.png') and not suppress_display:
         plt.imshow(out)
         plt.axis('off')
         plt.savefig(filename, bbox_inches='tight')

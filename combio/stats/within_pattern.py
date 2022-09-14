@@ -5,24 +5,62 @@ from combio.core import Sequence, StimTrial
 from statsmodels.graphics.tsaplots import plot_acf
 import statsmodels.tsa.stattools
 import matplotlib.pyplot as plt
+from .helpers import make_ones_and_zeros_timeseries
+
+# todo All these functions need to be checked!!
 
 
-def acf(sequence: Union[Sequence, StimTrial, Iterable],
-        nlags: int = None,
-        plot: bool = False):
-    """See https://www.statsmodels.org/dev/generated/statsmodels.tsa.stattools.acf.html for usage"""
+def acf_plot(sequence: Union[Sequence, StimTrial, Iterable],
+             resolution_ms: int = 1,
+             npdf_width=None,
+             npdf_sd=None,
+             style: str = 'seaborn',
+             figsize: tuple = None,
+             suppress_display: bool = False):
+    """
+    Based on Ravignani & Norris, 2017
+    Please provide a Sequence or StimTrial object, or an iterable containing stimulus onsets in milliseconds.
+    """
 
-    if isinstance(sequence, (Sequence, StimTrial, Iterable)):
-        sequence = sequence.iois
+    if npdf_width is None or npdf_sd is None:
+        raise ValueError("Please provide a width and sd for the normal probability density function that"
+                         "is used for smoothing out the found IOIs.")
 
-    if nlags is None:
-        nlags = len(sequence) - 1
+    if isinstance(sequence, (Sequence, StimTrial)):
+        onsets_ms = sequence.onsets
+    else:
+        onsets_ms = sequence
 
-    if plot is True:
-        p = plot_acf(sequence, lags=nlags)
+    signal = make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
+
+    # npdf
+    x = np.arange(start=-npdf_width / 2, stop=npdf_width / 2, step=resolution_ms)
+    npdf = scipy.stats.norm.pdf(x, 0, npdf_sd)
+    npdf = npdf / np.max(npdf)
+
+    signal_convoluted = np.convolve(signal, npdf)
+    signal = signal_convoluted[round(resolution_ms * npdf_width / 2):]
+
+    correlation = np.correlate(signal, signal, 'full')
+    correlation = correlation[round(len(correlation)/2):]
+
+    x_step = resolution_ms
+    max_lag = np.floor(max(onsets_ms) / 2)
+
+    # plot
+    x = np.arange(start=x_step, stop=max_lag+1, step=x_step)
+    y = correlation[0:int(np.floor(max_lag*resolution_ms))]
+    y = y / max(y)  # normalize
+    with plt.style.context(style):
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        ax.axes.set_xlabel('Lag [ms]')
+        ax.axes.set_title('Autocorrelation')
+        ax.plot(x, y)
+
+    if suppress_display is False:
         plt.show()
 
-    return statsmodels.tsa.stattools.acf(sequence, nlags=nlags)
+    return fig, ax
 
 
 def ks_test(sequence: Union[Sequence, StimTrial, Iterable],

@@ -33,7 +33,7 @@ def plot_sequence_single(sequence: Union[Sequence, StimTrial],
         ax.axes.yaxis.set_visible(False)
 
     # Show plot
-    if not suppress_display:
+    if suppress_display is False:
         plt.show()
 
     # Additionally return plot

@@ -168,7 +168,13 @@ class RhythmTrial:
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         combio.core.play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
 
-    def plot_rhythm(self, filepath=None, print_staff=True, lilypond_percussion_notes=None, stem_directions=None):
+    def plot_rhythm(self,
+                    filepath=None,
+                    print_staff=True,
+                    lilypond_percussion_notes=None,
+                    stem_directions=None,
+                    suppress_display=False):
+
         """
 
         Parameters
@@ -193,7 +199,7 @@ class RhythmTrial:
                                                       lilypond_percussion_notes=lilypond_percussion_notes,
                                                       stem_directions=stem_directions)
 
-        combio.rhythm.helpers.plot_lp(lp, filepath=filepath)
+        combio.rhythm.helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
 
         warnings.warn("Time signatures aren't implemented here yet! Forgot that...")
 

@@ -8,5 +8,6 @@ def test_rhythmtrial():
     stim = Stimulus.generate()
 
     trial = RhythmTrial(stim, r)
-    trial.plot_rhythm()
+    trial.plot_rhythm(suppress_display=True)
+
 
