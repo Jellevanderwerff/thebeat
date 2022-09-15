@@ -106,7 +106,7 @@ Stimulus names: {stim_names}
 
         plot_waveform(self.samples, self.fs, self.n_channels, title)
 
-    def write_wav(self, out_path='.',
+    def write_wav(self, out_path: Union[str, os.PathLike] = '.',
                   metronome=False,
                   metronome_amplitude=1):
         """

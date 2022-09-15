@@ -4,7 +4,40 @@ from typing import Iterable, Union
 
 
 class BaseSequence:
-    """Base Sequence class that holds only IOIs and calculates onset values. """
+    """
+    This is the most basic of classes that the Sequence class inherits from, as well as the Rhythm class.
+    It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
+
+    The BaseSequence class dictates that a sequence can either be metrical or not.
+    The default is non-metrical, meaning that if there are n onset values (i.e. t values),
+    there are n-1 IOIs. This is what people will need in most cases.
+    Metrical sequences have an additional final IOI (so they end with a gap of silence).
+    This is what you will need in cases with e.g. rhythmical/musical sequences.
+
+    The BaseSequence class protects against impossible values for the IOIs, as well as for the
+    event onsets (t values).
+
+    Finally, remember that the first event onset is always at t = 0!
+
+    Attributes
+    ----------
+    iois : NumPy 1-D array
+        Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
+        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
+        and onsets.
+    onsets : NumPy 1-D array
+        Property that contains the onsets (t values) in milliseconds. The first onset is additionally added and
+        is always zero.
+
+    Parameters
+    ----------
+    iois : iterable
+        An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]
+    metrical : bool, optional
+        Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
+        sequences.
+
+    """
 
     def __init__(self,
                  iois: Iterable,
@@ -17,13 +50,16 @@ class BaseSequence:
 
     @property
     def iois(self):
+        """IOI getter. Returns a copy of the IOIs attribute object, to protect against
+        misuse."""
         # Return a copy of self._iois
         return np.array(self._iois, dtype=np.float32).copy()
 
     @iois.setter
     def iois(self, values):
+        """IOI setter. Checks against negative IOIs."""
 
-        # Change into numpy array
+        # We always want a NumPy array:
         iois = np.array(values, dtype=np.float32)
 
         if np.any(iois <= 0):
@@ -43,6 +79,8 @@ class BaseSequence:
 
     @onsets.setter
     def onsets(self, values):
+        """Set the event onsets. First onset must be zero, and there cannot be two onsets that occur simultaneously.
+        """
 
         # Onsets may be in the wrong order, so sort first
         np.sort(values)
@@ -64,36 +102,47 @@ class BaseSequence:
 
 class Sequence(BaseSequence):
     """
-    Sequence class that holds a sequence of inter-onset intervals (IOIs) and stimulus onsets.
-    Additionally has class methods that can be used for generating a new sequence.
+    The Sequence class is the most important class in this package. It is used as the basis
+    for many functions, and can be passed to many functions.
+    Sequences rely most importantly on inter-onset intervals (IOIs; the times between the onset of an event,
+    and the onset of the next event). IOIs are also what we use to construct sequences
+    (rather than event onsets, or t values).
+
+    The most basic way of constructing a Sequence object is by passing it a list (or other iterable) of IOIs.
+    However, the different class methods (e.g. Sequence.generate_isochronous()) may also be used.
+
+    This class additionally contains functions and attributes to, for instance, get the event onsets values, to
+    change the tempo, or to add Gaussian noise.
+
 
     Attributes
     ----------
 
-    iois : Numpy 1-D array
-        A list of the sequence's inter-onset intervals.
-
-    Class methods
-    -------------
-
-    generate_random_normal(n, mu, sigma, rng=None)
-        Generate a random sequence using the normal distribution.
-    generate_random_uniform(n, a, b, rng=None)
-        Generate a random sequence using a uniform distribution.
-    generate_random_poisson(n, lam, rng=None)
-        Generate a random sequence using a Poisson distribution.
-    generate_random_exponential(n, lam, rng=None)
-        Generate a random sequence using an exponential distribution.
-    generate_isochronous(n, ioi)
-        Generate an isochronous sequence using an exponential distribution.
-
-    Methods
-    -------
+    iois : NumPy 1-D array
+        Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
+        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
+        and onsets.
+    onsets : NumPy 1-D array
+        This is actually a property that contains the onsets (t values) in milliseconds.
+        The first onset is additionally added and is always zero.
 
 
+    Examples
+    --------
+    >>> iois = [500, 400, 600]
+    >>> seq = Sequence(iois)
+    >>> print(seq.onsets)
+    [   0.  500.  900. 1500.]
+
+    >>> seq = Sequence.generate_isochronous(n=10, ioi=500)
+    >>> print(len(seq.iois))
+    9
+    >>> print(len(seq.onsets))
+    10
     """
 
-    def __init__(self, iois, metrical=False):
+    def __init__(self, iois: Iterable, metrical: bool = False):
+        """Construct a Sequence object"""
 
         # Call super init method
         BaseSequence.__init__(self, iois=iois, metrical=metrical)
@@ -164,10 +213,10 @@ class Sequence(BaseSequence):
         a : int
             The left bound of the uniform distribution.
         b : int
-            The right bound of the normal distribution.
+            The right bound of the uniform distribution.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean
+        metrical : boolean, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
 
@@ -205,7 +254,7 @@ class Sequence(BaseSequence):
             The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean
+        metrical : boolean, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
                 grid)
 
@@ -269,10 +318,8 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_isochronous(cls, n: int, ioi: int, metrical=False):
         """
-
         Class method that generates a sequence of isochronous inter-onset intervals.
         Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
-
 
         Parameters
         ----------
@@ -280,7 +327,7 @@ class Sequence(BaseSequence):
             The desired number of events in the sequence.
         ioi : int
             The inter-onset interval to be used between all events.
-        metrical : boolean
+        metrical : bool
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
 
