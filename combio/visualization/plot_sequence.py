@@ -1,23 +1,23 @@
-from combio.core import Sequence, StimTrial
+from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
 from typing import Union, Iterable
 from matplotlib.ticker import AutoMinorLocator, AutoLocator
 
 
-def plot_sequence_single(sequence: Union[Sequence, StimTrial],
+def plot_sequence_single(sequence: Union[Sequence, StimSequence],
                          style: str = 'seaborn',
                          linewidth=None,
                          figsize=None,
                          suppress_display: bool = False):
     # Input validation
-    if not isinstance(sequence, Sequence) and not isinstance(sequence, StimTrial):
-        raise ValueError("Please pass either a Sequence or StimTrial object as the first argument.")
+    if not isinstance(sequence, Sequence) and not isinstance(sequence, StimSequence):
+        raise ValueError("Please pass either a Sequence or StimSequence object as the first argument.")
 
     # Setting linewidths
     if linewidth is None:
         if isinstance(sequence, Sequence):
             linewidths = 50
-        elif isinstance(sequence, StimTrial):
+        elif isinstance(sequence, StimSequence):
             linewidths = sequence.event_durations
     else:
         linewidths = linewidth
@@ -48,8 +48,8 @@ def plot_sequence_multiple(sequences: Union,
                            suppress_display: bool = False):
     # Input validation
     if not all(isinstance(sequence, Sequence) for sequence in sequences) and not all(
-            isinstance(sequence, StimTrial) for sequence in sequences):
-        raise ValueError("Please pass an iterable with either only Sequence objects or only StimTrial objects.")
+            isinstance(sequence, StimSequence) for sequence in sequences):
+        raise ValueError("Please pass an iterable with either only Sequence objects or only StimSequence objects.")
 
     # Make names for the bars
     n_bars = len(sequences)
@@ -63,7 +63,7 @@ def plot_sequence_multiple(sequences: Union,
     if linewidth is None:
         if isinstance(sequences[0], Sequence):
             linewidths = [50] * len(sequences)
-        elif isinstance(sequences[0], StimTrial):
+        elif isinstance(sequences[0], StimSequence):
             linewidths = [trial.event_durations for trial in sequences]
     else:
         linewidths = [linewidth] * len(sequences)

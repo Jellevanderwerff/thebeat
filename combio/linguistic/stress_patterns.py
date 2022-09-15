@@ -1,5 +1,5 @@
 import numpy as np
-from combio.core import Sequence, Stimulus, StimTrial
+from combio.core import Sequence, Stimulus, StimSequence
 
 
 def generate_stress_timed_sequence(n_phrases: int,
@@ -113,7 +113,7 @@ def generate_trimoraic_sequence(n_phrases: int,
 
 seq = generate_trimoraic_sequence(10, 10)
 stim = Stimulus.generate()
-trial = StimTrial(stim, seq)
+trial = StimSequence(stim, seq)
 
 """
     case 'mora'

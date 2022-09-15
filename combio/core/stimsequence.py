@@ -8,7 +8,7 @@ import os
 from typing import Iterable, Union
 
 
-class StimTrial(BaseSequence):
+class StimSequence(BaseSequence):
     """
     StimSequence class which inherits only the most basic functions from BaseSequence
     """
@@ -71,8 +71,8 @@ class StimTrial(BaseSequence):
 
         if self.metrical:
             return f"""
-Object of type StimTrial (metrical version):
-StimTrial name: {name}
+Object of type StimSequence (metrical version):
+StimSequence name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
 Onsets: {self.onsets}
@@ -80,8 +80,8 @@ Stimulus names: {stim_names}
             """
         else:
             return f"""
-Object of type StimTrial (non-metrical version):
-StimTrial name: {name}
+Object of type StimSequence (non-metrical version):
+StimSequence name: {name}
 {len(self.onsets)} events
 IOIs: {self.iois}
 Onsets: {self.onsets}
@@ -102,7 +102,7 @@ Stimulus names: {stim_names}
             if self.name:
                 title = f"Waveform of {self.name}"
             else:
-                title = "Waveform of StimTrial"
+                title = "Waveform of StimSequence"
 
         plot_waveform(self.samples, self.fs, self.n_channels, title)
 

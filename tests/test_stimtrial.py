@@ -5,7 +5,7 @@ from combio.core import *
 def test_stimtrial():
     seq = Sequence.generate_isochronous(10, 500)
     stim = Stimulus.generate()
-    trial = StimTrial(stim, seq)
+    trial = StimSequence(stim, seq)
 
     assert len(trial.onsets) == 10
 
@@ -15,4 +15,4 @@ def test_stimtrial():
     stim2 = Stimulus.generate(fs=44100)
     stims = [stim1, stim2] * 5
     with pytest.raises(Exception):
-        trial = StimTrial(stims, seq)
+        trial = StimSequence(stims, seq)

@@ -1,7 +1,7 @@
 from typing import Iterable, Union
 import scipy.stats
 import numpy as np
-from combio.core import Sequence, StimTrial
+from combio.core import Sequence, StimSequence
 from statsmodels.graphics.tsaplots import plot_acf
 import statsmodels.tsa.stattools
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ from .helpers import make_ones_and_zeros_timeseries
 # todo All these functions need to be checked!!
 
 
-def acf_plot(sequence: Union[Sequence, StimTrial, Iterable],
+def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
              resolution_ms: int = 1,
              npdf_width=None,
              npdf_sd=None,
@@ -19,14 +19,14 @@ def acf_plot(sequence: Union[Sequence, StimTrial, Iterable],
              suppress_display: bool = False):
     """
     Based on Ravignani & Norris, 2017
-    Please provide a Sequence or StimTrial object, or an iterable containing stimulus onsets in milliseconds.
+    Please provide a Sequence or StimSequence object, or an iterable containing stimulus onsets in milliseconds.
     """
 
     if npdf_width is None or npdf_sd is None:
         raise ValueError("Please provide a width and sd for the normal probability density function that"
                          "is used for smoothing out the found IOIs.")
 
-    if isinstance(sequence, (Sequence, StimTrial)):
+    if isinstance(sequence, (Sequence, StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -63,7 +63,7 @@ def acf_plot(sequence: Union[Sequence, StimTrial, Iterable],
     return fig, ax
 
 
-def ks_test(sequence: Union[Sequence, StimTrial, Iterable],
+def ks_test(sequence: Union[Sequence, StimSequence, Iterable],
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -83,7 +83,7 @@ def ks_test(sequence: Union[Sequence, StimTrial, Iterable],
 
     """
 
-    if isinstance(sequence, (Sequence, StimTrial)):
+    if isinstance(sequence, (Sequence, StimSequence)):
         sequence = sequence.iois
 
     if reference_distribution == 'normal':
@@ -101,11 +101,11 @@ def ks_test(sequence: Union[Sequence, StimTrial, Iterable],
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def npvi(sequence: Union[Sequence, StimTrial, Iterable]) -> np.float32:
+def npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
     """Get nPVI
     """
 
-    if isinstance(sequence, (Sequence, StimTrial)):
+    if isinstance(sequence, (Sequence, StimSequence)):
         sequence = sequence.iois
 
     npvi_values = []
@@ -118,13 +118,13 @@ def npvi(sequence: Union[Sequence, StimTrial, Iterable]) -> np.float32:
     return np.float32(np.mean(npvi_values))
 
 
-def ugof(sequence: Union[Sequence, StimTrial, Iterable],
+def ugof(sequence: Union[Sequence, StimSequence, Iterable],
          theoretical_ioi: float,
          output: str = 'mean') -> np.float32:
     """Credits to Lara. S. Burchardt, include ref."""
 
     # Get the onsets
-    if isinstance(sequence, (Sequence, StimTrial)):
+    if isinstance(sequence, (Sequence, StimSequence)):
         onsets = sequence.onsets  # in ms
     else:
         onsets = sequence
