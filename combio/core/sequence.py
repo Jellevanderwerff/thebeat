@@ -100,9 +100,9 @@ class Sequence(BaseSequence):
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return f"Object of type Sequence (metrical version)\n{len(self.onsets)} events\n\nIOIs: {self.iois}\n\nOnsets: {self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical version):\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return f"Object of type Sequence (non-metrical version)\n{len(self.onsets)} events\n\nIOIs: {self.iois}\n\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
         return _join_sequences([self, other])
