@@ -1,5 +1,6 @@
 from typing import Iterable, Union
 import scipy.stats
+import scipy.fft
 import numpy as np
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
@@ -55,7 +56,6 @@ def acf_df(sequence: Union[Sequence, StimSequence, Iterable],
             "correlation": correlations
         }
     )
-    df = df.sort_values(by=["correlation", "time_ms"], ascending=[False, True])
 
     return df
 
@@ -184,3 +184,5 @@ def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
         return np.float32(np.median(ugof_values))
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
+
+
