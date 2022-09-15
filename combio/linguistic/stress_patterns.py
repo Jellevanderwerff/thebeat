@@ -48,7 +48,7 @@ def generate_stress_timed_sequence(n_phrases: int,
     return Sequence(iois)
 
 
-def generate_trimoraic_sequence(n_iois: int,
+def generate_trimoraic_sequence(n_feet: int,
                                 mora_ioi: int = 250,
                                 noise_sd: float = 0.0,
                                 rng=None) -> Sequence:
@@ -77,15 +77,15 @@ def generate_trimoraic_sequence(n_iois: int,
 
     i = 0
 
-    while i < n_iois:
-        if rng.choice([1, 2], 1) == 1 or i == (n_iois - 1):
+    while i < n_feet:
+        if rng.choice([1, 2], 1) == 1 or i == (n_feet - 1):
             iois = np.append(iois, 3)
-            i += 1
         else:
             ioi_one = rng.choice(ioi_types, 1)
             ioi_two = 3 - ioi_one
             iois = np.concatenate([iois, ioi_one, ioi_two])
-            i += 2
+
+        i += 1
 
     ioi_sums = np.cumsum(iois)
     pattern_shifted = ioi_sums[:-1] + start_of_pattern
@@ -103,39 +103,3 @@ def generate_trimoraic_sequence(n_iois: int,
     iois = iois * mora_ioi
 
     return Sequence(iois)
-
-
-seq = generate_trimoraic_sequence(10)
-print(seq.duration_s)
-
-
-"""
-    case 'mora'
-        % construct pattern based on mora-timed languages. consists of
-        % clusters that contain either one or two iois and have the same
-        % total duration (3s).
-        ioiTypes    = [0.25 0.5 0.75 1 1.25 1.5 1.75];
-        nTypes      = length(ioiTypes);
-        % loop over iois and create clusters of one or two iois
-        iois        = [];
-        i = 0;
-        while (i < n)
-            if (randi(2) == 1 || i == n-1)
-                iois    = [iois 3];
-                i       = i + 1;
-            else
-                ioiOne  = ioiTypes(randi(nTypes,1));
-                ioiTwo  = 3 - ioiOne;
-                iois    = [iois ioiOne ioiTwo];
-                i       = i + 2;
-            end
-        end
-        ioiSums = cumsum(iois);
-        pattern = [startOfPattern ioiSums(1:end-1)+startOfPattern];
-        % introduce gaussean noise
-        pattern(2:end)  = pattern(2:end) + stdev * randn(1,n-1);
-        % get iois from noisy pattern
-        iois(1:end-1)   = pattern(2:end) - pattern(1:end-1);
-        iois(end)       = iois(end) + stdev * randn(1,1);
-end
-"""
