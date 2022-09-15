@@ -6,6 +6,7 @@ from matplotlib.ticker import AutoMinorLocator, AutoLocator
 
 def plot_sequence_single(sequence: Union[Sequence, StimSequence],
                          style: str = 'seaborn',
+                         title: str = None,
                          linewidth=None,
                          figsize=None,
                          suppress_display: bool = False):
@@ -29,7 +30,8 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence],
         ax.axes.set_xlabel("Time (ms)")
         ax.set_ylim(0, 1)
         ax.barh(0.5, width=linewidths, height=1.0, left=sequence.onsets)
-
+        if title is not None:
+            ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
     # Show plot
@@ -43,6 +45,7 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence],
 def plot_sequence_multiple(sequences: Union,
                            style: str = 'seaborn',
                            sequence_names: Iterable[str] = None,
+                           title: str = None,
                            linewidth: int = None,
                            figsize: tuple = None,
                            suppress_display: bool = False):
@@ -72,6 +75,9 @@ def plot_sequence_multiple(sequences: Union,
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
 
+        # Labels
+        if title is not None:
+            ax.axes.set_title(title)
         ax.axes.set_xlabel("Time (ms)")
 
         for seq, label, linewidths in zip(sequences, sequence_names, linewidths):

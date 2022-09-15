@@ -7,12 +7,12 @@ def make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
     Ones for the onsets.
     """
     duration = max(onsets_ms)
-    zeros_n = int(np.ceil(duration * resolution_ms)) + 1
+    zeros_n = int(np.ceil(duration * resolution_ms))
     signal = np.zeros(zeros_n)
 
     for onset in onsets_ms:
         index = int(onset * resolution_ms)
-        signal[index] = 1
+        signal[index-1] = 1
 
     return np.array(signal)
 

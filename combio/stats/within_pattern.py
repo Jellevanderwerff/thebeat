@@ -2,29 +2,17 @@ from typing import Iterable, Union
 import scipy.stats
 import numpy as np
 from combio.core import Sequence, StimSequence
-from statsmodels.graphics.tsaplots import plot_acf
-import statsmodels.tsa.stattools
 import matplotlib.pyplot as plt
 from .helpers import make_ones_and_zeros_timeseries
+import scipy.signal
+import pandas as pd
 
-# todo All these functions need to be checked!!
 
-
-def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
-             resolution_ms: int = 1,
-             npdf_width=None,
-             npdf_sd=None,
-             style: str = 'seaborn',
-             figsize: tuple = None,
-             suppress_display: bool = False):
-    """
-    Based on Ravignani & Norris, 2017
-    Please provide a Sequence or StimSequence object, or an iterable containing stimulus onsets in milliseconds.
-    """
-
-    if npdf_width is None or npdf_sd is None:
-        raise ValueError("Please provide a width and sd for the normal probability density function that"
-                         "is used for smoothing out the found IOIs.")
+def acf_values(sequence: Union[Sequence, StimSequence, Iterable],
+               resolution_ms: int = 1,
+               smoothe_width: Union[int, float] = 0,
+               smoothe_sd: Union[int, float] = 0):
+    """From Ravignani & Norris, 2017"""
 
     if isinstance(sequence, (Sequence, StimSequence)):
         onsets_ms = sequence.onsets
@@ -34,27 +22,75 @@ def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
     signal = make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
 
     # npdf
-    x = np.arange(start=-npdf_width / 2, stop=npdf_width / 2, step=resolution_ms)
-    npdf = scipy.stats.norm.pdf(x, 0, npdf_sd)
-    npdf = npdf / np.max(npdf)
+    if not smoothe_width == 0 and not smoothe_sd == 0:
+        x = np.arange(start=-smoothe_width / 2, stop=smoothe_width / 2, step=resolution_ms)
+        npdf = scipy.stats.norm.pdf(x, 0, smoothe_sd)
+        npdf = npdf / np.max(npdf)
 
-    signal_convoluted = np.convolve(signal, npdf)
-    signal = signal_convoluted[round(resolution_ms * npdf_width / 2):]
+        signal_convoluted = np.convolve(signal, npdf)
+        signal = signal_convoluted[round(resolution_ms * smoothe_width / 2):]
 
     correlation = np.correlate(signal, signal, 'full')
-    correlation = correlation[round(len(correlation)/2):]
+    correlation = correlation[round(len(correlation) / 2) - 1:]
+
+    return correlation
+
+
+def acf_df(sequence: Union[Sequence, StimSequence, Iterable],
+           resolution_ms: int = 1,
+           smoothe_width: Union[int, float] = 0,
+           smoothe_sd: Union[int, float] = 0):
+    """
+    This function returns a Pandas DataFrame sorted by the correlation factors
+    returned from the acf_values function.
+
+    """
+
+    correlations = acf_values(sequence, resolution_ms, smoothe_width, smoothe_sd)
+    correlations = correlations / max(correlations)  # normalize
+    times_ms = np.arange(start=0, stop=correlations.size)
+    df = pd.DataFrame(
+        {
+            "time_ms": times_ms,
+            "correlation": correlations
+        }
+    )
+    df = df.sort_values(by="correlation", ascending=False)
+
+    return df
+
+
+def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
+             resolution_ms: int = 1,
+             smoothe_width: Union[int, float] = 0,
+             smoothe_sd: Union[int, float] = 0,
+             style: str = 'seaborn',
+             title: str = 'Autocorrelation',
+             figsize: tuple = None,
+             suppress_display: bool = False):
+    """
+    Based on Ravignani & Norris, 2017
+    Please provide a Sequence or StimSequence object, or an iterable containing stimulus onsets in milliseconds.
+    """
+
+    if isinstance(sequence, (Sequence, StimSequence)):
+        onsets_ms = sequence.onsets
+    else:
+        onsets_ms = sequence
+
+    correlation = acf_values(sequence, resolution_ms, smoothe_width, smoothe_sd)
 
     x_step = resolution_ms
-    max_lag = np.floor(max(onsets_ms) / 2)
+    max_lag = np.floor(max(onsets_ms))
 
     # plot
-    x = np.arange(start=x_step, stop=max_lag+1, step=x_step)
-    y = correlation[0:int(np.floor(max_lag*resolution_ms))]
+    x = np.arange(start=0, stop=max_lag, step=x_step)
+    y = correlation[:int(max_lag)]
     y = y / max(y)  # normalize
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
         ax.axes.set_xlabel('Lag [ms]')
-        ax.axes.set_title('Autocorrelation')
+        ax.axes.set_title(title)
         ax.plot(x, y)
 
     if suppress_display is False:
@@ -146,4 +182,3 @@ def ugof(sequence: Union[Sequence, StimSequence, Iterable],
         return np.float32(np.median(ugof_values))
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
-
