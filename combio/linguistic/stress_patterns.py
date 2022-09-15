@@ -48,17 +48,14 @@ def generate_stress_timed_sequence(n_phrases: int,
     return Sequence(iois)
 
 
-def generate_trimoraic_sequence(n_phrases: int,
-                                n_iois_per_phrase: int,
+def generate_trimoraic_sequence(n_iois: int,
                                 mora_ioi: int = 250,
                                 noise_sd: float = 0.0,
                                 rng=None) -> Sequence:
 
     """
     Parameters
-    ----------
-    n_phrases
-    n_iois_per_phrase
+    sdfg
     mora_ioi : This is the tempo in milliseconds, based on one mora. Sequences have three morae per cluster.
     noise_sd
     rng
@@ -75,31 +72,28 @@ def generate_trimoraic_sequence(n_phrases: int,
 
     # built around clusters with either one or two iois with same total duration (3 * syllable_ioi)
     ioi_types = (np.arange(start=1, stop=8) / 4)
-    print(ioi_types)
-    n_iois = int(n_phrases * n_iois_per_phrase)
 
     iois = np.array([], dtype=np.float32)
 
-    for n in range(n_phrases):
-        i = 0
+    i = 0
 
-        while i < n_iois_per_phrase:
-            if rng.choice([1, 2], 1) == 1 or i == (n_iois_per_phrase - 1):
-                iois = np.append(iois, 3)
-                i += 1
-            else:
-                ioi_one = rng.choice(ioi_types, 1)
-                ioi_two = 3 - ioi_one
-                iois = np.concatenate([iois, ioi_one, ioi_two])
-                i += 2
+    while i < n_iois:
+        if rng.choice([1, 2], 1) == 1 or i == (n_iois - 1):
+            iois = np.append(iois, 3)
+            i += 1
+        else:
+            ioi_one = rng.choice(ioi_types, 1)
+            ioi_two = 3 - ioi_one
+            iois = np.concatenate([iois, ioi_one, ioi_two])
+            i += 2
 
-    ioi_sums = np.cumsum(iois)  # from now on it's an array again
+    ioi_sums = np.cumsum(iois)
     pattern_shifted = ioi_sums[:-1] + start_of_pattern
     pattern = np.concatenate([[start_of_pattern], pattern_shifted])
 
     # Add Gaussian noise
-    #noises = rng.normal(0, scale=noise_sd, size=n_iois - 1)
-    #iois[1:] = iois[1:] + noises
+    noises = rng.normal(0, scale=noise_sd, size=len(iois) - 1)
+    iois[1:] = iois[1:] + noises
 
     # Get iois from noisy pattern
     iois[:-1] = np.diff(pattern)
@@ -111,9 +105,9 @@ def generate_trimoraic_sequence(n_phrases: int,
     return Sequence(iois)
 
 
-seq = generate_trimoraic_sequence(10, 10)
-stim = Stimulus.generate()
-trial = StimSequence(stim, seq)
+seq = generate_trimoraic_sequence(10)
+print(seq.duration_s)
+
 
 """
     case 'mora'
