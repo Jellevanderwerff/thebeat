@@ -2,10 +2,9 @@ import numpy as np
 from combio.core import Sequence, Stimulus, StimSequence
 
 
-def generate_stress_timed_sequence(n_phrases: int,
-                                   n_iois_per_phrase: int,
+def generate_stress_timed_sequence(n_events_per_phrase: int,
                                    syllable_ioi: int = 500,
-                                   noise_sd: float = 0.0,
+                                   n_phrases: int = 1,
                                    rng=None) -> Sequence:
     """Description here"""
     if rng is None:
@@ -15,16 +14,16 @@ def generate_stress_timed_sequence(n_phrases: int,
 
     ioi_types = (np.arange(start=1, stop=16) / 8) * syllable_ioi
     # number of iois
-    n_iois = int(n_iois_per_phrase * n_phrases)
+    n_iois = int(n_events_per_phrase * n_phrases)
 
     iois = np.array([])
 
     c = 0
 
     while c < n_phrases:
-        iois_pattern = rng.choice(ioi_types, n_iois_per_phrase - 1)
+        iois_pattern = rng.choice(ioi_types, n_events_per_phrase - 1)
         # add a final ioi so that cluster duration = nIOI * ioiDur
-        final_ioi = (n_iois_per_phrase * syllable_ioi) - np.sum(iois_pattern)
+        final_ioi = (n_events_per_phrase * syllable_ioi) - np.sum(iois_pattern)
         # if there is not enough room for a final ioi, repeat (q'n'd..)
         if final_ioi >= 0.25:
             iois_pattern = np.concatenate([iois_pattern, [final_ioi]])
@@ -33,38 +32,16 @@ def generate_stress_timed_sequence(n_phrases: int,
         else:
             continue
 
-    ioi_sums = np.cumsum(iois)  # from now on it's an array again
+    ioi_sums = np.cumsum(iois)
     pattern_shifted = ioi_sums[:-1] + start_of_pattern
     pattern = np.concatenate([[start_of_pattern], pattern_shifted])
 
-    # Add Gaussian noise
-    noises = rng.normal(0, scale=noise_sd, size=n_iois - 1)
-    pattern[1:] = pattern[1:] + noises
-
-    # get iois from noisy pattern
-    iois[:-1] = np.diff(pattern)
-    iois[-1] = float(iois[-1] + rng.normal(0, scale=noise_sd, size=1))
-
-    return Sequence(iois)
+    return Sequence.from_onsets(pattern)
 
 
 def generate_trimoraic_sequence(n_feet: int,
                                 mora_ioi: int = 250,
-                                noise_sd: float = 0.0,
                                 rng=None) -> Sequence:
-
-    """
-    Parameters
-    sdfg
-    mora_ioi : This is the tempo in milliseconds, based on one mora. Sequences have three morae per cluster.
-    noise_sd
-    rng
-
-    Returns
-    -------
-
-    """
-
     if rng is None:
         rng = np.random.default_rng()
 
@@ -91,13 +68,8 @@ def generate_trimoraic_sequence(n_feet: int,
     pattern_shifted = ioi_sums[:-1] + start_of_pattern
     pattern = np.concatenate([[start_of_pattern], pattern_shifted])
 
-    # Add Gaussian noise
-    noises = rng.normal(0, scale=noise_sd, size=len(iois) - 1)
-    iois[1:] = iois[1:] + noises
-
-    # Get iois from noisy pattern
+    # Get iois from pattern
     iois[:-1] = np.diff(pattern)
-    iois[-1] = float(iois[-1] + rng.normal(0, scale=noise_sd, size=1))
 
     # Calculate with proper tempo
     iois = iois * mora_ioi

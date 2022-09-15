@@ -10,6 +10,5 @@ import os
 import scipy.signal
 
 mora = generate_trimoraic_sequence(10)
-
-acf_df(mora)
-
+acf_plot(mora)
+print(acf_df(mora))

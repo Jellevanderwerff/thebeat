@@ -12,7 +12,7 @@ def acf_values(sequence: Union[Sequence, StimSequence, Iterable],
                resolution_ms: int = 1,
                smoothe_width: Union[int, float] = 0,
                smoothe_sd: Union[int, float] = 0):
-    """From Ravignani & Norris, 2017"""
+    """From Ravignani & Norton, 2017"""
 
     if isinstance(sequence, (Sequence, StimSequence)):
         onsets_ms = sequence.onsets
@@ -55,7 +55,7 @@ def acf_df(sequence: Union[Sequence, StimSequence, Iterable],
             "correlation": correlations
         }
     )
-    df = df.sort_values(by="correlation", ascending=False)
+    df = df.sort_values(by=["correlation", "time_ms"], ascending=[False, True])
 
     return df
 
@@ -69,7 +69,7 @@ def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
              figsize: tuple = None,
              suppress_display: bool = False):
     """
-    Based on Ravignani & Norris, 2017
+    Based on Ravignani & Norton, 2017
     Please provide a Sequence or StimSequence object, or an iterable containing stimulus onsets in milliseconds.
     """
 
