@@ -5,7 +5,7 @@ import numpy as np
 
 def test_ugof():
     seq = Sequence.generate_isochronous(n=10, ioi=500)
-    assert ugof(seq, 500, 'median') == 0.0
+    assert get_ugof(seq, 500, 'median') == 0.0
 
 
 def test_ks():
@@ -16,7 +16,7 @@ def test_ks():
 
 def test_npvi():
     seq = Sequence.generate_isochronous(n=10, ioi=500)
-    assert npvi(seq) == 0.0
+    assert get_npvi(seq) == 0.0
 
 
 def test_acf():

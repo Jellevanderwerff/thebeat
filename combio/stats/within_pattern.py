@@ -137,7 +137,7 @@ def ks_test(sequence: Union[Sequence, StimSequence, Iterable],
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
+def get_npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
     """Get nPVI
     """
 
@@ -154,10 +154,12 @@ def npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
     return np.float32(np.mean(npvi_values))
 
 
-def ugof(sequence: Union[Sequence, StimSequence, Iterable],
-         theoretical_ioi: float,
-         output: str = 'mean') -> np.float32:
+def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
+             theoretical_ioi: float,
+             output: str = 'mean') -> np.float32:
     """Credits to Lara. S. Burchardt, include ref."""
+
+    """ugof is only for isochronous sequences?"""
 
     # Get the onsets
     if isinstance(sequence, (Sequence, StimSequence)):
