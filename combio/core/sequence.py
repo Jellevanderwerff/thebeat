@@ -1,6 +1,7 @@
-import numpy as np
+from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
 from typing import Iterable, Union
+import numpy as np
 
 
 class BaseSequence:
@@ -25,9 +26,6 @@ class BaseSequence:
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    onsets : NumPy 1-D array
-        Property that contains the onsets (t values) in milliseconds. The first onset is additionally added and
-        is always zero.
 
     Parameters
     ----------
@@ -49,10 +47,15 @@ class BaseSequence:
         self.metrical = metrical
 
     @property
-    def iois(self):
-        """IOI getter. Returns a copy of the IOIs attribute object, to protect against
-        misuse."""
-        # Return a copy of self._iois
+    def iois(self) -> np.ndarray:
+        """The inter-onset intervals (IOIs) of the Sequence object. These are the intervals in milliseconds
+        between the onset of an event, and the onset of the next event. This is the most important
+        attribute of the Sequence class and is used throughout.
+
+        This getter returns a copy of the IOIs instead of
+        the actual variable.
+        """
+
         return np.array(self._iois, dtype=np.float32).copy()
 
     @iois.setter
@@ -68,8 +71,9 @@ class BaseSequence:
         self._iois = iois
 
     @property
-    def onsets(self):
-        """Get the event onsets. This is the cumulative sum of Sequence.iois, with 0 additionally prepended.
+    def onsets(self) -> np.ndarray:
+        """ Returns the event onsets (t values) in milliseconds on the basis of the sequence objects'
+        inter-onset intervals (IOIs). An additional first onset (t=0) is additionally prepended.
         """
 
         if self.metrical is True:
@@ -79,7 +83,8 @@ class BaseSequence:
 
     @onsets.setter
     def onsets(self, values):
-        """Set the event onsets. First onset must be zero, and there cannot be two onsets that occur simultaneously.
+        """Setter for the event onsets. First onset must be zero, and there cannot be two onsets that occur
+        simultaneously.
         """
 
         # Onsets may be in the wrong order, so sort first
@@ -105,7 +110,7 @@ class Sequence(BaseSequence):
     The Sequence class is the most important class in this package. It is used as the basis
     for many functions, and can be passed to many functions.
     Sequences rely most importantly on inter-onset intervals (IOIs; the times between the onset of an event,
-    and the onset of the next event). IOIs are also what we use to construct sequences
+    and the onset of the next event). IOIs are also what we use to construct `Sequence` objects.
     (rather than event onsets, or t values).
 
     The most basic way of constructing a Sequence object is by passing it a list (or other iterable) of IOIs.
@@ -130,15 +135,17 @@ class Sequence(BaseSequence):
     >>> print(seq.onsets)
     [   0.  500.  900. 1500.]
 
-    >>> seq = Sequence.generate_isochronous(n=10, ioi=500)
+    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
     >>> print(len(seq.iois))
-    9
+    4
     >>> print(len(seq.onsets))
-    10
+    5
     """
 
     def __init__(self, iois: Iterable, metrical: bool = False):
-        """Initialization of Sequence class."""
+        """Initialization of Sequence class on the basis of inter-onset intervals (IOIs).
+        When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
+        If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs."""
 
         # Call super init method
         BaseSequence.__init__(self, iois=iois, metrical=metrical)
@@ -156,11 +163,76 @@ class Sequence(BaseSequence):
         return len(self.onsets)
 
     @classmethod
-    def generate_random_normal(cls, n: int, mu: int, sigma: int, rng=None, metrical=False):
+    def from_integer_ratios(cls,
+                            numerators: Iterable,
+                            value_of_one_in_ms: int,
+                            metrical: bool = False) -> Sequence:
         """
 
-        Class method that generates a sequence of random inter-onset intervals based on the normal distribution.
-        Note that there will be n-1 IOIs in a sequence.
+        This class method can be used to construct a new Sequence object on the basis of 'integer ratios'.
+
+        Parameters
+        ----------
+        numerators : iterable
+            Contains the numerators of the integer ratios. For instance: [1, 2, 4]
+        value_of_one_in_ms : int
+            This represents the duration of the '1' numerator in milliseconds. If the numerators do not contain a
+            1, multiples of this value are used. For instance, a sequence of [2, 4] with value_of_one_in_ms=500
+            would be a Sequence with IOIs: [1000 2000].
+        metrical : bool, optional
+            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
+            Defaults to 'False'.
+
+        Returns
+        -------
+        Sequence
+            A newly constructed Sequence object.
+
+        Examples
+        --------
+        >>> seq = Sequence.from_integer_ratios(numerators=[1, 2, 4], value_of_one_in_ms=500)
+        >>> print(seq.iois)
+        [ 500. 1000. 2000.]
+        """
+
+        numerators = np.array(numerators)
+        return cls(numerators * value_of_one_in_ms, metrical=metrical)
+
+    @classmethod
+    def from_onsets(cls, onsets: Iterable) -> Sequence:
+        """
+        Class method that can be used to generate a new Sequence object on the basis of event onsets.
+
+        Parameters
+        ----------
+        onsets: iterable
+            An iterable of event onsets which must start from 0, e.g.: [0, 500, 1000]
+
+        Returns
+        -------
+        Sequence
+            A newly constructed Sequence object.
+
+        Examples
+        --------
+        >>> seq = Sequence.from_onsets([0, 500, 1000])
+        >>> print(seq.iois)
+        [500. 500.]
+        """
+        iois = np.diff(onsets)
+
+        return cls(iois, metrical=False)
+
+    @classmethod
+    def generate_random_normal(cls,
+                               n: int,
+                               mu: int,
+                               sigma: int,
+                               rng=None,
+                               metrical=False) -> Sequence:
+        """
+        Class method that generates a Sequence object with random inter-onset intervals (IOIs) based on the normal
+        distribution.
 
         Parameters
         ----------
@@ -171,22 +243,33 @@ class Sequence(BaseSequence):
         sigma : int
             The standard deviation of the normal distribution.
         rng : numpy.random.Generator, optional
-            A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean
-            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-            grid)
+            A Generator object. If not supplied NumPy's random.default_rng() is used.
+        metrical : bool, optional
+            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
+            Defaults to 'False'.
 
         Returns
         -------
-        Returns an object of class Sequence.
+        Sequence
+            A newly created Sequence object.
 
+        Examples
+        --------
+        >>> generator = np.random.default_rng(seed=123)
+        >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, rng=generator)
+        >>> print(seq.iois)
+        [451. 482. 564. 510.]
+
+        >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, metrical=True)
+        >>> len(seq.onsets) == len(seq.iois)
+        True
         """
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical:
+        if metrical is True:
             n_iois = n
-        elif not metrical:
+        elif metrical is False:
             n_iois = n - 1
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
@@ -196,11 +279,14 @@ class Sequence(BaseSequence):
         return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_uniform(cls, n: int, a: int, b: int, rng=None, metrical=False):
+    def generate_random_uniform(cls,
+                                n: int,
+                                a: int,
+                                b: int,
+                                rng=None,
+                                metrical=False) -> Sequence:
         """
-
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
-        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -211,22 +297,34 @@ class Sequence(BaseSequence):
         b : int
             The right bound of the uniform distribution.
         rng : numpy.random.Generator, optional
-            A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean, optional
-            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-            grid)
+            A Generator object. If not supplied NumPy's random.default_rng() is used.
+        metrical : bool, optional
+            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
+            Defaults to 'False'.
 
         Returns
         -------
-        Returns an object of class Sequence.
+        Sequence
+            A newly created Sequence object.
 
+        Examples
+        --------
+        >>> generator = np.random.default_rng(seed=123)
+        >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, rng=generator)
+        >>> print(seq.iois)
+        [536. 411. 444. 437.]
+
+        >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, metrical=True)
+        >>> len(seq.onsets) == len(seq.iois)
+        True
         """
+
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical:
+        if metrical is True:
             n_iois = n
-        elif not metrical:
+        elif metrical is False:
             n_iois = n - 1
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
@@ -236,10 +334,14 @@ class Sequence(BaseSequence):
         return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_poisson(cls, n: int, lam: int, rng=None, metrical=False):
+    def generate_random_poisson(cls,
+                                n: int,
+                                lam: int,
+                                rng=None,
+                                metrical=False) -> Sequence:
+
         """
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
-        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -248,14 +350,22 @@ class Sequence(BaseSequence):
         lam : int
             The desired value for lambda.
         rng : numpy.random.Generator, optional
-            A Generator object, e.g. np.default_rng(seed=12345)
+            A Generator object, if none is supplied NumPy's random.default_rng() is used.s
         metrical : bool, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
 
         Returns
         -------
-        Returns an object of class Sequence.
+        Sequence
+            A newly created Sequence object
+
+        Examples
+        --------
+        >>> generator = np.random.default_rng(123)
+        >>> seq = Sequence.generate_random_poisson(n=5, lam=500, rng=generator)
+        >>> print(seq.iois)
+        [512. 480. 476. 539.]
 
         """
         if rng is None:
@@ -273,11 +383,14 @@ class Sequence(BaseSequence):
         return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_random_exponential(cls, n: int, lam: int, rng=None, metrical=False):
+    def generate_random_exponential(cls,
+                                    n: int,
+                                    lam: int,
+                                    rng=None,
+                                    metrical=False) -> Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
-        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -287,7 +400,7 @@ class Sequence(BaseSequence):
            The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean
+        metrical : bool, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
 
@@ -295,13 +408,20 @@ class Sequence(BaseSequence):
         -------
         Returns an object of class Sequence.
 
+        Examples
+        --------
+        >>> generator = np.random.default_rng(seed=123)
+        >>> seq = Sequence.generate_random_exponential(n=5, lam=500, rng=generator)
+        >>> print(seq.iois)
+        [298.  59. 126. 154.]
+
         """
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical:
+        if metrical is True:
             n_iois = n
-        elif not metrical:
+        elif metrical is False:
             n_iois = n - 1
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
@@ -311,9 +431,12 @@ class Sequence(BaseSequence):
         return cls(round_iois, metrical=metrical)
 
     @classmethod
-    def generate_isochronous(cls, n: int, ioi: int, metrical=False):
+    def generate_isochronous(cls,
+                             n: int,
+                             ioi: int,
+                             metrical=False) -> Sequence:
         """
-        Class method that generates a sequence of isochronous inter-onset intervals.
+        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
         Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
@@ -328,63 +451,131 @@ class Sequence(BaseSequence):
 
         Returns
         -------
-        Returns an object of class Sequence.
+        Sequence
+            A newly created Sequence object.
+
+        Examples
+        --------
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> print(seq.iois)
+        [500. 500. 500. 500.]
+        >>> print(len(seq.onsets))
+        5
+        >>> print(len(seq.iois))
+        4
+
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500, metrical=True)
+        >>> print(len(seq.onsets))
+        5
+        >>> print(len(seq.iois))
+        5
 
         """
 
-        if metrical:
+        if metrical is True:
             n_iois = n
-        elif not metrical:
+        elif metrical is False:
             n_iois = n - 1
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
         return cls(np.round([ioi] * n_iois), metrical=metrical)
 
-    @classmethod
-    def from_integer_ratios(cls, numerators, value_of_one_in_ms, metrical=False):
-        numerators = np.array(numerators)
-        return cls(numerators * value_of_one_in_ms, metrical=metrical)
-
-    @classmethod
-    def from_onsets(cls, onsets):
-        iois = np.diff(onsets)
-
-        return cls(iois, metrical=False)
-
     # Manipulation methods
 
-    def add_noise_gaussian(self, noise_sd: Union[int, float], rng=None):
+    def add_noise_gaussian(self,
+                           noise_sd: Union[int, float],
+                           rng=None) -> None:
+        """
+        This function can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
+        of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
+        of 'noise_sd'.
+
+        Parameters
+        ----------
+        noise_sd : int or float
+            The standard deviation of the normal distribution used for adding in noise.
+        rng : numpy.random.Generator, optional
+            A Numpy Generator object. If none is supplied, Numpy's random.default_rng() is used.
+
+        Examples
+        --------
+        >>> gen = np.random.default_rng(seed=123)
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> print(seq.iois)
+        [500. 500. 500. 500.]
+        >>> seq.add_noise_gaussian(noise_sd=50, rng=gen)
+        >>> print(seq.iois)
+        [450.54395 481.61066 564.39624 509.69873]
+        >>> print(seq.onsets)
+        [   0.       450.54395  932.1546  1496.5508  2006.2495 ]
+        """
         if rng is None:
             rng = np.random.default_rng()
         self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=self.iois.size)
 
-    def change_tempo(self, factor):
+    def change_tempo(self,
+                     factor: Union[int, float]) -> None:
         """
-        Change the tempo of the sequence.
-        A factor of 1 or bigger increases the tempo (resulting in smaller IOIs).
-        A factor between 0 and 1 decreases the tempo (resulting in larger IOIs).
+        Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in
+        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
+        inter-onset intervals).
+
+        Parameters
+        ----------
+        factor : int or float
+            Tempo change factor. E.g. '2' means twice as fast. 0.5 means twice as slow.
+
+        Examples
+        --------
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> print(seq.onsets)
+        [   0.  500. 1000. 1500. 2000.]
+        >>> seq.change_tempo(2)
+        >>> print(seq.onsets)
+        [   0.  250.  500.  750. 1000.]
         """
+
         if factor > 0:
             self.iois /= factor
         else:
             raise ValueError("Please provide a factor larger than 0.")
 
-    def change_tempo_linearly(self, total_change):
+    def change_tempo_linearly(self,
+                              total_change: Union[int, float]) -> None:
         """
-        This function can be used for creating a ritardando or accelerando effect.
-        You provide the total change over the entire sequence.
-        So, total change of 2 results in a final IOI that is
-        twice as short as the first IOI.
+        This function can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
+        It divides the IOIs by a vector linearly spaced between 1 and total_change.
+
+        Parameters
+        ----------
+        total_change : int or float
+            Total tempo change at the end of the Sequence compared to the beginning.
+            So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.
+            A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.
+
+        Examples
+        --------
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> print(seq.iois)
+        [500. 500. 500. 500.]
+        >>> seq.change_tempo_linearly(total_change=2)
+        >>> print(seq.iois)
+        [500. 375. 300. 250.]
+
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
 
     @property
     def duration_ms(self) -> np.float32:
+        """Get the total duration of the Sequence object in milliseconds.
+        """
         return np.float32(np.sum(self.iois))
 
     @property
     def duration_s(self) -> np.float32:
+        """Get the total duration of the Sequence object in seconds.
+        """
         return np.float32(np.sum(self.iois) / 1000)
 
     @property
@@ -406,9 +597,16 @@ class Sequence(BaseSequence):
         Revealed Cross-culturally by Iterated Reproduction.
         Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
 
+        Examples
+        --------
+        >>> seq = Sequence([250, 500, 100, 250])
+        >>> print(seq.integer_ratios)
+        [1, 2, 4, 1]
+
+        #todo This doctest now returns an error because it's not run through pytest (or something).
+
 
         """
-
         fractions = [Fraction(int(ioi), int(self.duration_ms)) for ioi in self.iois]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
 
@@ -433,6 +631,18 @@ class Sequence(BaseSequence):
         Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
         3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
 
+        Examples
+        --------
+        >>> seq = Sequence.from_integer_ratios([2, 2, 1, 1], value_of_one_in_ms=500)
+        >>> print(seq.iois)
+        [1000. 1000.  500.  500.]
+        >>> print(seq.interval_ratios_from_dyads)
+        [0.5       0.6666667 0.5      ]
+
+
+        #todo This doctest now returns an error becuase it's not run through pytest. Add return values.
+
+
         """
 
         return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
@@ -440,7 +650,7 @@ class Sequence(BaseSequence):
 
 def _join_sequences(iterator):
     """
-    This function can join metrical Sequence objects.
+    This helper function joins metrical Sequence objects (it is used in the __add__ of Sequence).
     """
 
     # Check whether iterable was passed

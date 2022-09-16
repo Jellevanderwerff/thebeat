@@ -10,20 +10,63 @@ from typing import Iterable, Union
 
 class StimSequence(BaseSequence):
     """
-    StimSequence class which inherits only the most basic functions from BaseSequence
+    The StimSequence class can be thought of as a combination of the Stimulus class and the Sequence class;
+    hence StimSequence. It combines the timing information of a Sequence object with the auditory information (sound)
+    of a Stimulus object. In most research one would refer to a StimSequence as a trial (which is also the
+    variable name used in all the examples here).
+
+    One can construct a StimSequence object either by passing it a single Stimulus object (and
+    a Sequence object), or by passing it an iterable (e.g. list) of Stimulus objects (and a Sequence object).
+
+    If a single Stimulus object is passed, this Stimulus sound is used for each event onset. Otherwise,
+    each Stimulus sound is used for its respective event onsets. Of course, then the number of Stimulus
+    objects in the iterable must be the same as the number of event onsets.
+
+    StimSequence objects can be plotted, played, written to disk, statistically analyzed, and more...
+    During construction, checks are done to ensure one dit not accidentally use stimuli that are longer
+    than the IOIs (impossible), that the sampling frequencies of all the Stimulus objects are the same (undesirable),
+    and that the Stimulus objects' number of channels are the same (probable).
+
+    Examples
+    --------
+    >>> stim = Stimulus.generate(freq=440, duration=50)
+    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+    >>> trial = StimSequence(stim, seq)
+
+    >>> from random import randint
+    >>> stims = [Stimulus.generate(freq=randint(100, 1000) for x in range(5))]
+    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+    >>> trial = StimSequence(stim, seq)
     """
 
     def __init__(self,
-                 stimuli: Union[Stimulus, Iterable],
-                 sequence_object: Sequence,
+                 stimulus: Union[Stimulus, Iterable],
+                 sequence: Sequence,
                  name: str = None):
+        """
+        Initialize a StimSequence object using a Stimulus object, or an iterable of Stimulus objects, and a Sequence
+        object.
+
+        Parameters
+        ----------
+        stimulus : Stimulus, or iterable
+            Either a single Stimulus object (in which case the same sound is used for each event onset), or an
+            iterable of Stimulus objects (in which case different sounds are used for each event onset).
+        sequence : Sequence
+            A Sequence object. This contains the timing information for the played events.
+        name : str, optional
+            You can provide a name for the StimSequence which is sometimes used (e.g. when printing a StimSequence
+            object, or when plotting a StimSequence). One can always retrieve this attribute from StimSequence.name
+        """
 
         # If a single Stimulus object is passed, repeat that stimulus for each onset
-        if isinstance(stimuli, Stimulus):
-            stimuli = [stimuli] * len(sequence_object.onsets)
+        if isinstance(stimulus, Stimulus):
+            stimuli = [stimulus] * len(sequence.onsets)
+        else:
+            stimuli = stimulus
 
         # Type checking for sequence
-        if not isinstance(sequence_object, Sequence):
+        if not isinstance(sequence, Sequence):
             raise ValueError("Please provide a Sequence object as the second argument.")
 
         # Check whether fs, dtype, and n_channels are the same for all stimuli
@@ -44,10 +87,10 @@ class StimSequence(BaseSequence):
         self.n_channels = stimuli[0].n_channels
         self.name = name
         self.stim_names = [stimulus.name for stimulus in stimuli]
-        self.metrical = sequence_object.metrical
+        self.metrical = sequence.metrical
 
         # Initialize Sequence class
-        BaseSequence.__init__(self, sequence_object.iois, metrical=sequence_object.metrical)
+        BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
 
         # Make sound which saves the samples to self.samples
         self.samples = self._make_sound(stimuli, self.onsets)
@@ -59,7 +102,7 @@ class StimSequence(BaseSequence):
         else:
             name = "Not provided"
 
-        if all(stim_name is None for stim_name in self.stim_names):
+        if np.all(self.stim_names is None):
             stim_names = "None provided"
         else:
             stim_names = []
@@ -89,8 +132,8 @@ Stimulus names: {stim_names}
             """
 
     @property
-    def mean_ioi(self):
-        return np.mean(self.iois)
+    def mean_ioi(self) -> np.float32:
+        return np.float32(np.mean(self.iois))
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
         play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)

@@ -11,7 +11,7 @@ from typing import Union
 def get_sound_with_metronome(samples: np.ndarray,
                              fs: int,
                              metronome_ioi: int,
-                             metronome_amplitude: float):
+                             metronome_amplitude: float) -> np.ndarray:
     """This helper function adds a metronome sound to a NumPy array of sound samples.
      It works for both mono and stereo sounds."""
 
@@ -42,7 +42,7 @@ def get_sound_with_metronome(samples: np.ndarray,
     return sound_samples
 
 
-def normalize_audio(samples: np.ndarray):
+def normalize_audio(samples: np.ndarray) -> np.ndarray:
     """This helper function normalizes audio based on the absolute max amplitude from the provided sound samples."""
     samples /= np.max(np.abs(samples), axis=0)
     return samples
@@ -78,8 +78,10 @@ def plot_waveform(samples: np.ndarray,
 
     Returns
     -------
-    fig : a matplotlib Figure object
-    ax : a matplotlib Axes object
+    fig : Figure
+        A matplotlib Figure object
+    ax : Axes
+        A matplotlib Axes object
 
     """
     frames = np.arange(samples.shape[0])
@@ -114,9 +116,8 @@ def play_samples(samples: np.ndarray,
                  mean_ioi: int,
                  loop: bool,
                  metronome: bool,
-                 metronome_amplitude: float):
-    """This helper function uses the sounddevice library to play a sound, either with or without metronome.
-    It does not return anything."""
+                 metronome_amplitude: float) -> None:
+    """This helper function uses the sounddevice library to play a sound, either with or without metronome."""
     if metronome is True:
         samples = get_sound_with_metronome(samples, fs, mean_ioi, metronome_amplitude=metronome_amplitude)
     else:
@@ -132,7 +133,7 @@ def write_wav(samples: np.ndarray,
               name: str,
               metronome: bool,
               metronome_ioi: int,
-              metronome_amplitude: float):
+              metronome_amplitude: float) -> None:
     """
     This helper function writes the provided sound samples to disk as a wave file.
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html for more info.

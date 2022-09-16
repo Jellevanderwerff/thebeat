@@ -5,3 +5,4 @@ __pycache__/
 /docs/Makefile
 /docs/source
 /docs/build/doctrees
+/docs/build/

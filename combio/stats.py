@@ -41,8 +41,7 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
            smoothe_width: Union[int, float] = 0,
            smoothe_sd: Union[int, float] = 0):
     """
-    This function returns a Pandas DataFrame sorted by the correlation factors
-    returned from the acf_values function.
+    This function returns a Pandas DataFrame with timepoints and correlation factors.
 
     """
 
