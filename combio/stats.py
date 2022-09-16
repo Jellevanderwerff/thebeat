@@ -2,25 +2,24 @@ from typing import Iterable, Union
 import scipy.stats
 import scipy.fft
 import numpy as np
-from combio.core import Sequence, StimSequence
+from . import core
 import matplotlib.pyplot as plt
-from .helpers import make_ones_and_zeros_timeseries
 import scipy.signal
 import pandas as pd
 
 
-def acf_values(sequence: Union[Sequence, StimSequence, Iterable],
+def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
                resolution_ms: int = 1,
                smoothe_width: Union[int, float] = 0,
                smoothe_sd: Union[int, float] = 0):
     """From Ravignani & Norton, 2017"""
 
-    if isinstance(sequence, (Sequence, StimSequence)):
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
 
-    signal = make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
+    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
 
     # npdf
     if not smoothe_width == 0 and not smoothe_sd == 0:
@@ -37,7 +36,7 @@ def acf_values(sequence: Union[Sequence, StimSequence, Iterable],
     return correlation
 
 
-def acf_df(sequence: Union[Sequence, StimSequence, Iterable],
+def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
            resolution_ms: int = 1,
            smoothe_width: Union[int, float] = 0,
            smoothe_sd: Union[int, float] = 0):
@@ -60,7 +59,7 @@ def acf_df(sequence: Union[Sequence, StimSequence, Iterable],
     return df
 
 
-def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
+def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
              resolution_ms: int = 1,
              smoothe_width: Union[int, float] = 0,
              smoothe_sd: Union[int, float] = 0,
@@ -70,10 +69,10 @@ def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
              suppress_display: bool = False):
     """
     Based on Ravignani & Norton, 2017
-    Please provide a Sequence or StimSequence object, or an iterable containing stimulus onsets in milliseconds.
+    Please provide a core.sequence.Sequence or core.stimsequence.StimSequence object, or an iterable containing stimulus onsets in milliseconds.
     """
 
-    if isinstance(sequence, (Sequence, StimSequence)):
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -99,7 +98,7 @@ def acf_plot(sequence: Union[Sequence, StimSequence, Iterable],
     return fig, ax
 
 
-def ks_test(sequence: Union[Sequence, StimSequence, Iterable],
+def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -108,18 +107,18 @@ def ks_test(sequence: Union[Sequence, StimSequence, Iterable],
 
     If p is significant that means that the iois are not distributed according to the provided reference distribution.
 
-    For reference, see:
+    References
+    ----------
     Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
-        Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
-        Frontiers in Human Neuroscience, 10(586), 1–15.
+    Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
+    Frontiers in Human Neuroscience, 10(586), 1–15.
+
     Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-        A primer to quantify and compare temporal structure in speech, movement,
-        and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
-
-
+    A primer to quantify and compare temporal structure in speech, movement,
+    and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
     """
 
-    if isinstance(sequence, (Sequence, StimSequence)):
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         sequence = sequence.iois
 
     if reference_distribution == 'normal':
@@ -137,11 +136,11 @@ def ks_test(sequence: Union[Sequence, StimSequence, Iterable],
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
+def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable]) -> np.float32:
     """Get nPVI
     """
 
-    if isinstance(sequence, (Sequence, StimSequence)):
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         sequence = sequence.iois
 
     npvi_values = []
@@ -154,7 +153,7 @@ def get_npvi(sequence: Union[Sequence, StimSequence, Iterable]) -> np.float32:
     return np.float32(np.mean(npvi_values))
 
 
-def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
+def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
              theoretical_ioi: float,
              output: str = 'mean') -> np.float32:
     """Credits to Lara. S. Burchardt, include ref."""
@@ -162,7 +161,7 @@ def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
     """ugof is only for isochronous sequences?"""
 
     # Get the onsets
-    if isinstance(sequence, (Sequence, StimSequence)):
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         onsets = sequence.onsets  # in ms
     else:
         onsets = sequence
@@ -185,4 +184,19 @@ def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
 
+
+def _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
+    """
+    Converts a sequence of millisecond onsets to a series of zeros and ones.
+    Ones for the onsets.
+    """
+    duration = max(onsets_ms)
+    zeros_n = int(np.ceil(duration / resolution_ms)) + 1
+    signal = np.zeros(zeros_n)
+
+    for onset in onsets_ms:
+        index = int(onset / resolution_ms)
+        signal[index] = 1
+
+    return np.array(signal)
 

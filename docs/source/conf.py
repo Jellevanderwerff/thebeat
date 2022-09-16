@@ -20,7 +20,8 @@ sys.path.insert(0, os.path.abspath(os.path.join('..', '..')))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.napoleon'
+    'sphinxcontrib.napoleon',
+    'myst_parser'
 ]
 
 templates_path = ['_templates']

@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from combio.core import *
+import combio.core
 
 
 @pytest.fixture
@@ -9,7 +9,7 @@ def rng():
 
 
 def test_iois(rng):
-    seq = Sequence.generate_random_normal(10, 500, 25, rng=rng)
+    seq = combio.core.Sequence.generate_random_normal(10, 500, 25, rng=rng)
 
     assert isinstance(seq.iois, np.ndarray)
     assert len(seq.iois) == 9
@@ -19,25 +19,25 @@ def test_iois(rng):
 
     # from and to integer ratios
     integer_ratios = [1, 5, 8, 2, 5, 4, 4, 2, 1]
-    seq = Sequence.from_integer_ratios(numerators=integer_ratios, value_of_one_in_ms=500)
+    seq = combio.core.Sequence.from_integer_ratios(numerators=integer_ratios, value_of_one_in_ms=500)
     assert np.all(seq.integer_ratios == integer_ratios)
 
     # test whether copy of IOIs is returned instead of object itself
-    s = Sequence([1, 2, 3, 4])
+    s = combio.core.Sequence([1, 2, 3, 4])
     iois = s.iois
     iois[0] = -42
     assert s.iois[0] != -42
 
-    seq = Sequence.generate_isochronous(4, 500, metrical=True)
+    seq = combio.core.Sequence.generate_isochronous(4, 500, metrical=True)
     with pytest.raises(ValueError):
         seq.onsets = [0, 50, 100]
 
 
 def test_exception():
-    seq = Sequence.generate_isochronous(n=10, ioi=500)
+    seq = combio.core.Sequence.generate_isochronous(n=10, ioi=500)
     seq.change_tempo(0.5)
     with pytest.raises(ValueError):
         seq.change_tempo(-1)
 
     with pytest.raises(ValueError):
-        seq = Sequence.from_onsets([20, 20, 20])
+        seq = combio.core.Sequence.from_onsets([20, 20, 20])

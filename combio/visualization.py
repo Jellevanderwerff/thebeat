@@ -1,7 +1,6 @@
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
 from typing import Union, Iterable
-from matplotlib.ticker import AutoMinorLocator, AutoLocator
 
 
 def plot_sequence_single(sequence: Union[Sequence, StimSequence],

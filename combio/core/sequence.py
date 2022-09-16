@@ -122,10 +122,6 @@ class Sequence(BaseSequence):
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    onsets : NumPy 1-D array
-        This is actually a property that contains the onsets (t values) in milliseconds.
-        The first onset is additionally added and is always zero.
-
 
     Examples
     --------
@@ -142,7 +138,7 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self, iois: Iterable, metrical: bool = False):
-        """Construct a Sequence object"""
+        """Initialization of Sequence class."""
 
         # Call super init method
         BaseSequence.__init__(self, iois=iois, metrical=metrical)
@@ -242,7 +238,6 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_random_poisson(cls, n: int, lam: int, rng=None, metrical=False):
         """
-
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
         Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
@@ -254,9 +249,9 @@ class Sequence(BaseSequence):
             The desired value for lambda.
         rng : numpy.random.Generator, optional
             A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : boolean, optional
+        metrical : bool, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-                grid)
+            grid)
 
         Returns
         -------
@@ -403,10 +398,13 @@ class Sequence(BaseSequence):
         This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
         so this function returns the numerators [1, 2, 4, 1].
 
+        References
+        ----------
         For an example of this method being used, see:
+
         Jacoby, N., & McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm
-            Revealed Cross-culturally by Iterated Reproduction.
-            Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
+        Revealed Cross-culturally by Iterated Reproduction.
+        Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
 
 
         """
@@ -426,10 +424,14 @@ class Sequence(BaseSequence):
 
         Note that for n IOIs this function returns n-1 ratios.
 
-        It follows the methodology from:
+        References
+        ----------
+
+        The method follows the methodology from:
+
         Roeske, T. C., Tchernichovski, O., Poeppel, D., & Jacoby, N. (2020).
-            Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
-            3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
+        Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
+        3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
 
         """
 
