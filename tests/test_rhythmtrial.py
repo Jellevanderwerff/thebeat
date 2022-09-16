@@ -1,13 +1,12 @@
-from combio.core import *
-from combio.rhythm import *
+import combio
 import numpy as np
 
 
 def test_rhythmtrial():
-    r = Rhythm.from_iois([500, 500, 500, 500], (4, 4), 500)
-    stim = Stimulus.generate()
+    r = combio.rhythm.Rhythm.from_iois([500, 500, 500, 500], (4, 4), 500)
+    stim = combio.core.Stimulus.generate()
 
-    trial = RhythmTrial(stim, r)
+    trial = combio.rhythm.RhythmTrial(stim, r)
     trial.plot_rhythm(suppress_display=True)
 
 

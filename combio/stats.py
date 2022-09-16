@@ -4,7 +4,6 @@ import scipy.fft
 import numpy as np
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
-from .helpers import make_ones_and_zeros_timeseries
 import scipy.signal
 import pandas as pd
 
@@ -20,7 +19,7 @@ def acf_values(sequence: Union[Sequence, StimSequence, Iterable],
     else:
         onsets_ms = sequence
 
-    signal = make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
+    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
 
     # npdf
     if not smoothe_width == 0 and not smoothe_sd == 0:
@@ -185,4 +184,19 @@ def get_ugof(sequence: Union[Sequence, StimSequence, Iterable],
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
 
+
+def _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
+    """
+    Converts a sequence of millisecond onsets to a series of zeros and ones.
+    Ones for the onsets.
+    """
+    duration = max(onsets_ms)
+    zeros_n = int(np.ceil(duration / resolution_ms)) + 1
+    signal = np.zeros(zeros_n)
+
+    for onset in onsets_ms:
+        index = int(onset / resolution_ms)
+        signal[index] = 1
+
+    return np.array(signal)
 

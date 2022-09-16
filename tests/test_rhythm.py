@@ -1,11 +1,11 @@
-from combio.rhythm import *
+import combio
 import numpy as np
 import pytest
 
 
 def test_rhythm():
     # generate random rhythm
-    rrhythm = Rhythm.generate_random_rhythm([4, 8])
+    rrhythm = combio.rhythm.Rhythm.generate_random_rhythm([4, 8])
     assert rrhythm
 
     # combine two rhythms
