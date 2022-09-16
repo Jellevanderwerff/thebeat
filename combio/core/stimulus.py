@@ -23,28 +23,6 @@ class Stimulus:
         Contains the Numpy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
         the samples will be converted to np.float32.
 
-    Class methods
-    -------------
-    from_wav(wav_filepath, new_fs=None)
-        Read a .wav file from disk.
-    generate(freq=440, fs=44100, duration=50, amplitude=0.8, osc='sine', onramp=10, offramp=10)
-        Generate a sound using a sine or square oscillator.
-
-    Methods
-    -------
-    change_amplitude(factor)
-        Change the amplitude of the Stimulus by 'factor'. E.g. 2 will be twice as loud, 0.5 will be half as loud.
-    play(loop=False)
-        Play the Stimulus using sounddevice.
-    stop()
-        Stop sounddevice playback.
-    plot()
-        Plot the Stimulus's waveform using matplotlib.
-    get_duration()
-        Get the duration of the Stimulus in seconds.
-    write_wav(out_path)
-        Write the Stimulus to disk as a .wav file.
-
 
     """
 

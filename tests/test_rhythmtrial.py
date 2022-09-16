@@ -1,5 +1,4 @@
-import combio
-import numpy as np
+import combio.core
 
 
 def test_rhythmtrial():

@@ -1,5 +1,4 @@
 from collections import namedtuple
-
 from . import core
 import os
 import subprocess
@@ -12,7 +11,7 @@ from mingus.extra import lilypond
 from typing import Union, Iterable
 
 
-class Rhythm(core.BaseSequence):
+class Rhythm(core.sequence.BaseSequence):
 
     def __init__(self, iois, n_bars: int, time_signature, beat_ms):
         # Save attributes
@@ -24,7 +23,7 @@ class Rhythm(core.BaseSequence):
             raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
 
         # Call initializer of super class
-        core.BaseSequence.__init__(self, iois, metrical=True)
+        core.sequence.BaseSequence.__init__(self, iois, metrical=True)
 
     def __str__(self):
         return f"Object of type Rhythm.\nTime signature: {self.time_signature}\nNumber of bars: {self.n_bars}\nQuarternote (" \
@@ -104,7 +103,7 @@ class Rhythm(core.BaseSequence):
             all_ratios = _all_rhythmic_ratios(allowed_note_values,
                                               time_signature,
                                               target_n=events_per_bar)
-            ratios = rng.choice(all_ratios, 1)
+            ratios = list(rng.choice(all_ratios, 1))
 
             new_iois = ratios * 4 * beat_ms
 
@@ -162,12 +161,12 @@ class Rhythm(core.BaseSequence):
 class RhythmTrial:
 
     def __init__(self,
-                 stimuli: Union[core.Stimulus, Iterable[core.Stimulus]],
+                 stimuli: Union[core.stimulus.Stimulus, Iterable[core.stimulus.Stimulus]],
                  rhythm: Rhythm,
                  name: str = None):
 
         # Check if correct objects were passed for stimuli
-        if isinstance(stimuli, core.Stimulus):
+        if isinstance(stimuli, core.stimulus.Stimulus):
             stimuli = [stimuli] * len(rhythm)
         elif hasattr(stimuli, '__iter__'):
             pass
@@ -261,11 +260,11 @@ class RhythmTrial:
 
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized to avoid distortion. If undesirable, change amplitude of the stims.")
-            return core.normalize_audio(samples)
+            return core.helpers.normalize_audio(samples)
         else:
             return samples
 
-    def add_layer(self, rhythm: Rhythm, stimuli: Union[core.Stimulus, Iterable[core.Stimulus]]):
+    def add_layer(self, rhythm: Rhythm, stimuli: Union[core.stimulus.Stimulus, Iterable[core.stimulus.Stimulus]]):
 
         if self.n_layers > 3:
             raise ValueError("Can, for now, only handle 4 layers.")
@@ -274,13 +273,13 @@ class RhythmTrial:
         if not isinstance(rhythm, Rhythm):
             raise ValueError("Please provide a Rhythm object as the first argument.")
 
-        if not all(isinstance(stim, core.Stimulus) for stim in stimuli) or not isinstance(stimuli,
-                                                                                          core.Stimulus):
+        if not all(isinstance(stim, core.stimulus.Stimulus) for stim in stimuli) or not isinstance(stimuli,
+                                                                                                   core.stimulus.Stimulus):
             raise ValueError("Please provide either an iterable (e.g. a list) with Stimulus objects as the second "
                              "argument, or a single Stimulus object.")
 
         # multiply if Stimulus object was passed
-        if isinstance(stimuli, core.Stimulus):
+        if isinstance(stimuli, core.stimulus.Stimulus):
             stimuli = [stimuli] * len(rhythm.onsets)
 
         # fs
@@ -317,7 +316,7 @@ class RhythmTrial:
         self.n_layers += 1
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        core.play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
+        core.helpers.play_samples(self.samples, self.fs, self.beat_ms, loop, metronome, metronome_amplitude)
 
     def plot_rhythm(self,
                     filepath=None,
@@ -362,7 +361,7 @@ class RhythmTrial:
             else:
                 title = "Waveform of RhythmTrial"
 
-        core.plot_waveform(self.samples, self.fs, self.n_channels, title)
+        core.helpers.plot_waveform(self.samples, self.fs, self.n_channels, title)
 
     def write_wav(self, out_path='.',
                   metronome=False,
@@ -371,7 +370,7 @@ class RhythmTrial:
         Writes audio to disk.
         """
 
-        core.write_wav(self.samples, self.fs, out_path, self.name, metronome, self.beat_ms, metronome_amplitude)
+        core.helpers.write_wav(self.samples, self.fs, out_path, self.name, metronome, self.beat_ms, metronome_amplitude)
 
 
 def _join_rhythms(iterator):

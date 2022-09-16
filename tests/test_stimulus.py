@@ -1,7 +1,7 @@
-from combio.core import *
+import combio.core
 
 
 def test_stimulus():
-    stim = Stimulus.generate()
+    stim = combio.core.stimulus.Stimulus.generate()
     assert stim.duration_ms == 50
 

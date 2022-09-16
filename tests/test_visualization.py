@@ -28,7 +28,3 @@ def test_event_plot_multiple():
 
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25) for x in range(10)]
     plot_sequence_multiple(seqs, suppress_display=True)
-
-
-
-

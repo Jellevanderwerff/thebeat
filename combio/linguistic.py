@@ -1,5 +1,5 @@
 import numpy as np
-from .core import Sequence
+from .core.sequence import Sequence
 
 
 def generate_stress_timed_sequence(n_events_per_phrase: int,
