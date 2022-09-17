@@ -41,9 +41,8 @@ class BaseSequence:
                  iois: Iterable,
                  metrical: bool = False):
 
+        # Save attributes
         self.iois = iois
-
-        # Save metrical attribute
         self.metrical = metrical
 
     @property
@@ -108,16 +107,15 @@ class BaseSequence:
 class Sequence(BaseSequence):
     """
     The Sequence class is the most important class in this package. It is used as the basis
-    for many functions, and can be passed to many functions.
-    Sequences rely most importantly on inter-onset intervals (IOIs; the times between the onset of an event,
-    and the onset of the next event). IOIs are also what we use to construct `Sequence` objects.
-    (rather than event onsets, or t values).
+    for many functions as it contains timing information in the form of inter-onset intervals (IOIs; the times between
+    the onset of an event, and the onset of the next event) and event onsets (i.e. `t` values).
+    IOIs are what we use to construct `Sequence` objects.
 
-    The most basic way of constructing a Sequence object is by passing it a list (or other iterable) of IOIs.
-    However, the different class methods (e.g. Sequence.generate_isochronous()) may also be used.
+    The most basic way of constructing a `Sequence` object is by passing it a list (or other iterable) of IOIs.
+    However, the different class methods (e.g. `Sequence.generate_isochronous()`) may also be used.
 
     This class additionally contains functions and attributes to, for instance, get the event onsets values, to
-    change the tempo, or to add Gaussian noise.
+    change the tempo, to add Gaussian noise, or to plot the `Sequence` object using matplotlib.
 
 
     Attributes
@@ -127,6 +125,9 @@ class Sequence(BaseSequence):
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
+    name : str, optional
+        If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+        or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
 
     Examples
     --------
@@ -142,7 +143,10 @@ class Sequence(BaseSequence):
     5
     """
 
-    def __init__(self, iois: Iterable, metrical: bool = False):
+    def __init__(self,
+                 iois: Iterable,
+                 metrical: bool = False,
+                 name: str = None):
         """Initialization of Sequence class on the basis of inter-onset intervals (IOIs).
         When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
         If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs."""
@@ -150,11 +154,15 @@ class Sequence(BaseSequence):
         # Call super init method
         BaseSequence.__init__(self, iois=iois, metrical=metrical)
 
+        # Additionally save the provided name (may be None)
+        self.name = name
+
     def __str__(self):
+
         if self.metrical:
-            return f"Object of type Sequence (metrical)\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return f"Object of type Sequence (metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
         else:
-            return f"Object of type Sequence (non-metrical)\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return f"Object of type Sequence (non-metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
         return _join_sequences([self, other])
@@ -166,7 +174,8 @@ class Sequence(BaseSequence):
     def from_integer_ratios(cls,
                             numerators: Iterable,
                             value_of_one_in_ms: int,
-                            metrical: bool = False) -> Sequence:
+                            metrical: bool = False,
+                            name: str = None) -> Sequence:
         """
 
         This class method can be used to construct a new Sequence object on the basis of 'integer ratios'.
@@ -182,6 +191,9 @@ class Sequence(BaseSequence):
         metrical : bool, optional
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -196,10 +208,11 @@ class Sequence(BaseSequence):
         """
 
         numerators = np.array(numerators)
-        return cls(numerators * value_of_one_in_ms, metrical=metrical)
+        return cls(numerators * value_of_one_in_ms, metrical=metrical, name=name)
 
     @classmethod
-    def from_onsets(cls, onsets: Iterable) -> Sequence:
+    def from_onsets(cls, onsets: Iterable,
+                    name: str = None) -> Sequence:
         """
         Class method that can be used to generate a new Sequence object on the basis of event onsets.
 
@@ -207,6 +220,9 @@ class Sequence(BaseSequence):
         ----------
         onsets: iterable
             An iterable of event onsets which must start from 0, e.g.: [0, 500, 1000]
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -221,7 +237,7 @@ class Sequence(BaseSequence):
         """
         iois = np.diff(onsets)
 
-        return cls(iois, metrical=False)
+        return cls(iois, metrical=False, name=name)
 
     @classmethod
     def generate_random_normal(cls,
@@ -229,7 +245,8 @@ class Sequence(BaseSequence):
                                mu: int,
                                sigma: int,
                                rng=None,
-                               metrical=False) -> Sequence:
+                               metrical=False,
+                               name: str = None) -> Sequence:
         """
         Class method that generates a Sequence object with random inter-onset intervals (IOIs) based on the normal
         distribution.
@@ -247,6 +264,9 @@ class Sequence(BaseSequence):
         metrical : bool, optional
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -276,7 +296,7 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n_iois))
 
-        return cls(round_iois, metrical=metrical)
+        return cls(round_iois, metrical=metrical, name=name)
 
     @classmethod
     def generate_random_uniform(cls,
@@ -284,7 +304,8 @@ class Sequence(BaseSequence):
                                 a: int,
                                 b: int,
                                 rng=None,
-                                metrical=False) -> Sequence:
+                                metrical: bool = False,
+                                name: str = None) -> Sequence:
         """
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
 
@@ -301,6 +322,9 @@ class Sequence(BaseSequence):
         metrical : bool, optional
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -338,7 +362,8 @@ class Sequence(BaseSequence):
                                 n: int,
                                 lam: int,
                                 rng=None,
-                                metrical=False) -> Sequence:
+                                metrical: bool = False,
+                                name: str = None) -> Sequence:
 
         """
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
@@ -354,6 +379,9 @@ class Sequence(BaseSequence):
         metrical : bool, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -380,14 +408,15 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
 
-        return cls(round_iois, metrical=metrical)
+        return cls(round_iois, metrical=metrical, name=name)
 
     @classmethod
     def generate_random_exponential(cls,
                                     n: int,
                                     lam: int,
                                     rng=None,
-                                    metrical=False) -> Sequence:
+                                    metrical: bool = False,
+                                    name: str = None) -> Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
@@ -403,6 +432,9 @@ class Sequence(BaseSequence):
         metrical : bool, optional
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -434,7 +466,8 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: int,
-                             metrical=False) -> Sequence:
+                             metrical=False,
+                             name: str = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
         Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
@@ -448,6 +481,9 @@ class Sequence(BaseSequence):
         metrical : bool
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
+        name : str, optional
+            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
         Returns
         -------
@@ -479,10 +515,9 @@ class Sequence(BaseSequence):
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(np.round([ioi] * n_iois), metrical=metrical)
+        return cls(np.round([ioi] * n_iois), metrical=metrical, name=name)
 
     # Manipulation methods
-
     def add_noise_gaussian(self,
                            noise_sd: Union[int, float],
                            rng=None) -> None:
@@ -599,12 +634,9 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence([250, 500, 100, 250])
+        >>> seq = Sequence([250, 500, 1000, 250])
         >>> print(seq.integer_ratios)
-        [1, 2, 4, 1]
-
-        #todo This doctest now returns an error because it's not run through pytest (or something).
-
+        [1 2 4 1]
 
         """
         fractions = [Fraction(int(ioi), int(self.duration_ms)) for ioi in self.iois]
@@ -638,10 +670,6 @@ class Sequence(BaseSequence):
         [1000. 1000.  500.  500.]
         >>> print(seq.interval_ratios_from_dyads)
         [0.5       0.6666667 0.5      ]
-
-
-        #todo This doctest now returns an error becuase it's not run through pytest. Add return values.
-
 
         """
 

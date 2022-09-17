@@ -16,11 +16,23 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence],
     # Setting linewidths
     if linewidth is None:
         if isinstance(sequence, Sequence):
-            linewidths = 50
+            linewidths = [50] * len(sequence.onsets)
         elif isinstance(sequence, StimSequence):
             linewidths = sequence.event_durations
     else:
         linewidths = linewidth
+
+    # Title
+    if title:
+        title = title
+    elif not title and sequence.name:
+        title = sequence.name
+    else:
+        title = None
+
+    # X axis
+    x_start = 0
+    x_end = sequence.duration_ms + linewidths[-1]
 
     # Make plot
     with plt.style.context(style):
@@ -28,9 +40,9 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence],
 
         ax.axes.set_xlabel("Time (ms)")
         ax.set_ylim(0, 1)
+        ax.set_xlim(x_start, x_end)
         ax.barh(0.5, width=linewidths, height=1.0, left=sequence.onsets)
-        if title is not None:
-            ax.axes.set_title(title)
+        ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
     # Show plot

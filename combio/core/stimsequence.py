@@ -27,6 +27,25 @@ class StimSequence(BaseSequence):
     than the IOIs (impossible), that the sampling frequencies of all the Stimulus objects are the same (undesirable),
     and that the Stimulus objects' number of channels are the same (probable).
 
+    Attributes
+    ----------
+    dtype : numpy.dtype
+        blabla
+    fs : int
+        blabla
+    iois : numpy.ndarray
+        blabla
+    metrical : bool
+        blabla
+    n_channels : int
+        blabla
+    name : str
+        blabla
+    samples : np.ndarray
+        blabla
+    stim_names : list
+        blabla
+
     Examples
     --------
     >>> stim = Stimulus.generate(freq=440, duration=50)
@@ -56,7 +75,7 @@ class StimSequence(BaseSequence):
             A Sequence object. This contains the timing information for the played events.
         name : str, optional
             You can provide a name for the StimSequence which is sometimes used (e.g. when printing a StimSequence
-            object, or when plotting a StimSequence). One can always retrieve this attribute from StimSequence.name
+            object, or when plotting one). One can always retrieve this attribute from StimSequence.name
         """
 
         # If a single Stimulus object is passed, repeat that stimulus for each onset
@@ -135,8 +154,25 @@ Stimulus names: {stim_names}
     def mean_ioi(self) -> np.float32:
         return np.float32(np.mean(self.iois))
 
+    @property
+    def duration_ms(self) -> np.float32:
+        """Get the total duration of the StimSequence object in milliseconds.
+        """
+        return np.float32(np.sum(self.iois))
+
+    @property
+    def duration_s(self) -> np.float32:
+        """Get the total duration of the StimSequence object in seconds.
+        """
+        return np.float32(np.sum(self.iois) / 1000)
+
     def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        play_samples(self.samples, self.fs, self.mean_ioi, loop, metronome, metronome_amplitude)
+        play_samples(samples=self.samples,
+                     fs=self.fs,
+                     mean_ioi=self.mean_ioi,
+                     loop=loop,
+                     metronome=metronome,
+                     metronome_amplitude=metronome_amplitude)
 
     def plot_waveform(self, title=None):
         if title:
