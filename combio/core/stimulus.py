@@ -5,8 +5,8 @@ from typing import Union
 import numpy as np
 import sounddevice as sd
 from mingus.containers import Note
-from scipy.io import wavfile
-from scipy.signal import resample
+import scipy.io
+import scipy.signal
 from combio.core import helpers
 
 
@@ -415,7 +415,9 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 
 def _read_wavfile(filepath: Union[str, os.PathLike],
                   new_fs: int):
-    file_fs, samples = wavfile.read(filepath)
+    """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
+    If dtype is different than np.float32, it converts the samples to that."""
+    file_fs, samples = scipy.io.wavfile.read(filepath)
 
     # Change dtype so we always have float32
     if samples.dtype == 'int16':
@@ -438,12 +440,13 @@ def _read_wavfile(filepath: Union[str, os.PathLike],
 
 
 def _resample(samples, input_fs, output_fs):
+    """Internal function used to resample sounds. Uses scipy.signal.resample"""
     if output_fs == input_fs:
         fs = input_fs
         samples = samples
     elif output_fs != input_fs:
         resample_factor = float(output_fs) / float(input_fs)
-        resampled = resample(samples, int(len(samples) * resample_factor))
+        resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
         samples = resampled
         fs = output_fs
     else:
