@@ -12,8 +12,9 @@ from combio.core import helpers
 
 class Stimulus:
     """
-    Stimulus class that holds a NumPy 1-D array of sound that is generated, or read from a .wav file or Parselmouth
-    object.
+    This Stimulus class is what you can use to generate a sound, or to get a sound from a .wav file.
+    This Stimulus sound is used when generating a trial with the `StimSequence` class.
+    Additionally, one can plot a Stimulus object, change the amplitude, etc.
 
     Attributes
     ----------
@@ -130,7 +131,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
-        >>> stim.plot()
+        >>> stim.plot_waveform()
 
         """
         # Duration in seconds
@@ -197,10 +198,10 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.from_note('G', duration=20)
-        >>> stim.plot()
+        >>> stim.plot_waveform()
 
         >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
-        >>> stim.plot()
+        >>> stim.plot_waveform()
         """
 
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
@@ -331,20 +332,38 @@ class Stimulus:
     # Stats
     @property
     def duration_s(self) -> float:
+        """
+        The duration of the Stimulus sound in seconds.
+        """
         return self.samples.shape[0] / self.fs
 
     @property
     def duration_ms(self) -> float:
+        """
+        The duration of the Stimulus sound in milliseconds.
+        """
         return self.samples.shape[0] / self.fs * 1000
 
     # Out
-    def write_wav(self, out_path: Union[str, os.PathLike]):
+    def write_wav(self, out_path: Union[str, os.PathLike]) -> None:
         """
-        Writes audio to disk.
+        Save the Stimulus sound to disk as a wave file.
+
+        Parameters
+        ----------
+        out_path: str or PathLike object
+            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be aware of OS-specific filepath conventions.
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate()
+        >>> stim.write_wav('my_stimulus.wav')
+
         """
 
 
 def _make_ramps(signal, fs, onramp, offramp, ramp):
+    """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
     # Create onramp
     if onramp > 0:
         onramp_samples_len = int(onramp / 1000 * fs)

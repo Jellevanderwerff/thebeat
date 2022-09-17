@@ -114,8 +114,8 @@ class Sequence(BaseSequence):
     The most basic way of constructing a `Sequence` object is by passing it a list (or other iterable) of IOIs.
     However, the different class methods (e.g. `Sequence.generate_isochronous()`) may also be used.
 
-    This class additionally contains functions and attributes to, for instance, get the event onsets values, to
-    change the tempo, to add Gaussian noise, or to plot the `Sequence` object using matplotlib.
+    This class additionally contains methods and attributes to, for instance, get the event onset values, to
+    change the tempo, add Gaussian noise, or to plot the `Sequence` object using matplotlib.
 
 
     Attributes
@@ -616,8 +616,8 @@ class Sequence(BaseSequence):
     @property
     def integer_ratios(self):
         """
-        This function calculates how to describe a sequence of IOIs in integer ratio numerators from
-        the total duration of the sequence, by finding the least common multiplier.
+        This property calculates how to describe a sequence of IOIs in integer ratio numerators from
+        the total duration of the sequence by finding the least common multiplier.
 
         Example:
         A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
@@ -649,7 +649,7 @@ class Sequence(BaseSequence):
     @property
     def interval_ratios_from_dyads(self):
         """
-        This function returns sequential interval ratios,
+        This property returns sequential interval ratios,
         calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
 
         Note that for n IOIs this function returns n-1 ratios.
