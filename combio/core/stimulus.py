@@ -226,35 +226,98 @@ class Stimulus:
                                  name=name)
 
     @classmethod
-    def from_parselmouth(cls, snd_obj, stim_name=None):
-        if not snd_obj.__class__.__name__ == "Sound":
+    def from_parselmouth(cls, sound_object, name=None) -> Stimulus:
+        """
+        This class method generates a Stimulus object from a `parselmouth.Sound` object.
+
+        Parameters
+        ----------
+        sound_object : parselmouth.Sound object
+            The to-be imported Parselmouth Sound object
+        name : str, optional
+            Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
+            A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
+
+        Returns
+        -------
+        Stimulus
+            A newly created Stimulus object.
+
+        References
+        ----------
+        https://parselmouth.readthedocs.io/en/latest/api_reference.html#parselmouth.Sound
+
+        """
+        if not sound_object.__class__.__name__ == "Sound":
             raise ValueError("Please provide a parselmouth.Sound object.")
 
-        fs = snd_obj.sampling_frequency
+        fs = sound_object.sampling_frequency
 
-        if snd_obj.samples.ndim == 1:
-            samples = snd_obj.values[0]
-        elif snd_obj.samples.ndim == 2:
-            samples = snd_obj.values
+        if sound_object.samples.ndim == 1:
+            samples = sound_object.values[0]
+        elif sound_object.samples.ndim == 2:
+            samples = sound_object.values
         else:
             raise ValueError("Incorrect number of dimensions in samples. Should be 1 (mono) or 2 (stereo).")
 
-        return cls(samples, fs, stim_name)
+        return cls(samples, fs, name)
 
     # Manipulation
-    def change_amplitude(self, factor):
+    def change_amplitude(self,
+                         factor: float) -> None:
+        """This method can be used to change the amplitude of the Stimulus sound.
+        A factor between 0 and 1 decreases the amplitude; a factor larger than 1 increases the amplitude."""
+
+        if not factor > 0:
+            raise ValueError("Please provide a 'factor' larger than zero.")
+
         # get original frequencies
         self.samples *= factor
 
     # Visualization
-    def play(self, loop=False):
+    def play(self, loop: bool = False) -> None:
+        """
+        This method uses the sounddevice library to play the Stimulus sound.
+
+        Parameters
+        ----------
+        loop: bool, optional
+            If 'True', the Stimulus object is played until the `Stimulus.stop()` method is called.
+
+        References
+        ----------
+        https://python-sounddevice.readthedocs.io
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate()
+        >>> stim.play()
+        """
+
         sd.play(self.samples, self.fs, loop=loop)
         sd.wait()
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop playing the Stimulus sound. Calls the .stop() function from the sounddevice library.
+
+        References
+        ----------
+        https://python-sounddevice.readthedocs.io
+
+        Examples
+        --------
+        >>> import time
+        >>> stim = Stimulus.generate()
+        >>> stim.play(loop=True)
+        >>> time.sleep(secs=1)
+        >>> stim.stop()
+        """
+
         sd.stop()
 
-    def plot(self, title=None):
+    def plot_waveform(self, title=None):
+        # todo This needs some work to be consistent with the other plotting functions (figsize etc.)
         if title:
             title = title
         else:
