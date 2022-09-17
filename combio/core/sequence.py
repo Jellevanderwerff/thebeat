@@ -126,7 +126,7 @@ class Sequence(BaseSequence):
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
     name : str, optional
-        If desired, one can give a sequence a name. This is for instance used when printing the sequence,
+        If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
         or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
 
     Examples

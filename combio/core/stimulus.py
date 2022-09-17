@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import re
 from typing import Union
@@ -6,23 +7,27 @@ import sounddevice as sd
 from mingus.containers import Note
 from scipy.io import wavfile
 from scipy.signal import resample
-from .helpers import plot_waveform
+from combio.core import helpers
 
 
 class Stimulus:
     """
-    Stimulus class that holds a Numpy 1-D array of sound that is either generated, or read from a .wav file.
+    Stimulus class that holds a NumPy 1-D array of sound that is generated, or read from a .wav file or Parselmouth
+    object.
 
     Attributes
     ----------
     fs : int
-        Sampling frequency of the sound.
-    samples : Numpy 1-D array (float32)
+        Sampling frequency of the sound. 48000 is used as the standard in this package.
+    samples : NumPy 1-D array (float32)
         Contains the samples of the sound.
-    dtype : Numpy data type object
-        Contains the Numpy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
+    dtype : numpy.dtype
+        Contains the NumPy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
         the samples will be converted to np.float32.
-
+    n_channels : int
+        The Stimulus' number of channels. 1 for mono, 2 for stereo.
+    name : str
+        Defaults to None. If name is provided during object construction it is saved here.
 
     """
 
@@ -30,7 +35,9 @@ class Stimulus:
                  samples: np.ndarray,
                  fs: int,
                  name: str = None):
-        # check number of dimensions
+        """Initialization of Stimulus object. """
+
+        # Check number of channels from array's dimensions:
         if samples.ndim == 1:
             n_channels = 1
         elif samples.ndim == 2:
@@ -38,7 +45,7 @@ class Stimulus:
         else:
             raise ValueError("Wrong number of dimensions in given samples. Can only be 1 (mono) or 2 (stereo).")
 
-        # Save all attributes
+        # Save attributes
         self.samples = samples
         self.fs = fs
         self.dtype = samples.dtype
@@ -46,54 +53,90 @@ class Stimulus:
         self.name = name
 
     def __str__(self):
-        if self.name:
-            name = self.name
-        else:
-            name = "Not provided"
 
-        return f"Object of type Stimulus.\n\nStimulus name: {name}\nStimulus duration: {self.duration_ms} milliseconds."
+        return f"Object of type Stimulus\nStimulus name: {self.name}\nStimulus duration: {self.duration_ms} " \
+               f"milliseconds"
 
     @classmethod
     def from_wav(cls,
                  filepath: Union[os.PathLike, str],
-                 name=None,
-                 new_fs: int = None):
+                 new_fs: int = None,
+                 name: str = None) -> Stimulus:
         """
-
         This method loads a stimulus from a PCM .wav file, and reads in the samples.
         It additionally converts .wav files with dtype int16 or int32 to float32.
 
         Parameters
         ----------
-        name
         filepath: str or PathLike object
-        new_fs : int
-            If resampling is required, you can provide the target sampling frequency
-
-        Returns
-        ----------
-        Does not return anything.
+            The location of the .wav file. Either pass it e.g. a Path object, or a string.
+            Of course be aware of OS-specific filepath conventions.
+        name: str, optional
+            If desired, one can give a Stimulus object a name. This is used, for instance,
+            when plotting or printing. It can always be retrieved from the Stimulus.name atrribute.
+        new_fs : int, optional
+            If resampling is required, you can provide the target sampling frequency here.
         """
 
         # Read in the sampling frequency and all the samples from the wav file
-        samples, fs = _read_wavfile(filepath, new_fs)
+        samples, fs = _read_wavfile(filepath=filepath, new_fs=new_fs)
 
+        # Return Stimulus object
         return cls(samples, fs, name)
 
     @classmethod
     def generate(cls,
-                 name=None,
-                 freq=440,
-                 fs=48000,
-                 duration=50,
-                 amplitude=1.0,
-                 osc='sine',
-                 onramp=0,
-                 offramp=0,
-                 ramp='linear'):
+                 freq: int = 440,
+                 fs: int = 48000,
+                 duration: int = 50,
+                 amplitude: float = 1.0,
+                 osc: str = 'sine',
+                 onramp: int = 0,
+                 offramp: int = 0,
+                 ramp: str = 'linear',
+                 name: str = None) -> Stimulus:
         """
+        This class method returns a Stimulus object with a generated sound, based on the given parameters.
+        It is recommended to use the on- and offramp parameters for the best results.
+
+        Parameters
+        ----------
+        freq : int, optional
+            The pitch frequency in hertz.
+        fs : int, optional
+            The sampling frequency in hertz.
+        duration : int, optional
+            The duration in milliseconds.
+        amplitude : float, optional
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
+            values higher than 1 in louder sounds.
+        osc : str, optional
+            Either 'sine' (the default) or 'square'.
+        onramp : int, optional
+            The sound's 'attack' in milliseconds.
+        offramp : int, optional
+            The sound's 'decay' in milliseconds.
+        ramp : str, optional
+            The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
+        name : str, optional
+            Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
+            A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
+
+        Returns
+        -------
+        Stimulus
+            A newly created Stimulus object.
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
+        >>> stim.plot()
+
         """
+        # Duration in seconds
         t = duration / 1000
+
+        # Generate signal
         samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float32)
         if osc == 'sine':
             signal = amplitude * np.sin(2 * np.pi * freq * samples)
@@ -102,20 +145,62 @@ class Stimulus:
         else:
             raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")
 
+        # Make ramps
         signal, fs = _make_ramps(signal, fs, onramp, offramp, ramp)
 
         # Return class
         return cls(signal, fs, name)
 
     @classmethod
-    def from_note(cls, note_str, event_duration=50, onramp=0, offramp=0, ramp='linear',
-                  name: str = None):
+    def from_note(cls,
+                  note_str: str,
+                  duration: int = 50,
+                  fs: int = 48000,
+                  amplitude: float = 1.0,
+                  osc: str = 'sine',
+                  onramp: int = 0,
+                  offramp: int = 0,
+                  ramp: str = 'linear',
+                  name: str = None) -> Stimulus:
         """
-        Get stimulus objects on the basis of a provided string of notes.
-        For instance: 'CDEC' returns a list of four Stimulus objects.
-        Alternatively, one can use 'C4D4E4C4'. In place of
-        silences one can use an 'X'.
+        Generate a Stimulus object on the basis of a note as a string.
+        For instance, a note_str of 'G4' results in a generated Stimulus with a pitch frequency of 392 hertz.
 
+        Parameters
+        ----------
+        note_str: str
+            A note as a string. Can either be 'G' or 'G4'.
+        duration : int, optional
+            The duration in milliseconds.
+        fs : int, optional
+            The sampling frequency in hertz.
+        amplitude : float, optional
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
+            values higher than 1 in louder sounds.
+        osc : str, optional
+            Either 'sine' (the default) or 'square'.
+        onramp : int, optional
+            The sound's 'attack' in milliseconds.
+        offramp : int, optional
+            The sound's 'decay' in milliseconds.
+        ramp : str, optional
+            The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
+        name : str, optional
+            Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
+            A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
+
+        Returns
+        -------
+        Stimulus
+            A newly created Stimulus object.
+
+        Examples
+        --------
+        >>> stim = Stimulus.from_note('G', duration=20)
+        >>> stim.plot()
+
+        >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
+        >>> stim.plot()
         """
 
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
@@ -130,16 +215,15 @@ class Stimulus:
         else:
             raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
 
-        return Stimulus.generate(name, freq=freq, duration=event_duration, onramp=onramp, offramp=offramp, ramp=ramp)
-
-    @classmethod
-    def rest(cls,
-             name=None,
-             duration=50,
-             fs=44100):
-        samples = np.zeros(duration // (1000 * fs), dtype='float32')
-
-        return cls(samples, fs, name)
+        return Stimulus.generate(freq=freq,
+                                 fs=fs,
+                                 duration=duration,
+                                 amplitude=amplitude,
+                                 osc=osc,
+                                 onramp=onramp,
+                                 offramp=offramp,
+                                 ramp=ramp,
+                                 name=name)
 
     @classmethod
     def from_parselmouth(cls, snd_obj, stim_name=None):
@@ -179,7 +263,7 @@ class Stimulus:
             else:
                 title = "Waveform of Stimulus"
 
-        plot_waveform(self.samples, self.fs, self.n_channels, title)
+        helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels, title=title)
 
     # Stats
     @property
