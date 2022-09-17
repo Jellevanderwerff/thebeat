@@ -125,7 +125,7 @@ class Sequence(BaseSequence):
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    name : str, optional
+    name : str
         If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
         or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
 
