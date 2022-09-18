@@ -1,55 +1,20 @@
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
 from typing import Union, Iterable
+import numpy as np
+import combio.core.helpers
 
 
-def plot_sequence_single(sequence: Union[Sequence, StimSequence],
+def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
                          style: str = 'seaborn',
                          title: str = None,
                          linewidth=None,
                          figsize=None,
                          suppress_display: bool = False):
-    # Input validation
-    if not isinstance(sequence, Sequence) and not isinstance(sequence, StimSequence):
-        raise ValueError("Please pass either a Sequence or StimSequence object as the first argument.")
 
-    # Setting linewidths
-    if linewidth is None:
-        if isinstance(sequence, Sequence):
-            linewidths = [50] * len(sequence.onsets)
-        elif isinstance(sequence, StimSequence):
-            linewidths = sequence.event_durations
-    else:
-        linewidths = linewidth
-
-    # Title
-    if title:
-        title = title
-    elif not title and sequence.name:
-        title = sequence.name
-    else:
-        title = None
-
-    # X axis
-    x_start = 0
-    x_end = sequence.duration_ms + linewidths[-1]
-
-    # Make plot
-    with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-
-        ax.axes.set_xlabel("Time (ms)")
-        ax.set_ylim(0, 1)
-        ax.set_xlim(x_start, x_end)
-        ax.barh(0.5, width=linewidths, height=1.0, left=sequence.onsets)
-        ax.axes.set_title(title)
-        ax.axes.yaxis.set_visible(False)
-
-    # Show plot
-    if suppress_display is False:
-        plt.show()
-
-    # Additionally return plot
+    fig, ax = combio.core.helpers.plot_sequence_single(sequence=sequence, style=style, title=title,
+                                                       linewidth=linewidth, figsize=figsize,
+                                                       suppress_display=suppress_display)
     return fig, ax
 
 

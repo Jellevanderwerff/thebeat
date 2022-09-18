@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from typing import Union
+from combio.core.sequence import Sequence
+from combio.core.stimsequence import StimSequence
+from typing import Iterable, Union
 
 
 def get_sound_with_metronome(samples: np.ndarray,
@@ -48,6 +50,69 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
     return samples
 
 
+def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
+                         style: str = 'seaborn',
+                         title: str = None,
+                         linewidth=None,
+                         figsize=None,
+                         suppress_display: bool = False):
+    # Input validation
+    if not isinstance(sequence, Sequence) and not hasattr(sequence, '__iter__'):
+        raise ValueError("Please pass either a Sequence, a StimSequence object or an iterable as the first argument.")
+
+    # Setting linewidths
+    # No linewidth was passed
+    if linewidth is None:
+        # In case we have a Sequence
+        if isinstance(sequence, Sequence):
+            linewidths = [50] * len(sequence.onsets)
+        # In case we have a StimSequence, simply use the duration of the events.
+        elif isinstance(sequence, StimSequence):
+            linewidths = sequence.event_durations
+    # Linewidth was passed
+    elif linewidth is not None:
+        linewidths = [linewidth] * len(sequence.onsets)
+
+    # Title
+    if title:
+        title = title
+    elif not title and sequence.name:
+        title = sequence.name
+    else:
+        title = None
+
+    # X axis
+    x_start = 0
+
+    # Above 10s we want seconds on the x axis, otherwise milliseconds
+    if sequence.duration_s > 10:
+        onsets = sequence.onsets / 1000
+        linewidths = np.array(linewidths) / 1000
+        x_end = sequence.duration_s + linewidths[-1]
+        x_label = "Time (s)"
+    else:
+        onsets = sequence.onsets
+        x_end = sequence.duration_ms + linewidths[-1]
+        x_label = "Time (ms)"
+
+    # Make plot
+    with plt.style.context(style):
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        ax.axes.set_xlabel(x_label)
+        ax.set_ylim(0, 1)
+        ax.set_xlim(x_start, x_end)
+        ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
+        ax.axes.set_title(title)
+        ax.axes.yaxis.set_visible(False)
+
+    # Show plot
+    if suppress_display is False:
+        plt.show()
+
+    # Additionally return plot
+    return fig, ax
+
+
 def plot_waveform(samples: np.ndarray,
                   fs: int,
                   n_channels: int,
@@ -55,6 +120,7 @@ def plot_waveform(samples: np.ndarray,
                   title: str = None,
                   figsize: tuple = None,
                   suppress_display: bool = False):
+
     """
     This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
 
@@ -84,7 +150,6 @@ def plot_waveform(samples: np.ndarray,
         A matplotlib Axes object
 
     """
-    frames = np.arange(samples.shape[0])
 
     # if we have two channels, we want the waveform to be opaque
     if n_channels == 1:
@@ -94,15 +159,27 @@ def plot_waveform(samples: np.ndarray,
     else:
         raise ValueError("Unexpected number of channels.")
 
+    # Above 10s, we want seconds on the x axis, below that we want milliseconds
+    n_frames = samples.shape[0]
+    if n_frames / fs > 10:
+        frames = np.linspace(start=0,
+                             stop=samples.shape[0] / fs,
+                             num=samples.shape[0])
+        x_label = "Time (s)"
+    else:
+        frames = np.linspace(start=0,
+                             stop=samples.shape[0] / fs * 1000,
+                             num=samples.shape[0])
+        x_label = "Time (ms)"
+
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
         ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
             ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
+
         ax.set_ylabel("Amplitude")
-        ax.set_xticks(ticks=[0, samples.shape[0]],
-                      labels=[0, int(samples.size / fs * 1000)])
-        ax.set_xlabel("Time (ms)")
+        ax.set_xlabel(x_label)
         ax.set_title(title)
 
     if suppress_display is False:

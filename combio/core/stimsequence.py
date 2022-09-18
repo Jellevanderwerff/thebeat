@@ -1,6 +1,6 @@
 from scipy.io import wavfile
-from .sequence import BaseSequence, Sequence
-from .stimulus import Stimulus
+from combio.core.sequence import BaseSequence, Sequence
+from combio.core.stimulus import Stimulus
 import numpy as np
 from combio.core.helpers import play_samples, plot_waveform, normalize_audio, get_sound_with_metronome
 import warnings
@@ -30,21 +30,24 @@ class StimSequence(BaseSequence):
     Attributes
     ----------
     dtype : numpy.dtype
-        blabla
+        Contains the NumPy data type object. Hard-coded as np.float32.
     fs : int
-        blabla
-    iois : numpy.ndarray
-        blabla
+        Sampling frequency of the sound. 48000 is used as the standard in this package.
+    iois : NumPy 1-D array
+        Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
+        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
+        and onsets.
     metrical : bool
-        blabla
+            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+            sequence has an equal number of IOIs and event onsets.
     n_channels : int
-        blabla
+        The StimSequence's number of channels. 1 for mono, 2 for stereo.
     name : str
-        blabla
-    samples : np.ndarray
-        blabla
+        Defaults to None. If name is provided during object construction it is saved here.
+    samples : NumPy 1-D array (float32)
+        Contains the samples of the sound.
     stim_names : list
-        blabla
+        A list containing the names of the passed Stimulus object(s).
 
     Examples
     --------
@@ -53,9 +56,9 @@ class StimSequence(BaseSequence):
     >>> trial = StimSequence(stim, seq)
 
     >>> from random import randint
-    >>> stims = [Stimulus.generate(freq=randint(100, 1000) for x in range(5))]
+    >>> stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]
     >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> trial = StimSequence(stim, seq)
+    >>> trial = StimSequence(stims, seq)
     """
 
     def __init__(self,
@@ -76,6 +79,17 @@ class StimSequence(BaseSequence):
         name : str, optional
             You can provide a name for the StimSequence which is sometimes used (e.g. when printing a StimSequence
             object, or when plotting one). One can always retrieve this attribute from StimSequence.name
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate(freq=440,duration=50)
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> trial = StimSequence(stim, seq)
+
+        >>> from random import randint
+        >>> stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> trial = StimSequence(stims, seq)
         """
 
         # If a single Stimulus object is passed, repeat that stimulus for each onset
@@ -152,49 +166,110 @@ Stimulus names: {stim_names}
 
     @property
     def mean_ioi(self) -> np.float32:
+        """The average inter-onset interval (IOI) in milliseconds."""
         return np.float32(np.mean(self.iois))
 
     @property
     def duration_ms(self) -> np.float32:
-        """Get the total duration of the StimSequence object in milliseconds.
+        """The total duration of the StimSequence object in milliseconds.
         """
         return np.float32(np.sum(self.iois))
 
     @property
     def duration_s(self) -> np.float32:
-        """Get the total duration of the StimSequence object in seconds.
+        """The total duration of the StimSequence object in seconds.
         """
         return np.float32(np.sum(self.iois) / 1000)
 
-    def play(self, loop=False, metronome=False, metronome_amplitude=1):
-        play_samples(samples=self.samples,
-                     fs=self.fs,
-                     mean_ioi=self.mean_ioi,
-                     loop=loop,
-                     metronome=metronome,
+    def play(self, loop=False, metronome=False, metronome_amplitude=1) -> None:
+        """
+        This method uses the sounddevice library to play the StimSequence object.
+
+        Parameters
+        ----------
+        loop: bool, optional
+            If 'True', the StimSequence will continue playing until the StimSequence.stop() method is called.
+            Defaults to 'False'.
+        metronome: bool, optional
+            If 'True', a metronome sound is added for playback. Defaluts to 'False'.
+        metronome_amplitude: bool, optional
+            If desired, when playing the StimSequence with a metronome sound you can adjust the
+            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
+            a louder metronome sound.
+
+        """
+        play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop, metronome=metronome,
                      metronome_amplitude=metronome_amplitude)
 
-    def plot_waveform(self, title=None):
-        if title:
-            title = title
-        else:
-            if self.name:
-                title = f"Waveform of {self.name}"
-            else:
-                title = "Waveform of StimSequence"
-
-        plot_waveform(self.samples, self.fs, self.n_channels, title)
-
-    def write_wav(self, out_path: Union[str, os.PathLike] = '.',
-                  metronome=False,
-                  metronome_amplitude=1):
+    def plot_waveform(self,
+                      style: str = 'seaborn',
+                      title: str = None,
+                      figsize: tuple = None,
+                      suppress_display: bool = False):
         """
-        Writes audio to disk.
+        Parameters
+        ----------
+        style : str, optional
+            Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
+        title : str, optional
+            If desired, one can provide a title for the plot.
+        figsize : tuple, optional
+            A tuple containing the desired output size of the plot in inches, e.g. (4, 1).
+        suppress_display : bool, optional
+            If 'True', plt.show() is not run. Defaults to 'False'.
+
+        Returns
+        -------
+        fig : Figure
+            A matplotlib Figure object
+        ax : Axes
+            A matplotlib Axes object
+
+        Examples
+        --------
+        >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=10, ioi=500))
+        >>> trial.plot_waveform(title="My StimSeq plot")
+        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:title={'center':'My StimSeq plot'}, xlabel='Time (ms)', ylabel='Amplitude'>)
+
+
+        """
+        if self.name and title is None:
+            title = self.name
+
+        fig, ax = plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels, style=style,
+                                title=title, figsize=figsize, suppress_display=suppress_display)
+
+        return fig, ax
+
+    def write_wav(self,
+                  out_path: Union[str, os.PathLike] = '.',
+                  metronome: bool = False,
+                  metronome_amplitude: float = 1.0) -> None:
+        """
+
+        Parameters
+        ----------
+        out_path: str or PathLike object
+            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be aware of OS-specific filepath conventions.
+        metronome: bool, optional
+            If 'True', a metronome sound is added for playback. Defaluts to 'False'.
+        metronome_amplitude: bool, optional
+            If desired, when playing the StimSequence with a metronome sound you can adjust the
+            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
+            a louder metronome sound.
+
+        Examples
+        --------
+        >>> stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
+        >>> stimseq.write_wav('my_stimseq.wav')
+
         """
 
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
     def _make_sound(self, stimuli, onsets):
+        """Internal function used for combining different Stimulus samples and a passed Sequence object
+        into one array of samples containing the sound of a StimSequence."""
         # Check for overlap
         for i in range(len(onsets)):
             stim_duration = stimuli[i].samples.shape[0] / self.fs * 1000
@@ -253,6 +328,7 @@ Stimulus names: {stim_names}
 
 
 def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
+    """Internal function used for writing a .wav to disk."""
     if metronome is True:
         samples = get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
     else:

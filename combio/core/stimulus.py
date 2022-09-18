@@ -12,7 +12,8 @@ from combio.core import helpers
 
 class Stimulus:
     """
-    This Stimulus class is what you can use to generate a sound, or to get a sound from a .wav file.
+    A Stimulus object holds a sound. You can use the different class methods to generate a sound,
+    to get a sound from a .wav file, or to import a Parselmouth Sound object.
     This Stimulus sound is used when generating a trial with the `StimSequence` class.
     Additionally, one can plot a Stimulus object, change the amplitude, etc.
 
@@ -132,6 +133,7 @@ class Stimulus:
         --------
         >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
         >>> stim.plot_waveform()
+        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
 
         """
         # Duration in seconds
@@ -199,9 +201,13 @@ class Stimulus:
         --------
         >>> stim = Stimulus.from_note('G', duration=20)
         >>> stim.plot_waveform()
+        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
+
 
         >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
         >>> stim.plot_waveform()
+        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
+
         """
 
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
@@ -308,26 +314,66 @@ class Stimulus:
 
         Examples
         --------
-        >>> import time
-        >>> stim = Stimulus.generate()
-        >>> stim.play(loop=True)
-        >>> time.sleep(secs=1)
-        >>> stim.stop()
+        >>> import time  # doctest: +SKIP
+        >>> stim = Stimulus.generate()  # doctest: +SKIP
+        >>> stim.play()  # doctest: +SKIP
+        >>> time.sleep(secs=1)  # doctest: +SKIP
+        >>> stim.stop()  # doctest: +SKIP
         """
 
         sd.stop()
 
-    def plot_waveform(self, title=None):
-        # todo This needs some work to be consistent with the other plotting functions (figsize etc.)
-        if title:
-            title = title
-        else:
-            if self.name:
-                title = f"Waveform of {self.name}"
-            else:
-                title = "Waveform of Stimulus"
+    def plot_waveform(self,
+                      style: str = 'seaborn',
+                      title: str = None,
+                      figsize: tuple = None,
+                      suppress_display: bool = False):
+        """
+        Parameters
+        ----------
+        style : str, optional
+            Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
+        title : str, optional
+            If desired, one can provide a title for the plot.
+        figsize : tuple, optional
+            A tuple containing the desired output size of the plot in inches, e.g. (4, 1).
+        suppress_display : bool, optional
+            If 'True', plt.show() is not run. Defaults to 'False'.
 
-        helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels, title=title)
+        Returns
+        -------
+        fig : Figure
+            A matplotlib Figure object
+        ax : Axes
+            A matplotlib Axes object
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate()
+        >>> stim.plot_waveform(title="Waveform of stimulus")
+        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:title={'center':'Waveform of stimulus'}, xlabel='Time (ms)', ylabel='Amplitude'>)
+
+
+        >>> import matplotlib.pyplot as plt
+        >>> stim = Stimulus.generate()
+        >>> fig, ax = stim.plot_waveform(suppress_display=True)
+        >>> fig.set_facecolor('blue')
+        >>> plt.show()
+
+        """
+
+        if self.name and title is None:
+            title = self.name
+
+        fig, ax = helpers.plot_waveform(samples=self.samples,
+                                        fs=self.fs,
+                                        n_channels=self.n_channels,
+                                        style=style,
+                                        title=title,
+                                        figsize=figsize,
+                                        suppress_display=suppress_display)
+
+        return fig, ax
 
     # Stats
     @property

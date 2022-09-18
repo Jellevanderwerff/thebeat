@@ -3,6 +3,8 @@ from fractions import Fraction
 from typing import Iterable, Union
 import numpy as np
 
+import combio.core.helpers
+
 
 class BaseSequence:
     """
@@ -26,20 +28,15 @@ class BaseSequence:
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-
-    Parameters
-    ----------
-    iois : iterable
-        An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]
-    metrical : bool, optional
-        Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
-        sequences.
-
+    metrical : bool
+            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+            sequence has an equal number of IOIs and event onsets.
     """
 
     def __init__(self,
                  iois: Iterable,
                  metrical: bool = False):
+        """Initialization of BaseSequence class."""
 
         # Save attributes
         self.iois = iois
@@ -125,6 +122,8 @@ class Sequence(BaseSequence):
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
+    metrical : bool
+
     name : str
         If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
         or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
@@ -147,9 +146,26 @@ class Sequence(BaseSequence):
                  iois: Iterable,
                  metrical: bool = False,
                  name: str = None):
-        """Initialization of Sequence class on the basis of inter-onset intervals (IOIs).
+        """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
-        If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs."""
+        If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs.
+
+        Parameters
+        ----------
+        iois : iterable
+            An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]
+        metrical : bool, optional
+            Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
+            sequences.
+
+        Examples
+        --------
+        >>> iois = [500, 400, 600, 400]
+        >>> seq = Sequence(iois)
+        >>> print(seq.onsets)
+        [   0.  500.  900. 1500. 1900.]
+
+        """
 
         # Call super init method
         BaseSequence.__init__(self, iois=iois, metrical=metrical)
@@ -522,7 +538,7 @@ class Sequence(BaseSequence):
                            noise_sd: Union[int, float],
                            rng=None) -> None:
         """
-        This function can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
+        This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
         of 'noise_sd'.
 
@@ -579,7 +595,7 @@ class Sequence(BaseSequence):
     def change_tempo_linearly(self,
                               total_change: Union[int, float]) -> None:
         """
-        This function can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
+        This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
         It divides the IOIs by a vector linearly spaced between 1 and total_change.
 
         Parameters
@@ -600,6 +616,28 @@ class Sequence(BaseSequence):
 
         """
         self.iois /= np.linspace(1, total_change, self.iois.size)
+
+    # Visualization
+    def plot(self,
+             style: str = 'seaborn',
+             title: str = None,
+             linewidth: int = 50,
+             figsize: tuple = None):
+        """
+
+        #todo fill out
+
+        Parameters
+        ----------
+        style : str, optional
+        title : str, optional
+        linewidth : int, optional
+        figsize : tuple, optional
+
+        """
+
+        combio.core.helpers.plot_sequence_single(sequence=self, style=style, title=title, linewidth=linewidth,
+                                                 figsize=figsize, suppress_display=False)
 
     @property
     def duration_ms(self) -> np.float32:
@@ -622,7 +660,7 @@ class Sequence(BaseSequence):
         Example:
         A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
         This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
-        so this function returns the numerators [1, 2, 4, 1].
+        so this method returns the numerators [1, 2, 4, 1].
 
         References
         ----------
@@ -652,7 +690,7 @@ class Sequence(BaseSequence):
         This property returns sequential interval ratios,
         calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
 
-        Note that for n IOIs this function returns n-1 ratios.
+        Note that for n IOIs this property returns n-1 ratios.
 
         References
         ----------
