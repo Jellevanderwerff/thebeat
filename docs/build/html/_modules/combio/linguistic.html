@@ -15,6 +15,7 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -69,22 +70,63 @@
              
   <h1>Source code for combio.linguistic</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">.core.sequence</span> <span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">combio.core.sequence</span> <span class="kn">import</span> <span class="n">Sequence</span>
 
 
 <div class="viewcode-block" id="generate_stress_timed_sequence"><a class="viewcode-back" href="../../package/linguistics.html#combio.linguistic.generate_stress_timed_sequence">[docs]</a><span class="k">def</span> <span class="nf">generate_stress_timed_sequence</span><span class="p">(</span><span class="n">n_events_per_phrase</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                    <span class="n">syllable_ioi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
                                    <span class="n">n_phrases</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                                    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Description here&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function generates a Sequence object with inter-onset intervals (IOIs) that conform to the rhythmic</span>
+<span class="sd">    structure of stress-timed languages. One can provide the length of a &#39;phrase&#39; (or &#39;cluster&#39;) as n_events_per_phrase.</span>
+<span class="sd">    In one &#39;sentence&#39;, one would have n_phrases of n_events_per_phrase.</span>
+
+<span class="sd">    The phrases all have the same duration, but are made up of different combinations of IOIs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_events_per_phrase : int</span>
+<span class="sd">        The number of events in a single &#39;phrase&#39;.</span>
+<span class="sd">    syllable_ioi : int, optional</span>
+<span class="sd">        The duration of the reference IOI in milliseconds. The default is 500.</span>
+<span class="sd">    n_phrases : int, optional</span>
+<span class="sd">        The number of phrases in the sequence. The default is 1.</span>
+<span class="sd">    rng : numpy.random.Generator, optional</span>
+<span class="sd">        A NumPy Generator object, if none is supplied will default to numpy.random.default_rng()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Sequence</span>
+<span class="sd">        A newly created Sequence object.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(seed=123)</span>
+<span class="sd">    &gt;&gt;&gt; seq = generate_stress_timed_sequence(n_events_per_phrase=4, n_phrases=3, rng=rng)</span>
+<span class="sd">    &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">    [   0.    62.5  750.  1312.5 2000.  2062.5 2937.5 3187.5 4000.  4250.</span>
+<span class="sd">     4437.5 4812.5]</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Both the methodology and the code are based on/taken from [1]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:</span>
+<span class="sd">       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.</span>
+<span class="sd">       Journal of Language Evolution, 2(1), 4-19.</span>
+<span class="sd">       https://doi.org/10.1093/jole/lzx002</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
 
     <span class="n">start_of_pattern</span> <span class="o">=</span> <span class="n">syllable_ioi</span>
 
     <span class="n">ioi_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span> <span class="o">/</span> <span class="mi">8</span><span class="p">)</span> <span class="o">*</span> <span class="n">syllable_ioi</span>
-    <span class="c1"># number of iois</span>
-    <span class="n">n_iois</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_events_per_phrase</span> <span class="o">*</span> <span class="n">n_phrases</span><span class="p">)</span>
 
     <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 

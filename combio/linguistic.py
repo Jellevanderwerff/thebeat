@@ -1,20 +1,61 @@
 import numpy as np
-from .core.sequence import Sequence
+from combio.core.sequence import Sequence
 
 
 def generate_stress_timed_sequence(n_events_per_phrase: int,
                                    syllable_ioi: int = 500,
                                    n_phrases: int = 1,
                                    rng=None) -> Sequence:
-    """Description here"""
+    """
+    This function generates a Sequence object with inter-onset intervals (IOIs) that conform to the rhythmic
+    structure of stress-timed languages. One can provide the length of a 'phrase' (or 'cluster') as n_events_per_phrase.
+    In one 'sentence', one would have n_phrases of n_events_per_phrase.
+
+    The phrases all have the same duration, but are made up of different combinations of IOIs.
+
+    Parameters
+    ----------
+    n_events_per_phrase : int
+        The number of events in a single 'phrase'.
+    syllable_ioi : int, optional
+        The duration of the reference IOI in milliseconds. The default is 500.
+    n_phrases : int, optional
+        The number of phrases in the sequence. The default is 1.
+    rng : numpy.random.Generator, optional
+        A NumPy Generator object, if none is supplied will default to numpy.random.default_rng()
+
+    Returns
+    -------
+    Sequence
+        A newly created Sequence object.
+
+    Examples
+    --------
+    >>> rng = np.random.default_rng(seed=123)
+    >>> seq = generate_stress_timed_sequence(n_events_per_phrase=4, n_phrases=3, rng=rng)
+    >>> print(seq.onsets)
+    [   0.    62.5  750.  1312.5 2000.  2062.5 2937.5 3187.5 4000.  4250.
+     4437.5 4812.5]
+
+    Notes
+    -----
+    Both the methodology and the code are based on/taken from [1]_.
+
+    References
+    ----------
+    .. [1] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
+       Journal of Language Evolution, 2(1), 4-19.
+       https://doi.org/10.1093/jole/lzx002
+
+
+    """
     if rng is None:
         rng = np.random.default_rng()
 
     start_of_pattern = syllable_ioi
 
     ioi_types = (np.arange(start=1, stop=16) / 8) * syllable_ioi
-    # number of iois
-    n_iois = int(n_events_per_phrase * n_phrases)
 
     iois = np.array([])
 

@@ -47,8 +47,8 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
     >>> plot_single_sequence(seq)  # doctest: +SKIP
 
-    >>> onsets = [0, 500, 1000, 1500]
-    >>> plot_single_sequence(onsets)  # doctest: +SKIP
+    >>> seq = [0, 500, 1000, 1500]
+    >>> plot_single_sequence(seq)  # doctest: +SKIP
 
     """
 
@@ -92,12 +92,12 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
 
 
 def plot_multiple_sequences(sequences: Iterable,
-                           style: str = 'seaborn',
-                           sequence_names: Iterable[str] = None,
-                           title: str = None,
-                           linewidths: int = None,
-                           figsize: tuple = None,
-                           suppress_display: bool = False):
+                            style: str = 'seaborn',
+                            sequence_names: Iterable[str] = None,
+                            title: str = None,
+                            linewidths: int = None,
+                            figsize: tuple = None,
+                            suppress_display: bool = False):
     """
 
     Plot multiple sequences in one plot. Either pass it an iterable (e.g. list) of Sequence objects,
