@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>combio.core.sequence &mdash; Combio package  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Combio package
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../package/index.html">Package contents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Combio package</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>combio.core.sequence</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for combio.core.sequence</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>  <span class="c1"># this is to make sure we can type hint the return value in a class method</span>
+<span class="kn">from</span> <span class="nn">fractions</span> <span class="kn">import</span> <span class="n">Fraction</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">combio.core.helpers</span>
+
+
+<span class="k">class</span> <span class="nc">BaseSequence</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the most basic of classes that the Sequence class inherits from, as well as the Rhythm class.</span>
+<span class="sd">    It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).</span>
+
+<span class="sd">    The BaseSequence class dictates that a sequence can either be metrical or not.</span>
+<span class="sd">    The default is non-metrical, meaning that if there are n onset values (i.e. t values),</span>
+<span class="sd">    there are n-1 IOIs. This is what people will need in most cases.</span>
+<span class="sd">    Metrical sequences have an additional final IOI (so they end with a gap of silence).</span>
+<span class="sd">    This is what you will need in cases with e.g. rhythmical/musical sequences.</span>
+
+<span class="sd">    The BaseSequence class protects against impossible values for the IOIs, as well as for the</span>
+<span class="sd">    event onsets (t values).</span>
+
+<span class="sd">    Finally, remember that the first event onset is always at t = 0!</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    iois : NumPy 1-D array</span>
+<span class="sd">        Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.</span>
+<span class="sd">        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs</span>
+<span class="sd">        and onsets.</span>
+<span class="sd">    metrical : bool</span>
+<span class="sd">            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,</span>
+<span class="sd">            sequence has an equal number of IOIs and event onsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">iois</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span>
+                 <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialization of BaseSequence class.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Save attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">=</span> <span class="n">iois</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span> <span class="o">=</span> <span class="n">metrical</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">iois</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The inter-onset intervals (IOIs) of the Sequence object. These are the intervals in milliseconds</span>
+<span class="sd">        between the onset of an event, and the onset of the next event. This is the most important</span>
+<span class="sd">        attribute of the Sequence class and is used throughout.</span>
+
+<span class="sd">        This getter returns a copy of the IOIs instead of</span>
+<span class="sd">        the actual variable.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iois</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@iois</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">iois</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;IOI setter. Checks against negative IOIs.&quot;&quot;&quot;</span>
+
+        <span class="c1"># We always want a NumPy array:</span>
+        <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">iois</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Inter-onset intervals (IOIs) cannot be zero or negative.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iois</span> <span class="o">=</span> <span class="n">iois</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">onsets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Returns the event onsets (t values) in milliseconds on the basis of the sequence objects&#39;</span>
+<span class="sd">        inter-onset intervals (IOIs). An additional first onset (t=0) is additionally prepended.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="nd">@onsets</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">onsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Setter for the event onsets. First onset must be zero, and there cannot be two onsets that occur</span>
+<span class="sd">        simultaneously.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Onsets may be in the wrong order, so sort first</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+        <span class="c1"># Check whether first onset is 0 (requirement of this package)</span>
+        <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;First onset is not 0&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">values</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot have two onsets that occur simultaneously.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set the IOIs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot change onsets of metrical sequences. This is because we need to know the final &quot;</span>
+                             <span class="s2">&quot;IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Sequence"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence">[docs]</a><span class="k">class</span> <span class="nc">Sequence</span><span class="p">(</span><span class="n">BaseSequence</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Sequence class is the most important class in this package. It is used as the basis</span>
+<span class="sd">    for many functions as it contains timing information in the form of inter-onset intervals (IOIs; the times between</span>
+<span class="sd">    the onset of an event, and the onset of the next event) and event onsets (i.e. `t` values).</span>
+<span class="sd">    IOIs are what we use to construct `Sequence` objects.</span>
+
+<span class="sd">    The most basic way of constructing a `Sequence` object is by passing it a list (or other iterable) of IOIs.</span>
+<span class="sd">    However, the different class methods (e.g. `Sequence.generate_isochronous()`) may also be used.</span>
+
+<span class="sd">    This class additionally contains methods and attributes to, for instance, get the event onset values, to</span>
+<span class="sd">    change the tempo, add Gaussian noise, or to plot the `Sequence` object using matplotlib.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    iois : NumPy 1-D array</span>
+<span class="sd">        Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.</span>
+<span class="sd">        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs</span>
+<span class="sd">        and onsets.</span>
+<span class="sd">    metrical : bool</span>
+
+<span class="sd">    name : str</span>
+<span class="sd">        If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,</span>
+<span class="sd">        or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; iois = [500, 400, 600]</span>
+<span class="sd">    &gt;&gt;&gt; seq = Sequence(iois)</span>
+<span class="sd">    &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">    [   0.  500.  900. 1500.]</span>
+
+<span class="sd">    &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">    &gt;&gt;&gt; print(len(seq.iois))</span>
+<span class="sd">    4</span>
+<span class="sd">    &gt;&gt;&gt; print(len(seq.onsets))</span>
+<span class="sd">    5</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Sequence.__init__"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">iois</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span>
+                 <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a Sequence class on the basis of inter-onset intervals (IOIs).</span>
+<span class="sd">        When metrical is &#39;True&#39;, the sequence contains an equal number of IOIs and event onsets.</span>
+<span class="sd">        If &#39;False&#39; (the default), the sequence contains n event onsets, and n-1 IOIs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        iois : iterable</span>
+<span class="sd">            An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical</span>
+<span class="sd">            sequences.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; iois = [500, 400, 600, 400]</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence(iois)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">        [   0.  500.  900. 1500. 1900.]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Call super init method</span>
+        <span class="n">BaseSequence</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iois</span><span class="o">=</span><span class="n">iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">)</span>
+
+        <span class="c1"># Additionally save the provided name (may be None)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Object of type Sequence (metrical)</span><span class="se">\n</span><span class="s2">Sequence name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> events</span><span class="se">\n</span><span class="s2">IOIs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="si">}</span><span class="se">\n</span><span class="s2">Onsets: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Object of type Sequence (non-metrical)</span><span class="se">\n</span><span class="s2">Sequence name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> events</span><span class="se">\n</span><span class="s2">IOIs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="si">}</span><span class="se">\n</span><span class="s2">Onsets: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_join_sequences</span><span class="p">([</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Sequence.from_integer_ratios"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.from_integer_ratios">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_integer_ratios</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                            <span class="n">numerators</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span>
+                            <span class="n">value_of_one_in_ms</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                            <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        This class method can be used to construct a new Sequence object on the basis of &#39;integer ratios&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numerators : iterable</span>
+<span class="sd">            Contains the numerators of the integer ratios. For instance: [1, 2, 4]</span>
+<span class="sd">        value_of_one_in_ms : int</span>
+<span class="sd">            This represents the duration of the &#39;1&#39; numerator in milliseconds. If the numerators do not contain a</span>
+<span class="sd">            1, multiples of this value are used. For instance, a sequence of [2, 4] with value_of_one_in_ms=500</span>
+<span class="sd">            would be a Sequence with IOIs: [1000 2000].</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).</span>
+<span class="sd">            Defaults to &#39;False&#39;.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly constructed Sequence object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.from_integer_ratios(numerators=[1, 2, 4], value_of_one_in_ms=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [ 500. 1000. 2000.]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">numerators</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">numerators</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">numerators</span> <span class="o">*</span> <span class="n">value_of_one_in_ms</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.from_onsets"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.from_onsets">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_onsets</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">onsets</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span>
+                    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method that can be used to generate a new Sequence object on the basis of event onsets.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        onsets: iterable</span>
+<span class="sd">            An iterable of event onsets which must start from 0, e.g.: [0, 500, 1000]</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly constructed Sequence object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.from_onsets([0, 500, 1000])</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [500. 500.]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">onsets</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.generate_random_normal"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.generate_random_normal">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_normal</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                               <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                               <span class="n">mu</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                               <span class="n">sigma</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                               <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">metrical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method that generates a Sequence object with random inter-onset intervals (IOIs) based on the normal</span>
+<span class="sd">        distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The desired number of events in the sequence.</span>
+<span class="sd">        mu : int</span>
+<span class="sd">            The mean of the normal distribution.</span>
+<span class="sd">        sigma : int</span>
+<span class="sd">            The standard deviation of the normal distribution.</span>
+<span class="sd">        rng : numpy.random.Generator, optional</span>
+<span class="sd">            A Generator object. If not supplied NumPy&#39;s random.default_rng() is used.</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).</span>
+<span class="sd">            Defaults to &#39;False&#39;.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly created Sequence object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; generator = np.random.default_rng(seed=123)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, rng=generator)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [451. 482. 564. 510.]</span>
+
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, metrical=True)</span>
+<span class="sd">        &gt;&gt;&gt; len(seq.onsets) == len(seq.iois)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Illegal value passed to &#39;metrical&#39; argument. Can only be True or False.&quot;</span><span class="p">)</span>
+
+        <span class="n">round_iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_iois</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">round_iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.generate_random_uniform"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.generate_random_uniform">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_uniform</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                                <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                <span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The desired number of events in the sequence.</span>
+<span class="sd">        a : int</span>
+<span class="sd">            The left bound of the uniform distribution.</span>
+<span class="sd">        b : int</span>
+<span class="sd">            The right bound of the uniform distribution.</span>
+<span class="sd">        rng : numpy.random.Generator, optional</span>
+<span class="sd">            A Generator object. If not supplied NumPy&#39;s random.default_rng() is used.</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).</span>
+<span class="sd">            Defaults to &#39;False&#39;.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly created Sequence object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; generator = np.random.default_rng(seed=123)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_uniform(n=5, a=400, b=600, rng=generator)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [536. 411. 444. 437.]</span>
+
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_uniform(n=5, a=400, b=600, metrical=True)</span>
+<span class="sd">        &gt;&gt;&gt; len(seq.onsets) == len(seq.iois)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Illegal value passed to &#39;metrical&#39; argument. Can only be True or False.&quot;</span><span class="p">)</span>
+
+        <span class="n">round_iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">b</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_iois</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">round_iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.generate_random_poisson"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.generate_random_poisson">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_poisson</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                                <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                <span class="n">lam</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The desired number of events in the sequence.</span>
+<span class="sd">        lam : int</span>
+<span class="sd">            The desired value for lambda.</span>
+<span class="sd">        rng : numpy.random.Generator, optional</span>
+<span class="sd">            A Generator object, if none is supplied NumPy&#39;s random.default_rng() is used.s</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether there&#39;s an additional final IOI (for use in rhythmic sequences that adhere to a metrical</span>
+<span class="sd">            grid)</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly created Sequence object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; generator = np.random.default_rng(123)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_poisson(n=5, lam=500, rng=generator)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [512. 480. 476. 539.]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">metrical</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">metrical</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Illegal value passed to &#39;metrical&#39; argument. Can only be True or False.&quot;</span><span class="p">)</span>
+
+        <span class="n">round_iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">lam</span><span class="o">=</span><span class="n">lam</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_iois</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">round_iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.generate_random_exponential"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.generate_random_exponential">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_exponential</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                                    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                    <span class="n">lam</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                                    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">metrical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                                    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The desired number of events in the sequence.</span>
+<span class="sd">        lam : int</span>
+<span class="sd">           The desired value for lambda.</span>
+<span class="sd">        rng : numpy.random.Generator, optional</span>
+<span class="sd">            A Generator object, e.g. np.default_rng(seed=12345)</span>
+<span class="sd">        metrical : bool, optional</span>
+<span class="sd">            Indicates whether there&#39;s an additional final IOI (for use in rhythmic sequences that adhere to a metrical</span>
+<span class="sd">            grid)</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Returns an object of class Sequence.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; generator = np.random.default_rng(seed=123)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_exponential(n=5, lam=500, rng=generator)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [298.  59. 126. 154.]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Illegal value passed to &#39;metrical&#39; argument. Can only be True or False.&quot;</span><span class="p">)</span>
+
+        <span class="n">round_iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="n">lam</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_iois</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">round_iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.generate_isochronous"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.generate_isochronous">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_isochronous</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                             <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">ioi</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">metrical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.</span>
+<span class="sd">        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The desired number of events in the sequence.</span>
+<span class="sd">        ioi : int</span>
+<span class="sd">            The inter-onset interval to be used between all events.</span>
+<span class="sd">        metrical : bool</span>
+<span class="sd">            Indicates whether there&#39;s an additional final IOI (for use in rhythmic sequences that adhere to a metrical</span>
+<span class="sd">            grid)</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            If desired, one can give a sequence a name. This is for instance used when printing the sequence,</span>
+<span class="sd">            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence</span>
+<span class="sd">            A newly created Sequence object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [500. 500. 500. 500.]</span>
+<span class="sd">        &gt;&gt;&gt; print(len(seq.onsets))</span>
+<span class="sd">        5</span>
+<span class="sd">        &gt;&gt;&gt; print(len(seq.iois))</span>
+<span class="sd">        4</span>
+
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500, metrical=True)</span>
+<span class="sd">        &gt;&gt;&gt; print(len(seq.onsets))</span>
+<span class="sd">        5</span>
+<span class="sd">        &gt;&gt;&gt; print(len(seq.iois))</span>
+<span class="sd">        5</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="k">elif</span> <span class="n">metrical</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">n_iois</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Illegal value passed to &#39;metrical&#39; argument. Can only be True or False.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">([</span><span class="n">ioi</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_iois</span><span class="p">),</span> <span class="n">metrical</span><span class="o">=</span><span class="n">metrical</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="c1"># Manipulation methods</span>
+<div class="viewcode-block" id="Sequence.add_noise_gaussian"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.add_noise_gaussian">[docs]</a>    <span class="k">def</span> <span class="nf">add_noise_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">noise_sd</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                           <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)</span>
+<span class="sd">        of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation</span>
+<span class="sd">        of &#39;noise_sd&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        noise_sd : int or float</span>
+<span class="sd">            The standard deviation of the normal distribution used for adding in noise.</span>
+<span class="sd">        rng : numpy.random.Generator, optional</span>
+<span class="sd">            A Numpy Generator object. If none is supplied, Numpy&#39;s random.default_rng() is used.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; gen = np.random.default_rng(seed=123)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [500. 500. 500. 500.]</span>
+<span class="sd">        &gt;&gt;&gt; seq.add_noise_gaussian(noise_sd=50, rng=gen)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [450.54395 481.61066 564.39624 509.69873]</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">        [   0.       450.54395  932.1546  1496.5508  2006.2495 ]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">noise_sd</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="o">.</span><span class="n">size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.change_tempo"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.change_tempo">[docs]</a>    <span class="k">def</span> <span class="nf">change_tempo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">factor</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in</span>
+<span class="sd">        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger</span>
+<span class="sd">        inter-onset intervals).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factor : int or float</span>
+<span class="sd">            Tempo change factor. E.g. &#39;2&#39; means twice as fast. 0.5 means twice as slow.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">        [   0.  500. 1000. 1500. 2000.]</span>
+<span class="sd">        &gt;&gt;&gt; seq.change_tempo(2)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.onsets)</span>
+<span class="sd">        [   0.  250.  500.  750. 1000.]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">factor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">/=</span> <span class="n">factor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide a factor larger than 0.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Sequence.change_tempo_linearly"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.change_tempo_linearly">[docs]</a>    <span class="k">def</span> <span class="nf">change_tempo_linearly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">total_change</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).</span>
+<span class="sd">        It divides the IOIs by a vector linearly spaced between 1 and total_change.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        total_change : int or float</span>
+<span class="sd">            Total tempo change at the end of the Sequence compared to the beginning.</span>
+<span class="sd">            So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.</span>
+<span class="sd">            A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [500. 500. 500. 500.]</span>
+<span class="sd">        &gt;&gt;&gt; seq.change_tempo_linearly(total_change=2)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [500. 375. 300. 250.]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_change</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="o">.</span><span class="n">size</span><span class="p">)</span></div>
+
+    <span class="c1"># Visualization</span>
+<div class="viewcode-block" id="Sequence.plot"><a class="viewcode-back" href="../../../package/core.html#combio.core.sequence.Sequence.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span>
+             <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">linewidth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+             <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+             <span class="n">suppress_display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the Sequence object as an event plot on the basis of the event onsets.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        style : str, optional</span>
+<span class="sd">            Matplotlib style to use for the plot. Defaults to &#39;seaborn&#39;. Please refer to the matplotlib</span>
+<span class="sd">            docs for other styles.</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            If desired, one can provide a title for the plot. This takes precedence over using the</span>
+<span class="sd">            StimSequence name as the title of the plot (if the object has one).</span>
+<span class="sd">        linewidth : int, optional</span>
+<span class="sd">            The desired width of the bars (events) in milliseconds. Defaults to 50 milliseconds.</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            The desired figure size in inches as a tuple: (width, height).</span>
+<span class="sd">        suppress_display : bool, optional</span>
+<span class="sd">            If True, the plot is only returned, and not displayed via plt.show()</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : Figure</span>
+<span class="sd">            A matplotlib Figure object</span>
+<span class="sd">        ax : Axes</span>
+<span class="sd">            A matplotlib Axes object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; seq.plot()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># If a title was provided that has preference. If none is provided,</span>
+        <span class="c1"># use the Sequence object&#39;s name. Otherwise use None.</span>
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="c1"># Linewidths</span>
+        <span class="n">linewidths</span> <span class="o">=</span> <span class="p">[</span><span class="n">linewidth</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">plot_sequence_single</span><span class="p">(</span><span class="n">onsets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                                                           <span class="n">linewidths</span><span class="o">=</span><span class="n">linewidths</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+                                                           <span class="n">suppress_display</span><span class="o">=</span><span class="n">suppress_display</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the total duration of the Sequence object in milliseconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get the total duration of the Sequence object in seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">integer_ratios</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This property calculates how to describe a sequence of IOIs in integer ratio numerators from</span>
+<span class="sd">        the total duration of the sequence by finding the least common multiplier.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.</span>
+<span class="sd">        This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,</span>
+<span class="sd">        so this method returns the numerators [1, 2, 4, 1].</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        For an example of this method being used, see:</span>
+
+<span class="sd">        Jacoby, N., &amp; McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm</span>
+<span class="sd">        Revealed Cross-culturally by Iterated Reproduction.</span>
+<span class="sd">        Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence([250, 500, 1000, 250])</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.integer_ratios)</span>
+<span class="sd">        [1 2 4 1]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fractions</span> <span class="o">=</span> <span class="p">[</span><span class="n">Fraction</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">ioi</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">duration_ms</span><span class="p">))</span> <span class="k">for</span> <span class="n">ioi</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">]</span>
+        <span class="n">lcm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lcm</span><span class="o">.</span><span class="n">reduce</span><span class="p">([</span><span class="n">fr</span><span class="o">.</span><span class="n">denominator</span> <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">fractions</span><span class="p">])</span>
+
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">fr</span><span class="o">.</span><span class="n">numerator</span> <span class="o">*</span> <span class="n">lcm</span> <span class="o">/</span> <span class="n">fr</span><span class="o">.</span><span class="n">denominator</span><span class="p">)</span> <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="n">fractions</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">interval_ratios_from_dyads</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This property returns sequential interval ratios,</span>
+<span class="sd">        calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})</span>
+
+<span class="sd">        Note that for n IOIs this property returns n-1 ratios.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        The method follows the methodology from:</span>
+
+<span class="sd">        Roeske, T. C., Tchernichovski, O., Poeppel, D., &amp; Jacoby, N. (2020).</span>
+<span class="sd">        Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),</span>
+<span class="sd">        3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.from_integer_ratios([2, 2, 1, 1], value_of_one_in_ms=500)</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">        [1000. 1000.  500.  500.]</span>
+<span class="sd">        &gt;&gt;&gt; print(seq.interval_ratios_from_dyads)</span>
+<span class="sd">        [0.5       0.6666667 0.5      ]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span></div>
+
+
+<span class="k">def</span> <span class="nf">_join_sequences</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This helper function joins metrical Sequence objects (it is used in the __add__ of Sequence).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check whether iterable was passed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please pass this function a list or other iterable object.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check whether all the objects are of the same type</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;This function can only join multiple Sequence objects.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Sequence objects need to be metrical:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">metrical</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only metrical Sequence objects can be joined. This is intentional.&quot;</span><span class="p">)</span>
+
+    <span class="n">iois</span> <span class="o">=</span> <span class="p">[</span><span class="n">sequence</span><span class="o">.</span><span class="n">iois</span> <span class="k">for</span> <span class="n">sequence</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">]</span>
+    <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jelle van der Werff &amp; Yannick Jadoul.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

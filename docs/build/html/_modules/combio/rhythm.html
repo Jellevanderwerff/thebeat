@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>combio.rhythm &mdash; Combio package  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Combio package
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package/index.html">Package contents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Combio package</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>combio.rhythm</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for combio.rhythm</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">core</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">skimage</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">mingus.containers</span> <span class="kn">import</span> <span class="n">Bar</span><span class="p">,</span> <span class="n">Track</span>
+<span class="kn">from</span> <span class="nn">mingus.extra</span> <span class="kn">import</span> <span class="n">lilypond</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Iterable</span>
+
+
+<div class="viewcode-block" id="Rhythm"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm">[docs]</a><span class="k">class</span> <span class="nc">Rhythm</span><span class="p">(</span><span class="n">core</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">BaseSequence</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iois</span><span class="p">,</span> <span class="n">n_bars</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="p">):</span>
+        <span class="c1"># Save attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span> <span class="o">=</span> <span class="n">time_signature</span>  <span class="c1"># Used for metrical sequences</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span> <span class="o">=</span> <span class="n">beat_ms</span>  <span class="c1"># Used for metrical sequences</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bars</span> <span class="o">=</span> <span class="n">n_bars</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_bars</span> <span class="o">*</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">beat_ms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided inter-onset intervals do not amount to whole bars.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Call initializer of super class</span>
+        <span class="n">core</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">BaseSequence</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Object of type Rhythm.</span><span class="se">\n</span><span class="s2">Time signature: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span><span class="si">}</span><span class="se">\n</span><span class="s2">Number of bars: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bars</span><span class="si">}</span><span class="se">\n</span><span class="s2">Quarternote (&quot;</span> \
+               <span class="sa">f</span><span class="s2">&quot;ms): </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span><span class="si">}</span><span class="se">\n</span><span class="s2">Number of events: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">IOIs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span> \
+               <span class="sa">f</span><span class="s2">&quot;Onsets:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_join_rhythms</span><span class="p">([</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">note_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get note values from the IOIs, based on beat_ms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ratios</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span> <span class="o">/</span> <span class="mi">4</span>
+
+        <span class="n">note_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">//</span> <span class="n">ratio</span><span class="p">)</span> <span class="k">for</span> <span class="n">ratio</span> <span class="ow">in</span> <span class="n">ratios</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">note_values</span>
+
+<div class="viewcode-block" id="Rhythm.from_note_values"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm.from_note_values">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_note_values</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">note_values</span><span class="p">,</span> <span class="n">time_signature</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">beat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Almost same as standard initialization, except that we don&#39;t provide the number of bars but calculate those.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="n">note</span> <span class="o">*</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">note</span> <span class="ow">in</span> <span class="n">note_values</span><span class="p">])</span>
+
+        <span class="n">n_bars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">n_bars</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided note values do not amount to whole bars.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_bars</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_bars</span><span class="p">)</span>
+
+        <span class="n">iois</span> <span class="o">=</span> <span class="n">ratios</span> <span class="o">*</span> <span class="n">beat_ms</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span>
+                   <span class="n">time_signature</span><span class="o">=</span><span class="n">time_signature</span><span class="p">,</span>
+                   <span class="n">beat_ms</span><span class="o">=</span><span class="n">beat_ms</span><span class="p">,</span>
+                   <span class="n">n_bars</span><span class="o">=</span><span class="n">n_bars</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rhythm.from_iois"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm.from_iois">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_iois</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">iois</span><span class="p">,</span> <span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="p">):</span>
+        <span class="n">n_bars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">beat_ms</span>
+
+        <span class="k">if</span> <span class="n">n_bars</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided note values do not amount to whole bars.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_bars</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_bars</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="n">n_bars</span><span class="p">,</span> <span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rhythm.generate_random_rhythm"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm.generate_random_rhythm">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_random_rhythm</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                               <span class="n">allowed_note_values</span><span class="p">,</span>
+                               <span class="n">n_bars</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">time_signature</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                               <span class="n">beat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+                               <span class="n">events_per_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns a randomly generated integer ratio Sequence on the basis of the provided params.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+        <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">bar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bars</span><span class="p">):</span>
+            <span class="n">all_ratios</span> <span class="o">=</span> <span class="n">_all_rhythmic_ratios</span><span class="p">(</span><span class="n">allowed_note_values</span><span class="p">,</span>
+                                              <span class="n">time_signature</span><span class="p">,</span>
+                                              <span class="n">target_n</span><span class="o">=</span><span class="n">events_per_bar</span><span class="p">)</span>
+            <span class="n">ratios</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">all_ratios</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+            <span class="n">new_iois</span> <span class="o">=</span> <span class="n">ratios</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">beat_ms</span>
+
+            <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">iois</span><span class="p">,</span> <span class="n">new_iois</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="n">time_signature</span><span class="o">=</span><span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="o">=</span><span class="n">beat_ms</span><span class="p">,</span> <span class="n">n_bars</span><span class="o">=</span><span class="n">n_bars</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rhythm.generate_isochronous"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm.generate_isochronous">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">generate_isochronous</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">n_bars</span><span class="p">,</span> <span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="p">):</span>
+
+        <span class="n">n_iois</span> <span class="o">=</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_bars</span>
+
+        <span class="n">iois</span> <span class="o">=</span> <span class="n">n_iois</span> <span class="o">*</span> <span class="p">[</span><span class="n">beat_ms</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">iois</span><span class="o">=</span><span class="n">iois</span><span class="p">,</span>
+                   <span class="n">n_bars</span><span class="o">=</span><span class="n">n_bars</span><span class="p">,</span>
+                   <span class="n">time_signature</span><span class="o">=</span><span class="n">time_signature</span><span class="p">,</span>
+                   <span class="n">beat_ms</span><span class="o">=</span><span class="n">beat_ms</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rhythm.plot_rhythm"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.Rhythm.plot_rhythm">[docs]</a>    <span class="k">def</span> <span class="nf">plot_rhythm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">print_staff</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suppress_display</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># create initial bar</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Track</span><span class="p">()</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">Bar</span><span class="p">(</span><span class="n">meter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span><span class="p">)</span>
+
+        <span class="c1"># keep track of the index of the note_value</span>
+        <span class="n">note_i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># loop over the note values of the sequence</span>
+
+        <span class="k">for</span> <span class="n">note_value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">note_values</span><span class="p">:</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">place_notes</span><span class="p">(</span><span class="s1">&#39;G-4&#39;</span><span class="p">,</span> <span class="n">note_value</span><span class="p">)</span>
+
+            <span class="c1"># if bar is full, create new bar and add bar to track</span>
+            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">current_beat</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">add_bar</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">Bar</span><span class="p">(</span><span class="n">meter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span><span class="p">)</span>
+
+            <span class="n">note_i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># If final bar was not full yet, add a rest for the remaining duration</span>
+        <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">current_beat</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rest_value</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">b</span><span class="o">.</span><span class="n">space_left</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">round</span><span class="p">(</span><span class="n">rest_value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">rest_value</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The rhythm could not be plotted. Most likely because the IOIs cannot &quot;</span>
+                                 <span class="s2">&quot;be (easily) captured in musical notation. This for instance happens after &quot;</span>
+                                 <span class="s2">&quot;using one of the tempo manipulation methods.&quot;</span><span class="p">)</span>
+
+            <span class="n">b</span><span class="o">.</span><span class="n">place_rest</span><span class="p">(</span><span class="n">rest_value</span><span class="p">)</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">add_bar</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">_get_lp_from_track</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">print_staff</span><span class="o">=</span><span class="n">print_staff</span><span class="p">)</span>
+
+        <span class="n">_plot_lp</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">suppress_display</span><span class="o">=</span><span class="n">suppress_display</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RhythmTrial"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial">[docs]</a><span class="k">class</span> <span class="nc">RhythmTrial</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">stimuli</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">]],</span>
+                 <span class="n">rhythm</span><span class="p">:</span> <span class="n">Rhythm</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># Check if correct objects were passed for stimuli</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stimuli</span><span class="p">,</span> <span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">):</span>
+            <span class="n">stimuli</span> <span class="o">=</span> <span class="p">[</span><span class="n">stimuli</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhythm</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">stimuli</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provided either a Stimulus object, &quot;</span>
+                             <span class="s2">&quot;or an iterable of Stimulus objects as the first argument&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if correct objects was passed for rhythm</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhythm</span><span class="p">,</span> <span class="n">Rhythm</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide a Rhythm object as the second argument&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize namedtuple</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Event</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Event&#39;</span><span class="p">,</span> <span class="s1">&#39;layer onset ioi duration note_value samples&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Then add events as namedtuples to self.events</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layer_id</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">stimuli</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">rhythm</span><span class="p">,</span> <span class="n">stimuli</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">)</span>
+
+        <span class="c1"># Save provided trial name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="c1"># Save rhythmic attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span> <span class="o">=</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">time_signature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span> <span class="o">=</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">beat_ms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bars</span> <span class="o">=</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">n_bars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">note_values</span> <span class="o">=</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">note_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bar_duration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rhythm</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">n_bars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_duration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rhythm</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span>
+
+        <span class="c1"># Save stimulus attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">n_channels</span>
+
+        <span class="c1"># Make initial sound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_sound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>
+
+        <span class="c1"># We start with one layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">_add_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_events</span><span class="p">,</span> <span class="n">rhythm</span><span class="p">,</span> <span class="n">stims</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">):</span>
+
+        <span class="n">events</span> <span class="o">=</span> <span class="n">current_events</span>
+
+        <span class="c1"># Make some additional variables</span>
+        <span class="n">event_durations</span> <span class="o">=</span> <span class="p">[</span><span class="n">stim</span><span class="o">.</span><span class="n">duration_ms</span> <span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stims</span><span class="p">]</span>
+        <span class="n">stim_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">stim</span><span class="o">.</span><span class="n">samples</span> <span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stims</span><span class="p">]</span>
+
+        <span class="c1"># Save each event to self.events as a named tuple</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">layer_id</span><span class="p">,</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">iois</span><span class="p">,</span> <span class="n">event_durations</span><span class="p">,</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">note_values</span><span class="p">,</span> <span class="n">stim_samples</span><span class="p">):</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Event</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">events</span>
+
+    <span class="k">def</span> <span class="nf">_make_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">provided_events</span><span class="p">):</span>
+        <span class="c1"># Generate an array of silence that has the length of all the onsets + one final stimulus.</span>
+        <span class="c1"># In the case of a metrical sequence, we add the final ioi</span>
+        <span class="c1"># The dtype is important, because that determines the values that the magnitudes can take.</span>
+
+        <span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_duration</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">!=</span> <span class="n">length</span><span class="p">:</span>  <span class="c1"># let&#39;s avoid rounding issues</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Number of frames was rounded off to nearest integer ceiling. &quot;</span>
+                          <span class="s2">&quot;This shouldn&#39;t be much of a problem.&quot;</span><span class="p">)</span>
+
+        <span class="n">array_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">array_length</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">array_length</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">provided_events</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">start_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">onset</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+                    <span class="n">end_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_pos</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">]</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="n">samples</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not make sound. Probably the final stimulus is longer than the &quot;</span>
+                                         <span class="s2">&quot;final note value.&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">start_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">onset</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span>
+                    <span class="n">end_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_pos</span> <span class="o">+</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">duration</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="n">samples</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Could not make sound. Probably the final stimulus is longer than the &quot;</span>
+                                         <span class="s2">&quot;final note value.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Sound was normalized to avoid distortion. If undesirable, change amplitude of the stims.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">normalize_audio</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">samples</span>
+
+<div class="viewcode-block" id="RhythmTrial.add_layer"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial.add_layer">[docs]</a>    <span class="k">def</span> <span class="nf">add_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rhythm</span><span class="p">:</span> <span class="n">Rhythm</span><span class="p">,</span> <span class="n">stimuli</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">]]):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can, for now, only handle 4 layers.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if right objects were passed</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhythm</span><span class="p">,</span> <span class="n">Rhythm</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide a Rhythm object as the first argument.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">)</span> <span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stimuli</span><span class="p">,</span>
+                                                                                                   <span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide either an iterable (e.g. a list) with Stimulus objects as the second &quot;</span>
+                             <span class="s2">&quot;argument, or a single Stimulus object.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># multiply if Stimulus object was passed</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stimuli</span><span class="p">,</span> <span class="n">core</span><span class="o">.</span><span class="n">stimulus</span><span class="o">.</span><span class="n">Stimulus</span><span class="p">):</span>
+            <span class="n">stimuli</span> <span class="o">=</span> <span class="p">[</span><span class="n">stimuli</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhythm</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
+
+        <span class="c1"># fs</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">stimulus</span><span class="o">.</span><span class="n">fs</span> <span class="o">==</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fs</span> <span class="k">for</span> <span class="n">stimulus</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided stimuli do not all have the same sampling frequency.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided stimuli have a different sampling frequency than the stimuli &quot;</span>
+                             <span class="s2">&quot;currently in this trial.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># n channels</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">stimulus</span><span class="o">.</span><span class="n">n_channels</span> <span class="k">for</span> <span class="n">stimulus</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided stimuli do not all have the same number of channels.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided stimuli do not have the same number of channels as the stimuli &quot;</span>
+                             <span class="s2">&quot;currently in this trial.&quot;</span><span class="p">)</span>
+        <span class="c1"># beat ms</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">beat_ms</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided rhythm has a different beat_ms than the rhythm &quot;</span>
+                             <span class="s2">&quot;currently in this trial.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># time signature</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rhythm</span><span class="o">.</span><span class="n">time_signature</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The provided rhythm has a different time signature than the rhythm &quot;</span>
+                             <span class="s2">&quot;currently in this trial.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># add layer to self.events</span>
+        <span class="n">layer_id</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">stimuli</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span> <span class="n">rhythm</span><span class="p">,</span> <span class="n">stimuli</span><span class="p">,</span> <span class="n">layer_id</span><span class="p">)</span>
+
+        <span class="c1"># make sound and save to self.samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_sound</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">)</span>
+
+        <span class="c1"># add one to the number of layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="RhythmTrial.play"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial.play">[docs]</a>    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">play_samples</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span><span class="p">,</span> <span class="n">loop</span><span class="p">,</span> <span class="n">metronome</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RhythmTrial.plot_rhythm"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial.plot_rhythm">[docs]</a>    <span class="k">def</span> <span class="nf">plot_rhythm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">filepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">print_staff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">lilypond_percussion_notes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">stem_directions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">suppress_display</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filepath</span>
+<span class="sd">        print_staff</span>
+<span class="sd">        lilypond_percussion_notes:</span>
+<span class="sd">            List of lilypond percussion notes for each layer. Defaults to [&#39;bd&#39;, &#39;snare&#39;, &#39;hihat&#39;].</span>
+<span class="sd">            See possible options here: https://lilypond.org/doc/v2.23/Documentation/notation/percussion-notes</span>
+<span class="sd">        stem_directions</span>
+<span class="sd">        suppress_display</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">lp</span> <span class="o">=</span> <span class="n">_get_lp_from_events</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">time_signature</span><span class="p">,</span>
+                                 <span class="n">print_staff</span><span class="o">=</span><span class="n">print_staff</span><span class="p">,</span>
+                                 <span class="n">lilypond_percussion_notes</span><span class="o">=</span><span class="n">lilypond_percussion_notes</span><span class="p">,</span>
+                                 <span class="n">stem_directions</span><span class="o">=</span><span class="n">stem_directions</span><span class="p">)</span>
+
+        <span class="n">_plot_lp</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="p">,</span> <span class="n">suppress_display</span><span class="o">=</span><span class="n">suppress_display</span><span class="p">)</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Time signatures aren&#39;t implemented here yet! Forgot that...&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RhythmTrial.plot_waveform"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial.plot_waveform">[docs]</a>    <span class="k">def</span> <span class="nf">plot_waveform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Waveform of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Waveform of RhythmTrial&quot;</span>
+
+        <span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">plot_waveform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RhythmTrial.write_wav"><a class="viewcode-back" href="../../package/rhythm.html#combio.rhythm.RhythmTrial.write_wav">[docs]</a>    <span class="k">def</span> <span class="nf">write_wav</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_path</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span>
+                  <span class="n">metronome</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">metronome_amplitude</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes audio to disk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">write_wav</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">metronome</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beat_ms</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_join_rhythms</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can join multiple Rhythm objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check whether iterable was passed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please pass this function a list or other iterable object.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check whether all the objects are of the same type</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">rhythm</span><span class="p">,</span> <span class="n">Rhythm</span><span class="p">)</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You can only join multiple Rhythm objects.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">rhythm</span><span class="o">.</span><span class="n">time_signature</span> <span class="o">==</span> <span class="n">iterator</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">time_signature</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provided rhythms should have the same time signatures.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">rhythm</span><span class="o">.</span><span class="n">beat_ms</span> <span class="o">==</span> <span class="n">iterator</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">beat_ms</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Provided rhythms should have same tempo (beat_ms).&quot;</span><span class="p">)</span>
+
+    <span class="n">iois</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhythm</span><span class="o">.</span><span class="n">iois</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">]</span>
+    <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span>
+    <span class="n">n_bars</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">rhythm</span><span class="o">.</span><span class="n">n_bars</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">Rhythm</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="n">n_bars</span><span class="o">=</span><span class="n">n_bars</span><span class="p">,</span> <span class="n">time_signature</span><span class="o">=</span><span class="n">iterator</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">time_signature</span><span class="p">,</span> <span class="n">beat_ms</span><span class="o">=</span><span class="n">iterator</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">beat_ms</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_all_possibilities</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    I stole this code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">nums</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">dfs</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">left</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">left</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">dfs</span><span class="p">(</span><span class="n">left</span> <span class="o">-</span> <span class="n">val</span><span class="p">,</span> <span class="n">path</span> <span class="o">+</span> <span class="p">[</span><span class="n">val</span><span class="p">])</span>
+
+    <span class="n">dfs</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">_all_rhythmic_ratios</span><span class="p">(</span><span class="n">allowed_note_values</span><span class="p">,</span> <span class="n">time_signature</span><span class="p">,</span> <span class="n">target_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">common_denom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">lcm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">lcm</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">allowed_note_values</span><span class="p">),</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">allowed_numerators</span> <span class="o">=</span> <span class="n">common_denom</span> <span class="o">//</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">allowed_note_values</span><span class="p">)</span>
+    <span class="n">full_bar</span> <span class="o">=</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">time_signature</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">full_bar</span> <span class="o">*</span> <span class="n">common_denom</span>
+
+    <span class="n">possibilities</span> <span class="o">=</span> <span class="n">_all_possibilities</span><span class="p">(</span><span class="n">allowed_numerators</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+    <span class="n">out_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">/</span> <span class="n">common_denom</span><span class="p">)</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span>
+                <span class="n">possibilities</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">target_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">rhythm</span> <span class="k">for</span> <span class="n">rhythm</span> <span class="ow">in</span> <span class="n">out_list</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rhythm</span><span class="p">)</span> <span class="o">==</span> <span class="n">target_n</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No random rhythms exist that adhere to these parameters. &quot;</span>
+                             <span class="s2">&quot;Try providing different parameters.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out_list</span>
+
+
+<span class="k">def</span> <span class="nf">_get_lp_from_track</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">print_staff</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Internal method for plotting a mingus Track object via lilypond.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">remove_footers</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s2">\paper {</span><span class="se">\n</span><span class="s2">indent = 0\mm</span><span class="se">\n</span><span class="s2">line-width = 110\mm</span><span class="se">\n</span><span class="s2">oddHeaderMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">evenHeaderMarkup = &quot;&quot;</span>
+<span class="s2">oddFooterMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">evenFooterMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">} &quot;&quot;&quot;</span>
+    <span class="n">remove_staff</span> <span class="o">=</span> <span class="s1">&#39;{ \stopStaff \override Staff.Clef.color = #white&#39;</span>
+
+    <span class="k">if</span> <span class="n">print_staff</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">version &quot;2.10.33&quot;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">lilypond</span><span class="o">.</span><span class="n">from_Track</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">remove_footers</span>
+    <span class="k">elif</span> <span class="n">print_staff</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">lp</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">version &quot;2.10.33&quot;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">remove_staff</span> <span class="o">+</span> <span class="n">lilypond</span><span class="o">.</span><span class="n">from_Track</span><span class="p">(</span><span class="n">t</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">remove_footers</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong value specified for print_staff.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lp</span>
+
+
+<span class="k">def</span> <span class="nf">_get_lp_from_events</span><span class="p">(</span><span class="n">provided_events</span><span class="p">,</span>
+                        <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                        <span class="n">time_signature</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+                        <span class="n">print_staff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="n">lilypond_percussion_notes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">stem_directions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">provided_events</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;&#39;Rests&#39; are plotted as empty spaces, not as rests. Please check manually whether&quot;</span>
+                      <span class="s2">&quot;the plot makes sense.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">lilypond_percussion_notes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lilypond_percussion_notes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bd&#39;</span><span class="p">,</span> <span class="s1">&#39;snare&#39;</span><span class="p">,</span> <span class="s1">&#39;hihat&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">stem_directions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stem_directions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stem_directions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;\override Stem.direction = #&#39;</span> <span class="o">+</span> <span class="n">stem_direction</span> <span class="k">for</span> <span class="n">stem_direction</span> <span class="ow">in</span> <span class="n">stem_directions</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">n_layers</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can maximally plot three layers.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">print_staff</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">print_staff_lp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">print_staff_lp</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">stopStaff \override Staff.Clef.color = #white &quot;</span>
+
+    <span class="n">layers_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_layers</span><span class="p">):</span>
+        <span class="n">bars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">provided_events</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">layer</span> <span class="o">==</span> <span class="n">layer</span><span class="p">]</span>
+
+        <span class="n">bar</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">Bar</span><span class="p">(</span><span class="n">meter</span><span class="o">=</span><span class="n">time_signature</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+            <span class="n">note_value</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">note_value</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">place_rest</span><span class="p">(</span><span class="n">note_value</span><span class="p">)</span>  <span class="c1"># This is only to keep track of the number of notes in a bar</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">samples</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">note</span> <span class="o">=</span> <span class="n">lilypond_percussion_notes</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">note_value</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">note</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">note_value</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+            <span class="n">bar</span> <span class="o">+=</span> <span class="n">note</span>
+            <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">current_beat</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">length</span><span class="p">:</span>
+                <span class="n">bars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;{ &quot;</span> <span class="o">+</span> <span class="n">bar</span> <span class="o">+</span> <span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">Bar</span><span class="p">(</span><span class="n">meter</span><span class="o">=</span><span class="n">time_signature</span><span class="p">)</span>
+                <span class="n">bar</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="n">layers_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bars</span><span class="p">)</span>
+
+    <span class="n">voice_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;voiceOne&#39;</span><span class="p">,</span> <span class="s1">&#39;voiceTwo&#39;</span><span class="p">,</span> <span class="s1">&#39;voiceThree&#39;</span><span class="p">]</span>
+    <span class="n">layer_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;uno&#39;</span><span class="p">,</span> <span class="s1">&#39;dos&#39;</span><span class="p">,</span> <span class="s1">&#39;tres&#39;</span><span class="p">]</span>
+
+    <span class="n">string_firstbit</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">string_secondbit</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">new DrumStaff &lt;&lt; &#39;</span>
+
+    <span class="k">for</span> <span class="n">layer_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layers_list</span><span class="p">)):</span>
+        <span class="n">bars</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">layers_list</span><span class="p">[</span><span class="n">layer_i</span><span class="p">])</span>
+        <span class="n">bars</span> <span class="o">=</span> <span class="n">print_staff_lp</span> <span class="o">+</span> <span class="n">bars</span>
+        <span class="n">layer_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer_names</span><span class="p">[</span><span class="n">layer_i</span><span class="p">]</span><span class="si">}</span><span class="s2"> = \drummode </span><span class="se">{{</span><span class="s2"> </span><span class="si">{</span><span class="n">stem_directions</span><span class="p">[</span><span class="n">layer_i</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">bars</span><span class="si">}</span><span class="s2"> </span><span class="se">}}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">string_firstbit</span> <span class="o">+=</span> <span class="n">layer_string</span>
+        <span class="n">staves_string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">new DrumVoice { </span><span class="se">\\</span><span class="si">%s</span><span class="s2"> </span><span class="se">\\</span><span class="si">%s</span><span class="s2"> }</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">voice_names</span><span class="p">[</span><span class="n">layer_i</span><span class="p">],</span> <span class="n">layer_names</span><span class="p">[</span><span class="n">layer_i</span><span class="p">])</span>
+        <span class="n">string_secondbit</span> <span class="o">+=</span> <span class="n">staves_string</span>
+
+    <span class="n">string_secondbit</span> <span class="o">+=</span> <span class="s1">&#39; &gt;&gt;&#39;</span>
+
+    <span class="n">out_string</span> <span class="o">=</span> <span class="n">string_firstbit</span> <span class="o">+</span> <span class="n">string_secondbit</span>
+
+    <span class="n">remove_footers</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s2">\paper {</span><span class="se">\n</span><span class="s2">indent = 0\mm</span><span class="se">\n</span><span class="s2">line-width = 110\mm</span><span class="se">\n</span><span class="s2">oddHeaderMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">evenHeaderMarkup = &quot;&quot;</span>
+<span class="s2">oddFooterMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">evenFooterMarkup = &quot;&quot;</span><span class="se">\n</span><span class="s2">} &quot;&quot;&quot;</span>
+
+    <span class="n">lp</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">version &quot;2.10.33&quot;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">out_string</span> <span class="o">+</span> <span class="n">remove_footers</span>
+
+    <span class="k">return</span> <span class="n">lp</span>
+
+
+<span class="k">def</span> <span class="nf">_plot_lp</span><span class="p">(</span><span class="n">lp</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">suppress_display</span><span class="p">):</span>
+    <span class="c1"># This is the same each time:</span>
+
+    <span class="k">if</span> <span class="n">filepath</span><span class="p">:</span>
+        <span class="n">location</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">location</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;rhythm.png&#39;</span>
+
+    <span class="c1"># run subprocess</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.eps&#39;</span><span class="p">):</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;lilypond -dbackend=eps --silent -dresolution=600 --eps -o </span><span class="si">{</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.ly&quot;</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">to_be_removed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;.ly&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">):</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;lilypond -dbackend=eps --silent -dresolution=600 --png -o </span><span class="si">{</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.ly&quot;</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">to_be_removed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-1.eps&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.count&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.tex&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.texi&#39;</span><span class="p">,</span> <span class="s1">&#39;.ly&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can only export .png or .eps files.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># write lilypond string to file</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.ly&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">lp</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">location</span><span class="p">)</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">skimage</span><span class="o">.</span><span class="n">img_as_float</span><span class="p">(</span><span class="n">skimage</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="c1"># Select all pixels almost equal to white</span>
+    <span class="c1"># (almost, because there are some edge effects in jpegs</span>
+    <span class="c1"># so the boundaries may not be exactly white)</span>
+    <span class="n">white</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">image</span> <span class="o">-</span> <span class="n">white</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+
+    <span class="c1"># Find the bounding box of those pixels</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="o">~</span><span class="n">mask</span><span class="p">))</span>
+    <span class="n">top_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">bottom_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">top_left</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+          <span class="n">top_left</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span><span class="n">bottom_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="c1"># show plot</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">filepath</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_display</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_display</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># remove files</span>
+    <span class="k">if</span> <span class="n">filepath</span><span class="p">:</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">to_be_removed</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">to_be_removed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-1.eps&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.count&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.tex&#39;</span><span class="p">,</span> <span class="s1">&#39;-systems.texi&#39;</span><span class="p">,</span> <span class="s1">&#39;.ly&#39;</span><span class="p">,</span> <span class="s1">&#39;.png&#39;</span><span class="p">]</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rhythm&#39;</span> <span class="o">+</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">to_be_removed</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jelle van der Werff &amp; Yannick Jadoul.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

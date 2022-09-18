@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>combio.core.stimsequence &mdash; Combio package  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Combio package
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../package/index.html">Package contents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Combio package</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>combio.core.stimsequence</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for combio.core.stimsequence</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">scipy.io</span> <span class="kn">import</span> <span class="n">wavfile</span>
+<span class="kn">from</span> <span class="nn">combio.core.sequence</span> <span class="kn">import</span> <span class="n">BaseSequence</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">combio.core.stimulus</span> <span class="kn">import</span> <span class="n">Stimulus</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">combio.core.helpers</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<div class="viewcode-block" id="StimSequence"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence">[docs]</a><span class="k">class</span> <span class="nc">StimSequence</span><span class="p">(</span><span class="n">BaseSequence</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The StimSequence class can be thought of as a combination of the Stimulus class and the Sequence class;</span>
+<span class="sd">    hence StimSequence. It combines the timing information of a Sequence object with the auditory information (sound)</span>
+<span class="sd">    of a Stimulus object. In most research one would refer to a StimSequence as a trial (which is also the</span>
+<span class="sd">    variable name used in all the examples here).</span>
+
+<span class="sd">    One can construct a StimSequence object either by passing it a single Stimulus object (and</span>
+<span class="sd">    a Sequence object), or by passing it an iterable (e.g. list) of Stimulus objects (and a Sequence object).</span>
+
+<span class="sd">    If a single Stimulus object is passed, this Stimulus sound is used for each event onset. Otherwise,</span>
+<span class="sd">    each Stimulus sound is used for its respective event onsets. Of course, then the number of Stimulus</span>
+<span class="sd">    objects in the iterable must be the same as the number of event onsets.</span>
+
+<span class="sd">    StimSequence objects can be plotted, played, written to disk, statistically analyzed, and more...</span>
+<span class="sd">    During construction, checks are done to ensure one dit not accidentally use stimuli that are longer</span>
+<span class="sd">    than the IOIs (impossible), that the sampling frequencies of all the Stimulus objects are the same (undesirable),</span>
+<span class="sd">    and that the Stimulus objects&#39; number of channels are the same (probable).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dtype : numpy.dtype</span>
+<span class="sd">        Contains the NumPy data type object. Hard-coded as np.float32.</span>
+<span class="sd">    fs : int</span>
+<span class="sd">        Sampling frequency of the sound. 48000 is used as the standard in this package.</span>
+<span class="sd">    iois : NumPy 1-D array</span>
+<span class="sd">        Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.</span>
+<span class="sd">        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs</span>
+<span class="sd">        and onsets.</span>
+<span class="sd">    metrical : bool</span>
+<span class="sd">            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,</span>
+<span class="sd">            sequence has an equal number of IOIs and event onsets.</span>
+<span class="sd">    n_channels : int</span>
+<span class="sd">        The StimSequence&#39;s number of channels. 1 for mono, 2 for stereo.</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Defaults to None. If name is provided during object construction it is saved here.</span>
+<span class="sd">    samples : NumPy 1-D array (float32)</span>
+<span class="sd">        Contains the samples of the sound.</span>
+<span class="sd">    stim_names : list</span>
+<span class="sd">        A list containing the names of the passed Stimulus object(s).</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; stim = Stimulus.generate(freq=440,duration=50)</span>
+<span class="sd">    &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">    &gt;&gt;&gt; trial = StimSequence(stim, seq)</span>
+
+<span class="sd">    &gt;&gt;&gt; from random import randint</span>
+<span class="sd">    &gt;&gt;&gt; stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]</span>
+<span class="sd">    &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">    &gt;&gt;&gt; trial = StimSequence(stims, seq)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StimSequence.__init__"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">stimulus</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Stimulus</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">],</span>
+                 <span class="n">sequence</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a StimSequence object using a Stimulus object, or an iterable of Stimulus objects, and a Sequence</span>
+<span class="sd">        object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stimulus : Stimulus, or iterable</span>
+<span class="sd">            Either a single Stimulus object (in which case the same sound is used for each event onset), or an</span>
+<span class="sd">            iterable of Stimulus objects (in which case different sounds are used for each event onset).</span>
+<span class="sd">        sequence : Sequence</span>
+<span class="sd">            A Sequence object. This contains the timing information for the played events.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            You can provide a name for the StimSequence which is sometimes used (e.g. when printing a StimSequence</span>
+<span class="sd">            object, or when plotting one). One can always retrieve this attribute from StimSequence.name</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; stim = Stimulus.generate(freq=440,duration=50)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; trial = StimSequence(stim, seq)</span>
+
+<span class="sd">        &gt;&gt;&gt; from random import randint</span>
+<span class="sd">        &gt;&gt;&gt; stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_isochronous(n=5, ioi=500)</span>
+<span class="sd">        &gt;&gt;&gt; trial = StimSequence(stims, seq)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># If a single Stimulus object is passed, repeat that stimulus for each onset</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stimulus</span><span class="p">,</span> <span class="n">Stimulus</span><span class="p">):</span>
+            <span class="n">stimuli</span> <span class="o">=</span> <span class="p">[</span><span class="n">stimulus</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stimuli</span> <span class="o">=</span> <span class="n">stimulus</span>
+
+        <span class="c1"># Type checking for sequence</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please provide a Sequence object as the second argument.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check whether fs, dtype, and n_channels are the same for all stimuli</span>
+        <span class="n">all_fs</span> <span class="o">=</span> <span class="p">[</span><span class="n">snd</span><span class="o">.</span><span class="n">fs</span> <span class="k">for</span> <span class="n">snd</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">]</span>
+        <span class="n">all_dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">snd</span><span class="o">.</span><span class="n">dtype</span> <span class="k">for</span> <span class="n">snd</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">]</span>
+        <span class="n">all_n_channels</span> <span class="o">=</span> <span class="p">[</span><span class="n">snd</span><span class="o">.</span><span class="n">n_channels</span> <span class="k">for</span> <span class="n">snd</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">fs</span> <span class="o">==</span> <span class="n">all_fs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">fs</span> <span class="ow">in</span> <span class="n">all_fs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The Stimulus objects in the passed list have different sampling frequencies!&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">all_dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="n">all_dtypes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The Stimulus objects in the passed list have different dtypes!&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">n_channels</span> <span class="o">==</span> <span class="n">all_n_channels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">n_channels</span> <span class="ow">in</span> <span class="n">all_n_channels</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The Stimulus objects in the passed list have differing number of channels!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Save attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">n_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stim_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">stimulus</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">stimulus</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span> <span class="o">=</span> <span class="n">sequence</span><span class="o">.</span><span class="n">metrical</span>
+
+        <span class="c1"># Initialize Sequence class</span>
+        <span class="n">BaseSequence</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="o">.</span><span class="n">iois</span><span class="p">,</span> <span class="n">metrical</span><span class="o">=</span><span class="n">sequence</span><span class="o">.</span><span class="n">metrical</span><span class="p">)</span>
+
+        <span class="c1"># Make sound which saves the samples to self.samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_sound</span><span class="p">(</span><span class="n">stimuli</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Not provided&quot;</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stim_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">stim_names</span> <span class="o">=</span> <span class="s2">&quot;None provided&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stim_names</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">stim_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stim_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stim_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">stim_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">stim_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stim_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Object of type StimSequence (metrical version):</span>
+<span class="s2">StimSequence name: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"></span>
+<span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> events</span>
+<span class="s2">IOIs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Onsets: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Stimulus names: </span><span class="si">{</span><span class="n">stim_names</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Object of type StimSequence (non-metrical version):</span>
+<span class="s2">StimSequence name: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"></span>
+<span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span><span class="si">}</span><span class="s2"> events</span>
+<span class="s2">IOIs: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Onsets: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">Stimulus names: </span><span class="si">{</span><span class="n">stim_names</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mean_ioi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The average inter-onset interval (IOI) in milliseconds.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The total duration of the StimSequence object in milliseconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">duration_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The total duration of the StimSequence object in seconds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StimSequence.play"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.play">[docs]</a>    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method uses the sounddevice library to play the StimSequence object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        loop: bool, optional</span>
+<span class="sd">            If &#39;True&#39;, the StimSequence will continue playing until the StimSequence.stop() method is called.</span>
+<span class="sd">            Defaults to &#39;False&#39;.</span>
+<span class="sd">        metronome: bool, optional</span>
+<span class="sd">            If &#39;True&#39;, a metronome sound is added for playback. Defaluts to &#39;False&#39;.</span>
+<span class="sd">        metronome_amplitude: bool, optional</span>
+<span class="sd">            If desired, when playing the StimSequence with a metronome sound you can adjust the</span>
+<span class="sd">            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means</span>
+<span class="sd">            a louder metronome sound.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">play_samples</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">mean_ioi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_ioi</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span>
+                                         <span class="n">metronome</span><span class="o">=</span><span class="n">metronome</span><span class="p">,</span>
+                                         <span class="n">metronome_amplitude</span><span class="o">=</span><span class="n">metronome_amplitude</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StimSequence.plot_sequence"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.plot_sequence">[docs]</a>    <span class="k">def</span> <span class="nf">plot_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span>
+                      <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">suppress_display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        style : str, optional</span>
+<span class="sd">            Matplotlib style to use for the plot. Defaults to &#39;seaborn&#39;. Please refer to the matplotlib</span>
+<span class="sd">            docs for other styles.</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            If desired, one can provide a title for the plot. This takes precedence over using the</span>
+<span class="sd">            StimSequence name as the title of the plot (if the object has one).</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            The desired figure size in inches as a tuple: (width, height).</span>
+<span class="sd">        suppress_display : bool, optional</span>
+<span class="sd">            If True, the plot is only returned, and not displayed via plt.show()</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : Figure</span>
+<span class="sd">            A matplotlib Figure object</span>
+<span class="sd">        ax : Axes</span>
+<span class="sd">            A matplotlib Axes object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))</span>
+<span class="sd">        &gt;&gt;&gt; trial.plot_sequence()</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">linewidths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_durations</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">plot_sequence_single</span><span class="p">(</span><span class="n">onsets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">onsets</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                                                           <span class="n">linewidths</span><span class="o">=</span><span class="n">linewidths</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+                                                           <span class="n">suppress_display</span><span class="o">=</span><span class="n">suppress_display</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+<div class="viewcode-block" id="StimSequence.plot_waveform"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.plot_waveform">[docs]</a>    <span class="k">def</span> <span class="nf">plot_waveform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;seaborn&#39;</span><span class="p">,</span>
+                      <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">suppress_display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        style : str, optional</span>
+<span class="sd">            Style used by matplotlib, defaults to &#39;seaborn&#39;. See matplotlib docs for other styles.</span>
+<span class="sd">        title : str, optional</span>
+<span class="sd">            If desired, one can provide a title for the plot.</span>
+<span class="sd">        figsize : tuple, optional</span>
+<span class="sd">            A tuple containing the desired output size of the plot in inches, e.g. (4, 1).</span>
+<span class="sd">        suppress_display : bool, optional</span>
+<span class="sd">            If &#39;True&#39;, plt.show() is not run. Defaults to &#39;False&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fig : Figure</span>
+<span class="sd">            A matplotlib Figure object</span>
+<span class="sd">        ax : Axes</span>
+<span class="sd">            A matplotlib Axes object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=10, ioi=500))</span>
+<span class="sd">        &gt;&gt;&gt; trial.plot_waveform(title=&quot;My StimSeq plot&quot;)  # doctest: +SKIP</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">plot_waveform</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">n_channels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span><span class="p">,</span>
+                                                    <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+                                                    <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">suppress_display</span><span class="o">=</span><span class="n">suppress_display</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+<div class="viewcode-block" id="StimSequence.write_wav"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.write_wav">[docs]</a>    <span class="k">def</span> <span class="nf">write_wav</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                  <span class="n">out_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span>
+                  <span class="n">metronome</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                  <span class="n">metronome_amplitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        out_path: str or PathLike object</span>
+<span class="sd">            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be aware of OS-specific filepath conventions.</span>
+<span class="sd">        metronome: bool, optional</span>
+<span class="sd">            If &#39;True&#39;, a metronome sound is added for playback. Defaluts to &#39;False&#39;.</span>
+<span class="sd">        metronome_amplitude: bool, optional</span>
+<span class="sd">            If desired, when playing the StimSequence with a metronome sound you can adjust the</span>
+<span class="sd">            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means</span>
+<span class="sd">            a louder metronome sound.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))</span>
+<span class="sd">        &gt;&gt;&gt; stimseq.write_wav(&#39;my_stimseq.wav&#39;)  # doctest: +SKIP</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">_write_wav</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">metronome</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ioi</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stimuli</span><span class="p">,</span> <span class="n">onsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Internal function used for combining different Stimulus samples and a passed Sequence object</span>
+<span class="sd">        into one array of samples containing the sound of a StimSequence.&quot;&quot;&quot;</span>
+        <span class="c1"># Check for overlap</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">onsets</span><span class="p">)):</span>
+            <span class="n">stim_duration</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">*</span> <span class="mi">1000</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ioi_after_onset</span> <span class="o">=</span> <span class="n">onsets</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">onsets</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">ioi_after_onset</span> <span class="o">&lt;</span> <span class="n">stim_duration</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;The duration of one or more stimuli is longer than its respective IOI. &quot;</span>
+                        <span class="s2">&quot;The events will overlap: either use different IOIs, or use a shorter stimulus sound.&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Generate an array of silence that has the length of all the onsets + one final stimulus.</span>
+        <span class="c1"># In the case of a metrical sequence, we add the final ioi</span>
+        <span class="c1"># The dtype is important, because that determines the values that the magnitudes can take.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrical</span><span class="p">:</span>
+            <span class="n">length</span> <span class="o">=</span> <span class="p">(</span><span class="n">onsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">)</span> <span class="o">+</span> <span class="n">stimuli</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error during calculation of array_length&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">length</span><span class="p">)</span> <span class="o">!=</span> <span class="n">length</span><span class="p">:</span>  <span class="c1"># let&#39;s avoid rounding issues</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Number of frames was rounded off to nearest integer ceiling. &quot;</span>
+                          <span class="s2">&quot;This shouldn&#39;t be much of a problem.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Round off array length to ceiling if necessary</span>
+        <span class="n">array_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">array_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">array_length</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">samples_with_onsets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">stimulus</span><span class="o">.</span><span class="n">samples</span> <span class="k">for</span> <span class="n">stimulus</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">],</span> <span class="n">onsets</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">stimulus</span><span class="p">,</span> <span class="n">onset</span> <span class="ow">in</span> <span class="n">samples_with_onsets</span><span class="p">:</span>
+
+            <span class="n">start_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">onset</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+            <span class="n">end_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start_pos</span> <span class="o">+</span> <span class="n">stimulus</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">]</span> <span class="o">=</span> <span class="n">stimulus</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_channels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">samples</span><span class="p">[</span><span class="n">start_pos</span><span class="p">:</span><span class="n">end_pos</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">stimulus</span>
+
+        <span class="c1"># set self.event_durations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_durations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stim</span><span class="o">.</span><span class="n">duration_ms</span> <span class="k">for</span> <span class="n">stim</span> <span class="ow">in</span> <span class="n">stimuli</span><span class="p">])</span>
+
+        <span class="c1"># return sound</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Sound was normalized&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">normalize_audio</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">samples</span></div>
+
+
+<span class="k">def</span> <span class="nf">_write_wav</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">metronome</span><span class="p">,</span> <span class="n">metronome_ioi</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal function used for writing a .wav to disk.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">metronome</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">get_sound_with_metronome</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">metronome_ioi</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span>
+
+    <span class="n">out_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">out_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.wav&#39;</span><span class="p">):</span>
+        <span class="n">path</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">out_path</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">out_path</span>
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.wav&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;out.wav&quot;</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Wrong out_path specified. Please provide a directory or a complete filepath.&quot;</span><span class="p">)</span>
+
+    <span class="n">wavfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">rate</span><span class="o">=</span><span class="n">fs</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">samples</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Jelle van der Werff &amp; Yannick Jadoul.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
