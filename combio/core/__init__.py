@@ -1,4 +1,4 @@
-from .helpers import *
-from .sequence import *
-from .stimsequence import *
-from .stimulus import *
+from .sequence import Sequence
+from .stimsequence import StimSequence
+from .stimulus import Stimulus
+

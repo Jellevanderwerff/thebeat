@@ -1,7 +1,6 @@
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
 from typing import Union, Iterable
-import numpy as np
 import combio.core.helpers
 
 
@@ -12,13 +11,72 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
                          figsize=None,
                          suppress_display: bool = False):
 
-    fig, ax = combio.core.helpers.plot_sequence_single(sequence=sequence, style=style, title=title,
-                                                       linewidth=linewidth, figsize=figsize,
+    """
+    This function may be used to plot a sequence of event onsets.
+    Either pass it a Sequence or StimSequence object, or an iterable (e.g. list) of event onsets.
+
+    Parameters
+    ----------
+    sequence : Sequence or StimSequence or iterable
+        Either a Sequence or StimSequence object, or an iterable (e.g. list) of event onsets, e.g. [0, 500, 1000].
+        Here, 0 is not required.
+    style : str, optional
+        A matplotlib style. See the matplotlib docs for options. Defaults to 'seaborn'.
+    title : str, optional
+        Here, one can provide a title for the plot.
+    linewidth
+    figsize
+    suppress_display
+
+    Returns
+    -------
+
+    """
+
+    # Input validation, get onsets, set linewidths (the widths of the bars) and title.
+    if isinstance(sequence, Sequence):
+        # onsets
+        onsets = sequence.onsets
+        # linewidths
+        if linewidth:
+            linewidths = [linewidth] * len(onsets)
+        else:
+            linewidths = [50] * len(onsets)
+        # title
+        if sequence.name and title is None:
+            title = sequence.name
+
+    elif isinstance(sequence, StimSequence):
+        # onsets
+        onsets = sequence.onsets
+        # linewidths
+        linewidths = sequence.event_durations
+        # title
+        if sequence.name and title is None:
+            title = sequence.name
+
+    elif hasattr(sequence, '__iter__'):
+        # onsets
+        onsets = sequence
+        # linewidths
+        if linewidth:
+            linewidths = [linewidth] * len(onsets)
+        else:
+            linewidths = [50] * len(onsets)
+        # title
+        title = title
+
+    else:
+        raise ValueError("Please provide a Sequence object, a StimSequence object, "
+                         "or an iterable of event onsets.")
+
+    fig, ax = combio.core.helpers.plot_sequence_single(onsets=onsets, style=style, title=title,
+                                                       linewidths=linewidths, figsize=figsize,
                                                        suppress_display=suppress_display)
     return fig, ax
 
 
-def plot_sequence_multiple(sequences: Union,
+def plot_sequence_multiple(sequences: Iterable,
                            style: str = 'seaborn',
                            sequence_names: Iterable[str] = None,
                            title: str = None,

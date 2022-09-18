@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from combio.core.sequence import Sequence
-from combio.core.stimsequence import StimSequence
 from typing import Iterable, Union
 
 
@@ -50,49 +48,29 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
     return samples
 
 
-def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
+def plot_sequence_single(onsets: Iterable,
                          style: str = 'seaborn',
                          title: str = None,
-                         linewidth=None,
+                         linewidths=None,
                          figsize=None,
                          suppress_display: bool = False):
-    # Input validation
-    if not isinstance(sequence, Sequence) and not hasattr(sequence, '__iter__'):
-        raise ValueError("Please pass either a Sequence, a StimSequence object or an iterable as the first argument.")
 
-    # Setting linewidths
-    # No linewidth was passed
-    if linewidth is None:
-        # In case we have a Sequence
-        if isinstance(sequence, Sequence):
-            linewidths = [50] * len(sequence.onsets)
-        # In case we have a StimSequence, simply use the duration of the events.
-        elif isinstance(sequence, StimSequence):
-            linewidths = sequence.event_durations
-    # Linewidth was passed
-    elif linewidth is not None:
-        linewidths = [linewidth] * len(sequence.onsets)
-
-    # Title
-    if title:
-        title = title
-    elif not title and sequence.name:
-        title = sequence.name
-    else:
-        title = None
+    # Make onsets array
+    onsets = np.array(onsets)
 
     # X axis
     x_start = 0
+    max_onset_ms = np.max(onsets)
 
     # Above 10s we want seconds on the x axis, otherwise milliseconds
-    if sequence.duration_s > 10:
-        onsets = sequence.onsets / 1000
+    if max_onset_ms > 10000:
+        onsets = onsets / 1000
         linewidths = np.array(linewidths) / 1000
-        x_end = sequence.duration_s + linewidths[-1]
+        x_end = (max_onset_ms / 1000) + linewidths[-1]
         x_label = "Time (s)"
     else:
-        onsets = sequence.onsets
-        x_end = sequence.duration_ms + linewidths[-1]
+        onsets = onsets
+        x_end = max_onset_ms + linewidths[-1]
         x_label = "Time (ms)"
 
     # Make plot

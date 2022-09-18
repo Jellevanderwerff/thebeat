@@ -132,8 +132,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
-        >>> stim.plot_waveform()
-        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
+        >>> stim.plot_waveform()  # doctest: +SKIP
 
         """
         # Duration in seconds
@@ -200,13 +199,8 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.from_note('G', duration=20)
-        >>> stim.plot_waveform()
-        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
-
 
         >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
-        >>> stim.plot_waveform()
-        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:xlabel='Time (ms)', ylabel='Amplitude'>)
 
         """
 
@@ -298,7 +292,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> stim.play()
+        >>> stim.play()  # doctest: +SKIP
         """
 
         sd.play(self.samples, self.fs, loop=loop)
@@ -350,15 +344,13 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> stim.plot_waveform(title="Waveform of stimulus")
-        (<Figure size 800x550 with 1 Axes>, <AxesSubplot:title={'center':'Waveform of stimulus'}, xlabel='Time (ms)', ylabel='Amplitude'>)
+        >>> stim.plot_waveform(title="Waveform of stimulus")  # doctest: +SKIP
 
-
-        >>> import matplotlib.pyplot as plt
+        >>> import matplotlib.pyplot as plt  # doctest: +SKIP
         >>> stim = Stimulus.generate()
         >>> fig, ax = stim.plot_waveform(suppress_display=True)
         >>> fig.set_facecolor('blue')
-        >>> plt.show()
+        >>> plt.show()  # doctest: +SKIP
 
         """
 
@@ -403,7 +395,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> stim.write_wav('my_stimulus.wav')
+        >>> stim.write_wav('my_stimulus.wav')  # doctest: +SKIP
 
         """
 

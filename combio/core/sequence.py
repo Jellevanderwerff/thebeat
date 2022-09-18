@@ -623,21 +623,22 @@ class Sequence(BaseSequence):
              title: str = None,
              linewidth: int = 50,
              figsize: tuple = None):
-        """
 
-        #todo fill out
+        # If a title was provided that has preference. If none is provided,
+        # use the Sequence object's name. Otherwise use None.
+        if title:
+            title = title
+        elif self.name:
+            title = self.name
 
-        Parameters
-        ----------
-        style : str, optional
-        title : str, optional
-        linewidth : int, optional
-        figsize : tuple, optional
+        # Linewidths
+        linewidths = [linewidth] * len(self.onsets)
 
-        """
+        fig, ax = combio.core.helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                           linewidths=linewidths, figsize=figsize,
+                                                           suppress_display=False)
 
-        combio.core.helpers.plot_sequence_single(sequence=self, style=style, title=title, linewidth=linewidth,
-                                                 figsize=figsize, suppress_display=False)
+        return fig, ax
 
     @property
     def duration_ms(self) -> np.float32:
