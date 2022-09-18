@@ -14,7 +14,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
-    'myst_parser'
+    'myst_parser',
+    'nbsphinx'
 ]
 
 templates_path = ['_templates']
