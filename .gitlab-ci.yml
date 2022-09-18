@@ -1,0 +1,24 @@
+image: python:latest
+
+test:
+  stage: test
+  script:
+  - pip install -U sphinx
+  - pip install -U myst_parser
+  - pip install -U nbsphinx
+  - sphinx-build -b docs/source . public
+  only:
+  - branches
+  except:
+  - master
+
+pages:
+  stage: deploy
+  script:
+  - pip install -U sphinx
+  - sphinx-build -b docs/source . public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
