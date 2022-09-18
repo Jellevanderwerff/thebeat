@@ -144,13 +144,16 @@ def plot_multiple_sequences(sequences: Iterable,
     >>> plot_multiple_sequences(seqs,linewidths=50)
 
     """
+    # todo Make this function such that you can pass it an iterable containing sequences of different
+    #  types. E.g. [Sequence, StimSequence, list].
 
-    # Input validation
-    if not all(isinstance(sequence, Sequence) for sequence in sequences) and not all(
-            isinstance(sequence, StimSequence) for sequence in sequences) and not all(
-        hasattr(sequence, '__iter__') for sequence in sequences):
-        raise ValueError("Please pass an iterable with only Sequence objects, StimSequence objects "
-                         "or iterables containing the event onsets.")
+    onsets = []
+
+    for seq in sequences:
+        if isinstance(seq, (Sequence, StimSequence)):
+            onsets.append(seq.onsets)
+        else:
+            onsets.append(np.array(seq))
 
     # Make names for the bars
     n_seqs = len(sequences)
@@ -158,12 +161,6 @@ def plot_multiple_sequences(sequences: Iterable,
         sequence_names = [str(i) for i in range(1, n_seqs + 1)]
     elif len(sequence_names) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
-
-    # Get onsets
-    if isinstance(sequences[0], (Sequence, StimSequence)):
-        onsets = [sequence.onsets for sequence in sequences]
-    else:
-        onsets = sequences
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
     # default to 50 milliseconds).
@@ -177,10 +174,11 @@ def plot_multiple_sequences(sequences: Iterable,
     else:
         raise ValueError("Please provide an iterable for the linewidths.")
 
-    # Above 10s we want seconds on the x axis, otherwise milliseconds
-    max_onset_ms = np.max(np.max(onsets))
+    # Get the highest value
+    temp_onsets = np.concatenate(onsets)
+    max_onsets_ms = np.max(np.max(temp_onsets))
 
-    if max_onset_ms > 10000:
+    if max_onsets_ms > 10000:
         onsets = np.array(onsets) / 1000
         linewidths = np.array(linewidths) / 1000
         x_label = "Time (s)"

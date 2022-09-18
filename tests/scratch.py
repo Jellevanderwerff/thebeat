@@ -1,5 +1,7 @@
 from combio.core import Sequence
-from combio.linguistic import generate_stress_timed_sequence
+from combio.visualization import plot_multiple_sequences
 
-seq = generate_stress_timed_sequence(10)
-print(seq)
+seq = Sequence.generate_isochronous(n=5, ioi=500)
+seq2 = [0, 500, 1000]
+
+plot_multiple_sequences([seq, seq2])

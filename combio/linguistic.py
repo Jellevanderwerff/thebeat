@@ -33,9 +33,9 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
     --------
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = generate_stress_timed_sequence(n_events_per_phrase=4, n_phrases=3, rng=rng)
-    >>> print(seq.onsets)
-    [   0.    62.5  750.  1312.5 2000.  2062.5 2937.5 3187.5 4000.  4250.
-     4437.5 4812.5]
+    >>> print(seq.iois)
+    [ 62.5 687.5 562.5 687.5  62.5 875.  250.  812.5 250.  187.5 375. ]
+
 
     Notes
     -----
