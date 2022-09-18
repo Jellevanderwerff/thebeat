@@ -371,7 +371,7 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
 
-        return cls(round_iois, metrical=metrical)
+        return cls(round_iois, metrical=metrical, name=name)
 
     @classmethod
     def generate_random_poisson(cls,
@@ -476,7 +476,7 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
 
-        return cls(round_iois, metrical=metrical)
+        return cls(round_iois, metrical=metrical, name=name)
 
     @classmethod
     def generate_isochronous(cls,
@@ -622,7 +622,38 @@ class Sequence(BaseSequence):
              style: str = 'seaborn',
              title: str = None,
              linewidth: int = 50,
-             figsize: tuple = None):
+             figsize: tuple = None,
+             suppress_display: bool = False):
+        """
+        Plot the Sequence object as an event plot on the basis of the event onsets.
+
+        Parameters
+        ----------
+        style : str, optional
+            Matplotlib style to use for the plot. Defaults to 'seaborn'. Please refer to the matplotlib
+            docs for other styles.
+        title : str, optional
+            If desired, one can provide a title for the plot. This takes precedence over using the
+            StimSequence name as the title of the plot (if the object has one).
+        linewidth : int, optional
+            The desired width of the bars (events) in milliseconds. Defaults to 50 milliseconds.
+        figsize : tuple, optional
+            The desired figure size in inches as a tuple: (width, height).
+        suppress_display : bool, optional
+            If True, the plot is only returned, and not displayed via plt.show()
+
+        Returns
+        -------
+        fig : Figure
+            A matplotlib Figure object
+        ax : Axes
+            A matplotlib Axes object
+
+        Examples
+        --------
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq.plot()
+        """
 
         # If a title was provided that has preference. If none is provided,
         # use the Sequence object's name. Otherwise use None.
@@ -636,7 +667,7 @@ class Sequence(BaseSequence):
 
         fig, ax = combio.core.helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                            linewidths=linewidths, figsize=figsize,
-                                                           suppress_display=False)
+                                                           suppress_display=suppress_display)
 
         return fig, ax
 

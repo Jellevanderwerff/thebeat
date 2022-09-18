@@ -207,6 +207,35 @@ Stimulus names: {stim_names}
                       title: str = None,
                       figsize: tuple = None,
                       suppress_display: bool = False):
+        """
+        Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
+
+        Parameters
+        ----------
+        style : str, optional
+            Matplotlib style to use for the plot. Defaults to 'seaborn'. Please refer to the matplotlib
+            docs for other styles.
+        title : str, optional
+            If desired, one can provide a title for the plot. This takes precedence over using the
+            StimSequence name as the title of the plot (if the object has one).
+        figsize : tuple, optional
+            The desired figure size in inches as a tuple: (width, height).
+        suppress_display : bool, optional
+            If True, the plot is only returned, and not displayed via plt.show()
+
+        Returns
+        -------
+        fig : Figure
+            A matplotlib Figure object
+        ax : Axes
+            A matplotlib Axes object
+
+        Examples
+        --------
+        >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
+        >>> trial.plot_sequence()
+
+        """
 
         linewidths = self.event_durations
 
