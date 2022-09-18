@@ -5,7 +5,7 @@ import combio.core.helpers
 import numpy as np
 
 
-def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
+def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
                          style: str = 'seaborn',
                          title: str = None,
                          linewidths: Iterable = None,
@@ -45,10 +45,10 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
     Examples
     --------
     >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> plot_sequence_single(seq)  # doctest: +SKIP
+    >>> plot_single_sequence(seq)  # doctest: +SKIP
 
     >>> onsets = [0, 500, 1000, 1500]
-    >>> plot_sequence_single(onsets)  # doctest: +SKIP
+    >>> plot_single_sequence(onsets)  # doctest: +SKIP
 
     """
 
@@ -91,7 +91,7 @@ def plot_sequence_single(sequence: Union[Sequence, StimSequence, Iterable],
     return fig, ax
 
 
-def plot_sequence_multiple(sequences: Iterable,
+def plot_multiple_sequences(sequences: Iterable,
                            style: str = 'seaborn',
                            sequence_names: Iterable[str] = None,
                            title: str = None,
@@ -141,7 +141,7 @@ def plot_sequence_multiple(sequences: Iterable,
     --------
     >>> generator = np.random.default_rng(seed=123)
     >>> seqs = [Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
-    >>> plot_sequence_multiple(seqs, linewidths=50)
+    >>> plot_multiple_sequences(seqs,linewidths=50)
 
     """
 
@@ -178,7 +178,6 @@ def plot_sequence_multiple(sequences: Iterable,
         raise ValueError("Please provide an iterable for the linewidths.")
 
     # Above 10s we want seconds on the x axis, otherwise milliseconds
-
     max_onset_ms = np.max(np.max(onsets))
 
     if max_onset_ms > 10000:
@@ -188,6 +187,10 @@ def plot_sequence_multiple(sequences: Iterable,
     else:
         onsets = onsets
         x_label = "Time (ms)"
+
+    # Calculate x lims
+    # The reasoning here is that linewidths is either an iterable containing integers
+    # or an iterable containing iterables with individual linewidths
 
     # Plot
     with plt.style.context(style):
@@ -199,6 +202,10 @@ def plot_sequence_multiple(sequences: Iterable,
 
         for onsets, label, linewidths in zip(onsets, sequence_names, linewidths):
             ax.barh(y=label, width=linewidths, left=onsets)
+
+        # Make sure we always have 0 on the left side of the x axis
+        current_lims = ax.get_xlim()
+        ax.set_xlim(0, current_lims[1])
 
         if not suppress_display:
             plt.show()
