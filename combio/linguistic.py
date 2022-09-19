@@ -7,9 +7,9 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
                                    n_phrases: int = 1,
                                    rng=None) -> Sequence:
     """
-    This function generates a Sequence object with inter-onset intervals (IOIs) that conform to the rhythmic
+    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
     structure of stress-timed languages. One can provide the length of a 'phrase' (or 'cluster') as n_events_per_phrase.
-    In one 'sentence', one would have n_phrases of n_events_per_phrase.
+    In one sequence (e.g. 'sentence'), one would have n_phrases of n_events_per_phrase.
 
     The phrases all have the same duration, but are made up of different combinations of IOIs.
 
@@ -80,9 +80,52 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
     return Sequence.from_onsets(pattern)
 
 
-def generate_trimoraic_sequence(n_feet: int,
-                                mora_ioi: int = 250,
-                                rng=None) -> Sequence:
+def generate_moraic_sequence(n_feet: int,
+                             foot_ioi: int = 500,
+                             rng=None) -> Sequence:
+    """
+    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
+    structure of mora-timed languages. The feet contain clusters of either one or two IOIs with the same total duration.
+    The total duration is specified in foot_ioi.
+
+    The phrases all have the same duration, but are made up of different combinations of IOIs.
+
+    Parameters
+    ----------
+    foot_ioi
+    n_feet : int
+        The number of feet in the sequence.
+    foot_ioi : int, optional
+        The duration in milliseconds of the foot.
+    rng : numpy.random.Generator, optional
+        A NumPy Generator object, if none is supplied will default to numpy.random.default_rng()
+
+    Returns
+    -------
+    Sequence
+        A newly created Sequence object.
+
+    Examples
+    --------
+    >>> rng = np.random.default_rng(seed=123)
+    >>> seq = generate_moraic_sequence(n_feet=3, foot_ioi=500, rng=rng)
+    >>> print(seq.iois)
+    [500.      208.33333 291.66666 500.     ]
+
+
+    Notes
+    -----
+    Both the methodology and the code are based on/taken from [1]_.
+
+    References
+    ----------
+    .. [1] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
+       Journal of Language Evolution, 2(1), 4-19.
+       https://doi.org/10.1093/jole/lzx002
+
+
+    """
     if rng is None:
         rng = np.random.default_rng()
 
@@ -113,6 +156,6 @@ def generate_trimoraic_sequence(n_feet: int,
     iois[:-1] = np.diff(pattern)
 
     # Calculate with proper tempo
-    iois = iois * mora_ioi
+    iois = iois * (foot_ioi / 3)
 
     return Sequence(iois)
