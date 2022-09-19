@@ -625,7 +625,10 @@ class Sequence(BaseSequence):
              figsize: tuple = None,
              suppress_display: bool = False):
         """
-        Plot the Sequence object as an event plot on the basis of the event onsets.
+        Plot the Sequence object as an event plot on the basis of the event onsets.\
+
+        In principle, the x axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
+        this changes to seconds.
 
         Parameters
         ----------

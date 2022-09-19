@@ -15,6 +15,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -695,7 +696,10 @@
              <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
              <span class="n">suppress_display</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Plot the Sequence object as an event plot on the basis of the event onsets.</span>
+<span class="sd">        Plot the Sequence object as an event plot on the basis of the event onsets.\</span>
+
+<span class="sd">        In principle, the x axis shows milliseconds. However, if the total sequence duration is over 10 seconds,</span>
+<span class="sd">        this changes to seconds.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

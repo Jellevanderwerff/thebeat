@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Use case scenarios" href="../usecases.html" />
-    <link rel="prev" title="Snippets" href="../snippets.html" /> 
+    <link rel="prev" title="Plotting a single sequence" href="plot_single_sequence.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,6 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../snippets.html">Snippets</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="plot_single_sequence.html">Plotting a single sequence</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Plotting multiple sequences</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Simple-example">Simple example</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Simple-example-with-simple-sequence-onsets">Simple example with simple sequence onsets</a></li>
@@ -372,7 +373,7 @@ div.rendered_html tbody tr:hover {
 <h2>Simple example<a class="headerlink" href="#Simple-example" title="Permalink to this heading"></a></h2>
 <p>Let’s first start by importing what we are going to need:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>In [43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">combio.core</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Stimulus</span><span class="p">,</span> <span class="n">StimSequence</span>
@@ -387,7 +388,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Let’s create two dummy sequences:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>In [44]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is for reproducible randomness (so you will get the same sequences as me)</span>
@@ -401,7 +402,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Now we make a list of these sequences, and plot using <code class="docutils literal notranslate"><span class="pre">plot_multiple_sequences</span></code>.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>In [45]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">seq_isoc</span><span class="p">,</span> <span class="n">seq_random</span><span class="p">]</span>
@@ -421,7 +422,7 @@ div.rendered_html tbody tr:hover {
 <h2>Simple example with simple sequence onsets<a class="headerlink" href="#Simple-example-with-simple-sequence-onsets" title="Permalink to this heading"></a></h2>
 <p>In addition to passing Sequence or StimSequence objects, we can also plot sequences using a simple list containing event onsets. Then, we can also plot with a different onset than zero.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>In [46]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seq_isoc_onsets</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_isochronous</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ioi</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span><span class="o">.</span><span class="n">onsets</span>  <span class="c1"># Note how we get the onsets</span>
@@ -443,7 +444,7 @@ div.rendered_html tbody tr:hover {
 <h2>Complex example<a class="headerlink" href="#Complex-example" title="Permalink to this heading"></a></h2>
 <p>In this example we randomly generate 10 sequences with random inter-onset intervals (IOIs), each containing 5 events that also have random event durations.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>In [47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For reproducible randomness</span>
@@ -457,13 +458,13 @@ div.rendered_html tbody tr:hover {
 
 <span class="c1"># Loop over the sequences</span>
 <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">seqs</span><span class="p">:</span>
-    <span class="c1"># Generate 10 events with random durations</span>
-    <span class="n">stims</span> <span class="o">=</span> <span class="p">[</span><span class="n">Stimulus</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+    <span class="c1"># Generate 5 events with random durations</span>
+    <span class="n">stims</span> <span class="o">=</span> <span class="p">[</span><span class="n">Stimulus</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">5</span><span class="p">)]</span>
     <span class="c1"># Create a StimSequence and add to stimseqs list</span>
     <span class="n">stimseqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">StimSequence</span><span class="p">(</span><span class="n">stims</span><span class="p">,</span> <span class="n">seq</span><span class="p">))</span>
 
 <span class="c1"># Additionally give them names</span>
-<span class="n">sequence_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Random </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stimseqs</span><span class="p">))]</span>
+<span class="n">sequence_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Random </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stimseqs</span><span class="p">))]</span>
 
 <span class="c1"># Now plot!!</span>
 <span class="n">plot_multiple_sequences</span><span class="p">(</span><span class="n">stimseqs</span><span class="p">,</span> <span class="n">sequence_names</span><span class="o">=</span><span class="n">sequence_names</span><span class="p">);</span>
@@ -484,7 +485,7 @@ div.rendered_html tbody tr:hover {
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../snippets.html" class="btn btn-neutral float-left" title="Snippets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="plot_single_sequence.html" class="btn btn-neutral float-left" title="Plotting a single sequence" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../usecases.html" class="btn btn-neutral float-right" title="Use case scenarios" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

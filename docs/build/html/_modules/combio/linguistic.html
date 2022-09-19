@@ -73,14 +73,95 @@
 <span class="kn">from</span> <span class="nn">combio.core.sequence</span> <span class="kn">import</span> <span class="n">Sequence</span>
 
 
+<div class="viewcode-block" id="generate_moraic_sequence"><a class="viewcode-back" href="../../package/linguistics.html#combio.linguistic.generate_moraic_sequence">[docs]</a><span class="k">def</span> <span class="nf">generate_moraic_sequence</span><span class="p">(</span><span class="n">n_feet</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">foot_ioi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+                             <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic</span>
+<span class="sd">    structure of mora-timed languages. The feet contain clusters of either one or two IOIs with the same total duration.</span>
+<span class="sd">    The total duration is specified in foot_ioi.</span>
+
+<span class="sd">    The phrases all have the same duration, but are made up of different combinations of IOIs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    foot_ioi</span>
+<span class="sd">    n_feet : int</span>
+<span class="sd">        The number of feet in the sequence.</span>
+<span class="sd">    foot_ioi : int, optional</span>
+<span class="sd">        The duration in milliseconds of the foot.</span>
+<span class="sd">    rng : numpy.random.Generator, optional</span>
+<span class="sd">        A NumPy Generator object, if none is supplied will default to numpy.random.default_rng()</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Sequence</span>
+<span class="sd">        A newly created Sequence object.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(seed=123)</span>
+<span class="sd">    &gt;&gt;&gt; seq = generate_moraic_sequence(n_feet=3, foot_ioi=500, rng=rng)</span>
+<span class="sd">    &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">    [500.      208.33333 291.66666 500.     ]</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Both the methodology and the code are based on/taken from [1]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:</span>
+<span class="sd">       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.</span>
+<span class="sd">       Journal of Language Evolution, 2(1), 4-19.</span>
+<span class="sd">       https://doi.org/10.1093/jole/lzx002</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+
+    <span class="n">start_of_pattern</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># built around clusters with either one or two iois with same total duration (3 * syllable_ioi)</span>
+    <span class="n">ioi_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_feet</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="n">n_feet</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ioi_one</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ioi_types</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">ioi_two</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">ioi_one</span>
+            <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">iois</span><span class="p">,</span> <span class="n">ioi_one</span><span class="p">,</span> <span class="n">ioi_two</span><span class="p">])</span>
+
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">ioi_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span>
+    <span class="n">pattern_shifted</span> <span class="o">=</span> <span class="n">ioi_sums</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">start_of_pattern</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">start_of_pattern</span><span class="p">],</span> <span class="n">pattern_shifted</span><span class="p">])</span>
+
+    <span class="c1"># Get iois from pattern</span>
+    <span class="n">iois</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+    <span class="c1"># Calculate with proper tempo</span>
+    <span class="n">iois</span> <span class="o">=</span> <span class="n">iois</span> <span class="o">*</span> <span class="p">(</span><span class="n">foot_ioi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="generate_stress_timed_sequence"><a class="viewcode-back" href="../../package/linguistics.html#combio.linguistic.generate_stress_timed_sequence">[docs]</a><span class="k">def</span> <span class="nf">generate_stress_timed_sequence</span><span class="p">(</span><span class="n">n_events_per_phrase</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                    <span class="n">syllable_ioi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
                                    <span class="n">n_phrases</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                                    <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function generates a Sequence object with inter-onset intervals (IOIs) that conform to the rhythmic</span>
+<span class="sd">    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic</span>
 <span class="sd">    structure of stress-timed languages. One can provide the length of a &#39;phrase&#39; (or &#39;cluster&#39;) as n_events_per_phrase.</span>
-<span class="sd">    In one &#39;sentence&#39;, one would have n_phrases of n_events_per_phrase.</span>
+<span class="sd">    In one sequence (e.g. &#39;sentence&#39;), one would have n_phrases of n_events_per_phrase.</span>
 
 <span class="sd">    The phrases all have the same duration, but are made up of different combinations of IOIs.</span>
 
@@ -104,17 +185,17 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(seed=123)</span>
 <span class="sd">    &gt;&gt;&gt; seq = generate_stress_timed_sequence(n_events_per_phrase=4, n_phrases=3, rng=rng)</span>
-<span class="sd">    &gt;&gt;&gt; print(seq.onsets)</span>
-<span class="sd">    [   0.    62.5  750.  1312.5 2000.  2062.5 2937.5 3187.5 4000.  4250.</span>
-<span class="sd">     4437.5 4812.5]</span>
+<span class="sd">    &gt;&gt;&gt; print(seq.iois)</span>
+<span class="sd">    [ 62.5 687.5 562.5 687.5  62.5 875.  250.  812.5 250.  187.5 375. ]</span>
+
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    Both the methodology and the code are based on/taken from [1]_.</span>
+<span class="sd">    Both the methodology and the code are based on/taken from [2]_.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:</span>
+<span class="sd">    .. [2] Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:</span>
 <span class="sd">       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.</span>
 <span class="sd">       Journal of Language Evolution, 2(1), 4-19.</span>
 <span class="sd">       https://doi.org/10.1093/jole/lzx002</span>
@@ -150,43 +231,6 @@
 
     <span class="k">return</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">from_onsets</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span></div>
 
-
-<div class="viewcode-block" id="generate_trimoraic_sequence"><a class="viewcode-back" href="../../package/linguistics.html#combio.linguistic.generate_trimoraic_sequence">[docs]</a><span class="k">def</span> <span class="nf">generate_trimoraic_sequence</span><span class="p">(</span><span class="n">n_feet</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                                <span class="n">mora_ioi</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">250</span><span class="p">,</span>
-                                <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
-
-    <span class="n">start_of_pattern</span> <span class="o">=</span> <span class="mi">2</span>
-
-    <span class="c1"># built around clusters with either one or two iois with same total duration (3 * syllable_ioi)</span>
-    <span class="n">ioi_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>
-
-    <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n_feet</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="n">n_feet</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">iois</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ioi_one</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">ioi_types</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">ioi_two</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">ioi_one</span>
-            <span class="n">iois</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">iois</span><span class="p">,</span> <span class="n">ioi_one</span><span class="p">,</span> <span class="n">ioi_two</span><span class="p">])</span>
-
-        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="n">ioi_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span>
-    <span class="n">pattern_shifted</span> <span class="o">=</span> <span class="n">ioi_sums</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">start_of_pattern</span>
-    <span class="n">pattern</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">start_of_pattern</span><span class="p">],</span> <span class="n">pattern_shifted</span><span class="p">])</span>
-
-    <span class="c1"># Get iois from pattern</span>
-    <span class="n">iois</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
-
-    <span class="c1"># Calculate with proper tempo</span>
-    <span class="n">iois</span> <span class="o">=</span> <span class="n">iois</span> <span class="o">*</span> <span class="n">mora_ioi</span>
-
-    <span class="k">return</span> <span class="n">Sequence</span><span class="p">(</span><span class="n">iois</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

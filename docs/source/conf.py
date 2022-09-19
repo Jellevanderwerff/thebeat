@@ -29,6 +29,9 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+# for ipynb notebooks
+nbsphinx_input_prompt = 'In [%s]:'
+
 
 # Napoleon settings
 napoleon_include_init_with_doc = True

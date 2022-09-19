@@ -54,6 +54,7 @@ def plot_sequence_single(onsets: Iterable,
                          linewidths=None,
                          figsize=None,
                          suppress_display: bool = False):
+    """This helper function returns a sequence plot."""
 
     # Make onsets array
     onsets = np.array(onsets)
