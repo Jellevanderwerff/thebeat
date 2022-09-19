@@ -8,7 +8,7 @@ import numpy as np
 def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
                          style: str = 'seaborn',
                          title: str = None,
-                         linewidths: Iterable = None,
+                         linewidths: Union[Iterable, int] = None,
                          figsize=None,
                          suppress_display: bool = False):
     """
@@ -27,9 +27,9 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     title : str, optional
         If desired, one can provide a title for the plot. This takes precedence over using the
         Sequence or StimSequence name as the title of the plot (if passed and the object has one).
-    linewidths : iterable, optional
+    linewidths : iterable or int, optional
         An iterable containing the desired width of the bars (events) in milliseconds.
-        Defaults to 50 milliseconds if not provided.
+        If a single int is provided, this width is used for all the bars.
     figsize : tuple, optional
         The desired figure size in inches as a tuple: (width, height).
     suppress_display : bool, optional
@@ -84,6 +84,10 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     else:
         raise ValueError("Please provide a Sequence object, a StimSequence object, "
                          "or an iterable of event onsets.")
+
+    # If single value linewidth is passed, use that for each event.
+    if isinstance(linewidths, int):
+        linewidths = [linewidths] * len(onsets)
 
     fig, ax = combio.core.helpers.plot_sequence_single(onsets=onsets, style=style, title=title,
                                                        linewidths=linewidths, figsize=figsize,

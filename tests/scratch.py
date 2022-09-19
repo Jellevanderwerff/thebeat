@@ -1,7 +1,5 @@
 from combio.core import Sequence
-from combio.visualization import plot_multiple_sequences
+from combio.visualization import plot_multiple_sequences, plot_single_sequence
 
-seq = Sequence.generate_isochronous(n=5, ioi=500)
-seq2 = [0, 500, 1000]
-
-plot_multiple_sequences([seq, seq2])
+seq = [2000, 5000, 10001]
+plot_single_sequence(seq, figsize=(4, 2), linewidths=[200, 500, 10])
