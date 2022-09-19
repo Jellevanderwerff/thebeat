@@ -4,3 +4,4 @@ __pycache__/
 /docs/make.bat
 /docs/Makefile
 /docs/source/examples/snippets/.ipynb_checkpoints/
+*.DS_Store*
