@@ -21,11 +21,11 @@ class Stimulus:
     ----------
     fs : int
         Sampling frequency of the sound. 48000 is used as the standard in this package.
-    samples : NumPy 1-D array (float32)
+    samples : np.float64
         Contains the samples of the sound.
     dtype : numpy.dtype
-        Contains the NumPy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
-        the samples will be converted to np.float32.
+        Contains the NumPy data type object. Hard-coded as np.float64. If a read .wav file has a different dtype,
+        the samples will be converted to np.float64.
     n_channels : int
         The Stimulus' number of channels. 1 for mono, 2 for stereo.
     name : str
@@ -66,7 +66,7 @@ class Stimulus:
                  name: str = None) -> Stimulus:
         """
         This method loads a stimulus from a PCM .wav file, and reads in the samples.
-        It additionally converts .wav files with dtype int16 or int32 to float32.
+        It additionally converts .wav files with dtype int16 or int32 to float64.
 
         Parameters
         ----------
@@ -139,7 +139,7 @@ class Stimulus:
         t = duration / 1000
 
         # Generate signal
-        samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float32)
+        samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float64)
         if osc == 'sine':
             signal = amplitude * np.sin(2 * np.pi * freq * samples)
         elif osc == 'square':
@@ -454,18 +454,20 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 def _read_wavfile(filepath: Union[str, os.PathLike],
                   new_fs: int):
     """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
-    If dtype is different than np.float32, it converts the samples to that."""
+    If dtype is different than np.float64, it converts the samples to that."""
     file_fs, samples = scipy.io.wavfile.read(filepath)
 
-    # Change dtype so we always have float32
+    # Change dtype so we always have float64
     if samples.dtype == 'int16':
-        samples = samples.astype(np.float32, order='C') / 32768.0
+        samples = samples.astype(np.float64, order='C') / 32768.0
     elif samples.dtype == 'int32':
-        samples = samples.astype(np.float32, order='C') / 2147483648.0
+        samples = samples.astype(np.float64, order='C') / 2147483648.0
     elif samples.dtype == 'float32':
+        samples = samples.astype(np.float64, order='C')
+    elif samples.dtype == 'float64':
         pass
     else:
-        raise ValueError("Unknown dtype for wav file. 'int16', 'int32' and 'float32' are supported:'"
+        raise ValueError("Unknown dtype for wav file. 'int16', 'int32', 'float32' and 'float64' are supported:'"
                          "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
     # Resample if necessary

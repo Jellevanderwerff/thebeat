@@ -51,14 +51,14 @@ class BaseSequence:
         the actual variable.
         """
 
-        return np.array(self._iois, dtype=np.float32).copy()
+        return np.array(self._iois, dtype=np.float64).copy()
 
     @iois.setter
     def iois(self, values):
         """IOI setter. Checks against negative IOIs."""
 
         # We always want a NumPy array:
-        iois = np.array(values, dtype=np.float32)
+        iois = np.array(values, dtype=np.float64)
 
         if np.any(iois <= 0):
             raise ValueError("Inter-onset intervals (IOIs) cannot be zero or negative.")
@@ -72,9 +72,9 @@ class BaseSequence:
         """
 
         if self.metrical is True:
-            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float32)
+            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float64)
         else:
-            return np.cumsum(np.append(0, self.iois), dtype=np.float32)
+            return np.cumsum(np.append(0, self.iois), dtype=np.float64)
 
     @onsets.setter
     def onsets(self, values):
@@ -556,9 +556,9 @@ class Sequence(BaseSequence):
         [500. 500. 500. 500.]
         >>> seq.add_noise_gaussian(noise_sd=50, rng=gen)
         >>> print(seq.iois)
-        [450.54395 481.61066 564.39624 509.69873]
+        [450.54393248 481.61066743 564.39626306 509.69872096]
         >>> print(seq.onsets)
-        [   0.       450.54395  932.1546  1496.5508  2006.2495 ]
+        [   0.          450.54393248  932.15459991 1496.55086297 2006.24958393]
         """
         if rng is None:
             rng = np.random.default_rng()
@@ -674,16 +674,16 @@ class Sequence(BaseSequence):
         return fig, ax
 
     @property
-    def duration_ms(self) -> np.float32:
+    def duration_ms(self) -> np.float64:
         """Get the total duration of the Sequence object in milliseconds.
         """
-        return np.float32(np.sum(self.iois))
+        return np.float64(np.sum(self.iois))
 
     @property
-    def duration_s(self) -> np.float32:
+    def duration_s(self) -> np.float64:
         """Get the total duration of the Sequence object in seconds.
         """
-        return np.float32(np.sum(self.iois) / 1000)
+        return np.float64(np.sum(self.iois) / 1000)
 
     @property
     def integer_ratios(self):
@@ -741,7 +741,7 @@ class Sequence(BaseSequence):
         >>> print(seq.iois)
         [1000. 1000.  500.  500.]
         >>> print(seq.interval_ratios_from_dyads)
-        [0.5       0.6666667 0.5      ]
+        [0.5        0.66666667 0.5       ]
 
         """
 

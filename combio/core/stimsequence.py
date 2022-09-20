@@ -30,7 +30,7 @@ class StimSequence(BaseSequence):
     Attributes
     ----------
     dtype : numpy.dtype
-        Contains the NumPy data type object. Hard-coded as np.float32.
+        Contains the NumPy data type object. Hard-coded as np.float64.
     fs : int
         Sampling frequency of the sound. 48000 is used as the standard in this package.
     iois : NumPy 1-D array
@@ -44,7 +44,7 @@ class StimSequence(BaseSequence):
         The StimSequence's number of channels. 1 for mono, 2 for stereo.
     name : str
         Defaults to None. If name is provided during object construction it is saved here.
-    samples : NumPy 1-D array (float32)
+    samples : NumPy 1-D array (np.float64)
         Contains the samples of the sound.
     stim_names : list
         A list containing the names of the passed Stimulus object(s).
@@ -165,21 +165,21 @@ Stimulus names: {stim_names}
             """
 
     @property
-    def mean_ioi(self) -> np.float32:
+    def mean_ioi(self) -> np.float64:
         """The average inter-onset interval (IOI) in milliseconds."""
-        return np.float32(np.mean(self.iois))
+        return np.float64(np.mean(self.iois))
 
     @property
-    def duration_ms(self) -> np.float32:
+    def duration_ms(self) -> np.float64:
         """The total duration of the StimSequence object in milliseconds.
         """
-        return np.float32(np.sum(self.iois))
+        return np.float64(np.sum(self.iois))
 
     @property
-    def duration_s(self) -> np.float32:
+    def duration_s(self) -> np.float64:
         """The total duration of the StimSequence object in seconds.
         """
-        return np.float32(np.sum(self.iois) / 1000)
+        return np.float64(np.sum(self.iois) / 1000)
 
     def play(self, loop=False, metronome=False, metronome_amplitude=1) -> None:
         """

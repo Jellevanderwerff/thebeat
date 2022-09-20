@@ -52,7 +52,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="linguistics.html">Linguistics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="rhythm.html">Rhythm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="stats.html">Stats</a></li>
 <li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="summary.html">Summary</a></li>
@@ -1084,6 +1083,13 @@ a louder metronome sound.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stim</span> <span class="o">=</span> <span class="n">Stimulus</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">offramp</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_random_normal</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stimseq</span> <span class="o">=</span> <span class="n">StimSequence</span><span class="p">(</span><span class="n">stim</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stimseq</span><span class="o">.</span><span class="n">play</span><span class="p">(</span><span class="n">metronome</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">

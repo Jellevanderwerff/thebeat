@@ -268,6 +268,13 @@
 <span class="sd">            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means</span>
 <span class="sd">            a louder metronome sound.</span>
 
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; stim = Stimulus.generate(offramp=10)</span>
+<span class="sd">        &gt;&gt;&gt; seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50)</span>
+<span class="sd">        &gt;&gt;&gt; stimseq = StimSequence(stim, seq)</span>
+<span class="sd">        &gt;&gt;&gt; stimseq.play(metronome=True)  # doctest: +SKIP</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">combio</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">helpers</span><span class="o">.</span><span class="n">play_samples</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">mean_ioi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_ioi</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span>
                                          <span class="n">metronome</span><span class="o">=</span><span class="n">metronome</span><span class="p">,</span>

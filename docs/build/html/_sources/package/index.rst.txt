@@ -8,7 +8,6 @@ This what the package contains. Some more informative info here.
 
    Core classes<core.rst>
    Linguistics<linguistics.rst>
-   Rhythm<rhythm.rst>
    Stats<stats.rst>
    Visualization<visualization.rst>
    Summary<summary.rst>

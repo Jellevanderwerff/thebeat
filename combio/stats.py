@@ -296,7 +296,7 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
     >>> print(ks_test(seq))
-    KstestResult(statistic=0.0770618842759333, pvalue=0.5722913668564746)
+    KstestResult(statistic=0.07706198218153354, pvalue=0.5722897529628035)
 
     """
 
