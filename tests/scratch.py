@@ -1,7 +1,9 @@
 from combio.stats import *
 import numpy as np
-from combio.core import Sequence
+from combio.core import Sequence, Stimulus, StimSequence
 
-rng = np.random.default_rng(seed=123)
-seq = Sequence.generate_random_uniform(n=10, a=4500, b=5500, rng=rng)
-acf_plot(seq, 1, smoothing_window=500, smoothing_sd=200)
+data = np.array([0.1, 1.1, 2.1, 3.1,4.1,5.1,6.1,7.1,8.1, 9.1])
+data = data * 1000
+
+ugof = get_ugof(data, theoretical_ioi=(1000 / 14.6597))
+print(ugof)

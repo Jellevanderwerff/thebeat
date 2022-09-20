@@ -41,8 +41,8 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
 
         Notes
         -----
-        This function is based on the procedure described in [1]_. There, one can also find a more detailed
-        description of the smoothing procedure.
+        This function is based on the procedure described in Ravignani and Norton (2017) [1]_. There, one can also find a
+        more detailed description of the smoothing procedure.
 
         References
         ----------
@@ -128,8 +128,8 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
 
     Notes
     -----
-    This function is based on the procedure described in [2]_. There, one can also find a more detailed
-    description of the smoothing procedure.
+    This function is based on the procedure described in Ravignani and Norton (2017) [2]_. There, one can also find a
+    more detailed description of the smoothing procedure.
 
     References
     ----------
@@ -145,7 +145,10 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     else:
         onsets_ms = sequence
 
-    correlation = acf_values(sequence, resolution_ms, smoothing_window, smoothing_sd)
+    correlation = acf_values(sequence=sequence,
+                             resolution_ms=resolution_ms,
+                             smoothing_window=smoothing_window,
+                             smoothing_sd=smoothing_sd)
 
     x_step = resolution_ms
     max_lag = np.floor(np.max(onsets_ms))
@@ -156,7 +159,6 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
 
     # Make x axis
     x = np.arange(start=0, stop=y.size * x_step, step=x_step)
-
 
     # Do seconds instead of milliseconds above 10s
     if np.max(x) > 10000:
@@ -184,7 +186,7 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
     """
 
     This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-    the autocorrelation function.
+    an array with steps of resolutions_ms of unstandardized correlation factors.
 
     Parameters
     ----------
@@ -207,8 +209,9 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
 
     Notes
     -----
-    This function is based on the procedure described in [3]_. There, one can also find a more detailed
-    description of the smoothing procedure.
+    This function is based on the procedure described in Ravignani and Norton (2017) [3]_. There, one can also find a
+    more detailed description of the smoothing procedure. It uses the numpy.correlate [4]_ function to calculate the
+    correlations.
 
     References
     ----------
@@ -216,6 +219,7 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
        a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
        Journal of Language Evolution, 2(1), 4-19.
        https://doi.org/10.1093/jole/lzx002
+    .. [4] https://numpy.org/doc/stable/reference/generated/numpy.correlate.html
 
     """
 
@@ -248,20 +252,54 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
-    This function returns the D statistic and p value of a one-sample Kolmogorov-Smirnov test.
-    It calculates how different the supplied values are from a provided reference distribution.
+    This function returns the `D` statistic and `p` value of a one-sample Kolmogorov-Smirnov test.
+    It calculates how different the distribution of inter-onset intervals (IOIs) is compared to the provided reference
+    distribution.
 
-    If p is significant that means that the iois are not distributed according to the provided reference distribution.
+    If `p` is significant it means that the IOIs are not distributed according to the provided reference distribution.
+
+    Parameters
+    ----------
+    sequence : Sequence, StimSequence or iterable
+        Either a Sequence or StimSequence object or an iterable (e.g. list) containing inter-onset intervals
+        (IOIs), e.g. [500, 500, 500].
+    reference_distribution : str, optional
+        Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
+        is compared. The default is 'normal'.
+    alternative: str, optional
+        Either ‘two-sided’, ‘less’ or ‘greater’. See the SciPy documentation [5]_ for more information.
+
+    Returns
+    -------
+    scipy.stats._stats_py.KstestResult
+        A SciPy named tuple containing the `D` statistic and the `p` value.
+
+    Notes
+    -----
+    This function uses the scipy.stats.kstest function [5]_. For more information about the use of the
+    Kolmogorov-Smirnov test in rhythm research, see Jadoul et al. (2016) [6]_ and Ravignani and Norton (2017) [7]_.
 
     References
     ----------
-    Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
-    Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
-    Frontiers in Human Neuroscience, 10(586), 1–15.
+    .. [5] https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kstest.html
 
-    Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-    A primer to quantify and compare temporal structure in speech, movement,
-    and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
+    .. [6] Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
+       Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
+       Frontiers in Human Neuroscience, 10(586), 1–15.
+
+    .. [7] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       A primer to quantify and compare temporal structure in speech, movement,
+       and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
+
+    Examples
+    --------
+    >>> rng = np.random.default_rng(seed=123)
+    >>> seq = Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
+    >>> print(ks_test(seq))
+    KstestResult(statistic=0.0770618842759333, pvalue=0.5722913668564746)
+
+
+
     """
 
     if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
@@ -285,45 +323,116 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
 def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable]) -> np.float32:
     """
 
+    This function calculates the normalized pairwise variability index for a provided Sequence or StimSequence object,
+    or for an interable of inter-onset intervals (IOIs).
+
     Parameters
     ----------
     sequence : Sequence, StimSequence or iterable
-
+        Either a Sequence or StimSequence object, or an iterable containing inter-onset intervals (IOIs).
 
     Returns
     -------
+    np.float32
+        The nPVI for the provided sequence.
 
+    Notes
+    -----
+    The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent intervals.
+    The nPVI is zero for sequences that are perfectly isochronous. See Jadoul et al. (2016) [8]_ and
+    Ravignani and Norton (2017) [9]_ for more information about its use in rhythm research.
+
+    .. [8] Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
+       Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
+       Frontiers in Human Neuroscience, 10(586), 1–15.
+
+    .. [9] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       A primer to quantify and compare temporal structure in speech, movement,
+       and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
+
+    Examples
+    --------
+    >>> seq = Sequence.generate_isochronous(n=10, ioi=500)
+    >>> print(get_npvi(seq))
+    0.0
+
+    >>> rng = np.random.default_rng(seed=123)
+    >>> seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
+    >>> print(get_npvi(seq))
+    37.481644
     """
 
     if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
-        sequence = sequence.iois
+        iois = sequence.iois
+    else:
+        iois = np.array(sequence)
 
     npvi_values = []
 
-    for i in range(1, len(sequence)):
-        diff = sequence[i] - sequence[i - 1]
-        mean = np.mean(sequence[i] + sequence[i - 1])
-        npvi_values.append(diff / mean)
+    for i in range(1, len(iois)):
+        diff = iois[i] - iois[i - 1]
+        mean = np.mean(iois[i] + iois[i - 1])
+        npvi_values.append(np.abs(diff / mean))
 
-    return np.float32(np.mean(npvi_values))
+    npvi = np.mean(npvi_values) * (100 * (len(iois) - 1))
+
+    return np.float32(npvi)
 
 
 def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
-             theoretical_ioi: float,
-             output: str = 'mean') -> np.float32:
-    """Credits to Lara. S. Burchardt, include ref."""
+             theoretical_ioi: Union[int, float],
+             output_statistic: str = 'mean') -> np.float32:
+    """
 
-    """ugof is only for isochronous sequences?"""
+    This function calculates the universal goodness of fit (ugof) measure for a sequence compared to a
+    theoretical/underlying inter-onset interval (IOI). The ugof statistic quantifies how well a theoretical IOI
+    describes a sequence.
+
+    Parameters
+    ----------
+    sequence : Sequence, StimSequence or iterable
+        Either a Sequence or StimSequence object, or an iterable (e.g. list) containing event onsets,
+        e.g. [0, 500, 1000].
+    theoretical_ioi : int or float
+        The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.
+    output_statistic : str
+        Either 'mean' (the default) or 'median'. This determines whether for the individual ugof values we take the mean
+        or the median as the output statistic.
+
+    Returns
+    -------
+    np.float32
+        The ugof statistic.
+
+    Notes
+    -----
+    This measure is described in Burchardt et al. (2021) [10]_.
+
+    References
+    ----------
+    .. [10] Burchardt, L. S., Briefer, E. F., & Knörnschild, M. (2021).
+       Novel ideas to further expand the applicability of rhythm analysis.
+       Ecology and evolution, 11(24), 18229-18237.
+       https://doi.org/10.1002/ece3.8417
+
+    Examples
+    --------
+    >>> seq = Sequence.generate_isochronous(n=10, ioi=1000)
+    >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
+    >>> print(ugof)
+    0.59636414
+
+    """
 
     # Get the onsets
     if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
         onsets = sequence.onsets  # in ms
     else:
-        onsets = sequence
+        onsets = np.array(sequence)
 
     # Make a theoretical sequence that's multiples of the theoretical_ioi (the + one is because arange doesn't include
     # the stop)
-    theo_seq = np.arange(start=0, stop=max(onsets) + 1, step=theoretical_ioi)
+    theo_seq = np.arange(start=0, stop=np.max(onsets) + 1, step=theoretical_ioi)
 
     # For each onset, get the closest theoretical beat and get the absolute difference
     minimal_deviations = np.array([min(abs(onsets[n] - theo_seq)) for n in range(len(onsets))])
@@ -332,9 +441,9 @@ def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     # calculate ugofs
     ugof_values = minimal_deviations / maximal_deviation
 
-    if output == 'mean':
+    if output_statistic == 'mean':
         return np.float32(np.mean(ugof_values))
-    elif output == 'median':
+    elif output_statistic == 'median':
         return np.float32(np.median(ugof_values))
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
