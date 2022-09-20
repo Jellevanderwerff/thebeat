@@ -186,7 +186,7 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
     """
 
     This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-    an array with steps of resolutions_ms of unstandardized correlation factors.
+    an array with steps of resolution_ms of unstandardized correlation factors.
 
     Parameters
     ----------

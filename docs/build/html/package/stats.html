@@ -109,9 +109,9 @@
 <p>Some cool stats stuff, still need to add.</p>
 <span class="target" id="module-combio.stats"></span><dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.acf_df">
-<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#acf_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_df" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#acf_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_df" title="Permalink to this definition"></a></dt>
 <dd><p>This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-a Pandas dataframe containing timestamps (i.e. the acf lags), and the autocorrelation factors.</p>
+a Pandas dataframe containing timestamps (acf lags), and autocorrelation factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -120,9 +120,9 @@ e.g. [0, 500, 1000]</p></li>
 <li><p><strong>resolution_ms</strong> (<em>int</em><em>, </em><em>optional</em>) – The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
 calculated for the autocorrelation function can be calculated as
 n_lags = sequence_duration_in_ms / resolution_ms</p></li>
-<li><p><strong>smoothe_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
+<li><p><strong>smoothing_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
 smoothing out the analysis.</p></li>
-<li><p><strong>smoothe_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
+<li><p><strong>smoothing_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -133,22 +133,33 @@ smoothing out the analysis.</p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>This function is based on the procedure described in &lt;[1]&gt;_. There, one can also find a more detailed
-description of the smoothing procedure.</p>
+<p>This function is based on the procedure described in Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id2" id="id1">1</a>. There, one can also find a
+more detailed description of the smoothing procedure.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id1"><span class="brackets">1</span></dt>
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
 a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
 Journal of Language Evolution, 2(1), 4-19.
 <a class="reference external" href="https://doi.org/10.1093/jole/lzx002">https://doi.org/10.1093/jole/lzx002</a></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>  <span class="c1"># for reproducability</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_random_uniform</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">acf_df</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">smoothing_window</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">smoothing_sd</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">resolution_ms</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="go">   time_ms  correlation</span>
+<span class="go">0        0     1.000000</span>
+<span class="go">1       10     0.851373</span>
+<span class="go">2       20     0.590761</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.acf_plot">
-<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seaborn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Autocorrelation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/combio/stats.html#acf_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_plot" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seaborn'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Autocorrelation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">matplotlib.figure.Figure</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">matplotlib.axes._axes.Axes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/combio/stats.html#acf_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_plot" title="Permalink to this definition"></a></dt>
 <dd><p>This function can be used for plotting an autocorrelation plot from a Sequence or StimSequence object,
 or from a list of event onsets.</p>
 <dl class="field-list simple">
@@ -159,9 +170,9 @@ e.g. [0, 500, 1000]</p></li>
 <li><p><strong>resolution_ms</strong> (<em>int</em><em>, </em><em>optional</em>) – The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
 calculated for the autocorrelation function can be calculated as
 n_lags = sequence_duration_in_ms / resolution_ms</p></li>
-<li><p><strong>smoothe_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
+<li><p><strong>smoothing_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
 smoothing out the analysis.</p></li>
-<li><p><strong>smoothe_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
+<li><p><strong>smoothing_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
 <li><p><strong>style</strong> (<em>str</em><em>, </em><em>optional</em>) – A matplotlib style. See the matplotlib docs for options. Defaults to ‘seaborn’.</p></li>
 <li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – If desired, one can provide a title for the plot. This takes precedence over using the
 Sequence or StimSequence name as the title of the plot (if passed and the object has one).</p></li>
@@ -178,11 +189,11 @@ Sequence or StimSequence name as the title of the plot (if passed and the object
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>This function is based on the procedure described in <a class="footnote-reference brackets" href="#id3" id="id2">2</a>. There, one can also find a more detailed
-description of the smoothing procedure.</p>
+<p>This function is based on the procedure described in Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id4" id="id3">2</a>. There, one can also find a
+more detailed description of the smoothing procedure.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id3"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id3">2</a></span></dt>
 <dd><p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
 a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
 Journal of Language Evolution, 2(1), 4-19.
@@ -193,9 +204,9 @@ Journal of Language Evolution, 2(1), 4-19.
 
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.acf_values">
-<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothe_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#acf_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_values" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">acf_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_sd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#acf_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.acf_values" title="Permalink to this definition"></a></dt>
 <dd><p>This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-the autocorrelation function.</p>
+an array with steps of resolution_ms of unstandardized correlation factors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -203,9 +214,9 @@ the autocorrelation function.</p>
 e.g. [0, 500, 1000]</p></li>
 <li><p><strong>resolution_ms</strong> (<em>int</em><em>, </em><em>optional</em>) – The temporal resolution in milliseconds (i.e. sampling frequency). The number of lags calculated for the
 autocorrelation function can be calculated as n_lags = sequence_duration_in_ms / resolution_ms</p></li>
-<li><p><strong>smoothe_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
+<li><p><strong>smoothing_window</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The window (in milliseconds) within which a normal probability density function is used for
 smoothing out the analysis.</p></li>
-<li><p><strong>smoothe_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
+<li><p><strong>smoothing_sd</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>optional</em>) – The standard deviation of the normal probability density function used for smoothing out the analysis.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -216,15 +227,19 @@ smoothing out the analysis.</p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>This function is based on the procedure described in <a class="footnote-reference brackets" href="#id5" id="id4">3</a>. There, one can also find a more detailed
-description of the smoothing procedure.</p>
+<p>This function is based on the procedure described in Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id7" id="id5">3</a>. There, one can also find a
+more detailed description of the smoothing procedure. It uses the numpy.correlate <a class="footnote-reference brackets" href="#id8" id="id6">4</a> function to calculate the
+correlations.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
-<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id4">3</a></span></dt>
+<dt class="label" id="id7"><span class="brackets"><a class="fn-backref" href="#id5">3</a></span></dt>
 <dd><p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
 a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
 Journal of Language Evolution, 2(1), 4-19.
 <a class="reference external" href="https://doi.org/10.1093/jole/lzx002">https://doi.org/10.1093/jole/lzx002</a></p>
+</dd>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id6">4</a></span></dt>
+<dd><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.correlate.html">https://numpy.org/doc/stable/reference/generated/numpy.correlate.html</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -232,28 +247,142 @@ Journal of Language Evolution, 2(1), 4-19.
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.get_npvi">
 <span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">get_npvi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float32</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#get_npvi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.get_npvi" title="Permalink to this definition"></a></dt>
-<dd><p>Get nPVI</p>
+<dd><p>This function calculates the normalized pairwise variability index for a provided Sequence or StimSequence object,
+or for an interable of inter-onset intervals (IOIs).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><em>Sequence</em></a><em>, </em><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><em>StimSequence</em></a><em> or </em><em>iterable</em>) – Either a Sequence or StimSequence object, or an iterable containing inter-onset intervals (IOIs).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The nPVI for the provided sequence.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.float32</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent intervals.
+The nPVI is zero for sequences that are perfectly isochronous. See Jadoul et al. (2016) <a class="footnote-reference brackets" href="#id11" id="id9">8</a> and
+Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id12" id="id10">9</a> for more information about its use in rhythm research.</p>
+<dl class="footnote brackets">
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id9">8</a></span></dt>
+<dd><p>Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
+Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
+Frontiers in Human Neuroscience, 10(586), 1–15.</p>
+</dd>
+<dt class="label" id="id12"><span class="brackets"><a class="fn-backref" href="#id10">9</a></span></dt>
+<dd><p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
+A primer to quantify and compare temporal structure in speech, movement,
+and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_isochronous</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ioi</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">get_npvi</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_random_normal</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">get_npvi</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
+<span class="go">37.481644</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.get_ugof">
-<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">get_ugof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theoretical_ioi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float32</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#get_ugof"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.get_ugof" title="Permalink to this definition"></a></dt>
-<dd><p>Credits to Lara. S. Burchardt, include ref.</p>
+<span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">get_ugof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theoretical_ioi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_statistic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float32</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#get_ugof"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.get_ugof" title="Permalink to this definition"></a></dt>
+<dd><p>This function calculates the universal goodness of fit (ugof) measure for a sequence compared to a
+theoretical/underlying inter-onset interval (IOI). The ugof statistic quantifies how well a theoretical IOI
+describes a sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequence</strong> (<a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><em>Sequence</em></a><em>, </em><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><em>StimSequence</em></a><em> or </em><em>iterable</em>) – Either a Sequence or StimSequence object, or an iterable (e.g. list) containing event onsets,
+e.g. [0, 500, 1000].</p></li>
+<li><p><strong>theoretical_ioi</strong> (<em>int</em><em> or </em><em>float</em>) – The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.</p></li>
+<li><p><strong>output_statistic</strong> (<em>str</em>) – Either ‘mean’ (the default) or ‘median’. This determines whether for the individual ugof values we take the mean
+or the median as the output statistic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The ugof statistic.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.float32</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This measure is described in Burchardt et al. (2021) <a class="footnote-reference brackets" href="#id14" id="id13">10</a>.</p>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id14"><span class="brackets"><a class="fn-backref" href="#id13">10</a></span></dt>
+<dd><p>Burchardt, L. S., Briefer, E. F., &amp; Knörnschild, M. (2021).
+Novel ideas to further expand the applicability of rhythm analysis.
+Ecology and evolution, 11(24), 18229-18237.
+<a class="reference external" href="https://doi.org/10.1002/ece3.8417">https://doi.org/10.1002/ece3.8417</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_isochronous</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ioi</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ugof</span> <span class="o">=</span> <span class="n">get_ugof</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">theoretical_ioi</span><span class="o">=</span><span class="mf">68.21</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ugof</span><span class="p">)</span>
+<span class="go">0.59636414</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.ks_test">
 <span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">ks_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_distribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'normal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alternative</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'two-sided'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/combio/stats.html#ks_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.ks_test" title="Permalink to this definition"></a></dt>
-<dd><p>This function returns the D statistic and p value of a one-sample Kolmogorov-Smirnov test.
-It calculates how different the supplied values are from a provided reference distribution.</p>
-<p>If p is significant that means that the iois are not distributed according to the provided reference distribution.</p>
+<dd><p>This function returns the <cite>D</cite> statistic and <cite>p</cite> value of a one-sample Kolmogorov-Smirnov test.
+It calculates how different the distribution of inter-onset intervals (IOIs) is compared to the provided reference
+distribution.</p>
+<p>If <cite>p</cite> is significant it means that the IOIs are not distributed according to the provided reference distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequence</strong> (<a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><em>Sequence</em></a><em>, </em><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><em>StimSequence</em></a><em> or </em><em>iterable</em>) – Either a Sequence or StimSequence object or an iterable (e.g. list) containing inter-onset intervals
+(IOIs), e.g. [500, 500, 500].</p></li>
+<li><p><strong>reference_distribution</strong> (<em>str</em><em>, </em><em>optional</em>) – Either ‘normal’ or ‘uniform’. The distribution against which the distribution of inter-onset intervals (IOIs)
+is compared. The default is ‘normal’.</p></li>
+<li><p><strong>alternative</strong> (<em>str</em><em>, </em><em>optional</em>) – Either ‘two-sided’, ‘less’ or ‘greater’. See the SciPy documentation <a class="footnote-reference brackets" href="#id19" id="id15">5</a> for more information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A SciPy named tuple containing the <cite>D</cite> statistic and the <cite>p</cite> value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>scipy.stats._stats_py.KstestResult</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function uses the scipy.stats.kstest function <a class="footnote-reference brackets" href="#id19" id="id16">5</a>. For more information about the use of the
+Kolmogorov-Smirnov test in rhythm research, see Jadoul et al. (2016) <a class="footnote-reference brackets" href="#id20" id="id17">6</a> and Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id21" id="id18">7</a>.</p>
 <p class="rubric">References</p>
-<p>Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
+<dl class="footnote brackets">
+<dt class="label" id="id19"><span class="brackets">5</span><span class="fn-backref">(<a href="#id15">1</a>,<a href="#id16">2</a>)</span></dt>
+<dd><p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kstest.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kstest.html</a></p>
+</dd>
+<dt class="label" id="id20"><span class="brackets"><a class="fn-backref" href="#id17">6</a></span></dt>
+<dd><p>Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
 Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
 Frontiers in Human Neuroscience, 10(586), 1–15.</p>
-<p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
+</dd>
+<dt class="label" id="id21"><span class="brackets"><a class="fn-backref" href="#id18">7</a></span></dt>
+<dd><p>Ravignani, A., &amp; Norton, P. (2017). Measuring rhythmic complexity:
 A primer to quantify and compare temporal structure in speech, movement,
 and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_random_normal</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ks_test</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span>
+<span class="go">KstestResult(statistic=0.0770618842759333, pvalue=0.5722913668564746)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
