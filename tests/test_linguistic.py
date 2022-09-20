@@ -7,5 +7,5 @@ def test_stress():
 
 
 def test_mora():
-    seq = combio.linguistic.generate_trimoraic_sequence(10)
-    assert seq.duration_s == 7.5
+    seq = combio.linguistic.generate_moraic_sequence(10)
+    assert seq.duration_s == 5.0

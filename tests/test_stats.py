@@ -22,7 +22,7 @@ def test_npvi():
 def test_acf():
     rng = np.random.default_rng(seed=123)
     seq = Sequence.generate_random_uniform(n=10, a=450, b=550, rng=rng)
-    fig, ax = acf_plot(seq, 1, 250, 20, suppress_display=True)
+    fig, ax = acf_plot(seq, resolution_ms=1, smoothing_window=50, smoothing_sd=10, suppress_display=True)
     assert fig
     assert ax
 

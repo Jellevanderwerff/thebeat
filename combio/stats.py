@@ -59,8 +59,8 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
         >>> print(df.head(3))
            time_ms  correlation
         0        0     1.000000
-        1        1     0.991144
-        2        2     0.980654
+        1       10     0.851373
+        2       20     0.590761
 
 
         """
@@ -148,12 +148,15 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     correlation = acf_values(sequence, resolution_ms, smoothing_window, smoothing_sd)
 
     x_step = resolution_ms
-    max_lag = np.floor(max(onsets_ms))
+    max_lag = np.floor(np.max(onsets_ms))
 
     # plot
-    x = np.arange(start=0, stop=len(correlation) * x_step, step=x_step)
     y = correlation[:int(max_lag)]
     y = y / max(y)  # normalize
+
+    # Make x axis
+    x = np.arange(start=0, stop=y.size * x_step, step=x_step)
+
 
     # Do seconds instead of milliseconds above 10s
     if np.max(x) > 10000:
