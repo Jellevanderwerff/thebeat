@@ -197,6 +197,13 @@ Stimulus names: {stim_names}
             metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
             a louder metronome sound.
 
+        Examples
+        --------
+        >>> stim = Stimulus.generate(offramp=10)
+        >>> seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50)
+        >>> stimseq = StimSequence(stim, seq)
+        >>> stimseq.play(metronome=True)  # doctest: +SKIP
+
         """
         combio.core.helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
                                          metronome=metronome,
@@ -233,7 +240,7 @@ Stimulus names: {stim_names}
         Examples
         --------
         >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
-        >>> trial.plot_sequence()
+        >>> trial.plot_sequence()  # doctest: +SKIP
 
         """
 

@@ -228,7 +228,7 @@ smoothing out the analysis.</p></li>
 </dl>
 <p class="rubric">Notes</p>
 <p>This function is based on the procedure described in Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id7" id="id5">3</a>. There, one can also find a
-more detailed description of the smoothing procedure. This function uses the numpy.correlate <a class="footnote-reference brackets" href="#id8" id="id6">4</a> function
+more detailed description of the smoothing procedure. This function uses the <code class="docutils literal notranslate"><span class="pre">numpy.correlate</span></code> <a class="footnote-reference brackets" href="#id8" id="id6">4</a> function
 to calculate the correlations.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">
@@ -247,8 +247,8 @@ Journal of Language Evolution, 2(1), 4-19.
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.get_npvi">
 <span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">get_npvi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float32</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#get_npvi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.get_npvi" title="Permalink to this definition"></a></dt>
-<dd><p>This function calculates the normalized pairwise variability index for a provided Sequence or StimSequence object,
-or for an interable of inter-onset intervals (IOIs).</p>
+<dd><p>This function calculates the normalized pairwise variability index (nPVI) for a provided Sequence or StimSequence
+object, or for an interable of inter-onset intervals (IOIs).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>sequence</strong> (<a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><em>Sequence</em></a><em>, </em><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><em>StimSequence</em></a><em> or </em><em>iterable</em>) – Either a Sequence or StimSequence object, or an iterable containing inter-onset intervals (IOIs).</p>
@@ -261,9 +261,9 @@ or for an interable of inter-onset intervals (IOIs).</p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent intervals.
+<p>The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent temporal intervals.
 The nPVI is zero for sequences that are perfectly isochronous. See Jadoul et al. (2016) <a class="footnote-reference brackets" href="#id11" id="id9">8</a> and
-Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id12" id="id10">9</a> for more information about its use in rhythm research.</p>
+Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id12" id="id10">9</a> for more information on its use in rhythm research.</p>
 <dl class="footnote brackets">
 <dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id9">8</a></span></dt>
 <dd><p>Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
@@ -293,8 +293,8 @@ and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="combio.stats.get_ugof">
 <span class="sig-prename descclassname"><span class="pre">combio.stats.</span></span><span class="sig-name descname"><span class="pre">get_ugof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="core.html#combio.core.sequence.Sequence" title="combio.core.sequence.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="core.html#combio.core.stimsequence.StimSequence" title="combio.core.stimsequence.StimSequence"><span class="pre">StimSequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theoretical_ioi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_statistic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float32</span></span></span><a class="reference internal" href="../_modules/combio/stats.html#get_ugof"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.stats.get_ugof" title="Permalink to this definition"></a></dt>
-<dd><p>This function calculates the universal goodness of fit (ugof) measure for a sequence compared to a
-theoretical/underlying inter-onset interval (IOI). The ugof statistic quantifies how well a theoretical IOI
+<dd><p>This function calculates the universal goodness of fit (<cite>ugof</cite>) measure for a sequence compared to a
+theoretical/underlying inter-onset interval (IOI). The <cite>ugof</cite> statistic quantifies how well a theoretical IOI
 describes a sequence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -358,7 +358,7 @@ is compared. The default is ‘normal’.</p></li>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>This function uses the scipy.stats.kstest function <a class="footnote-reference brackets" href="#id19" id="id16">5</a>. For more information about the use of the
+<p>This function uses the <code class="docutils literal notranslate"><span class="pre">scipy.stats.kstest</span></code> function <a class="footnote-reference brackets" href="#id19" id="id16">5</a>. For more information about the use of the
 Kolmogorov-Smirnov test in rhythm research, see Jadoul et al. (2016) <a class="footnote-reference brackets" href="#id20" id="id17">6</a> and Ravignani and Norton (2017) <a class="footnote-reference brackets" href="#id21" id="id18">7</a>.</p>
 <p class="rubric">References</p>
 <dl class="footnote brackets">

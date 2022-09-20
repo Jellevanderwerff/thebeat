@@ -210,7 +210,7 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
     Notes
     -----
     This function is based on the procedure described in Ravignani and Norton (2017) [3]_. There, one can also find a
-    more detailed description of the smoothing procedure. This function uses the numpy.correlate [4]_ function
+    more detailed description of the smoothing procedure. This function uses the ``numpy.correlate`` [4]_ function
     to calculate the correlations.
 
     References
@@ -276,7 +276,7 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
 
     Notes
     -----
-    This function uses the scipy.stats.kstest function [5]_. For more information about the use of the
+    This function uses the ``scipy.stats.kstest`` function [5]_. For more information about the use of the
     Kolmogorov-Smirnov test in rhythm research, see Jadoul et al. (2016) [6]_ and Ravignani and Norton (2017) [7]_.
 
     References
@@ -297,8 +297,6 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
     >>> seq = Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
     >>> print(ks_test(seq))
     KstestResult(statistic=0.0770618842759333, pvalue=0.5722913668564746)
-
-
 
     """
 
@@ -338,9 +336,9 @@ def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
 
     Notes
     -----
-    The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent intervals.
+    The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent temporal intervals.
     The nPVI is zero for sequences that are perfectly isochronous. See Jadoul et al. (2016) [8]_ and
-    Ravignani and Norton (2017) [9]_ for more information about its use in rhythm research.
+    Ravignani and Norton (2017) [9]_ for more information on its use in rhythm research.
 
     .. [8] Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
        Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
@@ -374,7 +372,7 @@ def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
         mean = np.mean(iois[i] + iois[i - 1])
         npvi_values.append(np.abs(diff / mean))
 
-    npvi = np.mean(npvi_values) * (100 * (len(iois) - 1))
+    npvi = np.mean(npvi_values) * (100 * (iois.size - 1))
 
     return np.float32(npvi)
 
@@ -384,8 +382,8 @@ def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
              output_statistic: str = 'mean') -> np.float32:
     """
 
-    This function calculates the universal goodness of fit (ugof) measure for a sequence compared to a
-    theoretical/underlying inter-onset interval (IOI). The ugof statistic quantifies how well a theoretical IOI
+    This function calculates the universal goodness of fit (`ugof`) measure for a sequence compared to a
+    theoretical/underlying inter-onset interval (IOI). The `ugof` statistic quantifies how well a theoretical IOI
     describes a sequence.
 
     Parameters

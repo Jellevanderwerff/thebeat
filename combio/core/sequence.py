@@ -2,7 +2,6 @@ from __future__ import annotations  # this is to make sure we can type hint the 
 from fractions import Fraction
 from typing import Iterable, Union
 import numpy as np
-
 import combio.core.helpers
 
 
@@ -655,7 +654,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-        >>> seq.plot()
+        >>> seq.plot()  # doctest: +SKIP
         """
 
         # If a title was provided that has preference. If none is provided,
