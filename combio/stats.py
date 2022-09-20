@@ -1,53 +1,77 @@
+from __future__ import annotations
 from typing import Iterable, Union
 import scipy.stats
 import scipy.fft
 import numpy as np
-from . import core
+from combio import core
+from combio.core import Sequence
 import matplotlib.pyplot as plt
 import scipy.signal
 import pandas as pd
 
 
-def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
-               resolution_ms: int = 1,
-               smoothe_width: Union[int, float] = 0,
-               smoothe_sd: Union[int, float] = 0):
-    """From Ravignani & Norton, 2017"""
-
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
-        onsets_ms = sequence.onsets
-    else:
-        onsets_ms = sequence
-
-    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
-
-    # npdf
-    if not smoothe_width == 0 and not smoothe_sd == 0:
-        x = np.arange(start=-smoothe_width / 2, stop=smoothe_width / 2, step=resolution_ms)
-        npdf = scipy.stats.norm.pdf(x, 0, smoothe_sd)
-        npdf = npdf / np.max(npdf)
-
-        signal_convoluted = np.convolve(signal, npdf)
-        signal = signal_convoluted[round(resolution_ms * smoothe_width / 2):]
-
-    correlation = np.correlate(signal, signal, 'full')
-    correlation = correlation[round(len(correlation) / 2) - 1:]
-
-    return correlation
-
-
 def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
            resolution_ms: int = 1,
-           smoothe_width: Union[int, float] = 0,
-           smoothe_sd: Union[int, float] = 0):
-    """
-    This function returns a Pandas DataFrame with timepoints and correlation factors.
-
+           smoothing_window: Union[int, float] = 0,
+           smoothing_sd: Union[int, float] = 0) -> pd.DataFrame:
     """
 
-    correlations = acf_values(sequence, resolution_ms, smoothe_width, smoothe_sd)
+        This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
+        a Pandas dataframe containing timestamps (acf lags), and autocorrelation factors.
+
+        Parameters
+        ----------
+        sequence : Sequence, StimSequence or iterable
+            Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
+            e.g. [0, 500, 1000]
+        resolution_ms : int, optional
+            The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
+            calculated for the autocorrelation function can be calculated as
+            n_lags = sequence_duration_in_ms / resolution_ms
+        smoothing_window : int or float, optional
+            The window (in milliseconds) within which a normal probability density function is used for
+            smoothing out the analysis.
+        smoothing_sd : int or float, optional
+            The standard deviation of the normal probability density function used for smoothing out the analysis.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A Pandas DataFrame containing two columns: the timestamps in milliseconds, and the autoccorrelation factor.
+
+        Notes
+        -----
+        This function is based on the procedure described in [1]_. There, one can also find a more detailed
+        description of the smoothing procedure.
+
+        References
+        ----------
+        .. [1] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+           a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
+           Journal of Language Evolution, 2(1), 4-19.
+           https://doi.org/10.1093/jole/lzx002
+
+        Examples
+        --------
+        >>> rng = np.random.default_rng(seed=123)  # for reproducability
+        >>> seq = Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
+        >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
+        >>> print(df.head(3))
+           time_ms  correlation
+        0        0     1.000000
+        1        1     0.991144
+        2        2     0.980654
+
+
+        """
+
+    correlations = acf_values(sequence=sequence,
+                              resolution_ms=resolution_ms,
+                              smoothing_window=smoothing_window,
+                              smoothing_sd=smoothing_sd)
     correlations = correlations / max(correlations)  # normalize
-    times_ms = np.arange(start=0, stop=correlations.size)
+    times_ms = np.arange(start=0, stop=correlations.size * resolution_ms, step=resolution_ms)
+
     df = pd.DataFrame(
         {
             "time_ms": times_ms,
@@ -60,15 +84,60 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
 
 def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
              resolution_ms: int = 1,
-             smoothe_width: Union[int, float] = 0,
-             smoothe_sd: Union[int, float] = 0,
+             smoothing_window: Union[int, float] = 0,
+             smoothing_sd: Union[int, float] = 0,
              style: str = 'seaborn',
              title: str = 'Autocorrelation',
              figsize: tuple = None,
-             suppress_display: bool = False):
+             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
-    Based on Ravignani & Norton, 2017
-    Please provide a core.sequence.Sequence or core.stimsequence.StimSequence object, or an iterable containing stimulus onsets in milliseconds.
+
+    This function can be used for plotting an autocorrelation plot from a Sequence or StimSequence object,
+    or from a list of event onsets.
+
+    Parameters
+    ----------
+    sequence : Sequence, StimSequence or iterable
+        Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
+        e.g. [0, 500, 1000]
+    resolution_ms : int, optional
+        The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
+        calculated for the autocorrelation function can be calculated as
+        n_lags = sequence_duration_in_ms / resolution_ms
+    smoothing_window : int or float, optional
+        The window (in milliseconds) within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd : int or float, optional
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
+    style : str, optional
+        A matplotlib style. See the matplotlib docs for options. Defaults to 'seaborn'.
+    title : str, optional
+        If desired, one can provide a title for the plot. This takes precedence over using the
+        Sequence or StimSequence name as the title of the plot (if passed and the object has one).
+    figsize : tuple, optional
+        The desired figure size in inches as a tuple: (width, height).
+    suppress_display : bool, optional
+        If True, the plot is only returned, and not displayed via plt.show()
+
+    Returns
+    -------
+    fig : Figure
+        A matplotlib Figure object
+    ax : Axes
+        A matplotlib Axes object
+
+    Notes
+    -----
+    This function is based on the procedure described in [2]_. There, one can also find a more detailed
+    description of the smoothing procedure.
+
+    References
+    ----------
+    .. [2] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
+       Journal of Language Evolution, 2(1), 4-19.
+       https://doi.org/10.1093/jole/lzx002
+
     """
 
     if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
@@ -76,18 +145,26 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     else:
         onsets_ms = sequence
 
-    correlation = acf_values(sequence, resolution_ms, smoothe_width, smoothe_sd)
+    correlation = acf_values(sequence, resolution_ms, smoothing_window, smoothing_sd)
 
     x_step = resolution_ms
     max_lag = np.floor(max(onsets_ms))
 
     # plot
-    x = np.arange(start=0, stop=max_lag, step=x_step)
+    x = np.arange(start=0, stop=len(correlation) * x_step, step=x_step)
     y = correlation[:int(max_lag)]
     y = y / max(y)  # normalize
+
+    # Do seconds instead of milliseconds above 10s
+    if np.max(x) > 10000:
+        x = x / 1000
+        x_label = "Lag [s]"
+    else:
+        x_label = "Lag [ms]"
+
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.axes.set_xlabel('Lag [ms]')
+        ax.axes.set_xlabel(x_label)
         ax.axes.set_title(title)
         ax.plot(x, y)
 
@@ -95,6 +172,73 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
         plt.show()
 
     return fig, ax
+
+
+def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+               resolution_ms: int = 1,
+               smoothing_window: Union[int, float] = 0,
+               smoothing_sd: Union[int, float] = 0) -> np.ndarray:
+    """
+
+    This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
+    the autocorrelation function.
+
+    Parameters
+    ----------
+    sequence : Sequence, StimSequence or iterable
+        Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
+        e.g. [0, 500, 1000]
+    resolution_ms : int, optional
+        The temporal resolution in milliseconds (i.e. sampling frequency). The number of lags calculated for the
+        autocorrelation function can be calculated as n_lags = sequence_duration_in_ms / resolution_ms
+    smoothing_window : int or float, optional
+        The window (in milliseconds) within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd : int or float, optional
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
+
+    Returns
+    -------
+    numpy.ndarray
+        An array containing the autocorrelation function (i.e. the correlation factors by resolution/step size).
+
+    Notes
+    -----
+    This function is based on the procedure described in [3]_. There, one can also find a more detailed
+    description of the smoothing procedure.
+
+    References
+    ----------
+    .. [3] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
+       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
+       Journal of Language Evolution, 2(1), 4-19.
+       https://doi.org/10.1093/jole/lzx002
+
+    """
+
+    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+        onsets_ms = sequence.onsets
+    else:
+        onsets_ms = sequence
+
+    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
+
+    # npdf
+    if not smoothing_window == 0 and not smoothing_sd == 0:
+        x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution_ms)
+        npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
+        npdf = npdf / np.max(npdf)
+        signal_convoluted = np.convolve(signal, npdf)
+        signal = signal_convoluted[round(resolution_ms * smoothing_window / 2):]
+
+    try:
+        correlation = np.correlate(signal, signal, 'full')
+        correlation = correlation[round(len(correlation) / 2) - 1:]
+    except ValueError as e:
+        raise ValueError("Error! Hint: Most likely your resolution_ms is too large for the chosen smoothing_window"
+                         "and smoothing_sd. Try choosing a smaller resolution_ms.") from e
+
+    return correlation
 
 
 def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
@@ -136,7 +280,16 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
 
 
 def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable]) -> np.float32:
-    """Get nPVI
+    """
+
+    Parameters
+    ----------
+    sequence : Sequence, StimSequence or iterable
+
+
+    Returns
+    -------
+
     """
 
     if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
