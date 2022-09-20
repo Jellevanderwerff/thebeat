@@ -210,8 +210,8 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
     Notes
     -----
     This function is based on the procedure described in Ravignani and Norton (2017) [3]_. There, one can also find a
-    more detailed description of the smoothing procedure. It uses the numpy.correlate [4]_ function to calculate the
-    correlations.
+    more detailed description of the smoothing procedure. This function uses the numpy.correlate [4]_ function
+    to calculate the correlations.
 
     References
     ----------
@@ -323,8 +323,8 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
 def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable]) -> np.float32:
     """
 
-    This function calculates the normalized pairwise variability index for a provided Sequence or StimSequence object,
-    or for an interable of inter-onset intervals (IOIs).
+    This function calculates the normalized pairwise variability index (nPVI) for a provided Sequence or StimSequence
+    object, or for an interable of inter-onset intervals (IOIs).
 
     Parameters
     ----------
