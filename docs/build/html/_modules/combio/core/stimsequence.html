@@ -101,7 +101,7 @@
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    dtype : numpy.dtype</span>
-<span class="sd">        Contains the NumPy data type object. Hard-coded as np.float32.</span>
+<span class="sd">        Contains the NumPy data type object. Hard-coded as np.float64.</span>
 <span class="sd">    fs : int</span>
 <span class="sd">        Sampling frequency of the sound. 48000 is used as the standard in this package.</span>
 <span class="sd">    iois : NumPy 1-D array</span>
@@ -115,7 +115,7 @@
 <span class="sd">        The StimSequence&#39;s number of channels. 1 for mono, 2 for stereo.</span>
 <span class="sd">    name : str</span>
 <span class="sd">        Defaults to None. If name is provided during object construction it is saved here.</span>
-<span class="sd">    samples : NumPy 1-D array (float32)</span>
+<span class="sd">    samples : NumPy 1-D array (np.float64)</span>
 <span class="sd">        Contains the samples of the sound.</span>
 <span class="sd">    stim_names : list</span>
 <span class="sd">        A list containing the names of the passed Stimulus object(s).</span>
@@ -236,21 +236,21 @@
 <span class="s2">            &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mean_ioi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">mean_ioi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;The average inter-onset interval (IOI) in milliseconds.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">duration_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">duration_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;The total duration of the StimSequence object in milliseconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">duration_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">duration_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;The total duration of the StimSequence object in seconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StimSequence.play"><a class="viewcode-back" href="../../../package/core.html#combio.core.stimsequence.StimSequence.play">[docs]</a>    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metronome_amplitude</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -311,7 +311,7 @@
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
 <span class="sd">        &gt;&gt;&gt; trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))</span>
-<span class="sd">        &gt;&gt;&gt; trial.plot_sequence()</span>
+<span class="sd">        &gt;&gt;&gt; trial.plot_sequence()  # doctest: +SKIP</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 

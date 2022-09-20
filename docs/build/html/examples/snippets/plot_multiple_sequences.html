@@ -47,6 +47,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting started</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="../snippets.html">Snippets</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="autocorrelation.html">Beat-finding using autocorrelations</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_single_sequence.html">Plotting a single sequence</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Plotting multiple sequences</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#Simple-example">Simple example</a></li>
@@ -491,7 +492,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="c1"># Generate random sequences (use a generator with a seed so you get the same results as us)</span>
+<span class="c1"># Generate random sequences (use a generator with a seed so you get the same results as we)</span>
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">)</span>
 <span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Sequence</span><span class="o">.</span><span class="n">generate_random_normal</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
 

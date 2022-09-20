@@ -224,9 +224,9 @@ of ‘noise_sd’.</p>
 <span class="go">[500. 500. 500. 500.]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span><span class="o">.</span><span class="n">add_noise_gaussian</span><span class="p">(</span><span class="n">noise_sd</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">gen</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span>
-<span class="go">[450.54395 481.61066 564.39624 509.69873]</span>
+<span class="go">[450.54393248 481.61066743 564.39626306 509.69872096]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">onsets</span><span class="p">)</span>
-<span class="go">[   0.       450.54395  932.1546  1496.5508  2006.2495 ]</span>
+<span class="go">[   0.          450.54393248  932.15459991 1496.55086297 2006.24958393]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -278,13 +278,13 @@ A total change of 0.5 (ritardando) results in a final IOI that is twice as long 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="combio.core.sequence.Sequence.duration_ms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float32</span></em><a class="headerlink" href="#combio.core.sequence.Sequence.duration_ms" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float64</span></em><a class="headerlink" href="#combio.core.sequence.Sequence.duration_ms" title="Permalink to this definition"></a></dt>
 <dd><p>Get the total duration of the Sequence object in milliseconds.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="combio.core.sequence.Sequence.duration_s">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float32</span></em><a class="headerlink" href="#combio.core.sequence.Sequence.duration_s" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float64</span></em><a class="headerlink" href="#combio.core.sequence.Sequence.duration_s" title="Permalink to this definition"></a></dt>
 <dd><p>Get the total duration of the Sequence object in seconds.</p>
 </dd></dl>
 
@@ -565,7 +565,7 @@ Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">iois</span><span class="p">)</span>
 <span class="go">[1000. 1000.  500.  500.]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">interval_ratios_from_dyads</span><span class="p">)</span>
-<span class="go">[0.5       0.6666667 0.5      ]</span>
+<span class="go">[0.5        0.66666667 0.5       ]</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -598,7 +598,7 @@ StimSequence name as the title of the plot (if the object has one).</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span> <span class="o">=</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_isochronous</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ioi</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>  
 </pre></div>
 </div>
 </dd></dl>
@@ -633,7 +633,7 @@ Additionally, one can plot a Stimulus object, change the amplitude, etc.</p>
 <dd><p>Contains the samples of the sound.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>NumPy 1-D array (float32)</p>
+<dd class="field-odd"><p>np.float64</p>
 </dd>
 </dl>
 </dd></dl>
@@ -641,8 +641,8 @@ Additionally, one can plot a Stimulus object, change the amplitude, etc.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="combio.core.stimulus.Stimulus.dtype">
 <span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#combio.core.stimulus.Stimulus.dtype" title="Permalink to this definition"></a></dt>
-<dd><p>Contains the NumPy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,
-the samples will be converted to np.float32.</p>
+<dd><p>Contains the NumPy data type object. Hard-coded as np.float64. If a read .wav file has a different dtype,
+the samples will be converted to np.float64.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>numpy.dtype</p>
@@ -761,7 +761,7 @@ A and B stimuli. It is used when the Stimulus sound is printed, written to a fil
 <dt class="sig sig-object py" id="combio.core.stimulus.Stimulus.from_wav">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_wav</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">PathLike</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#combio.core.stimulus.Stimulus" title="combio.core.stimulus.Stimulus"><span class="pre">Stimulus</span></a></span></span><a class="reference internal" href="../_modules/combio/core/stimulus.html#Stimulus.from_wav"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#combio.core.stimulus.Stimulus.from_wav" title="Permalink to this definition"></a></dt>
 <dd><p>This method loads a stimulus from a PCM .wav file, and reads in the samples.
-It additionally converts .wav files with dtype int16 or int32 to float32.</p>
+It additionally converts .wav files with dtype int16 or int32 to float64.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -919,7 +919,7 @@ and that the Stimulus objects’ number of channels are the same (probable).</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="combio.core.stimsequence.StimSequence.dtype">
 <span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#combio.core.stimsequence.StimSequence.dtype" title="Permalink to this definition"></a></dt>
-<dd><p>Contains the NumPy data type object. Hard-coded as np.float32.</p>
+<dd><p>Contains the NumPy data type object. Hard-coded as np.float64.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>numpy.dtype</p>
@@ -991,7 +991,7 @@ sequence has an equal number of IOIs and event onsets.</p>
 <dd><p>Contains the samples of the sound.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>NumPy 1-D array (float32)</p>
+<dd class="field-odd"><p>NumPy 1-D array (np.float64)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1051,19 +1051,19 @@ object, or when plotting one). One can always retrieve this attribute from StimS
 
 <dl class="py property">
 <dt class="sig sig-object py" id="combio.core.stimsequence.StimSequence.duration_ms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float32</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.duration_ms" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float64</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.duration_ms" title="Permalink to this definition"></a></dt>
 <dd><p>The total duration of the StimSequence object in milliseconds.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="combio.core.stimsequence.StimSequence.duration_s">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float32</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.duration_s" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duration_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float64</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.duration_s" title="Permalink to this definition"></a></dt>
 <dd><p>The total duration of the StimSequence object in seconds.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="combio.core.stimsequence.StimSequence.mean_ioi">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mean_ioi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float32</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.mean_ioi" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mean_ioi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float64</span></em><a class="headerlink" href="#combio.core.stimsequence.StimSequence.mean_ioi" title="Permalink to this definition"></a></dt>
 <dd><p>The average inter-onset interval (IOI) in milliseconds.</p>
 </dd></dl>
 
@@ -1117,7 +1117,7 @@ StimSequence name as the title of the plot (if the object has one).</p></li>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trial</span> <span class="o">=</span> <span class="n">StimSequence</span><span class="p">(</span><span class="n">Stimulus</span><span class="o">.</span><span class="n">generate</span><span class="p">(),</span> <span class="n">Sequence</span><span class="o">.</span><span class="n">generate_isochronous</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">ioi</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">trial</span><span class="o">.</span><span class="n">plot_sequence</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">trial</span><span class="o">.</span><span class="n">plot_sequence</span><span class="p">()</span>  
 </pre></div>
 </div>
 </dd></dl>

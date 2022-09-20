@@ -92,11 +92,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    fs : int</span>
 <span class="sd">        Sampling frequency of the sound. 48000 is used as the standard in this package.</span>
-<span class="sd">    samples : NumPy 1-D array (float32)</span>
+<span class="sd">    samples : np.float64</span>
 <span class="sd">        Contains the samples of the sound.</span>
 <span class="sd">    dtype : numpy.dtype</span>
-<span class="sd">        Contains the NumPy data type object. Hard-coded as np.float32. If a read .wav file has a different dtype,</span>
-<span class="sd">        the samples will be converted to np.float32.</span>
+<span class="sd">        Contains the NumPy data type object. Hard-coded as np.float64. If a read .wav file has a different dtype,</span>
+<span class="sd">        the samples will be converted to np.float64.</span>
 <span class="sd">    n_channels : int</span>
 <span class="sd">        The Stimulus&#39; number of channels. 1 for mono, 2 for stereo.</span>
 <span class="sd">    name : str</span>
@@ -137,7 +137,7 @@
                  <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Stimulus</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method loads a stimulus from a PCM .wav file, and reads in the samples.</span>
-<span class="sd">        It additionally converts .wav files with dtype int16 or int32 to float32.</span>
+<span class="sd">        It additionally converts .wav files with dtype int16 or int32 to float64.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -210,7 +210,7 @@
         <span class="n">t</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">/</span> <span class="mi">1000</span>
 
         <span class="c1"># Generate signal</span>
-        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">t</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">fs</span> <span class="o">*</span> <span class="n">t</span><span class="p">),</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">osc</span> <span class="o">==</span> <span class="s1">&#39;sine&#39;</span><span class="p">:</span>
             <span class="n">signal</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">*</span> <span class="n">samples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">osc</span> <span class="o">==</span> <span class="s1">&#39;square&#39;</span><span class="p">:</span>
@@ -525,18 +525,20 @@
 <span class="k">def</span> <span class="nf">_read_wavfile</span><span class="p">(</span><span class="n">filepath</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">],</span>
                   <span class="n">new_fs</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Internal function used to read a wave file. Returns the wave file&#39;s samples and the sampling frequency.</span>
-<span class="sd">    If dtype is different than np.float32, it converts the samples to that.&quot;&quot;&quot;</span>
+<span class="sd">    If dtype is different than np.float64, it converts the samples to that.&quot;&quot;&quot;</span>
     <span class="n">file_fs</span><span class="p">,</span> <span class="n">samples</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">wavfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
 
-    <span class="c1"># Change dtype so we always have float32</span>
+    <span class="c1"># Change dtype so we always have float64</span>
     <span class="k">if</span> <span class="n">samples</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int16&#39;</span><span class="p">:</span>
-        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mf">32768.0</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mf">32768.0</span>
     <span class="k">elif</span> <span class="n">samples</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;int32&#39;</span><span class="p">:</span>
-        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2147483648.0</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2147483648.0</span>
     <span class="k">elif</span> <span class="n">samples</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float32&#39;</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">samples</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="s1">&#39;float64&#39;</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown dtype for wav file. &#39;int16&#39;, &#39;int32&#39; and &#39;float32&#39; are supported:&#39;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown dtype for wav file. &#39;int16&#39;, &#39;int32&#39;, &#39;float32&#39; and &#39;float64&#39; are supported:&#39;&quot;</span>
                          <span class="s2">&quot;https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html&quot;</span><span class="p">)</span>
 
     <span class="c1"># Resample if necessary</span>
