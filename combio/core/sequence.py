@@ -175,7 +175,23 @@ class Sequence(BaseSequence):
             return f"Object of type Sequence (non-metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
-        return _join_sequences([self, other])
+
+        # Check whether all the objects are of the same type
+        if not isinstance(other, Sequence):
+            raise ValueError("Right-hand side object is not a Sequence")
+
+        # Sequence objects need to be metrical:
+        if not self.metrical:
+            raise ValueError("The left-hand side Sequence must be metrical. Otherwise, we miss an inter-onset interval"
+                             "(IOI) in between the joined sequences. Try creating a Sequence with the metrical=True "
+                             "flag, this means there's an equal number of IOIs and onsets.")
+
+        iois = np.concatenate([self.iois, other.iois])
+
+        if other.metrical:
+            return Sequence(iois, metrical=True)
+        else:
+            return Sequence(iois)
 
     def __len__(self):
         return len(self.onsets)
@@ -742,25 +758,3 @@ class Sequence(BaseSequence):
 
         return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
 
-
-def _join_sequences(iterator):
-    """
-    This helper function joins metrical Sequence objects (it is used in the __add__ of Sequence).
-    """
-
-    # Check whether iterable was passed
-    if not hasattr(iterator, '__iter__'):
-        raise ValueError("Please pass this function a list or other iterable object.")
-
-    # Check whether all the objects are of the same type
-    if not all(isinstance(x, Sequence) for x in iterator):
-        raise ValueError("This function can only join multiple Sequence objects.")
-
-    # Sequence objects need to be metrical:
-    if not all(x.metrical for x in iterator):
-        raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
-
-    iois = [sequence.iois for sequence in iterator]
-    iois = np.concatenate(iois)
-
-    return Sequence(iois, metrical=True)
