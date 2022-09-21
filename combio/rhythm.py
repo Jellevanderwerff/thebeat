@@ -1,7 +1,9 @@
 from collections import namedtuple
 from . import core
 import os
+import shutil
 import subprocess
+import tempfile
 import warnings
 import numpy as np
 import skimage
@@ -538,33 +540,25 @@ oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
 
 def _plot_lp(lp, filepath, suppress_display):
-    # This is the same each time:
+    format = os.path.splitext(filepath)[1] if filepath else '.png'
 
-    if filepath:
-        location, filename = os.path.split(filepath)
-        if location == '':
-            location = '.'
-    else:
-        location = '.'
-        filename = 'rhythm.png'
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # run subprocess
+        if format not in ['.eps', '.png']:
+            raise ValueError("Can only export .png or .eps files.")
 
-    # run subprocess
-    if filename.endswith('.eps'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --eps -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['.ly']
-    elif filename.endswith('.png'):
-        command = f'lilypond -dbackend=eps --silent -dresolution=600 --png -o {filename[:-4]} {filename[:-4] + ".ly"}'
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly']
-    else:
-        raise ValueError("Can only export .png or .eps files.")
+        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--{format[1:]}', '-o', 'rhythm', 'rhythm.ly']
+        with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
+            file.write(lp)
 
-    # write lilypond string to file
-    with open(os.path.join(location, filename[:-4] + '.ly'), 'w') as file:
-        file.write(lp)
+        subprocess.run(command, cwd=tmp_dir, check=True)
+        result_path = os.path.join(tmp_dir, 'rhythm' + format)
 
-    subprocess.Popen(command, shell=True, cwd=location).wait()
 
-    image = skimage.img_as_float(skimage.io.imread(filename))
+        if filepath:
+            shutil.copy(result_path, filepath)
+
+        image = skimage.img_as_float(skimage.io.imread(result_path))
 
     # Select all pixels almost equal to white
     # (almost, because there are some edge effects in jpegs
@@ -577,27 +571,16 @@ def _plot_lp(lp, filepath, suppress_display):
     top_left = np.min(coords, axis=1)
     bottom_right = np.max(coords, axis=1)
 
-    out = image[top_left[0]:bottom_right[0],
-          top_left[1]:bottom_right[1]]
+    out = image[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
 
     # show plot
     if not filepath and not suppress_display:
         plt.imshow(out)
         plt.axis('off')
         plt.show()
-    elif filename.endswith('.png') and not suppress_display:
+    elif format == '.png' and not suppress_display:
         plt.imshow(out)
         plt.axis('off')
-        plt.savefig(filename, bbox_inches='tight')
+        # plt.savefig(filename, bbox_inches='tight')  # TODO Jelle needs to figure out what he wants
     else:
         pass
-
-    # remove files
-    if filepath:
-        filenames = [filename[:-4] + x for x in to_be_removed]
-    else:
-        to_be_removed = ['-1.eps', '-systems.count', '-systems.tex', '-systems.texi', '.ly', '.png']
-        filenames = ['rhythm' + x for x in to_be_removed]
-
-    for file in filenames:
-        os.remove(os.path.join(location, file))
