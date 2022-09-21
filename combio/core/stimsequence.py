@@ -2,7 +2,7 @@ from scipy.io import wavfile
 from combio.core.sequence import BaseSequence, Sequence
 from combio.core.stimulus import Stimulus
 import numpy as np
-import combio.core.helpers
+import combio._helpers
 import warnings
 import os
 from typing import Iterable, Union
@@ -205,9 +205,8 @@ Stimulus names: {stim_names}
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
         """
-        combio.core.helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
-                                         metronome=metronome,
-                                         metronome_amplitude=metronome_amplitude)
+        combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
+                                         metronome=metronome, metronome_amplitude=metronome_amplitude)
 
     def plot_sequence(self,
                       style: str = 'seaborn',
@@ -246,7 +245,7 @@ Stimulus names: {stim_names}
 
         linewidths = self.event_durations
 
-        fig, ax = combio.core.helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                            linewidths=linewidths, figsize=figsize,
                                                            suppress_display=suppress_display)
 
@@ -279,15 +278,15 @@ Stimulus names: {stim_names}
         Examples
         --------
         >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=10, ioi=500))
-        >>> trial.plot_waveform(title="My StimSeq plot")  # doctest: +SKIP
+        >>> trial.plot_waveform(,,  # doctest: +SKIP
 
         """
         if self.name and title is None:
             title = self.name
 
-        fig, ax = combio.core.helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                    style=style,
-                                                    title=title, figsize=figsize, suppress_display=suppress_display)
+        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                    style=style, title=title, figsize=figsize,
+                                                    suppress_display=suppress_display)
 
         return fig, ax
 
@@ -311,7 +310,7 @@ Stimulus names: {stim_names}
         Examples
         --------
         >>> stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
-        >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
+        >>> stimseq.write_wav('my_stimseq.wav',,,  # doctest: +SKIP
         """
 
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
@@ -371,7 +370,7 @@ Stimulus names: {stim_names}
         # return sound
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
-            return combio.core.helpers.normalize_audio(samples)
+            return combio._helpers.normalize_audio(samples)
         else:
             return samples
 
@@ -379,7 +378,7 @@ Stimulus names: {stim_names}
 def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
     """Internal function used for writing a .wav to disk."""
     if metronome is True:
-        samples = combio.core.helpers.get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+        samples = combio._helpers.get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
     else:
         samples = samples
 

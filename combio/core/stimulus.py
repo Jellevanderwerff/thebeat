@@ -7,7 +7,7 @@ import sounddevice as sd
 from mingus.containers import Note
 import scipy.io
 import scipy.signal
-from combio.core import helpers
+import combio._helpers
 
 
 class Stimulus:
@@ -132,7 +132,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
-        >>> stim.plot_waveform()  # doctest: +SKIP
+        >>> stim.plot_waveform(,,  # doctest: +SKIP
 
         """
         # Duration in seconds
@@ -357,13 +357,9 @@ class Stimulus:
         if self.name and title is None:
             title = self.name
 
-        fig, ax = helpers.plot_waveform(samples=self.samples,
-                                        fs=self.fs,
-                                        n_channels=self.n_channels,
-                                        style=style,
-                                        title=title,
-                                        figsize=figsize,
-                                        suppress_display=suppress_display)
+        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                style=style,
+                                                title=title, figsize=figsize, suppress_display=suppress_display)
 
         return fig, ax
 
@@ -395,7 +391,7 @@ class Stimulus:
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> stim.write_wav('my_stimulus.wav')  # doctest: +SKIP
+        >>> stim.write_wav('my_stimulus.wav',,,  # doctest: +SKIP
 
         """
 
