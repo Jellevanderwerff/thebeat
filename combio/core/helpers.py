@@ -1,12 +1,11 @@
 import os
-import sys
 import importlib.resources as pkg_resources
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 
 
 def get_sound_with_metronome(samples: np.ndarray,
@@ -49,11 +48,11 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
     return samples
 
 
-def plot_sequence_single(onsets: Iterable,
+def plot_sequence_single(onsets: Union[list, np.ndarray],
                          style: str = 'seaborn',
-                         title: str = None,
-                         linewidths=None,
-                         figsize=None,
+                         title: Optional[str] = None,
+                         linewidths: Optional[Union[list, np.ndarray, None]] = None,
+                         figsize: Optional[tuple] = None,
                          suppress_display: bool = False):
     """This helper function returns a sequence plot."""
 
@@ -97,36 +96,36 @@ def plot_waveform(samples: np.ndarray,
                   fs: int,
                   n_channels: int,
                   style: str = 'seaborn',
-                  title: str = None,
-                  figsize: tuple = None,
-                  suppress_display: bool = False):
+                  title: Optional[str] = None,
+                  figsize: Optional[tuple] = None,
+                  suppress_display: bool = False) -> tuple[plt.Axes, plt.Figure]:
 
     """
     This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
 
     Parameters
     ----------
-    samples : ndarray
+    samples
         The array containing the sound samples.
-    fs : int
+    fs
         Sampling frequency in hertz (e.g. 48000).
-    n_channels : int
+    n_channels
         Number of channels (1 for mono, 2 for stereo).
-    style : str, optional
+    style
         Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
-    title : str, optional
+    title
         If desired, one can provide a title for the plot.
-    figsize : tuple, optional
+    figsize
         A tuple containing the desired output size of the plot in inches.
-    suppress_display : bool, optional
+    suppress_display
         If 'True', plt.show() is not run. Defaults to 'False'.
 
 
     Returns
     -------
-    fig : Figure
+    fig
         A matplotlib Figure object
-    ax : Axes
+    ax
         A matplotlib Axes object
 
     """
