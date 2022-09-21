@@ -70,7 +70,7 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
                               smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
     correlations = correlations / max(correlations)  # normalize
-    times_ms = np.arange(start=0, stop=correlations.size * resolution_ms, step=resolution_ms)
+    times_ms = np.arange(start=0, stop=len(correlations) * resolution_ms, step=resolution_ms)
 
     df = pd.DataFrame(
         {
@@ -158,7 +158,7 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     y = y / max(y)  # normalize
 
     # Make x axis
-    x = np.arange(start=0, stop=y.size * x_step, step=x_step)
+    x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
 
     # Do seconds instead of milliseconds above 10s
     if np.max(x) > 10000:
@@ -372,7 +372,7 @@ def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
         mean = np.mean(iois[i] + iois[i - 1])
         npvi_values.append(np.abs(diff / mean))
 
-    npvi = np.mean(npvi_values) * (100 * (iois.size - 1))
+    npvi = np.mean(npvi_values) * (100 * (len(iois) - 1))
 
     return np.float32(npvi)
 

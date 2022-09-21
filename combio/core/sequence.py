@@ -1,8 +1,8 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 import numpy as np
-import combio.core.helpers
+import combio._helpers
 
 
 class BaseSequence:
@@ -23,18 +23,18 @@ class BaseSequence:
 
     Attributes
     ----------
-    iois : NumPy 1-D array
+    iois
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    metrical : bool
-            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
-            sequence has an equal number of IOIs and event onsets.
+    metrical
+        If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+        sequence has an equal number of IOIs and event onsets.
     """
 
     def __init__(self,
-                 iois: Iterable,
-                 metrical: bool = False):
+                 iois: Union[list, np.ndarray],
+                 metrical: Optional[bool] = False):
         """Initialization of BaseSequence class."""
 
         # Save attributes
@@ -138,9 +138,9 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self,
-                 iois: Iterable,
+                 iois: Union[list, np.ndarray],
                  metrical: bool = False,
-                 name: str = None):
+                 name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
         If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs.
@@ -175,7 +175,23 @@ class Sequence(BaseSequence):
             return f"Object of type Sequence (non-metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
 
     def __add__(self, other):
-        return _join_sequences([self, other])
+
+        # Check whether all the objects are of the same type
+        if not isinstance(other, Sequence):
+            raise ValueError("Right-hand side object is not a Sequence")
+
+        # Sequence objects need to be metrical:
+        if not self.metrical:
+            raise ValueError("The left-hand side Sequence must be metrical. Otherwise, we miss an inter-onset interval"
+                             "(IOI) in between the joined sequences. Try creating a Sequence with the metrical=True "
+                             "flag, this means there's an equal number of IOIs and onsets.")
+
+        iois = np.concatenate([self.iois, other.iois])
+
+        if other.metrical:
+            return Sequence(iois, metrical=True)
+        else:
+            return Sequence(iois)
 
     def __len__(self):
         return len(self.onsets)
@@ -557,7 +573,7 @@ class Sequence(BaseSequence):
         """
         if rng is None:
             rng = np.random.default_rng()
-        self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=self.iois.size)
+        self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self,
                      factor: Union[int, float]) -> None:
@@ -609,7 +625,7 @@ class Sequence(BaseSequence):
         [500. 375. 300. 250.]
 
         """
-        self.iois /= np.linspace(1, total_change, self.iois.size)
+        self.iois /= np.linspace(1, total_change, len(self.iois))
 
     # Visualization
     def plot(self,
@@ -660,11 +676,11 @@ class Sequence(BaseSequence):
             title = self.name
 
         # Linewidths
-        linewidths = [linewidth] * len(self.onsets)
+        linewidths = np.repeat(linewidth, len(self.onsets))
 
-        fig, ax = combio.core.helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                           linewidths=linewidths, figsize=figsize,
-                                                           suppress_display=suppress_display)
+        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                            linewidths=linewidths, figsize=figsize,
+                                                            suppress_display=suppress_display)
 
         return fig, ax
 
@@ -742,25 +758,3 @@ class Sequence(BaseSequence):
 
         return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
 
-
-def _join_sequences(iterator):
-    """
-    This helper function joins metrical Sequence objects (it is used in the __add__ of Sequence).
-    """
-
-    # Check whether iterable was passed
-    if not hasattr(iterator, '__iter__'):
-        raise ValueError("Please pass this function a list or other iterable object.")
-
-    # Check whether all the objects are of the same type
-    if not all(isinstance(x, Sequence) for x in iterator):
-        raise ValueError("This function can only join multiple Sequence objects.")
-
-    # Sequence objects need to be metrical:
-    if not all(x.metrical for x in iterator):
-        raise ValueError("Only metrical Sequence objects can be joined. This is intentional.")
-
-    iois = [sequence.iois for sequence in iterator]
-    iois = np.concatenate(iois)
-
-    return Sequence(iois, metrical=True)
