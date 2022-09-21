@@ -47,18 +47,17 @@ class BaseSequence:
         between the onset of an event, and the onset of the next event. This is the most important
         attribute of the Sequence class and is used throughout.
 
-        This getter returns a copy of the IOIs instead of
-        the actual variable.
+        This getter returns a copy of the IOIs instead of the actual variable.
         """
 
-        return np.array(self._iois, dtype=np.float64).copy()
+        return np.array(self._iois, dtype=np.float64, copy=True)
 
     @iois.setter
     def iois(self, values):
         """IOI setter. Checks against negative IOIs."""
 
-        # We always want a NumPy array:
-        iois = np.array(values, dtype=np.float64)
+        # We always want a NumPy array
+        iois = np.array(values, dtype=np.float64, copy=True)
 
         if np.any(iois <= 0):
             raise ValueError("Inter-onset intervals (IOIs) cannot be zero or negative.")
@@ -72,32 +71,29 @@ class BaseSequence:
         """
 
         if self.metrical is True:
-            return np.cumsum(np.append(0, self.iois[:-1]), dtype=np.float64)
+            return np.cumsum(np.append(0, self.iois[:-1]))
         else:
-            return np.cumsum(np.append(0, self.iois), dtype=np.float64)
+            return np.cumsum(np.append(0, self.iois))
 
     @onsets.setter
     def onsets(self, values):
-        """Setter for the event onsets. First onset must be zero, and there cannot be two onsets that occur
-        simultaneously.
+        """Setter for the event onsets. First onset must be zero, onsets must be in order,
+        and there cannot be two simultaneous onsets that occur simultaneously.
         """
-
-        # Onsets may be in the wrong order, so sort first
-        np.sort(values)
 
         # Check whether first onset is 0 (requirement of this package)
         if values[0] != 0:
             raise ValueError("First onset is not 0")
 
-        if np.any(values[:-1] == values[1:]):
-            raise ValueError("Cannot have two onsets that occur simultaneously.")
+        if np.any(values[:-1] >= values[1:]):
+            raise ValueError("Onsets are not ordered strictly monotonically.")
 
         # Set the IOIs
         if self.metrical is True:
             raise ValueError("Cannot change onsets of metrical sequences. This is because we need to know the final "
                              "IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.")
 
-        self.iois = np.diff(values)
+        self._iois = np.array(np.diff(values), dtype=np.float64)
 
 
 class Sequence(BaseSequence):
@@ -173,7 +169,6 @@ class Sequence(BaseSequence):
         self.name = name
 
     def __str__(self):
-
         if self.metrical:
             return f"Object of type Sequence (metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
         else:
@@ -481,7 +476,7 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: int,
-                             metrical: bool = False,
+                             metrical=False,
                              name: str = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
@@ -489,14 +484,14 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n : int
             The desired number of events in the sequence.
-        ioi
+        ioi : int
             The inter-onset interval to be used between all events.
-        metrical
+        metrical : bool
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
-        name
+        name : str, optional
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
