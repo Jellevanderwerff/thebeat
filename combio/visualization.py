@@ -1,7 +1,7 @@
 from combio.core import Sequence, StimSequence
 import matplotlib.pyplot as plt
 from typing import Union, Iterable
-import combio.core._helpers
+import combio._helpers
 import numpy as np
 
 
@@ -89,7 +89,7 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     if isinstance(linewidths, int):
         linewidths = [linewidths] * len(onsets)
 
-    fig, ax = combio.core._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, linewidths=linewidths,
+    fig, ax = combio._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, linewidths=linewidths,
                                                        figsize=figsize, suppress_display=suppress_display)
     return fig, ax
 

@@ -2,7 +2,7 @@ from scipy.io import wavfile
 from combio.core.sequence import BaseSequence, Sequence
 from combio.core.stimulus import Stimulus
 import numpy as np
-import combio.core._helpers
+import combio._helpers
 import warnings
 import os
 from typing import Iterable, Union
@@ -205,7 +205,7 @@ Stimulus names: {stim_names}
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
         """
-        combio.core._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
+        combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
                                          metronome=metronome, metronome_amplitude=metronome_amplitude)
 
     def plot_sequence(self,
@@ -245,7 +245,7 @@ Stimulus names: {stim_names}
 
         linewidths = self.event_durations
 
-        fig, ax = combio.core._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                            linewidths=linewidths, figsize=figsize,
                                                            suppress_display=suppress_display)
 
@@ -284,7 +284,7 @@ Stimulus names: {stim_names}
         if self.name and title is None:
             title = self.name
 
-        fig, ax = combio.core._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
                                                     style=style, title=title, figsize=figsize,
                                                     suppress_display=suppress_display)
 
@@ -370,7 +370,7 @@ Stimulus names: {stim_names}
         # return sound
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
-            return combio.core._helpers.normalize_audio(samples)
+            return combio._helpers.normalize_audio(samples)
         else:
             return samples
 
@@ -378,7 +378,7 @@ Stimulus names: {stim_names}
 def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
     """Internal function used for writing a .wav to disk."""
     if metronome is True:
-        samples = combio.core._helpers.get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+        samples = combio._helpers.get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
     else:
         samples = samples
 

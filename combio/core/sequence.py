@@ -2,7 +2,7 @@ from __future__ import annotations  # this is to make sure we can type hint the 
 from fractions import Fraction
 from typing import Iterable, Union, Optional
 import numpy as np
-import combio.core._helpers
+import combio._helpers
 
 
 class BaseSequence:
@@ -662,7 +662,7 @@ class Sequence(BaseSequence):
         # Linewidths
         linewidths = np.repeat(linewidth, len(self.onsets))
 
-        fig, ax = combio.core._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                             linewidths=linewidths, figsize=figsize,
                                                             suppress_display=suppress_display)
 

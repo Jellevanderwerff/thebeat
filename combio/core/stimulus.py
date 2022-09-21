@@ -7,7 +7,7 @@ import sounddevice as sd
 from mingus.containers import Note
 import scipy.io
 import scipy.signal
-import combio.core._helpers
+import combio._helpers
 
 
 class Stimulus:
@@ -357,9 +357,9 @@ class Stimulus:
         if self.name and title is None:
             title = self.name
 
-        fig, ax = combio.core._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                     style=style,
-                                                     title=title, figsize=figsize, suppress_display=suppress_display)
+        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                style=style,
+                                                title=title, figsize=figsize, suppress_display=suppress_display)
 
         return fig, ax
 

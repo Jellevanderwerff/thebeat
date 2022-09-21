@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from typing import Iterable, Union, Optional
+from typing import Union, Optional
 
 
 def get_sound_with_metronome(samples: np.ndarray,
