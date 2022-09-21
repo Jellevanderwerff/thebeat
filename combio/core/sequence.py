@@ -1,8 +1,8 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 import numpy as np
-import combio.core.helpers
+import combio.core._helpers
 
 
 class BaseSequence:
@@ -23,18 +23,18 @@ class BaseSequence:
 
     Attributes
     ----------
-    iois : NumPy 1-D array
+    iois
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    metrical : bool
-            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
-            sequence has an equal number of IOIs and event onsets.
+    metrical
+        If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+        sequence has an equal number of IOIs and event onsets.
     """
 
     def __init__(self,
-                 iois: Iterable,
-                 metrical: bool = False):
+                 iois: Union[list, np.ndarray],
+                 metrical: Optional[bool] = False):
         """Initialization of BaseSequence class."""
 
         # Save attributes
@@ -142,9 +142,9 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self,
-                 iois: Iterable,
+                 iois: Union[list, np.ndarray],
                  metrical: bool = False,
-                 name: str = None):
+                 name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
         If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs.
@@ -562,7 +562,7 @@ class Sequence(BaseSequence):
         """
         if rng is None:
             rng = np.random.default_rng()
-        self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=self.iois.size)
+        self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self,
                      factor: Union[int, float]) -> None:
@@ -614,7 +614,7 @@ class Sequence(BaseSequence):
         [500. 375. 300. 250.]
 
         """
-        self.iois /= np.linspace(1, total_change, self.iois.size)
+        self.iois /= np.linspace(1, total_change, len(self.iois))
 
     # Visualization
     def plot(self,
@@ -665,11 +665,11 @@ class Sequence(BaseSequence):
             title = self.name
 
         # Linewidths
-        linewidths = [linewidth] * len(self.onsets)
+        linewidths = np.repeat(linewidth, len(self.onsets))
 
-        fig, ax = combio.core.helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                           linewidths=linewidths, figsize=figsize,
-                                                           suppress_display=suppress_display)
+        fig, ax = combio.core._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                            linewidths=linewidths, figsize=figsize,
+                                                            suppress_display=suppress_display)
 
         return fig, ax
 
