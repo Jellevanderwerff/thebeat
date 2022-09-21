@@ -107,8 +107,8 @@ def plot_multiple_sequences(sequences: Iterable,
     Plot multiple sequences in one plot. Either pass it an iterable (e.g. list) of Sequence objects,
     StimSequence objects, or iterables of event onsets (so iterable of iterables, e.g. list of lists).
 
-    If the total duration is shorter than 10 seconds, the x axis values are in milliseconds. If the total duration is longer
-    than 10 seconds, the x axis values are in seconds.
+    If the total duration is shorter than 10 seconds, the x axis values are in milliseconds. If the total duration is
+    longer than 10 seconds, the x axis values are in seconds.
 
     Parameters
     ----------
