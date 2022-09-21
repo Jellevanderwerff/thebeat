@@ -37,3 +37,6 @@ packages = [
 [tool.setuptools.dynamic]
 version = {attr = "combio.__version__"}
 
+[tool.mypy]
+ignore_missing_imports = true
+

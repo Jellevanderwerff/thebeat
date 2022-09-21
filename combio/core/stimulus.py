@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 import re
-from typing import Union
+from typing import Optional, Union
 import numpy as np
 import sounddevice as sd
 from mingus.containers import Note
@@ -452,7 +452,7 @@ def _make_ramps(signal, fs, onramp, offramp, ramp):
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],
-                  new_fs: int):
+                  new_fs: Optional[int]):
     """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
     If dtype is different than np.float64, it converts the samples to that."""
     file_fs, samples = scipy.io.wavfile.read(filepath)

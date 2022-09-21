@@ -20,7 +20,7 @@ def get_sound_with_metronome(samples: np.ndarray,
     duration_s = sound_samples.shape[0] / fs * 1000
 
     n_metronome_clicks = int(duration_s // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
-    onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
+    onsets = np.concatenate((np.array([0]), np.cumsum(np.repeat(metronome_ioi, n_metronome_clicks - 1))))
 
     with pkg_resources.path('combio.resources', 'metronome.wav') as metronome_path:
         metronome_fs, metronome_samples = wavfile.read(metronome_path)
@@ -58,7 +58,7 @@ def plot_sequence_single(onsets: Iterable,
     """This helper function returns a sequence plot."""
 
     # Make onsets array
-    onsets = np.array(onsets)
+    onsets = np.array(list(onsets))
 
     # X axis
     x_start = 0
@@ -133,7 +133,7 @@ def plot_waveform(samples: np.ndarray,
 
     # if we have two channels, we want the waveform to be opaque
     if n_channels == 1:
-        alph = 1
+        alph = 1.0
     elif n_channels == 2:
         alph = 0.5
     else:
