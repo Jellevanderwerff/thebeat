@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "combio"
+description = "TODO FOR JELLE"
+authors = [
+    {name = "Jelle van der Werff", email="jellevanderwerff@gmail.com"},
+    {name = "Yannick Jadoul", email="yannick.jadoul@gmail.com"},
+]
+readme = ""  # TODO
+#homepage = ""  # TODO: GitHub or Docs?
+#repository = ""  # TODO: GitHub?
+#documentation = ""  # TODO: RTD
+requires-python = ">=3.7"
+keywords = []  # TODO
+#license = {text = "BSD 3-Clause License"}  # TODO
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "sounddevice",
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = [
+    "combio",
+    "combio.core"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "combio.__version__"}
+

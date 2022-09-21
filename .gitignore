@@ -1,7 +1,10 @@
 __pycache__/
 *.py[cod]
+.ipynb_checkpoints/
+
 /venv/
-/docs/make.bat
-/docs/Makefile
-/docs/source/examples/snippets/.ipynb_checkpoints/
-*.DS_Store*
+
+/dist/
+/docs/build/
+
+.DS_Store
