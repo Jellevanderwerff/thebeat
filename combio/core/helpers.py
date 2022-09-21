@@ -1,5 +1,6 @@
 import os
 import sys
+import importlib.resources as pkg_resources
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
@@ -21,8 +22,8 @@ def get_sound_with_metronome(samples: np.ndarray,
     n_metronome_clicks = int(duration_s // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
     onsets = np.concatenate((np.array([0]), np.cumsum([metronome_ioi] * (n_metronome_clicks - 1))))
 
-    metronome_path = os.path.join(sys.path[1], 'combio', 'resources', 'metronome.wav')
-    metronome_fs, metronome_samples = wavfile.read(metronome_path)
+    with pkg_resources.path('combio.resources', 'metronome.wav') as metronome_path:
+        metronome_fs, metronome_samples = wavfile.read(metronome_path)
 
     # resample metronome sound if provided sound has different sampling frequency
     if metronome_fs != fs:
