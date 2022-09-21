@@ -7,7 +7,7 @@ import sounddevice as sd
 from scipy.io import wavfile
 from scipy.signal import resample
 
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 
 
 def get_sound_with_metronome(samples: np.ndarray,
