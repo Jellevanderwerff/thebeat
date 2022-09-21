@@ -3,7 +3,7 @@ import combio.core
 import os
 
 
-def test_stimsequence():
+def test_stimsequence(tmp_path):
     seq = combio.core.Sequence.generate_isochronous(10, 500)
     stim = combio.core.Stimulus.generate()
     trial = combio.core.StimSequence(stim, seq)
@@ -22,5 +22,4 @@ def test_stimsequence():
     seq = combio.core.Sequence.generate_isochronous(n=2, ioi=500)
     trial = combio.core.StimSequence(stim, seq)
 
-    trial.write_wav('test.wav', metronome=True)
-    os.remove('test.wav')
+    trial.write_wav(tmp_path / 'test.wav', metronome=True)
