@@ -481,7 +481,7 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: int,
-                             metrical=False,
+                             metrical: bool = False,
                              name: str = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
@@ -489,14 +489,14 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        ioi : int
+        ioi
             The inter-onset interval to be used between all events.
-        metrical : bool
+        metrical
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
