@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
-from typing import Union, Optional
+from typing import Iterable, Union, Optional
 
 
 def get_sound_with_metronome(samples: np.ndarray,
@@ -35,7 +35,7 @@ def get_sound_with_metronome(samples: np.ndarray,
 
     for onset in onsets:
         start_pos = int(onset * fs / 1000)
-        end_pos = int(start_pos + len(metronome_samples))
+        end_pos = int(start_pos + metronome_samples.size)
         new_samples = sound_samples[start_pos:end_pos] + metronome_samples
         sound_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
 
@@ -99,6 +99,7 @@ def plot_waveform(samples: np.ndarray,
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
                   suppress_display: bool = False) -> tuple[plt.Axes, plt.Figure]:
+
     """
     This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
 
