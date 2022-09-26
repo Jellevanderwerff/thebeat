@@ -114,16 +114,17 @@ class Sequence(BaseSequence):
 
     Attributes
     ----------
-    iois : NumPy 1-D array
-        Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
-        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
+    iois : :class:`numpy.ndarray`
+        One-dimensional array containing the inter-onset intervals (IOIs). This is the bread and butter of the
+        :py:class:`Sequence` class.
+        Non-metrical sequences have `n` IOIs and `n`+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
     metrical : bool
-        If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+        If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for n event onsets. If ``True``,
         sequence has an equal number of IOIs and event onsets.
     name : str
         If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
-        or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
+        or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     Examples
     --------
@@ -144,13 +145,13 @@ class Sequence(BaseSequence):
                  metrical: bool = False,
                  name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
-        When metrical is 'True', the sequence contains an equal number of IOIs and event onsets.
-        If 'False' (the default), the sequence contains n event onsets, and n-1 IOIs.
+        When metrical is ``True``, the sequence contains an equal number of IOIs and event onsets.
+        If ``False`` (the default), the sequence contains `n` event onsets, and `n`-1 IOIs.
 
         Parameters
         ----------
         iois
-            An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]
+            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``
         metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
@@ -209,27 +210,27 @@ class Sequence(BaseSequence):
                             name: Optional[str] = None) -> Sequence:
         """
 
-        This class method can be used to construct a new Sequence object on the basis of 'integer ratios'.
+        This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
 
         Parameters
         ----------
         numerators
-            Contains the numerators of the integer ratios. For instance: [1, 2, 4]
+            Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
         value_of_one_in_ms
-            This represents the duration of the
-            1, multiples of this value are used. For instance, a sequence of [2, 4] with value_of_one_in_ms=500
-            would be a Sequence with IOIs: [1000 2000].
+            This represents the duration of the 1, multiples of this value are used.
+            For instance, a sequence of `[2, 4]` using `value_of_one_in_ms=500` would be a :py:class:`Sequence` with
+            IOIs: ``[1000 2000]``.
         metrical
-            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
-            Defaults to 'False'.
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`). Defaults to ``False``.
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
         Returns
         -------
         Sequence
-            A newly constructed Sequence object.
+            A newly constructed :py:class:`Sequence` object.
 
         Examples
         --------
@@ -243,15 +244,15 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_onsets(cls,
-                    onsets: Union[np.array, list],
+                    onsets: Union[np.ndarray, list],
                     name: Optional[str] = None) -> Sequence:
         """
-        Class method that can be used to generate a new Sequence object on the basis of event onsets.
+        Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
 
         Parameters
         ----------
         onsets
-            An iterable of event onsets which must start from 0, e.g.: [0, 500, 1000]
+            An iterable of event onsets which must start from 0, e.g.: ``[0, 500, 1000]``.
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
@@ -259,7 +260,7 @@ class Sequence(BaseSequence):
         Returns
         -------
         Sequence
-            A newly constructed Sequence object.
+            A newly constructed :py:class:`Sequence` object.
 
         Examples
         --------
@@ -280,8 +281,8 @@ class Sequence(BaseSequence):
                                metrical: bool = False,
                                name: Optional[str] = None) -> Sequence:
         """
-        Class method that generates a Sequence object with random inter-onset intervals (IOIs) based on the normal
-        distribution.
+        Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
+        normal distribution.
 
         Parameters
         ----------
@@ -292,18 +293,19 @@ class Sequence(BaseSequence):
         sigma
             The standard deviation of the normal distribution.
         rng
-            A Generator object. If not supplied NumPy's random.default_rng() is used.
+            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
+            used.
         metrical
-            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
-            Defaults to 'False'.
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
         Returns
         -------
         Sequence
-            A newly created Sequence object.
+            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -350,18 +352,19 @@ class Sequence(BaseSequence):
         b
             The right bound of the uniform distribution.
         rng
-            A Generator object. If not supplied NumPy's random.default_rng() is used.
+            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
+            used.
         metrical
-            Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
-            Defaults to 'False'.
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
         Returns
         -------
         Sequence
-            A newly created Sequence object.
+            A newly created py:class:`Sequence` object.
 
         Examples
         --------
@@ -407,18 +410,19 @@ class Sequence(BaseSequence):
         lam
             The desired value for lambda.
         rng
-            A Generator object, if none is supplied NumPy's random.default_rng() is used.s
+            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
+            used.
         metrical
-            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-            grid)
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
         Returns
         -------
         Sequence
-            A newly created Sequence object
+            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -460,17 +464,19 @@ class Sequence(BaseSequence):
         lam
            The desired value for lambda.
         rng
-            A Generator object, e.g. np.default_rng(seed=12345)
+            A :class:`numpy.random.Generator` object. If not supplied NumPy's :func:`numpy.random.default_rng` is
+            used.
         metrical
-            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-            grid)
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
         Returns
         -------
-        Returns an object of class Sequence.
+        Sequence
+            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -502,7 +508,7 @@ class Sequence(BaseSequence):
                              name: Optional[str] = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
-        Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
+        Note that there will be `n`-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -511,8 +517,8 @@ class Sequence(BaseSequence):
         ioi
             The inter-onset interval to be used between all events.
         metrical
-            Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
-            grid)
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
@@ -556,14 +562,14 @@ class Sequence(BaseSequence):
         """
         This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
-        of 'noise_sd'.
+        of ``noise_sd``.
 
         Parameters
         ----------
         noise_sd
             The standard deviation of the normal distribution used for adding in noise.
         rng
-            A Numpy Generator object. If none is supplied, Numpy's random.default_rng() is used.
+            A Numpy Generator object. If none is supplied, :func:`numpy.random.default_rng` is used.
 
         Examples
         --------
@@ -591,7 +597,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         factor
-            Tempo change factor. E.g. '2' means twice as fast. 0.5 means twice as slow.
+            Tempo change factor. E.g. 2 means twice as fast. 0.5 means twice as slow.
 
         Examples
         --------
@@ -641,25 +647,25 @@ class Sequence(BaseSequence):
              figsize: Optional[tuple] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
-        Plot the Sequence object as an event plot on the basis of the event onsets.\
+        Plot the Sequence object as an event plot on the basis of the event onsets.
 
-        In principle, the x axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
+        In principle, the `x` axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
         this changes to seconds.
 
         Parameters
         ----------
         style
-            Matplotlib style to use for the plot. Defaults to 'seaborn'. Please refer to the matplotlib
-            docs for other styles.
+            Matplotlib style to use for the plot. Defaults to 'seaborn'.
+            See `matplotlib style sheets reference <Style sheets reference>`_.
         title
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
         linewidth
             The desired width of the bars (events) in milliseconds. Defaults to 50 milliseconds.
         figsize
-            The desired figure size in inches as a tuple: (width, height).
+            The desired figure size in inches as a tuple: ``(width, height)``.
         suppress_display
-            If True, the plot is only returned, and not displayed via plt.show()
+            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
         Returns
         -------
@@ -675,7 +681,7 @@ class Sequence(BaseSequence):
         """
 
         # If a title was provided that has preference. If none is provided,
-        # use the Sequence object's name. Otherwise use None.
+        # use the Sequence object's name. Otherwise use ``None``.
         if title:
             title = title
         elif self.name:
@@ -685,20 +691,20 @@ class Sequence(BaseSequence):
         linewidths = np.repeat(linewidth, len(self.onsets))
 
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                            linewidths=linewidths, figsize=figsize,
-                                                            suppress_display=suppress_display)
+                                                       linewidths=linewidths, figsize=figsize,
+                                                       suppress_display=suppress_display)
 
         return fig, ax
 
     @property
     def duration_ms(self) -> np.float64:
-        """Get the total duration of the Sequence object in milliseconds.
+        """Get the total duration of the :py:class:`Sequence` object in milliseconds.
         """
         return np.float64(np.sum(self.iois))
 
     @property
     def duration_s(self) -> np.float64:
-        """Get the total duration of the Sequence object in seconds.
+        """Get the total duration of the :py:class:`Sequence` object in seconds.
         """
         return np.float64(np.sum(self.iois) / 1000)
 
@@ -709,9 +715,10 @@ class Sequence(BaseSequence):
         the total duration of the sequence by finding the least common multiplier.
 
         Example:
-        A sequence of IOIs [250, 500, 1000, 250] has a total duration of 2000 ms.
-        This can be described using the least common multiplier as 1/8, 2/8, 4/8, 1/8,
-        so this method returns the numerators [1, 2, 4, 1].
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
+        This can be described using the least common multiplier as
+        :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
+        so this method returns the numerators ``[1, 2, 4, 1]``.
 
         References
         ----------
@@ -767,4 +774,3 @@ class Sequence(BaseSequence):
         """
 
         return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
-
