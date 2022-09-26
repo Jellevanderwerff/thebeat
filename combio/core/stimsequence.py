@@ -206,7 +206,7 @@ Stimulus names: {stim_names}
 
         """
         combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
-                                         metronome=metronome, metronome_amplitude=metronome_amplitude)
+                                     metronome=metronome, metronome_amplitude=metronome_amplitude)
 
     def plot_sequence(self,
                       style: str = 'seaborn',
