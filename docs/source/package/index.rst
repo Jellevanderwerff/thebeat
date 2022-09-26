@@ -4,7 +4,7 @@ Package contents
 This what the package contains. Some more informative info here.
 
 .. toctree:: 
-    :maxdepth: 3
+    :maxdepth: 5
 
     Core classes<core.rst>
     Linguistics<linguistics.rst>

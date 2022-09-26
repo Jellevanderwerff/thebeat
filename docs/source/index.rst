@@ -7,7 +7,7 @@ Awesome that you're here. Here's a picture of a seal:
     :width: 400
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 5
     :caption: Contents:
 
     Installation<installation.rst>

@@ -30,13 +30,9 @@ class StimSequence(BaseSequence):
     Attributes
     ----------
     dtype : numpy.dtype
-        Contains the NumPy data type object. Hard-coded as np.float64.
+        Contains the NumPy data type object. numpy.float64 is used throughout.
     fs : int
         Sampling frequency of the sound. 48000 is used as the standard in this package.
-    iois : NumPy 1-D array
-        Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
-        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
-        and onsets.
     metrical : bool
             If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
             sequence has an equal number of IOIs and event onsets.

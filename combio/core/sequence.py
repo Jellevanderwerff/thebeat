@@ -1,6 +1,6 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
-from typing import Iterable, Union, Optional
+from typing import Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,15 +13,15 @@ class BaseSequence:
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either be metrical or not.
-    The default is non-metrical, meaning that if there are n onset values (i.e. t values),
-    there are n-1 IOIs. This is what people will need in most cases.
+    The default is non-metrical, meaning that if there are `n` onset values (i.e. `t` values),
+    there are `n`-1 IOIs. This is what people will need in most cases.
     Metrical sequences have an additional final IOI (so they end with a gap of silence).
     This is what you will need in cases with e.g. rhythmical/musical sequences.
 
     The BaseSequence class protects against impossible values for the IOIs, as well as for the
-    event onsets (t values).
+    event onsets (`t` values).
 
-    Finally, remember that the first event onset is always at t = 0!
+    Finally, remember that the first event onset is always at :math:`t = 0`!
 
     Attributes
     ----------
@@ -69,7 +69,7 @@ class BaseSequence:
     @property
     def onsets(self) -> np.ndarray:
         """ Returns the event onsets (t values) in milliseconds on the basis of the sequence objects'
-        inter-onset intervals (IOIs). An additional first onset (t=0) is additionally prepended.
+        inter-onset intervals (IOIs). An additional first onset is additionally prepended at :math:`t = 0`.
         """
 
         if self.metrical is True:
@@ -103,18 +103,17 @@ class Sequence(BaseSequence):
     The Sequence class is the most important class in this package. It is used as the basis
     for many functions as it contains timing information in the form of inter-onset intervals (IOIs; the times between
     the onset of an event, and the onset of the next event) and event onsets (i.e. `t` values).
-    IOIs are what we use to construct `Sequence` objects.
+    IOIs are what we use to construct :py:class:`Sequence` objects.
 
-    The most basic way of constructing a `Sequence` object is by passing it a list (or other iterable) of IOIs.
-    However, the different class methods (e.g. `Sequence.generate_isochronous()`) may also be used.
+    The most basic way of constructing a :py:class:`Sequence` object is by passing it a list (or other iterable) of
+    IOIs. However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
 
     This class additionally contains methods and attributes to, for instance, get the event onset values, to
-    change the tempo, add Gaussian noise, or to plot the `Sequence` object using matplotlib.
+    change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
 
     Attributes
     ----------
-
     iois : NumPy 1-D array
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the Sequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
