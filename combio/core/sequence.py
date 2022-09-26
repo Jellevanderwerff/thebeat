@@ -1,6 +1,8 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
 from typing import Iterable, Union, Optional
+
+import matplotlib.pyplot as plt
 import numpy as np
 import combio._helpers
 
@@ -23,11 +25,11 @@ class BaseSequence:
 
     Attributes
     ----------
-    iois
+    iois : NumPy 1-D array
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
-    metrical
+    metrical : bool
         If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
         sequence has an equal number of IOIs and event onsets.
     """
@@ -118,7 +120,8 @@ class Sequence(BaseSequence):
         Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
         and onsets.
     metrical : bool
-
+        If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+        sequence has an equal number of IOIs and event onsets.
     name : str
         If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
         or when plotting the sequence. It can always be retrieved and changed via this attribute `Sequence.name`.
@@ -147,11 +150,14 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        iois : iterable
+        iois
             An iterable of inter-onset intervals (IOIs). For instance: [500, 500, 400, 200]
-        metrical : bool, optional
+        metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
+        name
+            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
+            the Sequence object.
 
         Examples
         --------
@@ -198,26 +204,26 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_integer_ratios(cls,
-                            numerators: Iterable,
+                            numerators: Union[np.array, list],
                             value_of_one_in_ms: int,
                             metrical: bool = False,
-                            name: str = None) -> Sequence:
+                            name: Optional[str] = None) -> Sequence:
         """
 
         This class method can be used to construct a new Sequence object on the basis of 'integer ratios'.
 
         Parameters
         ----------
-        numerators : iterable
+        numerators
             Contains the numerators of the integer ratios. For instance: [1, 2, 4]
-        value_of_one_in_ms : int
-            This represents the duration of the '1' numerator in milliseconds. If the numerators do not contain a
+        value_of_one_in_ms
+            This represents the duration of the
             1, multiples of this value are used. For instance, a sequence of [2, 4] with value_of_one_in_ms=500
             would be a Sequence with IOIs: [1000 2000].
-        metrical : bool, optional
+        metrical
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -237,16 +243,17 @@ class Sequence(BaseSequence):
         return cls(numerators * value_of_one_in_ms, metrical=metrical, name=name)
 
     @classmethod
-    def from_onsets(cls, onsets: Iterable,
-                    name: str = None) -> Sequence:
+    def from_onsets(cls,
+                    onsets: Union[np.array, list],
+                    name: Optional[str] = None) -> Sequence:
         """
         Class method that can be used to generate a new Sequence object on the basis of event onsets.
 
         Parameters
         ----------
-        onsets: iterable
+        onsets
             An iterable of event onsets which must start from 0, e.g.: [0, 500, 1000]
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -270,27 +277,27 @@ class Sequence(BaseSequence):
                                n: int,
                                mu: int,
                                sigma: int,
-                               rng=None,
-                               metrical=False,
-                               name: str = None) -> Sequence:
+                               rng: Optional[np.random.Generator] = None,
+                               metrical: bool = False,
+                               name: Optional[str] = None) -> Sequence:
         """
         Class method that generates a Sequence object with random inter-onset intervals (IOIs) based on the normal
         distribution.
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        mu : int
+        mu
             The mean of the normal distribution.
-        sigma : int
+        sigma
             The standard deviation of the normal distribution.
-        rng : numpy.random.Generator, optional
+        rng
             A Generator object. If not supplied NumPy's random.default_rng() is used.
-        metrical : bool, optional
+        metrical
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -329,26 +336,26 @@ class Sequence(BaseSequence):
                                 n: int,
                                 a: int,
                                 b: int,
-                                rng=None,
+                                rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: str = None) -> Sequence:
+                                name: Optional[str] = None) -> Sequence:
         """
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        a : int
+        a
             The left bound of the uniform distribution.
-        b : int
+        b
             The right bound of the uniform distribution.
-        rng : numpy.random.Generator, optional
+        rng
             A Generator object. If not supplied NumPy's random.default_rng() is used.
-        metrical : bool, optional
+        metrical
             Indicates whether a metrical or non-metrical sequence should be generated (see documentation for Sequence).
             Defaults to 'False'.
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -387,25 +394,25 @@ class Sequence(BaseSequence):
     def generate_random_poisson(cls,
                                 n: int,
                                 lam: int,
-                                rng=None,
+                                rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: str = None) -> Sequence:
+                                name: Optional[str] = None) -> Sequence:
 
         """
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        lam : int
+        lam
             The desired value for lambda.
-        rng : numpy.random.Generator, optional
+        rng
             A Generator object, if none is supplied NumPy's random.default_rng() is used.s
-        metrical : bool, optional
+        metrical
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -440,25 +447,25 @@ class Sequence(BaseSequence):
     def generate_random_exponential(cls,
                                     n: int,
                                     lam: int,
-                                    rng=None,
+                                    rng: Optional[np.random.Generator] = None,
                                     metrical: bool = False,
-                                    name: str = None) -> Sequence:
+                                    name: Optional[str] = None) -> Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        lam : int
+        lam
            The desired value for lambda.
-        rng : numpy.random.Generator, optional
+        rng
             A Generator object, e.g. np.default_rng(seed=12345)
-        metrical : bool, optional
+        metrical
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -492,22 +499,22 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: int,
-                             metrical=False,
-                             name: str = None) -> Sequence:
+                             metrical: bool = False,
+                             name: Optional[str] = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
         Note that there will be n-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
-        n : int
+        n
             The desired number of events in the sequence.
-        ioi : int
+        ioi
             The inter-onset interval to be used between all events.
-        metrical : bool
+        metrical
             Indicates whether there's an additional final IOI (for use in rhythmic sequences that adhere to a metrical
             grid)
-        name : str, optional
+        name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
 
@@ -546,7 +553,7 @@ class Sequence(BaseSequence):
     # Manipulation methods
     def add_noise_gaussian(self,
                            noise_sd: Union[int, float],
-                           rng=None) -> None:
+                           rng: Optional[np.random.Generator] = None) -> None:
         """
         This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
@@ -554,9 +561,9 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        noise_sd : int or float
+        noise_sd
             The standard deviation of the normal distribution used for adding in noise.
-        rng : numpy.random.Generator, optional
+        rng
             A Numpy Generator object. If none is supplied, Numpy's random.default_rng() is used.
 
         Examples
@@ -584,7 +591,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        factor : int or float
+        factor
             Tempo change factor. E.g. '2' means twice as fast. 0.5 means twice as slow.
 
         Examples
@@ -610,7 +617,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        total_change : int or float
+        total_change
             Total tempo change at the end of the Sequence compared to the beginning.
             So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.
             A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.
@@ -630,10 +637,10 @@ class Sequence(BaseSequence):
     # Visualization
     def plot(self,
              style: str = 'seaborn',
-             title: str = None,
+             title: Optional[str] = None,
              linewidth: int = 50,
-             figsize: tuple = None,
-             suppress_display: bool = False):
+             figsize: Optional[tuple] = None,
+             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Plot the Sequence object as an event plot on the basis of the event onsets.\
 
@@ -642,24 +649,24 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        style : str, optional
+        style
             Matplotlib style to use for the plot. Defaults to 'seaborn'. Please refer to the matplotlib
             docs for other styles.
-        title : str, optional
+        title
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
-        linewidth : int, optional
+        linewidth
             The desired width of the bars (events) in milliseconds. Defaults to 50 milliseconds.
-        figsize : tuple, optional
+        figsize
             The desired figure size in inches as a tuple: (width, height).
-        suppress_display : bool, optional
+        suppress_display
             If True, the plot is only returned, and not displayed via plt.show()
 
         Returns
         -------
-        fig : Figure
+        fig
             A matplotlib Figure object
-        ax : Axes
+        ax
             A matplotlib Axes object
 
         Examples
@@ -697,7 +704,7 @@ class Sequence(BaseSequence):
         return np.float64(np.sum(self.iois) / 1000)
 
     @property
-    def integer_ratios(self):
+    def integer_ratios(self) -> np.array:
         """
         This property calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
@@ -730,12 +737,16 @@ class Sequence(BaseSequence):
         return np.array(vals)
 
     @property
-    def interval_ratios_from_dyads(self):
-        """
-        This property returns sequential interval ratios,
-        calculated as ratio_k = ioi_k / (ioi_k + ioi_{k+1})
+    def interval_ratios_from_dyads(self) -> np.array:
+        r"""
+        This property returns sequential interval ratios, calculated as:
 
-        Note that for n IOIs this property returns n-1 ratios.
+        .. math::
+
+            \textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}
+
+
+        Note that for `n` IOIs this property returns `n-1` ratios.
 
         References
         ----------
