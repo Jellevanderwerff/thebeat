@@ -746,7 +746,7 @@ class Sequence(BaseSequence):
             \textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}
 
 
-        Note that for `n` IOIs this property returns `n-1` ratios.
+        Note that for `n` IOIs this property returns `n`-1 ratios.
 
         References
         ----------
