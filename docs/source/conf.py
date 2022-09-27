@@ -19,7 +19,8 @@ extensions = [
     'myst_parser',
     'nbsphinx',
     'sphinx_autodoc_typehints',
-]
+    'sphinxcontrib.bibtex'
+    ]
 
 
 
@@ -49,3 +50,7 @@ napoleon_include_init_with_doc = True
 napoleon_preprocess_types = True
 napoleon_use_rtype = True
 typehints_defaults = 'comma'
+
+# bibtex
+bibtex_bibfiles = ['refs.bib']
+bibtext_reference_style = 'author_year'

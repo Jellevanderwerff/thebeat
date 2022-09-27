@@ -157,7 +157,7 @@ class Sequence(BaseSequence):
             sequences.
         name
             Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object.
+            the Sequence object. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Examples
         --------
@@ -204,13 +204,14 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_integer_ratios(cls,
-                            numerators: Union[np.array, list],
+                            numerators: Union[np.ndarray, list],
                             value_of_one_in_ms: int,
                             metrical: bool = False,
                             name: Optional[str] = None) -> Sequence:
         """
 
         This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
+        See :py:attr:`Sequence.integer_ratios` for explanation.
 
         Parameters
         ----------
@@ -218,14 +219,14 @@ class Sequence(BaseSequence):
             Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
         value_of_one_in_ms
             This represents the duration of the 1, multiples of this value are used.
-            For instance, a sequence of `[2, 4]` using `value_of_one_in_ms=500` would be a :py:class:`Sequence` with
+            For instance, a sequence of ``[2, 4]`` using ``value_of_one_in_ms=500`` would be a :py:class:`Sequence` with
             IOIs: ``[1000 2000]``.
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`). Defaults to ``False``.
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute.
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -255,7 +256,7 @@ class Sequence(BaseSequence):
             An iterable of event onsets which must start from 0, e.g.: ``[0, 500, 1000]``.
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -300,7 +301,7 @@ class Sequence(BaseSequence):
             (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute.
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -359,7 +360,7 @@ class Sequence(BaseSequence):
             (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute.
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -417,7 +418,7 @@ class Sequence(BaseSequence):
             (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute.
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -471,7 +472,7 @@ class Sequence(BaseSequence):
             (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute.
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -521,7 +522,7 @@ class Sequence(BaseSequence):
             (see :py:attr:`Sequence.metrical`).
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via this attribute (`Sequence.name`).
+            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
         Returns
         -------
@@ -618,7 +619,7 @@ class Sequence(BaseSequence):
                               total_change: Union[int, float]) -> None:
         """
         This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
-        It divides the IOIs by a vector linearly spaced between 1 and total_change.
+        It divides the IOIs by a vector linearly spaced between 1 and ``total_change``.
 
         Parameters
         ----------
@@ -656,7 +657,8 @@ class Sequence(BaseSequence):
         ----------
         style
             Matplotlib style to use for the plot. Defaults to 'seaborn'.
-            See `matplotlib style sheets reference <Style sheets reference>`_.
+            See `matplotlib style sheets reference
+            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
         title
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
@@ -710,23 +712,20 @@ class Sequence(BaseSequence):
 
     @property
     def integer_ratios(self) -> np.array:
-        """
+        r"""
         This property calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
 
-        Example:
+        **Example:**
+
         A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
         This can be described using the least common multiplier as
         :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
         so this method returns the numerators ``[1, 2, 4, 1]``.
 
-        References
-        ----------
-        For an example of this method being used, see:
-
-        Jacoby, N., & McDermott, J. H. (2017). Integer Ratio Priors on Musical Rhythm
-        Revealed Cross-culturally by Iterated Reproduction.
-        Current Biology, 27(3), 359–370. https://doi.org/10.1016/j.cub.2016.12.031
+        Notes
+        -----
+        The method for calculating the integer ratios is based on :footcite:t:`jacobyIntegerRatioPriors2017`.
 
         Examples
         --------
@@ -754,14 +753,9 @@ class Sequence(BaseSequence):
 
         Note that for `n` IOIs this property returns `n`-1 ratios.
 
-        References
-        ----------
-
-        The method follows the methodology from:
-
-        Roeske, T. C., Tchernichovski, O., Poeppel, D., & Jacoby, N. (2020).
-        Categorical Rhythms Are Shared between Songbirds and Humans. Current Biology, 30(18),
-        3544-3555.e6. https://doi.org/10.1016/j.cub.2020.06.072
+        Notes
+        -----
+        The used method is based on the methodology from :footcite:t:`roeskeCategoricalRhythmsAre2020`.
 
         Examples
         --------
