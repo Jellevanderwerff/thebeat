@@ -6,6 +6,7 @@ import combio._helpers
 import warnings
 import os
 from typing import Union, Optional
+import sounddevice as sd
 
 
 class StimSequence(BaseSequence):
@@ -70,8 +71,8 @@ class StimSequence(BaseSequence):
         Parameters
         ----------
         stimulus
-            Either a single Stimulus object (in which case the same sound is used for each event onset), or an
-            iterable of Stimulus objects (in which case different sounds are used for each event onset).
+            Either a single Stimulus object (in which case the same sound is used for each event onset), or a
+            list or array of Stimulus objects (in which case different sounds are used for each event onset).
         sequence
             A Sequence object. This contains the timing information for the played events.
         name
@@ -190,7 +191,8 @@ Stimulus names: {stim_names}
         Parameters
         ----------
         loop
-            If ``True``, the StimSequence will continue playing until the :py:meth:`StimSequence.stop` method is called.
+            If ``True``, the :py:class:`StimSequence` will continue playing until the :py:meth:`StimSequence.stop`
+            method is called.
         metronome
             If ``True``, a metronome sound is added for playback.
         metronome_amplitude
@@ -209,6 +211,24 @@ Stimulus names: {stim_names}
         combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
                                      metronome=metronome, metronome_amplitude=metronome_amplitude)
 
+
+    def stop(self) -> None:
+        """
+        Stop playing the :py:class:`StimSequence` sound. Calls :func:`sounddevice.stop`.
+
+        Examples
+        --------
+        >>> import time  # doctest: +SKIP
+        >>> stim = Stimulus.generate()  # doctest: +SKIP
+        >>> seq = Sequence([500, 300, 800])
+        >>> stimseq = StimSequence(stim, seq)
+        >>> stimseq.play()  # doctest: +SKIP
+        >>> time.sleep(secs=1)  # doctest: +SKIP
+        >>> stimseq.stop()  # doctest: +SKIP
+        """
+
+        sd.stop()
+
     def plot_sequence(self,
                       style: str = 'seaborn',
                       title: str = None,
@@ -216,30 +236,28 @@ Stimulus names: {stim_names}
                       suppress_display: bool = False):
         """
         Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
+        See :py:func:`combio.visualization.plot_single_sequence`.
 
         Parameters
         ----------
-        style : str, optional
-            Matplotlib style to use for the plot. Defaults to 'seaborn'. Please refer to the matplotlib
-            docs for other styles.
-        title : str, optional
+        style
+            Matplotlib style to use for the plot. See `matplotlib style sheets reference
+            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+        title
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
-        figsize : tuple, optional
-            The desired figure size in inches as a tuple: (width, height).
-        suppress_display : bool, optional
-            If True, the plot is only returned, and not displayed via plt.show()
+        figsize
+            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        suppress_display
+            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
-        Returns
-        -------
-        fig : Figure
-            A matplotlib Figure object
-        ax : Axes
-            A matplotlib Axes object
 
         Examples
         --------
-        >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
+        >>> stim = Stimulus.generate()
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> trial = StimSequence(stim, seq)
         >>> trial.plot_sequence()  # doctest: +SKIP
 
         """
@@ -258,23 +276,23 @@ Stimulus names: {stim_names}
                       figsize: tuple = None,
                       suppress_display: bool = False):
         """
+
+        Plot the StimSequence as a waveform. Equivalent to :py:meth:`Stimulus.plot`.
+
         Parameters
         ----------
-        style : str, optional
-            Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
-        title : str, optional
-            If desired, one can provide a title for the plot.
-        figsize : tuple, optional
-            A tuple containing the desired output size of the plot in inches, e.g. (4, 1).
-        suppress_display : bool, optional
-            If 'True', plt.show() is not run. Defaults to 'False'.
-
-        Returns
-        -------
-        fig : Figure
-            A matplotlib Figure object
-        ax : Axes
-            A matplotlib Axes object
+        style
+            Matplotlib style to use for the plot. Defaults to 'seaborn'.
+            See `matplotlib style sheets reference
+            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+        title
+            If desired, one can provide a title for the plot. This takes precedence over using the
+            StimSequence name as the title of the plot (if the object has one).
+        figsize
+            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        suppress_display
+            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
         Examples
         --------
@@ -292,18 +310,19 @@ Stimulus names: {stim_names}
         return fig, ax
 
     def write_wav(self,
-                  out_path: Union[str, os.PathLike] = '.',
+                  out_path: Union[str, os.PathLike],
                   metronome: bool = False,
                   metronome_amplitude: float = 1.0) -> None:
         """
 
         Parameters
         ----------
-        out_path: str or PathLike object
-            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be aware of OS-specific filepath conventions.
-        metronome: bool, optional
-            If 'True', a metronome sound is added for playback. Defaluts to 'False'.
-        metronome_amplitude: bool, optional
+        out_path
+            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be
+            aware of OS-specific filepath conventions.
+        metronome
+            If ``True``, a metronome sound is added for playback.
+        metronome_amplitude
             If desired, when playing the StimSequence with a metronome sound you can adjust the
             metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
             a louder metronome sound.
@@ -311,7 +330,7 @@ Stimulus names: {stim_names}
         Examples
         --------
         >>> stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
-        >>> stimseq.write_wav('my_stimseq.wav',,,  # doctest: +SKIP
+        >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
         """
 
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)

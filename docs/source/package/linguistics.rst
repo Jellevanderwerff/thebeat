@@ -6,3 +6,9 @@ This module contains functions that are useful when doing (rhythmic) linguistic 
 .. automodule:: combio.linguistic
     :members:
     :undoc-members:
+
+
+References
+----------
+
+ .. footbibliography::

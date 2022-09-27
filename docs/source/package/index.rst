@@ -10,4 +10,3 @@ This what the package contains. Some more informative info here.
     Linguistics<linguistics.rst>
     Stats<stats.rst>
     Visualization<visualization.rst>
-    Summary<summary.rst>

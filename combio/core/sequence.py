@@ -32,6 +32,7 @@ class BaseSequence:
     metrical : bool
         If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
         sequence has an equal number of IOIs and event onsets.
+
     """
 
     def __init__(self,
@@ -110,7 +111,6 @@ class Sequence(BaseSequence):
 
     This class additionally contains methods and attributes to, for instance, get the event onset values, to
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
-
 
     Attributes
     ----------
@@ -556,6 +556,7 @@ class Sequence(BaseSequence):
         >>> print(seq.onsets)
         [   0.          450.54393248  932.15459991 1496.55086297 2006.24958393]
         """
+
         if rng is None:
             rng = np.random.default_rng()
         self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
@@ -608,8 +609,8 @@ class Sequence(BaseSequence):
         >>> seq.change_tempo_linearly(total_change=2)
         >>> print(seq.iois)
         [500. 375. 300. 250.]
-
         """
+
         self.iois /= np.linspace(1, total_change, len(self.iois))
 
     # Visualization
@@ -635,9 +636,10 @@ class Sequence(BaseSequence):
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
         linewidth
-            The desired width of the bars (events) in milliseconds. Defaults to 50 milliseconds.
+            The desired width of the bars (events) in milliseconds.
         figsize
-            The desired figure size in inches as a tuple: ``(width, height)``.
+            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
         suppress_display
             If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 

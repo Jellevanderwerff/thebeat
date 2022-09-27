@@ -1,50 +1,48 @@
-from combio.core import Sequence, StimSequence
+from __future__ import annotations
+import combio.core
 import matplotlib.pyplot as plt
-from typing import Union, Iterable
+from typing import Union, Iterable, Optional
 import combio._helpers
 import numpy as np
 
 
-def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
+def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
                          style: str = 'seaborn',
-                         title: str = None,
-                         linewidths: Union[Iterable, int] = None,
-                         figsize=None,
+                         title: Optional[str] = None,
+                         linewidths: Optional[Union[list[int], np.ndarray[int], int]] = None,
+                         figsize: Optional[tuple] = None,
                          suppress_display: bool = False):
     """
     This function may be used to plot a single sequence of event onsets.
-    Either pass it a Sequence or StimSequence object, or an iterable (e.g. list) of event onsets.
+    Either pass it a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object,
+    or a list or array of event onsets in milliseconds.
 
-    This function is similarly used by the Sequence.plot() and StimSequence.plot_sequence() methods.
+    This function is internally used by the :meth:`combio.core.Sequence.plot` and
+    :meth:`combio.core.StimSequence.plot_sequence` methods.
 
     Parameters
     ----------
-    sequence : Sequence or StimSequence or iterable
-        Either a Sequence or StimSequence object, or an iterable (e.g. list) of event onsets, e.g. [0, 500, 1000].
-        Here, 0 is not required.
-    style : str, optional
-        A matplotlib style. See the matplotlib docs for options. Defaults to 'seaborn'.
-    title : str, optional
+    sequence
+        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or an list
+        or an array of event onsets, e.g. ``[0, 500, 1000]``. If using a list or array, 0 is not required.
+    style
+        Matplotlib style to use for the plot. See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        Sequence or StimSequence name as the title of the plot (if passed and the object has one).
-    linewidths : iterable or int, optional
-        An iterable containing the desired width of the bars (events) in milliseconds.
+        StimSequence name as the title of the plot (if the object has one).
+    linewidths
+        A list or array containing the desired width of the bars (events) in milliseconds.
         If a single int is provided, this width is used for all the bars.
-    figsize : tuple, optional
-        The desired figure size in inches as a tuple: (width, height).
-    suppress_display : bool, optional
-        If True, the plot is only returned, and not displayed via plt.show()
-
-    Returns
-    -------
-    fig : Figure
-        A matplotlib Figure object
-    ax : Axes
-        A matplotlib Axes object
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    suppress_display
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
     Examples
     --------
-    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+    >>> seq = combio.core.Sequence.generate_isochronous(n=5, ioi=500)
     >>> plot_single_sequence(seq)  # doctest: +SKIP
 
     >>> seq = [0, 500, 1000, 1500]
@@ -53,7 +51,7 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     """
 
     # Input validation, get onsets, set linewidths (the widths of the bars) and title.
-    if isinstance(sequence, Sequence):
+    if isinstance(sequence, combio.core.Sequence):
         # onsets
         onsets = sequence.onsets
         # linewidths
@@ -63,7 +61,7 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
         if sequence.name and title is None:
             title = sequence.name
 
-    elif isinstance(sequence, StimSequence):
+    elif isinstance(sequence, combio.core.StimSequence):
         # onsets
         onsets = sequence.onsets
         # linewidths
@@ -94,66 +92,60 @@ def plot_single_sequence(sequence: Union[Sequence, StimSequence, Iterable],
     return fig, ax
 
 
-def plot_multiple_sequences(sequences: Iterable,
+def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn',
-                            sequence_names: Iterable[str] = None,
-                            title: str = None,
-                            linewidths: int = None,
-                            figsize: tuple = None,
+                            sequence_names: Optional[list[str], np.ndarray[str]] = None,
+                            title: Optional[str] = None,
+                            linewidths: Optional[int] = None,
+                            figsize: Optional[tuple] = None,
                             suppress_display: bool = False):
     """
 
-    Plot multiple sequences in one plot. Either pass it an iterable (e.g. list) of Sequence objects,
-    StimSequence objects, or iterables of event onsets (so iterable of iterables, e.g. list of lists).
+    Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~combio.core.Sequence`
+    objects, :py:class:`~combio.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
-    If the total duration is shorter than 10 seconds, the x axis values are in milliseconds. If the total duration is
-    longer than 10 seconds, the x axis values are in seconds.
+    If the total duration is shorter than 10 seconds, the `x` axis values are in milliseconds. If the total duration is
+    longer than 10 seconds, the `x` axis values are in seconds.
 
     Parameters
     ----------
-    sequences : iterable
-        An iterable (e.g. list) of Sequence or StimSequence objects. Alternatively, one can provide a list of lists
-        containing event onsets, for instance: [[0, 500, 1000], [0, 600, 800], [0, 400, 550]]
-    style : str, optional
-        A matplotlib style used for the plot. Defaults to 'seaborn'.
-    sequence_names : iterable
-        An iterable containing names for the sequences as strings. For instance ['Sequence 1', 'Sequence 2'] etc.
-        Must be of the same length as the number of sequences passed.
-        If no names are provided, defaults to numbering the sequences.
-    title : str, optional
+    sequences
+        A list or array of :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` objects.
+        Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
+        ``[[0, 500, 1000], [0, 600, 800], [0, 400, 550]]``.
+    style
+        Matplotlib style to use for the plot. See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    sequence_names
+        A list or array containing names for the sequences as strings. For instance ``['Sequence 1', 'Sequence 2']``
+        etc. Must be of the same length as the number of sequences passed. If no names are provided, defaults to
+        numbering the sequences.
+    title
         If desired, one can provide a title for the plot. This takes precedence over using the
         Sequence or StimSequence name as the title of the plot (if passed and the object has one).
-    linewidths : iterable, optional
-        An iterable of ints (e.g. [50, 50, 50] ) or an iterable of iterables containing the desired width of the bars
-        (event durations) in milliseconds, so e.g.: [[50, 30, 60], [20, 40, 10], [60, 30, 10]]
-        If StimSequence objects are passed, the event durations are used.
+    linewidths
+        An array or list of ints (e.g. ``[50, 50, 50]`` ) or nested array or list containing the desired widths of the
+        bars (event durations) in milliseconds, for instance: ``[[50, 30, 60], [20, 40, 10], [60, 30, 10]]``.
+        By default, if :py:class:`~combio.core.StimSequence` objects are passed, the event durations are used.
         In other cases, a default of 50 milliseconds is used throughout.
-    figsize : tuple, optional
-        The desired figure size in inches as a tuple: (width, height).
-    suppress_display : bool, optional
-        If True, the plot is only returned, and not displayed via plt.show()
-
-    Returns
-    -------
-    fig : Figure
-        A matplotlib Figure object
-    ax : Axes
-        A matplotlib Axes object
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    suppress_display
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
     Examples
     --------
     >>> generator = np.random.default_rng(seed=123)
-    >>> seqs = [Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
+    >>> seqs = [combio.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
     >>> plot_multiple_sequences(seqs,linewidths=50)
 
     """
-    # todo Make this function such that you can pass it an iterable containing sequences of different
-    #  types. E.g. [Sequence, StimSequence, list].
 
     onsets = []
 
     for seq in sequences:
-        if isinstance(seq, (Sequence, StimSequence)):
+        if isinstance(seq, (combio.core.Sequence, combio.core.StimSequence)):
             onsets.append(seq.onsets)
         else:
             onsets.append(np.array(seq))
@@ -168,7 +160,7 @@ def plot_multiple_sequences(sequences: Iterable,
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
     # default to 50 milliseconds).
     if linewidths is None:
-        if isinstance(sequences[0], StimSequence):
+        if isinstance(sequences[0], combio.core.StimSequence):
             linewidths = [trial.event_durations for trial in sequences]
         else:
             linewidths = [50] * len(sequences)

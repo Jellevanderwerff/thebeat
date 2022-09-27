@@ -1,69 +1,61 @@
 from __future__ import annotations
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional
 import scipy.stats
 import scipy.fft
 import numpy as np
-from combio import core
-from combio.core import Sequence
+import combio.core
 import matplotlib.pyplot as plt
 import scipy.signal
 import pandas as pd
 
 
-def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
            resolution_ms: int = 1,
-           smoothing_window: Union[int, float] = 0,
-           smoothing_sd: Union[int, float] = 0) -> pd.DataFrame:
+           smoothing_window: Optional[Union[int, float]] = None,
+           smoothing_sd: Optional[Union[int, float]] = None) -> pd.DataFrame:
     """
 
-        This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-        a Pandas dataframe containing timestamps (acf lags), and autocorrelation factors.
+    This function takes a :py:class:`Sequence` or :py:class:`StimSequence` object, or a list of event onsets,
+    and returns a :class:`pandas.DataFrame` containing timestamps (acf lags), and autocorrelation factors.
 
-        Parameters
-        ----------
-        sequence : Sequence, StimSequence or iterable
-            Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
-            e.g. [0, 500, 1000]
-        resolution_ms : int, optional
-            The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
-            calculated for the autocorrelation function can be calculated as
-            n_lags = sequence_duration_in_ms / resolution_ms
-        smoothing_window : int or float, optional
-            The window (in milliseconds) within which a normal probability density function is used for
-            smoothing out the analysis.
-        smoothing_sd : int or float, optional
-            The standard deviation of the normal probability density function used for smoothing out the analysis.
+    Parameters
+    ----------
 
-        Returns
-        -------
-        pandas.DataFrame
-            A Pandas DataFrame containing two columns: the timestamps in milliseconds, and the autoccorrelation factor.
+    sequence
+        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or a list or an
+        array containing event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
+    resolution_ms
+        The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
+        calculated for the autocorrelation function can be calculated as
+        ``n_lags = sequence_duration_in_ms / resolution_ms``.
+    smoothing_window
+        The window (in milliseconds) within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
 
-        Notes
-        -----
-        This function is based on the procedure described in Ravignani and Norton (2017) [1]_. There, one can also find a
-        more detailed description of the smoothing procedure.
+    Returns
+    -------
+    :class:`pandas.DataFrame`
+        DataFrame containing two columns: the timestamps in milliseconds, and the autocorrelation factor.
 
-        References
-        ----------
-        .. [1] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-           a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
-           Journal of Language Evolution, 2(1), 4-19.
-           https://doi.org/10.1093/jole/lzx002
+    Notes
+    -----
+    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    There, one can also find a more detailed description of the smoothing procedure.
 
-        Examples
-        --------
-        >>> rng = np.random.default_rng(seed=123)  # for reproducability
-        >>> seq = Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
-        >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
-        >>> print(df.head(3))
-           time_ms  correlation
-        0        0     1.000000
-        1       10     0.851373
-        2       20     0.590761
+    Examples
+    --------
+    >>> rng = np.random.default_rng(seed=123)  # for reproducability
+    >>> seq = combio.core.Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
+    >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
+    >>> print(df.head(3))
+       time_ms  correlation
+    0        0     1.000000
+    1       10     0.851373
+    2       20     0.590761
 
-
-        """
+    """
 
     correlations = acf_values(sequence=sequence,
                               resolution_ms=resolution_ms,
@@ -82,65 +74,54 @@ def acf_df(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequenc
     return df
 
 
-def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
              resolution_ms: int = 1,
-             smoothing_window: Union[int, float] = 0,
-             smoothing_sd: Union[int, float] = 0,
+             smoothing_window: Optional[Union[int, float]] = None,
+             smoothing_sd: Optional[Union[int, float]] = None,
              style: str = 'seaborn',
              title: str = 'Autocorrelation',
-             figsize: tuple = None,
+             figsize: Optional[tuple] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
 
-    This function can be used for plotting an autocorrelation plot from a Sequence or StimSequence object,
-    or from a list of event onsets.
+    This function can be used for plotting an autocorrelation plot from a :class:`~combio.core.Sequence` or
+    :class:`~combio.core.StimSequence` object, or from a list or an array of event onsets.
 
     Parameters
     ----------
-    sequence : Sequence, StimSequence or iterable
-        Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
-        e.g. [0, 500, 1000]
-    resolution_ms : int, optional
+    sequence
+        Either a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object,
+        or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
+    resolution_ms
         The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
         calculated for the autocorrelation function can be calculated as
-        n_lags = sequence_duration_in_ms / resolution_ms
-    smoothing_window : int or float, optional
+        ``n_lags = sequence_duration_in_ms / resolution_ms``
+    smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
-    smoothing_sd : int or float, optional
+    smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
-    style : str, optional
-        A matplotlib style. See the matplotlib docs for options. Defaults to 'seaborn'.
-    title : str, optional
+    style
+        Style used by matplotlib. See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        Sequence or StimSequence name as the title of the plot (if passed and the object has one).
-    figsize : tuple, optional
-        The desired figure size in inches as a tuple: (width, height).
-    suppress_display : bool, optional
-        If True, the plot is only returned, and not displayed via plt.show()
-
-    Returns
-    -------
-    fig : Figure
-        A matplotlib Figure object
-    ax : Axes
-        A matplotlib Axes object
+        :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` name as the title of the plot
+        (if passed and the object has one).
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    suppress_display
+        If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
     Notes
     -----
-    This function is based on the procedure described in Ravignani and Norton (2017) [2]_. There, one can also find a
-    more detailed description of the smoothing procedure.
-
-    References
-    ----------
-    .. [2] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
-       Journal of Language Evolution, 2(1), 4-19.
-       https://doi.org/10.1093/jole/lzx002
+    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    There, one can also find a more detailed description of the smoothing procedure.
 
     """
 
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -179,51 +160,40 @@ def acf_plot(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     return fig, ax
 
 
-def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
                resolution_ms: int = 1,
-               smoothing_window: Union[int, float] = 0,
-               smoothing_sd: Union[int, float] = 0) -> np.ndarray:
+               smoothing_window: Optional[Union[int, float]] = None,
+               smoothing_sd: Optional[Union[int, float]] = None) -> np.ndarray:
     """
 
-    This function takes a Sequence or StimSequence object, or a list of event onsets, and returns
-    an array with steps of resolution_ms of unstandardized correlation factors.
+    This function takes a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object,
+    or a list of event onsets, and returns an array with steps of ``resolution_ms`` of unstandardized correlation
+    factors.
 
     Parameters
     ----------
-    sequence : Sequence, StimSequence or iterable
+    sequence
         Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
-        e.g. [0, 500, 1000]
-    resolution_ms : int, optional
+        e.g. ``[0, 500, 1000]``.
+    resolution_ms
         The temporal resolution in milliseconds (i.e. sampling frequency). The number of lags calculated for the
-        autocorrelation function can be calculated as n_lags = sequence_duration_in_ms / resolution_ms
-    smoothing_window : int or float, optional
+        autocorrelation function can be calculated as ``n_lags = sequence_duration_in_ms / resolution_ms``.
+    smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
-    smoothing_sd : int or float, optional
+    smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
-
-    Returns
-    -------
-    numpy.ndarray
-        An array containing the autocorrelation function (i.e. the correlation factors by resolution/step size).
 
     Notes
     -----
-    This function is based on the procedure described in Ravignani and Norton (2017) [3]_. There, one can also find a
-    more detailed description of the smoothing procedure. This function uses the ``numpy.correlate`` [4]_ function
-    to calculate the correlations.
+    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
+    one can also find a more detailed description of the smoothing procedure.
 
-    References
-    ----------
-    .. [3] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-       a primer to quantify and compare temporal structure in speech, movement, and animal vocalizations.
-       Journal of Language Evolution, 2(1), 4-19.
-       https://doi.org/10.1093/jole/lzx002
-    .. [4] https://numpy.org/doc/stable/reference/generated/numpy.correlate.html
+    This function uses the :func:`numpy.correlate` to calculate the correlations.
 
     """
 
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -248,7 +218,7 @@ def acf_values(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeq
     return correlation
 
 
-def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -260,47 +230,36 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
 
     Parameters
     ----------
-    sequence : Sequence, StimSequence or iterable
-        Either a Sequence or StimSequence object or an iterable (e.g. list) containing inter-onset intervals
-        (IOIs), e.g. [500, 500, 500].
-    reference_distribution : str, optional
+    sequence
+        Either a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object or an iterable (e.g. list)
+        containing inter-onset intervals (IOIs), e.g. ``[500, 500, 500]``.
+    reference_distribution
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
-        is compared. The default is 'normal'.
-    alternative: str, optional
-        Either ‘two-sided’, ‘less’ or ‘greater’. See the SciPy documentation [5]_ for more information.
+        is compared.
+    alternative
+        Either ‘two-sided’, ‘less’ or ‘greater’. See :func:`scipy.stats.kstest` for more information.
 
     Returns
     -------
-    scipy.stats._stats_py.KstestResult
+    :class:`scipy.stats._stats_py.KstestResult`
         A SciPy named tuple containing the `D` statistic and the `p` value.
 
     Notes
     -----
-    This function uses the ``scipy.stats.kstest`` function [5]_. For more information about the use of the
-    Kolmogorov-Smirnov test in rhythm research, see Jadoul et al. (2016) [6]_ and Ravignani and Norton (2017) [7]_.
-
-    References
-    ----------
-    .. [5] https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kstest.html
-
-    .. [6] Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
-       Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
-       Frontiers in Human Neuroscience, 10(586), 1–15.
-
-    .. [7] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-       A primer to quantify and compare temporal structure in speech, movement,
-       and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
+    This function uses :func:`scipy.stats.kstest`. For more information about the use of the
+    Kolmogorov-Smirnov test in rhythm research, see :footcite:t:`jadoulSeekingTemporalPredictability2016` and
+    :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
+    >>> seq = combio.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
     >>> print(ks_test(seq))
     KstestResult(statistic=0.07706198218153354, pvalue=0.5722897529628035)
 
     """
 
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+    if isinstance(sequence, (combio.core.Sequence, combio.core.StimSequence)):
         sequence = sequence.iois
 
     if reference_distribution == 'normal':
@@ -318,49 +277,43 @@ def ks_test(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequen
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable]) -> np.float32:
+def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray]) -> np.float64:
     """
 
-    This function calculates the normalized pairwise variability index (nPVI) for a provided Sequence or StimSequence
-    object, or for an interable of inter-onset intervals (IOIs).
+    This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
+    :py:class:`StimSequence` object, or for an interable of inter-onset intervals (IOIs).
 
     Parameters
     ----------
-    sequence : Sequence, StimSequence or iterable
-        Either a Sequence or StimSequence object, or an iterable containing inter-onset intervals (IOIs).
+    sequence
+        Either a :py:class:`Sequence` or :py:class:`StimSequence` object, or an iterable containing inter-onset
+        intervals (IOIs).
 
     Returns
     -------
-    np.float32
+    :class:`numpy.float64`
         The nPVI for the provided sequence.
 
     Notes
     -----
     The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent temporal intervals.
-    The nPVI is zero for sequences that are perfectly isochronous. See Jadoul et al. (2016) [8]_ and
-    Ravignani and Norton (2017) [9]_ for more information on its use in rhythm research.
-
-    .. [8] Jadoul, Y., Ravignani, A., Thompson, B., Filippi, P. and de Boer, B. (2016).
-       Seeking Temporal Predictability in Speech: Comparing Statistical Approaches on 18 World Languages’.
-       Frontiers in Human Neuroscience, 10(586), 1–15.
-
-    .. [9] Ravignani, A., & Norton, P. (2017). Measuring rhythmic complexity:
-       A primer to quantify and compare temporal structure in speech, movement,
-       and animal vocalizations. Journal of Language Evolution, 2(1), 4-19.
+    The nPVI is zero for sequences that are perfectly isochronous.
+    See :footcite:t:`jadoulSeekingTemporalPredictability2016` and :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`
+    for more information on its use in rhythm research.
 
     Examples
     --------
-    >>> seq = Sequence.generate_isochronous(n=10, ioi=500)
+    >>> seq = combio.core.Sequence.generate_isochronous(n=10, ioi=500)
     >>> print(get_npvi(seq))
     0.0
 
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
+    >>> seq = combio.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
     >>> print(get_npvi(seq))
     37.481644
     """
 
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+    if isinstance(sequence, (combio.core.Sequence, combio.core.StimSequence)):
         iois = sequence.iois
     else:
         iois = np.array(sequence)
@@ -374,12 +327,12 @@ def get_npvi(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
 
     npvi = np.mean(npvi_values) * (100 * (len(iois) - 1))
 
-    return np.float32(npvi)
+    return np.float64(npvi)
 
 
-def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSequence, Iterable],
+def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
              theoretical_ioi: Union[int, float],
-             output_statistic: str = 'mean') -> np.float32:
+             output_statistic: str = 'mean') -> np.float64:
     """
 
     This function calculates the universal goodness of fit (`ugof`) measure for a sequence compared to a
@@ -388,34 +341,28 @@ def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
 
     Parameters
     ----------
-    sequence : Sequence, StimSequence or iterable
-        Either a Sequence or StimSequence object, or an iterable (e.g. list) containing event onsets,
-        e.g. [0, 500, 1000].
-    theoretical_ioi : int or float
+    sequence
+        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or a list or an
+        array containing event onsets, e.g. ``[0, 500, 1000]``.
+    theoretical_ioi
         The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.
-    output_statistic : str
+    output_statistic
         Either 'mean' (the default) or 'median'. This determines whether for the individual ugof values we take the mean
         or the median as the output statistic.
 
     Returns
     -------
-    np.float32
+    :class:`numpy.float64`
         The ugof statistic.
 
     Notes
     -----
-    This measure is described in Burchardt et al. (2021) [10]_.
+    This measure is described in :footcite:t:`burchardtNovelIdeasFurther2021`.
 
-    References
-    ----------
-    .. [10] Burchardt, L. S., Briefer, E. F., & Knörnschild, M. (2021).
-       Novel ideas to further expand the applicability of rhythm analysis.
-       Ecology and evolution, 11(24), 18229-18237.
-       https://doi.org/10.1002/ece3.8417
 
     Examples
     --------
-    >>> seq = Sequence.generate_isochronous(n=10, ioi=1000)
+    >>> seq = combio.core.Sequence.generate_isochronous(n=10, ioi=1000)
     >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
     >>> print(ugof)
     0.59636414
@@ -423,7 +370,7 @@ def get_ugof(sequence: Union[core.sequence.Sequence, core.stimsequence.StimSeque
     """
 
     # Get the onsets
-    if isinstance(sequence, (core.sequence.Sequence, core.stimsequence.StimSequence)):
+    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
         onsets = sequence.onsets  # in ms
     else:
         onsets = np.array(sequence)
@@ -461,4 +408,3 @@ def _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
         signal[index] = 1
 
     return np.array(signal)
-

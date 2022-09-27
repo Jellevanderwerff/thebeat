@@ -25,14 +25,16 @@ extensions = [
 
 
 templates_path = ['_templates']
-exclude_patterns = []
+exclude_patterns = ['_build', '_templates']
 
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'numpy': ('https://numpy.org/doc/stable/', None),
                        'matplotlib': ('https://matplotlib.org/stable/', None), 
                        'parselmouth': ('https://parselmouth.readthedocs.io/en/stable/', None), 
-                       'sounddevice': ('https://python-sounddevice.readthedocs.io/', None)}
+                       'sounddevice': ('https://python-sounddevice.readthedocs.io/', None), 
+                       'pandas': ('https://pandas.pydata.org/docs/', None), 
+                       'scipy': ('https://docs.scipy.org/doc/scipy/', None)}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
@@ -57,3 +59,6 @@ typehints_defaults = 'comma'
 # bibtex
 bibtex_bibfiles = ['refs.bib']
 bibtext_reference_style = 'author_year'
+
+# autosummary
+autosummary_generate = True
