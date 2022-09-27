@@ -40,7 +40,7 @@ class Stimulus:
                  name: Optional[str] = None):
         """
         The constructor for the :py:class:`Stimulus` class. Except for special cases, this is only used internally.
-        You'll most likely want to use one of the different class methods to construct a :py:class:`Stimulus` obeject,
+        You'll most likely want to use one of the different class methods to construct a :py:class:`Stimulus` object,
         such as :py:meth:`Stimulus.generate` or :py:meth:`Stimulus.from_wav`.
 
         Both mono and stereo sounds are supported.
