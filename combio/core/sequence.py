@@ -228,10 +228,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly constructed :py:class:`Sequence` object.
 
         Examples
         --------
@@ -258,10 +254,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly constructed :py:class:`Sequence` object.
 
         Examples
         --------
@@ -303,10 +295,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -362,10 +350,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly created py:class:`Sequence` object.
 
         Examples
         --------
@@ -420,10 +404,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -474,10 +454,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly created :py:class:`Sequence` object.
 
         Examples
         --------
@@ -524,10 +500,6 @@ class Sequence(BaseSequence):
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
 
-        Returns
-        -------
-        Sequence
-            A newly created Sequence object.
 
         Examples
         --------
@@ -669,13 +641,6 @@ class Sequence(BaseSequence):
         suppress_display
             If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
-        Returns
-        -------
-        fig
-            A matplotlib Figure object
-        ax
-            A matplotlib Axes object
-
         Examples
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
@@ -742,13 +707,10 @@ class Sequence(BaseSequence):
         return np.array(vals)
 
     @property
-    def interval_ratios_from_dyads(self) -> np.array:
+    def interval_ratios_from_dyads(self) -> np.ndarray:
         r"""
         This property returns sequential interval ratios, calculated as:
-
-        .. math::
-
-            \textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}
+        :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
 
 
         Note that for `n` IOIs this property returns `n`-1 ratios.

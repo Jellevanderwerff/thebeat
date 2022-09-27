@@ -4,6 +4,7 @@ import re
 from typing import Optional, Union
 import numpy as np
 import sounddevice as sd
+from matplotlib import pyplot as plt
 from mingus.containers import Note
 import scipy.io
 import scipy.signal
@@ -13,31 +14,52 @@ import combio._helpers
 class Stimulus:
     """
     A Stimulus object holds a sound. You can use the different class methods to generate a sound,
-    to get a sound from a .wav file, or to import a Parselmouth Sound object.
-    This Stimulus sound is used when generating a trial with the `StimSequence` class.
-    Additionally, one can plot a Stimulus object, change the amplitude, etc.
+    to get a sound from a .wav file, or to import a :class:`parselmouth.Sound` object.
+    This :py:class:`Stimulus` sound is used when generating a trial with the :py:class:`StimSequence` class.
+    Additionally, one can plot the object, change the amplitude, etc.
 
     Attributes
     ----------
     fs : int
         Sampling frequency of the sound. 48000 is used as the standard in this package.
-    samples : np.float64
+    samples : numpy.ndarray
         Contains the samples of the sound.
     dtype : numpy.dtype
-        Contains the NumPy data type object. Hard-coded as np.float64. If a read .wav file has a different dtype,
-        the samples will be converted to np.float64.
+        Contains the NumPy data type object. Hard-coded as ``numpy.dtype('float64')``. If a read .wav file has a
+        different ``dtype`` the samples will be converted to ``numpy.dtype('float64')``.
     n_channels : int
-        The Stimulus' number of channels. 1 for mono, 2 for stereo.
+        The sound's number of channels. 1 for mono, 2 for stereo.
     name : str
-        Defaults to None. If name is provided during object construction it is saved here.
+        Defaults to ``None``. If name is provided during object construction it is saved here.
 
     """
 
     def __init__(self,
                  samples: np.ndarray,
                  fs: int,
-                 name: str = None):
-        """Initialization of Stimulus object. """
+                 name: Optional[str] = None):
+        """
+        The constructor for the :py:class:`Stimulus` class. Except for special cases, this is only used internally.
+        You'll most likely want to use one of the different class methods to construct a :py:class:`Stimulus` obeject,
+        such as :py:meth:`Stimulus.generate` or :py:meth:`Stimulus.from_wav`.
+
+        Both mono and stereo sounds are supported.
+
+        Notes
+        -----
+        For more information on how these samples are created, see the `SciPy documentation
+        <https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html#scipy-io-wavfile-read>`_.
+
+        Parameters
+        ----------
+        samples
+            An array containing the audio samples with frequency ``fs``.
+        fs
+            The sampling frequency.
+        name
+            Optionally, the :py:class:`Stimulus` can have a name. This is saved to the :py:attr:`Stimulus.name`
+            attribute.
+        """
 
         # Check number of channels from array's dimensions:
         if samples.ndim == 1:
@@ -62,22 +84,25 @@ class Stimulus:
     @classmethod
     def from_wav(cls,
                  filepath: Union[os.PathLike, str],
-                 new_fs: int = None,
-                 name: str = None) -> Stimulus:
+                 new_fs: Optional[int] = None,
+                 name: Optional[str] = None) -> Stimulus:
         """
-        This method loads a stimulus from a PCM .wav file, and reads in the samples.
-        It additionally converts .wav files with dtype int16 or int32 to float64.
+        This method loads a stimulus from a PCM ``.wav`` file, and reads in the samples.
+        If necessary, it additionally converts the ``dtype`` to :class:`numpy.float64`.
+
+        The standard behaviour is that the sampling frequency (``fs``) of the input file is used.
+        If desired, the input file can be resampled using the ``new_fs`` parameter.
 
         Parameters
         ----------
-        filepath: str or PathLike object
+        filepath
             The location of the .wav file. Either pass it e.g. a Path object, or a string.
             Of course be aware of OS-specific filepath conventions.
-        name: str, optional
+        name
             If desired, one can give a Stimulus object a name. This is used, for instance,
             when plotting or printing. It can always be retrieved from the Stimulus.name atrribute.
-        new_fs : int, optional
-            If resampling is required, you can provide the target sampling frequency here.
+        new_fs
+            If resampling is required, you can provide the target sampling frequency here, for instance 48000.
         """
 
         # Read in the sampling frequency and all the samples from the wav file
@@ -96,43 +121,38 @@ class Stimulus:
                  onramp: int = 0,
                  offramp: int = 0,
                  ramp: str = 'linear',
-                 name: str = None) -> Stimulus:
+                 name: Optional[str] = None) -> Stimulus:
         """
         This class method returns a Stimulus object with a generated sound, based on the given parameters.
         It is recommended to use the on- and offramp parameters for the best results.
 
         Parameters
         ----------
-        freq : int, optional
+        freq
             The pitch frequency in hertz.
-        fs : int, optional
+        fs
             The sampling frequency in hertz.
-        duration : int, optional
+        duration
             The duration in milliseconds.
-        amplitude : float, optional
+        amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
-        osc : str, optional
+        osc
             Either 'sine' (the default) or 'square'.
-        onramp : int, optional
+        onramp
             The sound's 'attack' in milliseconds.
-        offramp : int, optional
+        offramp
             The sound's 'decay' in milliseconds.
-        ramp : str, optional
+        ramp
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
-        name : str, optional
+        name
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
             A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
-
-        Returns
-        -------
-        Stimulus
-            A newly created Stimulus object.
 
         Examples
         --------
         >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
-        >>> stim.plot_waveform(,,  # doctest: +SKIP
+        >>> stim.plot_waveform()  # doctest: +SKIP
 
         """
         # Duration in seconds
@@ -163,38 +183,33 @@ class Stimulus:
                   onramp: int = 0,
                   offramp: int = 0,
                   ramp: str = 'linear',
-                  name: str = None) -> Stimulus:
+                  name: Optional[str] = None) -> Stimulus:
         """
-        Generate a Stimulus object on the basis of a note as a string.
-        For instance, a note_str of 'G4' results in a generated Stimulus with a pitch frequency of 392 hertz.
+        Generate a :py:class:`Stimulus` object on the basis of a note as a string.
+        For instance, a ``note_str`` of ``'G4'`` results in a generated Stimulus with a pitch frequency of 392 hertz.
 
         Parameters
         ----------
-        note_str: str
-            A note as a string. Can either be 'G' or 'G4'.
-        duration : int, optional
+        note_str
+            A note as a string. Can either be provided as ``'G'`` or ``'G4'``.
+        duration
             The duration in milliseconds.
-        fs : int, optional
+        fs
             The sampling frequency in hertz.
-        amplitude : float, optional
+        amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
-        osc : str, optional
+        osc
             Either 'sine' (the default) or 'square'.
-        onramp : int, optional
+        onramp
             The sound's 'attack' in milliseconds.
-        offramp : int, optional
+        offramp
             The sound's 'decay' in milliseconds.
-        ramp : str, optional
+        ramp
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
-        name : str, optional
+        name
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
             A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
-
-        Returns
-        -------
-        Stimulus
-            A newly created Stimulus object.
 
         Examples
         --------
@@ -227,26 +242,20 @@ class Stimulus:
                                  name=name)
 
     @classmethod
-    def from_parselmouth(cls, sound_object, name=None) -> Stimulus:
+    def from_parselmouth(cls,
+                         sound_object,
+                         name: Optional[str] = None) -> Stimulus:
+
         """
-        This class method generates a Stimulus object from a `parselmouth.Sound` object.
+        This class method generates a :py:class:`Stimulus` object from a :class:`parselmouth.sound` object.
 
         Parameters
         ----------
-        sound_object : parselmouth.Sound object
+        sound_object : :class:`parselmouth.Sound` object
             The to-be imported Parselmouth Sound object
         name : str, optional
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
             A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
-
-        Returns
-        -------
-        Stimulus
-            A newly created Stimulus object.
-
-        References
-        ----------
-        https://parselmouth.readthedocs.io/en/latest/api_reference.html#parselmouth.Sound
 
         """
         if not sound_object.__class__.__name__ == "Sound":
@@ -266,8 +275,16 @@ class Stimulus:
     # Manipulation
     def change_amplitude(self,
                          factor: float) -> None:
-        """This method can be used to change the amplitude of the Stimulus sound.
-        A factor between 0 and 1 decreases the amplitude; a factor larger than 1 increases the amplitude."""
+        """
+        This method can be used to change the amplitude of the Stimulus sound.
+        A factor between 0 and 1 decreases the amplitude; a factor larger than 1 increases the amplitude.
+
+        Parameters
+        ----------
+        factor
+            The factor by which the sound should be amplified.
+
+        """
 
         if not factor > 0:
             raise ValueError("Please provide a 'factor' larger than zero.")
@@ -276,18 +293,15 @@ class Stimulus:
         self.samples *= factor
 
     # Visualization
-    def play(self, loop: bool = False) -> None:
+    def play(self,
+             loop: bool = False) -> None:
         """
-        This method uses the sounddevice library to play the Stimulus sound.
+        This method uses :meth:`sounddevice.play` to play the :py:class:`Stimulus` sound.
 
         Parameters
         ----------
-        loop: bool, optional
-            If 'True', the Stimulus object is played until the `Stimulus.stop()` method is called.
-
-        References
-        ----------
-        https://python-sounddevice.readthedocs.io
+        loop
+            If ``True``, the Stimulus object is played until the :py:meth:`Stimulus.stop` method is called.
 
         Examples
         --------
@@ -300,11 +314,7 @@ class Stimulus:
 
     def stop(self) -> None:
         """
-        Stop playing the Stimulus sound. Calls the .stop() function from the sounddevice library.
-
-        References
-        ----------
-        https://python-sounddevice.readthedocs.io
+        Stop playing the :py:class:`Stimulus` sound. Calls :func:`sounddevice.stop`.
 
         Examples
         --------
@@ -319,27 +329,22 @@ class Stimulus:
 
     def plot_waveform(self,
                       style: str = 'seaborn',
-                      title: str = None,
-                      figsize: tuple = None,
-                      suppress_display: bool = False):
+                      title: Optional[str] = None,
+                      figsize: Optional[tuple] = None,
+                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Parameters
         ----------
-        style : str, optional
-            Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
-        title : str, optional
+        style
+            Style used by matplotlib. See `matplotlib style sheets reference
+            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+        title
             If desired, one can provide a title for the plot.
-        figsize : tuple, optional
-            A tuple containing the desired output size of the plot in inches, e.g. (4, 1).
-        suppress_display : bool, optional
-            If 'True', plt.show() is not run. Defaults to 'False'.
-
-        Returns
-        -------
-        fig : Figure
-            A matplotlib Figure object
-        ax : Axes
-            A matplotlib Axes object
+        figsize
+            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        suppress_display
+            If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
         Examples
         --------
@@ -365,18 +370,18 @@ class Stimulus:
 
     # Stats
     @property
-    def duration_s(self) -> float:
+    def duration_s(self) -> np.float64:
         """
         The duration of the Stimulus sound in seconds.
         """
-        return self.samples.shape[0] / self.fs
+        return np.float64(self.samples.shape[0] / self.fs)
 
     @property
-    def duration_ms(self) -> float:
+    def duration_ms(self) -> np.float64:
         """
         The duration of the Stimulus sound in milliseconds.
         """
-        return self.samples.shape[0] / self.fs * 1000
+        return np.float64(self.samples.shape[0] / self.fs * 1000)
 
     # Out
     def write_wav(self, out_path: Union[str, os.PathLike]) -> None:
@@ -385,13 +390,14 @@ class Stimulus:
 
         Parameters
         ----------
-        out_path: str or PathLike object
-            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be aware of OS-specific filepath conventions.
+        out_path
+            The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
+            Of course be aware of OS-specific filepath conventions.
 
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> stim.write_wav('my_stimulus.wav',,,  # doctest: +SKIP
+        >>> stim.write_wav('my_stimulus.wav')  # doctest: +SKIP
 
         """
 
