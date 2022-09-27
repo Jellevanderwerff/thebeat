@@ -5,45 +5,47 @@ import numpy as np
 import combio._helpers
 import warnings
 import os
-from typing import Iterable, Union
+from typing import Union, Optional
 
 
 class StimSequence(BaseSequence):
     """
-    The StimSequence class can be thought of as a combination of the Stimulus class and the Sequence class;
-    hence StimSequence. It combines the timing information of a Sequence object with the auditory information (sound)
-    of a Stimulus object. In most research one would refer to a StimSequence as a trial (which is also the
-    variable name used in all the examples here).
+    The :py:class:`StimSequence` class can be thought of as a combination of the :py:class:`Stimulus` class and the
+    :py:class:`Sequence` class; hence *StimSequence*. It combines the timing information of a :py:class:`Sequence`
+    object with the auditory information (sound) of a :py:class:`Stimulus` object.
+    In most research one would refer to a :py:class:`StimSequence` as a trial (which is also the
+    variable name used in some of the examples here).
 
-    One can construct a StimSequence object either by passing it a single Stimulus object (and
-    a Sequence object), or by passing it an iterable (e.g. list) of Stimulus objects (and a Sequence object).
+    One can construct a :py:class:`StimSequence` object either by passing it a single :py:class:`Stimulus` object (and
+    a :py:class:`Sequence` object), or by passing it an array or list of :py:class:`Stimulus` objects
+    (and a :py:class:`Sequence` object).
 
-    If a single Stimulus object is passed, this Stimulus sound is used for each event onset. Otherwise,
-    each Stimulus sound is used for its respective event onsets. Of course, then the number of Stimulus
-    objects in the iterable must be the same as the number of event onsets.
+    If a single :py:class:`Stimulus` object is passed, this Stimulus sound is used for each event onset. Otherwise,
+    each :py:class:`Stimulus` sound is used for its respective event onsets. Of course, then the number of
+    :py:class:`Stimulus` objects in the iterable must be the same as the number of event onsets.
 
-    StimSequence objects can be plotted, played, written to disk, statistically analyzed, and more...
-    During construction, checks are done to ensure one dit not accidentally use stimuli that are longer
-    than the IOIs (impossible), that the sampling frequencies of all the Stimulus objects are the same (undesirable),
-    and that the Stimulus objects' number of channels are the same (probable).
+    :py:class:`StimSequence` objects can be plotted, played, written to disk, statistically analyzed, and more...
+    During construction, checks are done to ensure you dit not accidentally use stimuli that are longer
+    than the IOIs (impossible), that the sampling frequencies of all the :py:class:`Stimulus` objects are the same
+    (undesirable), and that the :py:class:`Stimulus` objects' number of channels are the same (probable).
 
     Attributes
     ----------
     dtype : numpy.dtype
-        Contains the NumPy data type object. numpy.float64 is used throughout.
+        Contains the NumPy data type object. ``numpy.dtype('float64') is used throughout.
     fs : int
         Sampling frequency of the sound. 48000 is used as the standard in this package.
     metrical : bool
-            If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
-            sequence has an equal number of IOIs and event onsets.
+        If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for `n` event onsets. If ``True``,
+        sequence has an equal number of IOIs and event onsets.
     n_channels : int
-        The StimSequence's number of channels. 1 for mono, 2 for stereo.
+        The ::py:class:`StimSequence`'s number of channels. 1 for mono, 2 for stereo.
     name : str
-        Defaults to None. If name is provided during object construction it is saved here.
-    samples : NumPy 1-D array (np.float64)
+        Defaults to ``None``. If name is provided during object construction it is saved here.
+    samples : :class:`numpy.ndarray`
         Contains the samples of the sound.
     stim_names : list
-        A list containing the names of the passed Stimulus object(s).
+        A list containing the names from the passed :py:class:`Stimulus` object(s).
 
     Examples
     --------
@@ -58,23 +60,24 @@ class StimSequence(BaseSequence):
     """
 
     def __init__(self,
-                 stimulus: Union[Stimulus, Iterable],
+                 stimulus: Union[Stimulus, list, np.ndarray],
                  sequence: Sequence,
-                 name: str = None):
+                 name: Optional[str] = None):
         """
-        Initialize a StimSequence object using a Stimulus object, or an iterable of Stimulus objects, and a Sequence
-        object.
+        Initialize a :py:class:`StimSequence` object using a :py:class:`Stimulus` object, or list or array of
+        :py:class:`Stimulus` objects, and a :py:class:`Sequence` object.
 
         Parameters
         ----------
-        stimulus : Stimulus, or iterable
+        stimulus
             Either a single Stimulus object (in which case the same sound is used for each event onset), or an
             iterable of Stimulus objects (in which case different sounds are used for each event onset).
-        sequence : Sequence
+        sequence
             A Sequence object. This contains the timing information for the played events.
-        name : str, optional
-            You can provide a name for the StimSequence which is sometimes used (e.g. when printing a StimSequence
-            object, or when plotting one). One can always retrieve this attribute from StimSequence.name
+        name
+            You can provide a name for the :py:class:`StimSequence` which is sometimes used
+            (e.g. when printing the object, or when plotting one). You can always retrieve this attribute from
+            :py:attr:`StimSequence.name`.
 
         Examples
         --------
@@ -167,29 +170,31 @@ Stimulus names: {stim_names}
 
     @property
     def duration_ms(self) -> np.float64:
-        """The total duration of the StimSequence object in milliseconds.
+        """The total duration of the object in milliseconds.
         """
         return np.float64(np.sum(self.iois))
 
     @property
     def duration_s(self) -> np.float64:
-        """The total duration of the StimSequence object in seconds.
+        """The total duration of the object in seconds.
         """
         return np.float64(np.sum(self.iois) / 1000)
 
-    def play(self, loop=False, metronome=False, metronome_amplitude=1) -> None:
+    def play(self,
+             loop: bool = False,
+             metronome: bool = False,
+             metronome_amplitude: float = 1.0) -> None:
         """
-        This method uses the sounddevice library to play the StimSequence object.
+        This method uses the :func:`sounddevice.play` to play the object's audio.
 
         Parameters
         ----------
-        loop: bool, optional
-            If 'True', the StimSequence will continue playing until the StimSequence.stop() method is called.
-            Defaults to 'False'.
-        metronome: bool, optional
-            If 'True', a metronome sound is added for playback. Defaluts to 'False'.
-        metronome_amplitude: bool, optional
-            If desired, when playing the StimSequence with a metronome sound you can adjust the
+        loop
+            If ``True``, the StimSequence will continue playing until the :py:meth:`StimSequence.stop` method is called.
+        metronome
+            If ``True``, a metronome sound is added for playback.
+        metronome_amplitude
+            If desired, when playing the object with a metronome sound you can adjust the
             metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
             a louder metronome sound.
 
