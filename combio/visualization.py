@@ -88,7 +88,7 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
         linewidths = [linewidths] * len(onsets)
 
     fig, ax = combio._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, linewidths=linewidths,
-                                                       figsize=figsize, suppress_display=suppress_display)
+                                                   figsize=figsize, suppress_display=suppress_display)
     return fig, ax
 
 

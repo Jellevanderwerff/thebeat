@@ -678,7 +678,7 @@ class Sequence(BaseSequence):
         return np.float64(np.sum(self.iois) / 1000)
 
     @property
-    def integer_ratios(self) -> np.array:
+    def integer_ratios(self) -> np.ndarray:
         r"""
         This property calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
