@@ -296,7 +296,8 @@ class Stimulus:
     def play(self,
              loop: bool = False) -> None:
         """
-        This method uses :meth:`sounddevice.play` to play the :py:class:`Stimulus` sound.
+
+        This method uses :func:`sounddevice.play` to play the :py:class:`Stimulus` sound.
 
         Parameters
         ----------
