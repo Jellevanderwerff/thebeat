@@ -265,8 +265,8 @@ Stimulus names: {stim_names}
         linewidths = self.event_durations
 
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                           linewidths=linewidths, figsize=figsize,
-                                                           suppress_display=suppress_display)
+                                                       linewidths=linewidths, figsize=figsize,
+                                                       suppress_display=suppress_display)
 
         return fig, ax
 
@@ -304,8 +304,8 @@ Stimulus names: {stim_names}
             title = self.name
 
         fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                    style=style, title=title, figsize=figsize,
-                                                    suppress_display=suppress_display)
+                                                style=style, title=title, figsize=figsize,
+                                                suppress_display=suppress_display)
 
         return fig, ax
 

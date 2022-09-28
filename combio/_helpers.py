@@ -7,6 +7,79 @@ from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
 from typing import Union, Optional
+from combio._decorators import requires_lilypond
+import tempfile
+import shutil
+import subprocess
+import skimage
+try:
+    import mingus
+    from mingus.extra import lilypond as mingus_lilypond
+except ImportError:
+    mingus = None
+    mingus_lilypond = None
+
+
+def all_possibilities(nums, target):
+    """
+    I stole this code
+    """
+
+    res = []
+    nums.sort()
+
+    def dfs(left, path):
+        if not left:
+            res.append(np.array(path))
+        else:
+            for val in nums:
+                if val > left:
+                    break
+                dfs(left - val, path + [val])
+
+    dfs(target, [])
+
+    return np.array(res, dtype=object)
+
+
+def all_rhythmic_ratios(allowed_note_values, time_signature, target_n: Optional[int] = None):
+    # Find common denominator so we can work with integers, rather than floats
+    common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])
+
+    allowed_numerators = common_denom // np.array(allowed_note_values)
+    full_bar = time_signature[0] * (1 / time_signature[1])
+    # The target is the desired length that should be returned by the deep first search.
+    target = int(full_bar * common_denom)
+
+    possibilities = all_possibilities(allowed_numerators, target)
+    out_array = possibilities / common_denom
+
+    if target_n is not None:
+        out_array = np.where(len(out_array) == target_n)
+        if len(out_array) == 0:
+            raise ValueError("No random rhythms exist that adhere to these parameters. "
+                             "Try providing different parameters.")
+
+    return out_array
+
+
+def get_lp_from_track(t, print_staff: bool):
+    """
+    Internal method for plotting a mingus Track object via lilypond.
+    """
+
+    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+    remove_staff = '{ \stopStaff \override Staff.Clef.color = #white'
+
+    if print_staff is True:
+        lp = '\\version "2.10.33"\n' + mingus_lilypond.from_Track(t) + remove_footers
+    elif print_staff is False:
+        lp = '\\version "2.10.33"\n' + remove_staff + mingus_lilypond.from_Track(t)[1:] + remove_footers
+    else:
+        raise ValueError("Wrong value specified for print_staff.")
+
+    return lp
 
 
 def get_sound_with_metronome(samples: np.ndarray,
@@ -43,10 +116,86 @@ def get_sound_with_metronome(samples: np.ndarray,
     return sound_samples
 
 
+def join_rhythms(iterator):
+    """
+    This function can join multiple Rhythm objects.
+    """
+
+    # Check whether iterable was passed
+    if not hasattr(iterator, '__iter__'):
+        raise ValueError("Please pass this function a list or other iterable object.")
+
+    # Check whether all the objects are of the same type
+    if not all(isinstance(rhythm, combio.rhythm.Rhythm) for rhythm in iterator):
+        raise ValueError("You can only join multiple Rhythm objects.")
+
+    if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
+        raise ValueError("Provided rhythms should have the same time signatures.")
+
+    if not all(rhythm.beat_ms == iterator[0].beat_ms for rhythm in iterator):
+        raise ValueError("Provided rhythms should have same tempo (beat_ms).")
+
+    iois = [rhythm.iois for rhythm in iterator]
+    iois = np.concatenate(iois)
+    n_bars = int(np.sum([rhythm.n_bars for rhythm in iterator]))
+
+    return combio.rhythm.Rhythm(iois,
+                                n_bars=n_bars,
+                                time_signature=iterator[0].time_signature,
+                                beat_ms=iterator[0].beat_ms)
+
+
 def normalize_audio(samples: np.ndarray) -> np.ndarray:
     """This helper function normalizes audio based on the absolute max amplitude from the provided sound samples."""
     samples /= np.max(np.abs(samples), axis=0)
     return samples
+
+
+@requires_lilypond
+def plot_lp(lp, filepath, suppress_display):
+    format = os.path.splitext(filepath)[1] if filepath else '.png'
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # run subprocess
+        if format not in ['.eps', '.png']:
+            raise ValueError("Can only export .png or .eps files.")
+
+        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--{format[1:]}', '-o', 'rhythm', 'rhythm.ly']
+        with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
+            file.write(lp)
+
+        subprocess.run(command, cwd=tmp_dir, check=True)
+        result_path = os.path.join(tmp_dir, 'rhythm' + format)
+
+        if filepath:
+            shutil.copy(result_path, filepath)
+
+        image = skimage.img_as_float(skimage.io.imread(result_path))
+
+    # Select all pixels almost equal to white
+    # (almost, because there are some edge effects in jpegs
+    # so the boundaries may not be exactly white)
+    white = np.array([1, 1, 1])
+    mask = np.abs(image - white).sum(axis=2) < 0.05
+
+    # Find the bounding box of those pixels
+    coords = np.array(np.nonzero(~mask))
+    top_left = np.min(coords, axis=1)
+    bottom_right = np.max(coords, axis=1)
+
+    out = image[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
+
+    # show plot
+    if not filepath and not suppress_display:
+        plt.imshow(out)
+        plt.axis('off')
+        plt.show()
+    elif format == '.png' and not suppress_display:
+        plt.imshow(out)
+        plt.axis('off')
+        # plt.savefig(filename, bbox_inches='tight')  # TODO Jelle needs to figure out what he wants
+    else:
+        pass
 
 
 def plot_sequence_single(onsets: Union[list, np.ndarray],

@@ -1,7 +1,6 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
 from typing import Union, Optional
-
 import matplotlib.pyplot as plt
 import numpy as np
 import combio._helpers
