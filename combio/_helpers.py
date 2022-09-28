@@ -19,7 +19,7 @@ except ImportError:
     mingus = None
     mingus_lilypond = None
 
-
+# todo Fix type hints
 def all_possibilities(nums, target):
     """
     I stole this code
@@ -42,6 +42,7 @@ def all_possibilities(nums, target):
     return np.array(res, dtype=object)
 
 
+# todo Fix type hints
 def all_rhythmic_ratios(allowed_note_values, time_signature, target_n: Optional[int] = None):
     # Find common denominator so we can work with integers, rather than floats
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])
@@ -63,6 +64,7 @@ def all_rhythmic_ratios(allowed_note_values, time_signature, target_n: Optional[
     return out_array
 
 
+# todo Fix type hints
 def get_lp_from_track(t, print_staff: bool):
     """
     Internal method for plotting a mingus Track object via lilypond.
@@ -115,7 +117,7 @@ def get_sound_with_metronome(samples: np.ndarray,
 
     return sound_samples
 
-
+# todo Use NumPy functions
 def join_rhythms(iterator):
     """
     This function can join multiple Rhythm objects.
