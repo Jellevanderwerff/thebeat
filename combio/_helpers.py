@@ -11,7 +11,7 @@ from combio._decorators import requires_lilypond
 import tempfile
 import shutil
 import subprocess
-import skimage
+import matplotlib.image as mpimg
 try:
     import mingus
     from mingus.extra import lilypond as mingus_lilypond
@@ -152,51 +152,49 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
 
 
 @requires_lilypond
-def plot_lp(lp, filepath, suppress_display):
-    format = os.path.splitext(filepath)[1] if filepath else '.png'
+def plot_lp(lp,
+            filepath: Union[os.PathLike, str] = None,
+            suppress_display: bool = False):
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        # run subprocess
-        if format not in ['.eps', '.png']:
+    # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
+    # eventually show.
+    if filepath:
+        save_format = os.path.splitext(filepath)[1]
+        if save_format not in ['.eps', '.png']:
             raise ValueError("Can only export .png or .eps files.")
+    else:
+        save_format = None  # Just to get my IDE to stop bugging me
 
-        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--{format[1:]}', '-o',
+    # lilypond needs to write some temporary files to disk. These include a .eps and .png file.
+    # if we want to keep that file, we copy it from the temporary files.
+    with tempfile.TemporaryDirectory() as tmp_dir:
+
+        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--png', '-o',
                    'rhythm', 'rhythm.ly']
+
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
         subprocess.run(command, cwd=tmp_dir, check=True)
-        result_path = os.path.join(tmp_dir, 'rhythm' + format)
 
+        # read the png
+        result_path_png = os.path.join(tmp_dir, 'rhythm.png')
+        image = mpimg.imread(result_path_png)
+
+        # if a filepath is specified (and we want to keep the file), we copy it from the temp files
         if filepath:
-            shutil.copy(result_path, filepath)
+            if save_format == '.eps':
+                path_to_file_for_saving = os.path.join(tmp_dir, 'rhythm-1.eps')
+            else:
+                path_to_file_for_saving = os.path.join(tmp_dir, 'rhythm.png')
 
-        image = skimage.img_as_float(skimage.io.imread(result_path))
+            shutil.copy(path_to_file_for_saving, filepath)
 
-    # Select all pixels almost equal to white
-    # (almost, because there are some edge effects in jpegs
-    # so the boundaries may not be exactly white)
-    white = np.array([1, 1, 1])
-    mask = np.abs(image - white).sum(axis=2) < 0.05
-
-    # Find the bounding box of those pixels
-    coords = np.array(np.nonzero(~mask))
-    top_left = np.min(coords, axis=1)
-    bottom_right = np.max(coords, axis=1)
-
-    out = image[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
-
-    # show plot
-    if not filepath and not suppress_display:
-        plt.imshow(out)
+    # show plot if necessary
+    if not suppress_display:
+        ax = plt.imshow(image)
         plt.axis('off')
         plt.show()
-    elif format == '.png' and not suppress_display:
-        plt.imshow(out)
-        plt.axis('off')
-        # plt.savefig(filename, bbox_inches='tight')  # TODO Jelle needs to figure out what he wants
-    else:
-        pass
 
 
 def plot_sequence_single(onsets: Union[list, np.ndarray],
