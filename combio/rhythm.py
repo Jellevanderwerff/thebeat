@@ -1,16 +1,24 @@
 # Optional imports
+
+# Mingus
 try:
     import mingus
     from mingus.extra import lilypond as mingus_lilypond
+    mingus_installed = True
 except ImportError:
-    mingus = None
-    mingus_lilypond = None
+    mingus_installed = False
+
+# Skimage
+
+
+
 # Local imports
 import combio.core
 # Required imports
 import numpy as np
 
 
+# noinspection PyUnresolvedReferences
 class Rhythm(combio.core.sequence.BaseSequence):
 
     def __init__(self, iois, n_bars: int, time_signature, beat_ms):
@@ -124,8 +132,8 @@ class Rhythm(combio.core.sequence.BaseSequence):
                    time_signature=time_signature,
                    beat_ms=beat_ms)
 
-    def plot_rhythm(self, filepath=None, print_staff=False, suppress_display=False):
-        if mingus is None:
+    def plot(self, filepath=None, print_staff=False, suppress_display=False):
+        if mingus_installed is False:
             raise ValueError("This method requires the 'mingus' Python package."
                              "Install it, for instance by typing 'pip install mingus' into your terminal.")
 
@@ -148,9 +156,10 @@ class Rhythm(combio.core.sequence.BaseSequence):
             note_i += 1
 
         # If final bar was not full yet, add a rest for the remaining duration
+        # Todo think what the reasoning was here
         if b.current_beat % 1 != 0:
             rest_value = 1 / b.space_left()
-            if round(rest_value) != rest_value:
+            if not rest_value.is_integer():
                 raise ValueError("The rhythm could not be plotted. Most likely because the IOIs cannot "
                                  "be (easily) captured in musical notation. This for instance happens after "
                                  "using one of the tempo manipulation methods.")

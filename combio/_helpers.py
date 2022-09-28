@@ -160,7 +160,8 @@ def plot_lp(lp, filepath, suppress_display):
         if format not in ['.eps', '.png']:
             raise ValueError("Can only export .png or .eps files.")
 
-        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--{format[1:]}', '-o', 'rhythm', 'rhythm.ly']
+        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--{format[1:]}', '-o',
+                   'rhythm', 'rhythm.ly']
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
