@@ -1,16 +1,10 @@
 # Optional imports
-
 # Mingus
 try:
     import mingus
     from mingus.extra import lilypond as mingus_lilypond
-    mingus_installed = True
 except ImportError:
-    mingus_installed = False
-
-# Skimage
-
-
+    mingus = None
 
 # Local imports
 import combio.core
@@ -26,7 +20,6 @@ class Rhythm(combio.core.sequence.BaseSequence):
         self.time_signature = time_signature  # Used for metrical sequences
         self.beat_ms = beat_ms  # Used for metrical sequences
         self.n_bars = n_bars
-
 
         if not np.sum(iois) % (n_bars * time_signature[0] * beat_ms) == 0:
             raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
@@ -83,8 +76,9 @@ class Rhythm(combio.core.sequence.BaseSequence):
     @classmethod
     def from_iois(cls, iois, time_signature, beat_ms):
         n_bars = np.sum(iois) / time_signature[0] / beat_ms
+        print(type(n_bars))
 
-        if n_bars % 1 != 0:
+        if not n_bars % 1 != 0:
             raise ValueError("The provided note values do not amount to whole bars.")
         else:
             n_bars = int(n_bars)
@@ -133,7 +127,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
                    beat_ms=beat_ms)
 
     def plot(self, filepath=None, print_staff=False, suppress_display=False):
-        if mingus_installed is False:
+        if mingus is None:
             raise ValueError("This method requires the 'mingus' Python package."
                              "Install it, for instance by typing 'pip install mingus' into your terminal.")
 
