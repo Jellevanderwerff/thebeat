@@ -193,7 +193,7 @@ def plot_lp(lp,
 
         # the eps we cannot crop that easily unfortunately, so we use the one created
         # by lilypond if an .eps is desired.
-        if filepath and save_format == 'eps':
+        if filepath and save_format == '.eps':
             path_to_file_for_saving = os.path.join(tmp_dir, 'rhythm-1.eps')
             shutil.copy(path_to_file_for_saving, filepath)
 
