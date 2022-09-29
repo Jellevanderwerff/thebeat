@@ -19,6 +19,7 @@ except ImportError:
     mingus = None
     mingus_lilypond = None
 
+
 # todo Fix type hints
 def all_possibilities(nums, target):
     """
@@ -35,19 +36,23 @@ def all_possibilities(nums, target):
             for val in nums:
                 if val > left:
                     break
-                dfs(left - val, path + [val])
+                current_path = np.append(path, val)
+                dfs(left - val, current_path)
 
-    dfs(target, [])
+    dfs(target, np.array([]))
 
     return np.array(res, dtype=object)
 
 
 # todo Fix type hints
-def all_rhythmic_ratios(allowed_note_values, time_signature, target_n: Optional[int] = None):
+def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
+                        time_signature: tuple[int],
+                        target_n: Optional[int] = None):
     # Find common denominator so we can work with integers, rather than floats
-    common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])
+    common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
 
     allowed_numerators = common_denom // np.array(allowed_note_values)
+
     full_bar = time_signature[0] * (1 / time_signature[1])
     # The target is the desired length that should be returned by the deep first search.
     target = int(full_bar * common_denom)
@@ -314,7 +319,7 @@ def plot_waveform(samples: np.ndarray,
 
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.plot(frames, samples, alpha=alph)
+        ax.plot_rhythm(frames, samples)
         if n_channels == 2:
             ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
 

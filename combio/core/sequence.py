@@ -31,17 +31,23 @@ class BaseSequence:
     metrical : bool
         If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
         sequence has an equal number of IOIs and event onsets.
+    name : str
+    If desired, one can give the (Base)Sequence object a name. This is for instance used when printing the sequence,
+    or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     """
 
     def __init__(self,
                  iois: Union[list, np.ndarray],
-                 metrical: Optional[bool] = False):
+                 metrical: Optional[bool] = False,
+                 name: Optional[str] = None):
         """Initialization of BaseSequence class."""
 
         # Save attributes
         self.iois = iois
         self.metrical = metrical
+        # Additionally save the provided name (may be None)
+        self.name = name
 
     @property
     def iois(self) -> np.ndarray:
@@ -121,9 +127,6 @@ class Sequence(BaseSequence):
     metrical : bool
         If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for n event onsets. If ``True``,
         sequence has an equal number of IOIs and event onsets.
-    name : str
-        If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
-        or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     Examples
     --------
@@ -168,10 +171,7 @@ class Sequence(BaseSequence):
         """
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, metrical=metrical)
-
-        # Additionally save the provided name (may be None)
-        self.name = name
+        BaseSequence.__init__(self, iois=iois, metrical=metrical, name=name)
 
     def __str__(self):
         if self.metrical:
@@ -613,14 +613,14 @@ class Sequence(BaseSequence):
         self.iois /= np.linspace(1, total_change, len(self.iois))
 
     # Visualization
-    def plot(self,
-             style: str = 'seaborn',
-             title: Optional[str] = None,
-             linewidth: int = 50,
-             figsize: Optional[tuple] = None,
-             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+    def plot_sequence(self,
+                      style: str = 'seaborn',
+                      title: Optional[str] = None,
+                      linewidth: int = 50,
+                      figsize: Optional[tuple] = None,
+                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
-        Plot the Sequence object as an event plot on the basis of the event onsets.
+        Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
 
         In principle, the `x` axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
         this changes to seconds.
@@ -645,7 +645,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-        >>> seq.plot()  # doctest: +SKIP
+        >>> seq.plot_rhythm()  # doctest: +SKIP
         """
 
         # If a title was provided that has preference. If none is provided,

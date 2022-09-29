@@ -152,7 +152,7 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
         ax.axes.set_xlabel(x_label)
         ax.axes.set_title(title)
-        ax.plot(x, y)
+        ax.plot_rhythm(x, y)
 
     if suppress_display is False:
         plt.show()

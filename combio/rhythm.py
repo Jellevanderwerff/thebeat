@@ -1,3 +1,9 @@
+# Required imports
+from __future__ import annotations
+from typing import Union, Optional
+import numpy as np
+
+
 # Optional imports
 # Mingus
 try:
@@ -8,11 +14,8 @@ except ImportError:
 
 # Local imports
 import combio.core
-# Required imports
-import numpy as np
 
 
-# noinspection PyUnresolvedReferences
 class Rhythm(combio.core.sequence.BaseSequence):
 
     def __init__(self, iois, n_bars: int, time_signature, beat_ms):
@@ -102,14 +105,13 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         iois = np.empty(0)
 
+        all_ratios = combio._helpers.all_rhythmic_ratios(allowed_note_values,
+                                                         time_signature,
+                                                         target_n=events_per_bar)
+
         for bar in range(n_bars):
-            all_ratios = combio._helpers.all_rhythmic_ratios(allowed_note_values,
-                                                             time_signature,
-                                                             target_n=events_per_bar)
             ratios = rng.choice(all_ratios, 1)[0]
-
             new_iois = ratios * 4 * beat_ms
-
             iois = np.append(iois, new_iois)
 
         return cls(iois, time_signature=time_signature, beat_ms=beat_ms, n_bars=n_bars)
@@ -126,7 +128,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
                    time_signature=time_signature,
                    beat_ms=beat_ms)
 
-    def plot(self, filepath=None, print_staff=False, suppress_display=False):
+    def plot_rhythm(self, filepath=None, print_staff=False, suppress_display=False):
         if mingus is None:
             raise ValueError("This method requires the 'mingus' Python package."
                              "Install it, for instance by typing 'pip install mingus' into your terminal.")
@@ -164,3 +166,54 @@ class Rhythm(combio.core.sequence.BaseSequence):
         lp = combio._helpers.get_lp_from_track(t, print_staff=print_staff)
 
         combio._helpers.plot_lp(lp, filepath, suppress_display=suppress_display)
+
+    def plot_sequence(self,
+                      style: str = 'seaborn',
+                      title: Optional[str] = None,
+                      linewidth: int = 50,
+                      figsize: Optional[tuple] = None,
+                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+        """
+        Plot the :py:class:`Rhythm` object as an event plot on the basis of the event onsets.
+
+        In principle, the `x` axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
+        this changes to seconds.
+
+        Parameters
+        ----------
+        style
+            Matplotlib style to use for the plot. Defaults to 'seaborn'.
+            See `matplotlib style sheets reference
+            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+        title
+            If desired, one can provide a title for the plot. This takes precedence over using the
+            StimSequence name as the title of the plot (if the object has one).
+        linewidth
+            The desired width of the bars (events) in milliseconds.
+        figsize
+            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        suppress_display
+            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+
+        Examples
+        --------
+        >>> rhythm = Rhythm.generate_random_rhythm(allowed_note_values=[4, 8, 16], n_bars = 1, beat_ms=500)
+        >>> rhythm.plot_sequence()  # doctest: +SKIP
+        """
+
+        # If a title was provided that has preference. If none is provided,
+        # use the Sequence object's name. Otherwise use ``None``.
+        if title:
+            title = title
+        elif self.name:
+            title = self.name
+
+        # Linewidths
+        linewidths = np.repeat(linewidth, len(self.onsets))
+
+        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                       linewidths=linewidths, figsize=figsize,
+                                                       suppress_display=suppress_display)
+
+        return fig, ax
