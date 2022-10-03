@@ -34,7 +34,7 @@ class RhythmTrial:
         self.time_signature = rhythm.time_signature
         self.beat_ms = rhythm.beat_ms
         self.n_bars = rhythm.n_bars
-        self.note_values = rhythm.note_values
+        self.note_values = rhythm.get_note_values
         self.bar_duration = np.sum(rhythm.iois) / rhythm.n_bars
         self.total_duration = np.sum(rhythm.iois)
 
@@ -47,21 +47,6 @@ class RhythmTrial:
 
         # We start with one layer
         self.n_layers = 1
-
-    def _add_events(self, current_events, rhythm, stims, layer_id):
-
-        events = current_events
-
-        # Make some additional variables
-        event_durations = [stim.duration_ms for stim in stims]
-        stim_samples = [stim.samples for stim in stims]
-
-        # Save each event to self.events as a named tuple
-        for event in zip(layer_id, rhythm.onsets, rhythm.iois, event_durations, rhythm.note_values, stim_samples):
-            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
-            events.append(entry)
-
-        return events
 
     def _make_sound(self, provided_events):
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
@@ -212,7 +197,6 @@ class RhythmTrial:
         """
 
         core.helpers.write_wav(self.samples, self.fs, out_path, self.name, metronome, self.beat_ms, metronome_amplitude)
-
 
 
 def _get_lp_from_events(provided_events,

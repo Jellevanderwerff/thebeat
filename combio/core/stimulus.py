@@ -115,12 +115,12 @@ class Stimulus:
     def generate(cls,
                  freq: int = 440,
                  fs: int = 48000,
-                 duration: int = 50,
+                 duration_ms: int = 50,
                  amplitude: float = 1.0,
                  osc: str = 'sine',
                  onramp: int = 0,
                  offramp: int = 0,
-                 ramp: str = 'linear',
+                 ramp_type: str = 'linear',
                  name: Optional[str] = None) -> Stimulus:
         """
         This class method returns a Stimulus object with a generated sound, based on the given parameters.
@@ -132,7 +132,7 @@ class Stimulus:
             The pitch frequency in hertz.
         fs
             The sampling frequency in hertz.
-        duration
+        duration_ms
             The duration in milliseconds.
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
@@ -143,7 +143,7 @@ class Stimulus:
             The sound's 'attack' in milliseconds.
         offramp
             The sound's 'decay' in milliseconds.
-        ramp
+        ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
         name
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
@@ -151,27 +151,19 @@ class Stimulus:
 
         Examples
         --------
-        >>> stim = Stimulus.generate(freq=1000, duration=100, onramp=10, offramp=10)
+        >>> stim = Stimulus.generate(freq=1000,onramp=10,offramp=10)
         >>> stim.plot_waveform()  # doctest: +SKIP
 
         """
-        # Duration in seconds
-        t = duration / 1000
 
         # Generate signal
-        samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float64)
-        if osc == 'sine':
-            signal = amplitude * np.sin(2 * np.pi * freq * samples)
-        elif osc == 'square':
-            signal = amplitude * np.square(2 * np.pi * freq * samples)
-        else:
-            raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")
+        samples = combio._helpers.synthesize_sound(duration_ms, fs, freq, amplitude, osc)
 
         # Make ramps
-        signal, fs = _make_ramps(signal, fs, onramp, offramp, ramp)
+        samples = combio._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
 
         # Return class
-        return cls(signal, fs, name)
+        return cls(samples, fs, name)
 
     @classmethod
     def from_note(cls,
@@ -231,15 +223,8 @@ class Stimulus:
         else:
             raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
 
-        return Stimulus.generate(freq=freq,
-                                 fs=fs,
-                                 duration=duration,
-                                 amplitude=amplitude,
-                                 osc=osc,
-                                 onramp=onramp,
-                                 offramp=offramp,
-                                 ramp=ramp,
-                                 name=name)
+        return Stimulus.generate(freq=freq, fs=fs, amplitude=amplitude, osc=osc, onramp=onramp, offramp=offramp,
+                                 ramp_type=ramp, name=name)
 
     @classmethod
     def from_parselmouth(cls,
@@ -401,57 +386,6 @@ class Stimulus:
         >>> stim.write_wav('my_stimulus.wav')  # doctest: +SKIP
 
         """
-
-
-def _make_ramps(signal, fs, onramp, offramp, ramp):
-    """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
-    # Create onramp
-    if onramp > 0:
-        onramp_samples_len = int(onramp / 1000 * fs)
-        end_point = onramp_samples_len
-
-        if ramp == 'linear':
-            onramp_amps = np.linspace(0, 1, onramp_samples_len)
-
-        elif ramp == 'raised-cosine':
-            hanning_complete = np.hanning(onramp_samples_len * 2)
-            onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
-
-        else:
-            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
-
-        signal[:end_point] *= onramp_amps
-
-    elif onramp < 0:
-        raise ValueError("Onramp cannot be negative")
-    elif onramp == 0:
-        pass
-    else:
-        raise ValueError("Wrong value supplied to onramp argument.")
-
-    # Create offramp
-    if offramp > 0:
-        offramp_samples_len = int(offramp / 1000 * fs)
-        start_point = signal.shape[0] - offramp_samples_len
-
-        if ramp == 'linear':
-            offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
-        elif ramp == 'raised-cosine':
-            hanning_complete = np.hanning(offramp_samples_len * 2)
-            offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
-        else:
-            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
-
-        signal[start_point:] *= offramp_amps
-
-    elif offramp < 0:
-        raise ValueError("Offramp cannot be negative")
-    elif offramp == 0:
-        pass
-    else:
-        raise ValueError("Wrong value supplied to offramp argument.")
-
-    return signal, fs
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],

@@ -42,7 +42,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
         return len(self.onsets)
 
     @property
-    def note_values(self):
+    def get_note_values(self):
         """
         Get note values from the IOIs, based on beat_ms.
         """
@@ -130,7 +130,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
     def plot_rhythm(self, filepath=None, print_staff=False, suppress_display=False):
         if mingus is None:
-            raise ValueError("This method requires the 'mingus' Python package."
+            raise ImportError("This method requires the 'mingus' Python package."
                              "Install it, for instance by typing 'pip install mingus' into your terminal.")
 
         # create initial bar
@@ -141,7 +141,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
         note_i = 0
         # loop over the note values of the sequence
 
-        for note_value in self.note_values:
+        for note_value in self.get_note_values:
             b.place_notes('G-4', note_value)
 
             # if bar is full, create new bar and add bar to track

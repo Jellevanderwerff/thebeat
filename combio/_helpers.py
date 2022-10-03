@@ -12,6 +12,7 @@ import tempfile
 import shutil
 import subprocess
 import matplotlib.image as mpimg
+
 try:
     import mingus
     from mingus.extra import lilypond as mingus_lilypond
@@ -122,6 +123,7 @@ def get_sound_with_metronome(samples: np.ndarray,
 
     return sound_samples
 
+
 # todo Use NumPy functions
 def join_rhythms(iterator):
     """
@@ -152,6 +154,57 @@ def join_rhythms(iterator):
                                 beat_ms=iterator[0].beat_ms)
 
 
+def make_ramps(samples, fs, onramp, offramp, ramp_type):
+    """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
+    # Create onramp
+    if onramp > 0:
+        onramp_samples_len = int(onramp / 1000 * fs)
+        end_point = onramp_samples_len
+
+        if ramp_type == 'linear':
+            onramp_amps = np.linspace(0, 1, onramp_samples_len)
+
+        elif ramp_type == 'raised-cosine':
+            hanning_complete = np.hanning(onramp_samples_len * 2)
+            onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+
+        samples[:end_point] *= onramp_amps
+
+    elif onramp < 0:
+        raise ValueError("Onramp cannot be negative")
+    elif onramp == 0:
+        pass
+    else:
+        raise ValueError("Wrong value supplied to onramp argument.")
+
+    # Create offramp
+    if offramp > 0:
+        offramp_samples_len = int(offramp / 1000 * fs)
+        start_point = samples.shape[0] - offramp_samples_len
+
+        if ramp_type == 'linear':
+            offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
+        elif ramp_type == 'raised-cosine':
+            hanning_complete = np.hanning(offramp_samples_len * 2)
+            offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+        else:
+            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+
+        samples[start_point:] *= offramp_amps
+
+    elif offramp < 0:
+        raise ValueError("Offramp cannot be negative")
+    elif offramp == 0:
+        pass
+    else:
+        raise ValueError("Wrong value supplied to offramp argument.")
+
+    return samples
+
+
 def normalize_audio(samples: np.ndarray) -> np.ndarray:
     """This helper function normalizes audio based on the absolute max amplitude from the provided sound samples."""
     samples /= np.max(np.abs(samples), axis=0)
@@ -162,7 +215,6 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
 def plot_lp(lp,
             filepath: Union[os.PathLike, str] = None,
             suppress_display: bool = False):
-
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
@@ -265,7 +317,6 @@ def plot_waveform(samples: np.ndarray,
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
                   suppress_display: bool = False) -> tuple[plt.Axes, plt.Figure]:
-
     """
     This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
 
@@ -347,6 +398,26 @@ def play_samples(samples: np.ndarray,
 
     sd.play(samples, fs, loop=loop)
     sd.wait()
+
+
+def synthesize_sound(duration_ms: int,
+                     fs: int,
+                     freq: Union[int, float],
+                     amplitude: float,
+                     osc: str) -> np.ndarray:
+    # Get duration in s
+    t = duration_ms / 1000
+
+    samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float64)
+
+    if osc == 'sine':
+        samples = amplitude * np.sin(2 * np.pi * freq * samples)
+    elif osc == 'square':
+        samples = amplitude * np.square(2 * np.pi * freq * samples)
+    else:
+        raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")
+
+    return samples
 
 
 def write_wav(samples: np.ndarray,

@@ -5,10 +5,10 @@ import random
 
 def test_event_plot_single():
     seq = Sequence([500, 200, 1000])
-    stims = [Stimulus.generate(duration=150),
-             Stimulus.generate(duration=10),
-             Stimulus.generate(duration=200),
-             Stimulus.generate(duration=200)]
+    stims = [Stimulus.generate(),
+             Stimulus.generate(),
+             Stimulus.generate(),
+             Stimulus.generate()]
     trial = StimSequence(stims, seq)
     plot_single_sequence(trial, style='seaborn', suppress_display=True)
 
@@ -18,7 +18,7 @@ def test_event_plot_multiple():
 
     for x in range(10):
         seq = Sequence.generate_random_uniform(n=10, a=400, b=600)  # = 10 stimuli, 9 IOIs
-        stims = [Stimulus.generate(duration=random.randint(10, 350)) for y in range(10)]  # = 10 stimuli
+        stims = [Stimulus.generate() for y in range(10)]  # = 10 stimuli
         trials.append(StimSequence(stims, seq))
 
     fig, ax = plot_multiple_sequences(trials, style='ggplot', suppress_display=True)

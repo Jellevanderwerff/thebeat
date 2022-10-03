@@ -50,7 +50,7 @@ class StimSequence(BaseSequence):
 
     Examples
     --------
-    >>> stim = Stimulus.generate(freq=440,duration=50)
+    >>> stim = Stimulus.generate(freq=440)
     >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
     >>> trial = StimSequence(stim, seq)
 
@@ -82,7 +82,7 @@ class StimSequence(BaseSequence):
 
         Examples
         --------
-        >>> stim = Stimulus.generate(freq=440,duration=50)
+        >>> stim = Stimulus.generate(freq=440)
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
         >>> trial = StimSequence(stim, seq)
 
