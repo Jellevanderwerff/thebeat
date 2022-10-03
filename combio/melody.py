@@ -1,16 +1,17 @@
 import os
 from typing import Union, Optional
+
+import abjad
 import numpy as np
 from collections import namedtuple
 
 from _pytest import warnings
 
 try:
-    import mingus
-    import mingus.core.scales
+    import abjad
 except ImportError:
-    mingus = None
-from _decorators import requires_lilypond
+    abjad = None
+from combio._decorators import requires_lilypond
 import combio.rhythm
 import combio._helpers
 import sounddevice
@@ -27,7 +28,7 @@ class Melody(combio.rhythm.Rhythm):
                  name: Optional[str] = None):
 
         # Initialize namedtuple. The namedtuple template is saved as an attribute.
-        self.Event = namedtuple('event', 'layer onset_ms duration_ms tone_height_hz is_played')
+        self.Event = namedtuple('event', 'layer onset_ms duration_ms note_value tone_height_hz is_played')
 
         # Make is_played if None supplied
         if is_played is None:
@@ -45,6 +46,7 @@ class Melody(combio.rhythm.Rhythm):
         self.events = self._make_events(layer_id=np.tile(0, len(rhythm.onsets)),
                                         rhythm=rhythm,
                                         event_durations=event_durations,
+                                        note_values=rhythm.get_note_values,
                                         tone_heights=tone_heights,
                                         is_played=is_played)
 
@@ -68,6 +70,8 @@ class Melody(combio.rhythm.Rhythm):
             raise ImportError("This method requires the 'mingus' Python package."
                               "Install it, for instance by typing 'pip install mingus' into your terminal.")
 
+        # todo do this with abjad
+
         if rng is None:
             rng = np.random.default_rng()
 
@@ -85,6 +89,18 @@ class Melody(combio.rhythm.Rhythm):
         is_played = n_rests * [False] + (len(rhythm.onsets) - n_rests) * [True]
 
         return cls(rhythm=rhythm, tone_heights=tone_heights, is_played=is_played, name=name)
+
+    @requires_lilypond
+    def plot_melody(self,
+                    filepath: Optional[Union[os.PathLike, str]] = None,
+                    print_staff: bool = False,
+                    suppress_display: bool = False,
+                    simultaneous: bool = True):
+
+        lp = _get_lp_from_events(events=self.events, n_layers=self.n_layers, time_signature=self.time_signature,
+                                 print_staff=print_staff, simultaneous=simultaneous)
+
+        combio._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
 
     def synthesize_and_play(self,
                             fs: int = 48000,
@@ -127,12 +143,12 @@ class Melody(combio.rhythm.Rhythm):
         combio._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
-    def _make_events(self, layer_id, rhythm, event_durations, tone_heights, is_played) -> list:
+    def _make_events(self, layer_id, rhythm, event_durations, note_values, tone_heights, is_played) -> list:
 
         events = []
 
-        for event in zip(layer_id, rhythm.onsets, event_durations, tone_heights, is_played):
-            entry = self.Event(event[0], event[1], event[2], event[3], event[4])
+        for event in zip(layer_id, rhythm.onsets, event_durations, note_values, tone_heights, is_played):
+            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
             events.append(entry)
 
         return events
@@ -188,78 +204,48 @@ class Melody(combio.rhythm.Rhythm):
         return samples
 
 
-@requires_lilypond
 def _get_lp_from_events(events,
                         n_layers: int,
                         time_signature: tuple,
                         print_staff: bool = True,
-                        stem_directions=None):
-
-    # Check whether mingus is installed
-    if mingus is None:
-        raise ImportError("This function or method requires the mingus package. Install, for instance by typing"
-                          " 'pip install mingus' in your terminal.")
-
-    # If custom stem directions are provided (i.e. for each layer in which direction the stems of the notes
-    # are, make a list that we'll later use for each layer. Otherwise use bogus setting.
-    if stem_directions is None:
-        stem_directions = ['', '', '']
-    else:
-        stem_directions = ['\override Stem.direction = #' + stem_direction for stem_direction in stem_directions]
-
-    if n_layers > 3:
-        raise ValueError("Can maximally plot three layers.")
-
-    if print_staff is True:
-        print_staff_lp = ""
-    else:
-        print_staff_lp = "\\stopStaff \override Staff.Clef.color = #white "
-
-    layers_list = []
-
-    for layer in range(n_layers):
-        bars = []
-        events = [event for event in events if event.layer == layer]
-
-        bar = ''
-        b = mingus.containers.Bar(meter=time_signature)
-
-        for event in events:
-            note_value = event.note_value
-            b.place_rest(note_value)  # This is only to keep track of the number of notes in a bar
-            if event.is_played is True:
-                note = str(note_value) + ' '
-            else:
-                note = 's' + str(note_value) + ' '
-            bar += note
-            if b.current_beat == b.length:
-                bars.append("{ " + bar + "}\n")
-                b = Bar(meter=time_signature)
-                bar = ''
-
-        layers_list.append(bars)
-
-    voice_names = ['voiceOne', 'voiceTwo', 'voiceThree']
-    layer_names = ['uno', 'dos', 'tres']
-
-    string_firstbit = ''
-    string_secondbit = '\\new DrumStaff << '
-
-    for layer_i in range(len(layers_list)):
-        bars = ' '.join(layers_list[layer_i])
-        bars = print_staff_lp + bars
-        layer_string = f"{layer_names[layer_i]} = \drummode {{ {stem_directions[layer_i]} {bars} }} \n"
-        string_firstbit += layer_string
-        staves_string = "\\new DrumVoice { \\%s \\%s }\n" % (voice_names[layer_i], layer_names[layer_i])
-        string_secondbit += staves_string
-
-    string_secondbit += ' >>'
-
-    out_string = string_firstbit + string_secondbit
-
+                        simultaneous: bool = True):
+    # Set up what we need
+    maker = abjad.makers.NoteMaker()
+    time_signature = abjad.TimeSignature(time_signature)
     remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+    oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+    remove_staff = """\stopStaff \override Staff.Clef.color = #white'"""
 
-    lp = '\\version "2.10.33"\n' + out_string + remove_footers
+    # Here are the ajbad voice objects saved
+    voices = []
 
-    return lp
+    for i in range(n_layers):
+        events = [event for event in events if event.layer == i]
+        tone_heights = [event.tone_height_hz for event in events]
+        note_values = [event.note_value for event in events]
+
+        notes = []
+
+        for tone_height, note_value in zip(tone_heights, note_values):
+            pitch = abjad.NamedPitch.from_hertz(tone_height)
+            duration = abjad.Duration((1, int(note_value)))
+            n = maker(pitch, duration)
+            notes.append(n)
+
+        voice = abjad.Voice(notes)
+        voices.append(voice)
+        abjad.attach(time_signature, voice[i])
+
+    staff = abjad.Staff(voices, simultaneous=simultaneous)
+    score = abjad.Score([staff])
+    score_lp = abjad.lilypond(score)
+
+    if print_staff is False:
+        lp = [remove_staff, remove_footers, score_lp]
+    else:
+        lp = [remove_footers, score_lp]
+
+    lpf = abjad.LilyPondFile(lp)
+    lpf_str = abjad.lilypond(lpf)
+
+    return lpf_str

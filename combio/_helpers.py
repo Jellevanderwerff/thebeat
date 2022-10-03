@@ -224,17 +224,17 @@ def plot_lp(lp,
         if save_format not in ['.eps', '.png']:
             raise ValueError("Can only export .png or .eps files.")
     else:
-        save_format = None  # Just to get my IDE to stop bugging me
+        save_format = None
 
     # lilypond needs to write some temporary files to disk. These include a .eps and .png file.
     # if we want to keep that file, we copy it from the temporary files.
     with tempfile.TemporaryDirectory() as tmp_dir:
 
-        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--png', '-o',
-                   'rhythm', 'rhythm.ly']
-
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
+
+        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--png', '-o',
+                   'rhythm', 'rhythm.ly']
 
         subprocess.run(command, cwd=tmp_dir, check=True)
 
