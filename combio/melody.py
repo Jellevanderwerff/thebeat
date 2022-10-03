@@ -1,3 +1,4 @@
+import os
 from typing import Union, Optional
 import numpy as np
 from collections import namedtuple
@@ -9,6 +10,7 @@ try:
     import mingus.core.scales
 except ImportError:
     mingus = None
+from _decorators import requires_lilypond
 import combio.rhythm
 import combio._helpers
 import sounddevice
@@ -47,7 +49,7 @@ class Melody(combio.rhythm.Rhythm):
                                         is_played=is_played)
 
         # Save attributes
-        self.highest_layer = 0  # Currently, we have one layer at index 0
+        self.n_layers = 1  # Currently, we have one layer at index 0
         self.name = name
 
         # Call Rhythm constructor
@@ -55,14 +57,6 @@ class Melody(combio.rhythm.Rhythm):
                          n_bars=rhythm.n_bars,
                          time_signature=rhythm.time_signature,
                          beat_ms=rhythm.beat_ms)
-        """
-        self.time_signature = rhythm.time_signature
-        self.beat_ms = rhythm.beat_ms
-        self.n_bars = rhythm.n_bars
-        self.note_values = rhythm.get_note_values
-        self.bar_duration_ms = np.sum(rhythm.iois) / rhythm.n_bars
-        self.total_duration_ms = np.sum(rhythm.iois)
-        """
 
     @classmethod
     def generate_random_melody(cls,
@@ -90,29 +84,48 @@ class Melody(combio.rhythm.Rhythm):
 
         is_played = n_rests * [False] + (len(rhythm.onsets) - n_rests) * [True]
 
-        return cls(rhythm=rhythm,
-                   tone_heights=tone_heights,
-                   is_played=is_played,
-                   name=name)
+        return cls(rhythm=rhythm, tone_heights=tone_heights, is_played=is_played, name=name)
 
-    def synth_and_play(self,
-                       fs: int = 48000,
-                       amplitude: float = 1.0,
-                       oscillator: str = 'sine',
-                       onramp: int = 0,
-                       offramp: int = 0,
-                       ramp_type: str = 'linear'):
+    def synthesize_and_play(self,
+                            fs: int = 48000,
+                            amplitude: float = 1.0,
+                            oscillator: str = 'sine',
+                            onramp: int = 0,
+                            offramp: int = 0,
+                            ramp_type: str = 'linear',
+                            metronome: bool = False,
+                            metronome_amplitude: float = 1.0):
 
-        sound_samples = self._make_sound(self.events,
-                                         fs=fs,
-                                         oscillator=oscillator,
-                                         amplitude=amplitude,
-                                         onramp=onramp,
-                                         offramp=offramp,
-                                         ramp_type=ramp_type)
+        samples = self._make_sound(self.events, fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
+                                   offramp=offramp, ramp_type=ramp_type)
 
-        sounddevice.play(sound_samples, samplerate=fs)
+        if metronome is True:
+            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                               metronome_amplitude=metronome_amplitude)
+
+        sounddevice.play(samples, samplerate=fs)
         sounddevice.wait()
+
+    def synthesize_and_write(self,
+                             filepath: Union[str, os.PathLike],
+                             fs: int = 48000,
+                             amplitude: float = 1.0,
+                             oscillator: str = 'sine',
+                             onramp: int = 0,
+                             offramp: int = 0,
+                             ramp_type: str = 'linear',
+                             metronome: bool = False,
+                             metronome_amplitude: float = 1.0):
+
+        samples = self._make_sound(self.events, fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
+                                   offramp=offramp, ramp_type=ramp_type)
+
+        if metronome is True:
+            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                               metronome_amplitude=metronome_amplitude)
+
+        combio._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
+                                  metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
     def _make_events(self, layer_id, rhythm, event_durations, tone_heights, is_played) -> list:
 
@@ -151,28 +164,102 @@ class Melody(combio.rhythm.Rhythm):
 
         # Loop over the events, synthesize event sound, and add all of them to the samples array at the appropriate
         # times.
-
         for event in events:
-            event_samples = combio._helpers.synthesize_sound(duration_ms=event.duration_ms,
-                                                             fs=fs,
-                                                             freq=event.tone_height_hz,
-                                                             amplitude=amplitude,
-                                                             osc=oscillator)
+            if event.is_played is True:
+                event_samples = combio._helpers.synthesize_sound(duration_ms=event.duration_ms, fs=fs,
+                                                                 freq=event.tone_height_hz, amplitude=amplitude,
+                                                                 osc=oscillator)
+                if onramp or offramp:
+                    event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
+                                                               offramp=offramp, ramp_type=ramp_type)
 
-            if onramp or offramp:
-                event_samples = combio._helpers.make_ramps(samples=event_samples,
-                                                           fs=fs,
-                                                           onramp=onramp,
-                                                           offramp=offramp,
-                                                           ramp_type=ramp_type)
+                start_pos = int(event.onset_ms / 1000 * fs)
+                end_pos = int(start_pos + event_samples.shape[0])
 
-            start_pos = int(event.onset_ms / 1000 * fs)
-            end_pos = int(start_pos + event_samples.shape[0])
+                samples[start_pos:end_pos] = samples[start_pos:end_pos] + event_samples
 
-            samples[start_pos:end_pos] = samples[start_pos:end_pos] + event_samples
+            else:
+                pass
 
         if np.max(samples) > 1:
-            warnings.warn("Sound was normalized to avoid distortion. If undesirable, change amplitude of the stims.")
+            warnings.warn("Sound was normalized to avoid distortion. If undesirable, change amplitude of the sounds.")
             return combio._helpers.normalize_audio(samples)
-        else:
-            return samples
+
+        return samples
+
+
+@requires_lilypond
+def _get_lp_from_events(events,
+                        n_layers: int,
+                        time_signature: tuple,
+                        print_staff: bool = True,
+                        stem_directions=None):
+
+    # Check whether mingus is installed
+    if mingus is None:
+        raise ImportError("This function or method requires the mingus package. Install, for instance by typing"
+                          " 'pip install mingus' in your terminal.")
+
+    # If custom stem directions are provided (i.e. for each layer in which direction the stems of the notes
+    # are, make a list that we'll later use for each layer. Otherwise use bogus setting.
+    if stem_directions is None:
+        stem_directions = ['', '', '']
+    else:
+        stem_directions = ['\override Stem.direction = #' + stem_direction for stem_direction in stem_directions]
+
+    if n_layers > 3:
+        raise ValueError("Can maximally plot three layers.")
+
+    if print_staff is True:
+        print_staff_lp = ""
+    else:
+        print_staff_lp = "\\stopStaff \override Staff.Clef.color = #white "
+
+    layers_list = []
+
+    for layer in range(n_layers):
+        bars = []
+        events = [event for event in events if event.layer == layer]
+
+        bar = ''
+        b = mingus.containers.Bar(meter=time_signature)
+
+        for event in events:
+            note_value = event.note_value
+            b.place_rest(note_value)  # This is only to keep track of the number of notes in a bar
+            if event.is_played is True:
+                note = str(note_value) + ' '
+            else:
+                note = 's' + str(note_value) + ' '
+            bar += note
+            if b.current_beat == b.length:
+                bars.append("{ " + bar + "}\n")
+                b = Bar(meter=time_signature)
+                bar = ''
+
+        layers_list.append(bars)
+
+    voice_names = ['voiceOne', 'voiceTwo', 'voiceThree']
+    layer_names = ['uno', 'dos', 'tres']
+
+    string_firstbit = ''
+    string_secondbit = '\\new DrumStaff << '
+
+    for layer_i in range(len(layers_list)):
+        bars = ' '.join(layers_list[layer_i])
+        bars = print_staff_lp + bars
+        layer_string = f"{layer_names[layer_i]} = \drummode {{ {stem_directions[layer_i]} {bars} }} \n"
+        string_firstbit += layer_string
+        staves_string = "\\new DrumVoice { \\%s \\%s }\n" % (voice_names[layer_i], layer_names[layer_i])
+        string_secondbit += staves_string
+
+    string_secondbit += ' >>'
+
+    out_string = string_firstbit + string_secondbit
+
+    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+
+    lp = '\\version "2.10.33"\n' + out_string + remove_footers
+
+    return lp

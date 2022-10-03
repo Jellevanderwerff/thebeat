@@ -1,5 +1,7 @@
 import os
 import importlib.resources as pkg_resources
+import warnings
+
 import combio.resources
 import numpy as np
 import matplotlib.pyplot as plt
@@ -422,8 +424,7 @@ def synthesize_sound(duration_ms: int,
 
 def write_wav(samples: np.ndarray,
               fs: int,
-              out_path: Union[str, os.PathLike],
-              name: str,
+              filepath: Union[str, os.PathLike],
               metronome: bool,
               metronome_ioi: int,
               metronome_amplitude: float) -> None:
@@ -433,23 +434,11 @@ def write_wav(samples: np.ndarray,
     """
     if metronome is True:
         samples = get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
-    else:
-        samples = samples
 
-    out_path = str(out_path)
+    filepath = str(filepath)
 
-    if out_path.endswith('.wav'):
-        path, filename = os.path.split(out_path)
-    elif os.path.isdir(out_path):
-        path = out_path
-        # If a name was provided, use that one if no filepath was provided.
-        if name:
-            filename = f"{name}.wav"
-        # If none of the above, simply write 'sequence.wav'.
-        else:
-            filename = f"sequence.wav"
-    else:
-        raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath that"
-                         "ends in '.wav'.")
+    if not filepath.endswith('.wav'):
+        warnings.warn("File saved with extension other than .wav")
 
-    wavfile.write(filename=os.path.join(path, filename), rate=fs, data=samples)
+    wavfile.write(filename=filepath, rate=fs, data=samples)
+
