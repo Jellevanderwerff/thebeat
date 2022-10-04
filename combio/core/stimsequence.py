@@ -3,6 +3,7 @@ from combio.core.sequence import BaseSequence, Sequence
 from combio.core.stimulus import Stimulus
 import numpy as np
 import combio._helpers
+import combio._warnings
 import warnings
 import os
 from typing import Union, Optional
@@ -125,8 +126,12 @@ class StimSequence(BaseSequence):
         # Initialize Sequence class
         BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
 
+        # Check whether there's overlap between the stimuli with these IOIs
+        stimulus_durations = [len(stim) / self.fs * 1000 for stim in stimuli]
+        combio._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
+
         # Make sound which saves the samples to self.samples
-        self.samples = self._make_sound(stimuli, self.onsets)
+        self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
 
     def __str__(self):
 
@@ -146,23 +151,21 @@ class StimSequence(BaseSequence):
                     stim_names.append(stim_name)
 
         if self.metrical:
-            return f"""
-Object of type StimSequence (metrical version):
-StimSequence name: {name}
-{len(self.onsets)} events
-IOIs: {self.iois}
-Onsets: {self.onsets}
-Stimulus names: {stim_names}
-            """
+            return (f"\n"
+                    f"Object of type StimSequence (metrical version):\n"
+                    f"StimSequence name: {name}\n"
+                    f"{len(self.onsets)} events\n"
+                    f"IOIs: {self.iois}\n"
+                    f"Onsets: {self.onsets}\n"
+                    f"Stimulus names: {stim_names}\n")
         else:
-            return f"""
-Object of type StimSequence (non-metrical version):
-StimSequence name: {name}
-{len(self.onsets)} events
-IOIs: {self.iois}
-Onsets: {self.onsets}
-Stimulus names: {stim_names}
-            """
+            return (f"\n"
+                    f"Object of type StimSequence (non-metrical version):\n"
+                    f"StimSequence name: {name}\n"
+                    f"{len(self.onsets)} events\n"
+                    f"IOIs: {self.iois}\n"
+                    f"Onsets: {self.onsets}\n"
+                    f"Stimulus names: {stim_names}\n")
 
     @property
     def mean_ioi(self) -> np.float64:
@@ -210,7 +213,6 @@ Stimulus names: {stim_names}
         """
         combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
                                      metronome=metronome, metronome_amplitude=metronome_amplitude)
-
 
     def stop(self) -> None:
         """
@@ -264,9 +266,9 @@ Stimulus names: {stim_names}
 
         linewidths = self.event_durations
 
-        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                       linewidths=linewidths, figsize=figsize,
-                                                       suppress_display=suppress_display)
+        fig, ax = combio.visualization.plot_single_sequence(sequence=self.onsets, style=style, title=title,
+                                                            linewidths=linewidths, figsize=figsize,
+                                                            suppress_display=suppress_display)
 
         return fig, ax
 
@@ -335,34 +337,22 @@ Stimulus names: {stim_names}
 
         _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
-    def _make_sound(self, stimuli, onsets):
+    def _make_stimseq_sound(self, stimuli, onsets):
         """Internal function used for combining different Stimulus samples and a passed Sequence object
         into one array of samples containing the sound of a StimSequence."""
-        # Check for overlap
-        for i in range(len(onsets)):
-            stim_duration = stimuli[i].samples.shape[0] / self.fs * 1000
-            try:
-                ioi_after_onset = onsets[i + 1] - onsets[i]
-                if ioi_after_onset < stim_duration:
-                    raise ValueError(
-                        "The duration of one or more stimuli is longer than its respective IOI. "
-                        "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
-            except IndexError:
-                pass
 
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
         # In the case of a metrical sequence, we add the final ioi
         # The dtype is important, because that determines the values that the magnitudes can take.
         if self.metrical:
-            length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
+            array_length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
         elif not self.metrical:
-            length = (onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0]
+            array_length = (onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0]
         else:
             raise ValueError("Error during calculation of array_length")
 
-        if int(length) != length:  # let's avoid rounding issues
-            warnings.warn("Number of frames was rounded off to nearest integer ceiling. "
-                          "This shouldn't be much of a problem.")
+        if not array_length.is_integer():  # let's avoid rounding issues
+            warnings.warn(combio._warnings.framerounding)
 
         # Round off array length to ceiling if necessary
         array_length = int(np.ceil(length))

@@ -19,8 +19,8 @@ def test_rhythm():
     assert len(rhythm) == 4
     assert np.all(rhythm.iois == [500, 500, 500, 500])
 
-    rhythm = combio.rhythm.Rhythm.from_iois([500, 1000, 500], (4, 4), 500)
+    rhythm = combio.rhythm.Rhythm([500, 1000, 500], (4, 4), 500)
     assert rhythm.beat_ms == 500
 
     with pytest.raises(ValueError):
-        rhythm = combio.rhythm.Rhythm.from_iois([250, 250, 500, 250, 250, 250], (4, 4), 500)
+        rhythm = combio.rhythm.Rhythm([250, 250, 500, 250, 250, 250], (4, 4), 500)

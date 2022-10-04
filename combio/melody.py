@@ -1,108 +1,167 @@
 import os
+import re
 from typing import Union, Optional
 
-import abjad
+import matplotlib.pyplot as plt
 import numpy as np
 from collections import namedtuple
-
-from _pytest import warnings
+import warnings
 
 try:
     import abjad
 except ImportError:
     abjad = None
 from combio._decorators import requires_lilypond
+import combio._warnings
 import combio.rhythm
 import combio._helpers
 import sounddevice
 import numpy.typing as npt
 
 
-class Melody(combio.rhythm.Rhythm):
+class Melody(combio.core.sequence.BaseSequence):
 
     def __init__(self,
                  rhythm: combio.rhythm.Rhythm,
-                 tone_heights,
-                 event_durations: Optional[Union[npt.NDArray[int], list[int], int]] = None,
-                 is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                 pitch_hz: Union[npt.NDArray[Union[int, float]], list[Union[int, float]]],
+                 is_played: Optional[list] = None,
                  name: Optional[str] = None):
-
         # Initialize namedtuple. The namedtuple template is saved as an attribute.
-        self.Event = namedtuple('event', 'layer onset_ms duration_ms note_value tone_height_hz is_played')
+        self.Event = namedtuple('event', 'onset_ms duration_ms note_value tone_height_hz is_played')
 
         # Make is_played if None supplied
         if is_played is None:
-            is_played = np.tile(True, len(rhythm.onsets))
-
-        # Set event durations to the IOIs if no event durations were supplied (i.e. full length notes)
-        if event_durations is None:
-            event_durations = rhythm.iois
-
-        # If a single integer is passed, use that value for all the events
-        if isinstance(event_durations, int):
-            event_durations = np.tile(event_durations, len(rhythm.onsets))
+            is_played = [True] * len(rhythm.onsets)
 
         # Add initial events
-        self.events = self._make_events(layer_id=np.tile(0, len(rhythm.onsets)),
-                                        rhythm=rhythm,
-                                        event_durations=event_durations,
+        self.events = self._make_events(rhythm=rhythm,
+                                        iois=rhythm.iois,
                                         note_values=rhythm.get_note_values,
-                                        tone_heights=tone_heights,
+                                        pitch_hz=pitch_hz,
                                         is_played=is_played)
 
-        # Save attributes
-        self.n_layers = 1  # Currently, we have one layer at index 0
-        self.name = name
+        # Save rhythm attributes
+        self.time_signature = rhythm.time_signature  # Used for metrical sequences
+        self.beat_ms = rhythm.beat_ms  # Used for metrical sequences
 
-        # Call Rhythm constructor
-        super().__init__(iois=rhythm.iois,
-                         n_bars=rhythm.n_bars,
-                         time_signature=rhythm.time_signature,
-                         beat_ms=rhythm.beat_ms)
+        # Check whether the provided IOIs result in a sequence only containing whole bars
+        n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
+        if not n_bars.is_integer():
+            raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
+        # Save number of bars as an attribute
+        self.n_bars = n_bars
+
+        # Call BaseSequence constructor
+        combio.core.sequence.BaseSequence.__init__(self, iois=rhythm.iois, metrical=True, name=name)
+
+    @classmethod
+    def from_hertz(cls):
+        pass
+
+    @classmethod
+    def from_notes(cls,
+                   rhythm: combio.rhythm.Rhythm,
+                   notes: Union[npt.NDArray[str], list[str], str],
+                   octave: int = None,
+                   is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None,
+                   name: Optional[str] = None):
+
+        if isinstance(notes, str):
+            notes = re.split(r"([A-Z|a-z][0-9]?)", notes)
+            notes = list(filter(None, notes))
+
+        pitch_hz = [abjad.NamedPitch(note, octave=octave).hertz for note in notes]
+
+        return cls(rhythm, pitch_hz=pitch_hz, is_played=is_played, name=name)
 
     @classmethod
     def generate_random_melody(cls,
+                               n_bars: int = 1,
+                               beat_ms: int = 500,
+                               time_signature: tuple = (4, 4),
                                key: str = 'C',
-                               n_rests: Optional[int] = None,
+                               octave: int = 4,
+                               n_rests: int = 0,
+                               allowed_note_values: list = None,
                                rng: np.random.Generator = None,
                                name: Optional[str] = None):
-        if mingus is None:
+        if abjad is None:
             raise ImportError("This method requires the 'mingus' Python package."
                               "Install it, for instance by typing 'pip install mingus' into your terminal.")
-
-        # todo do this with abjad
 
         if rng is None:
             rng = np.random.default_rng()
 
-        # Generate random rhythm and tone_heights
-        rhythm = combio.rhythm.Rhythm.generate_random_rhythm([4, 8, 16])
-        possible_notes = mingus.core.scales.Major(key, octaves=2).ascending()
-        tone_heights = rng.choice(possible_notes, size=len(rhythm.onsets))
+        if allowed_note_values is None:
+            allowed_note_values = [4, 8, 16]
 
-        # Do a random number of rests if none is given
-        if n_rests is None:
-            n_rests = rng.integers(low=0, high=len(rhythm.onsets))
-        else:
-            n_rests = n_rests
+        # Generate random rhythm and random tone_heights
+        rhythm = combio.rhythm.Rhythm.generate_random_rhythm(allowed_note_values=allowed_note_values, n_bars=n_bars,
+                                                             time_signature=time_signature, beat_ms=beat_ms, rng=rng)
+        pitches = [pitch.hertz for pitch in combio._helpers.get_major_scale(tonic=key, octave=octave)]
 
+        pitch_hz = list(rng.choice(pitches, size=len(rhythm.onsets)))
+
+        if n_rests > len(rhythm.onsets):
+            raise ValueError("The provided number of rests is higher than the number of sounds.")
+
+        # Make the rests and shuffle
         is_played = n_rests * [False] + (len(rhythm.onsets) - n_rests) * [True]
+        rng.shuffle(is_played)
 
-        return cls(rhythm=rhythm, tone_heights=tone_heights, is_played=is_played, name=name)
+        return cls(rhythm=rhythm, pitch_hz=pitch_hz, is_played=is_played, name=name)
+
+    @property
+    def get_note_values(self):
+        """
+        Get note values from the IOIs, based on beat_ms.
+        """
+
+        # todo check this, I don't understand what the '4' means.
+
+        ratios = self.iois / self.beat_ms / 4
+
+        note_values = np.array([int(1 // ratio) for ratio in ratios])
+
+        return note_values
 
     @requires_lilypond
     def plot_melody(self,
                     filepath: Optional[Union[os.PathLike, str]] = None,
+                    key: str = 'C',
                     print_staff: bool = False,
-                    suppress_display: bool = False,
-                    simultaneous: bool = True):
+                    suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
 
-        lp = _get_lp_from_events(events=self.events, n_layers=self.n_layers, time_signature=self.time_signature,
-                                 print_staff=print_staff, simultaneous=simultaneous)
+        lp = self._get_lp_from_events(time_signature=self.time_signature, key=key, print_staff=print_staff)
 
-        combio._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = combio._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
+
+        return fig, ax
+
+    def synthesize_and_return(self,
+                              event_durations: Optional[Union[np.ndarray, list]] = None,
+                              fs: int = 48000,
+                              amplitude: float = 1.0,
+                              oscillator: str = 'sine',
+                              onramp: int = 0,
+                              offramp: int = 0,
+                              ramp_type: str = 'linear',
+                              metronome: bool = False,
+                              metronome_amplitude: float = 1.0):
+        """Here people can supply an event duration, which can differ from the IOIs (otherwise you may get one long
+        sound)."""
+
+        samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
+                                          offramp=offramp, ramp_type=ramp_type, event_durations=event_durations)
+
+        if metronome is True:
+            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                               metronome_amplitude=metronome_amplitude)
+
+        return samples, fs
 
     def synthesize_and_play(self,
+                            event_durations: Optional[Union[np.ndarray, list]] = None,
                             fs: int = 48000,
                             amplitude: float = 1.0,
                             oscillator: str = 'sine',
@@ -111,19 +170,20 @@ class Melody(combio.rhythm.Rhythm):
                             ramp_type: str = 'linear',
                             metronome: bool = False,
                             metronome_amplitude: float = 1.0):
+        """Here people can supply an event duration, which can differ from the IOIs (otherwise you may get one long
+        sound)."""
 
-        samples = self._make_sound(self.events, fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
-                                   offramp=offramp, ramp_type=ramp_type)
-
-        if metronome is True:
-            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                               metronome_amplitude=metronome_amplitude)
+        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, amplitude=amplitude,
+                                                oscillator=oscillator, onramp=onramp, offramp=offramp,
+                                                ramp_type=ramp_type, metronome=metronome,
+                                                metronome_amplitude=metronome_amplitude)
 
         sounddevice.play(samples, samplerate=fs)
         sounddevice.wait()
 
     def synthesize_and_write(self,
                              filepath: Union[str, os.PathLike],
+                             event_durations: Optional[Union[np.ndarray, list]] = None,
                              fs: int = 48000,
                              amplitude: float = 1.0,
                              oscillator: str = 'sine',
@@ -132,9 +192,13 @@ class Melody(combio.rhythm.Rhythm):
                              ramp_type: str = 'linear',
                              metronome: bool = False,
                              metronome_amplitude: float = 1.0):
+        """Here people can supply an event duration, which can differ from the IOIs (otherwise you may get one long
+        sound)."""
 
-        samples = self._make_sound(self.events, fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
-                                   offramp=offramp, ramp_type=ramp_type)
+        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, amplitude=amplitude,
+                                                oscillator=oscillator, onramp=onramp, offramp=offramp,
+                                                ramp_type=ramp_type, metronome=metronome,
+                                                metronome_amplitude=metronome_amplitude)
 
         if metronome is True:
             samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
@@ -143,109 +207,123 @@ class Melody(combio.rhythm.Rhythm):
         combio._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
-    def _make_events(self, layer_id, rhythm, event_durations, note_values, tone_heights, is_played) -> list:
-
+    def _make_events(self,
+                     rhythm,
+                     iois,
+                     note_values,
+                     pitch_hz,
+                     is_played) -> list:
         events = []
 
-        for event in zip(layer_id, rhythm.onsets, event_durations, note_values, tone_heights, is_played):
-            entry = self.Event(event[0], event[1], event[2], event[3], event[4], event[5])
+        for event in zip(rhythm.onsets, iois, note_values, pitch_hz, is_played):
+            entry = self.Event(event[0], event[1], event[2], event[3], event[4])
             events.append(entry)
 
         return events
 
-    def _make_sound(self,
-                    events: list,
-                    fs: int,
-                    oscillator: str,
-                    amplitude: float,
-                    onramp: int,
-                    offramp: int,
-                    ramp_type: str):
+    def _make_melody_sound(self,
+                           fs: int,
+                           oscillator: str,
+                           amplitude: float,
+                           onramp: int,
+                           offramp: int,
+                           ramp_type: str,
+                           event_durations: Optional[Union[list, np.ndarray]] = None):
+        # todo Allow stereo (but also in the other functions)
 
-        # Generate an array of silence that has the size of all the onsets + one final stimulus.
-        # Calculate number of frames
+        # Calculate required number of frames
         total_duration_ms = np.sum(self.iois)
         n_frames = total_duration_ms / 1000 * fs
 
         # Avoid rounding issues
         if not n_frames.is_integer():
-            warnings.warn("Number of frames was rounded off to nearest integer ceiling. "
-                          "This shouldn't be much of a problem.")
+            warnings.warn(combio._warnings.framerounding)
         n_frames = int(np.ceil(n_frames))
 
-        # todo Allow stereo (but also in the other functions)
-
-        # Create empty 1-D array
+        # Create empty array with length n_frames
         samples = np.zeros(n_frames)
+
+        # Set event durations to the IOIs if no event durations were supplied (i.e. use full length notes)
+        if event_durations is None:
+            event_durations = self.iois
+        # If a single integer is passed, use that value for all the events
+        elif isinstance(event_durations, int):
+            event_durations = np.tile(event_durations, len(self.events))
 
         # Loop over the events, synthesize event sound, and add all of them to the samples array at the appropriate
         # times.
-        for event in events:
+        for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
-                event_samples = combio._helpers.synthesize_sound(duration_ms=event.duration_ms, fs=fs,
+                event_samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
                                                                  freq=event.tone_height_hz, amplitude=amplitude,
                                                                  osc=oscillator)
                 if onramp or offramp:
                     event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
                                                                offramp=offramp, ramp_type=ramp_type)
 
-                start_pos = int(event.onset_ms / 1000 * fs)
-                end_pos = int(start_pos + event_samples.shape[0])
+                # Calculate start- and end locations for inserting the event into the output array
+                # and warn if the location in terms of frames was rounded off.
+                start_pos = event.onset_ms / 1000 * fs
+                end_pos = start_pos + event_samples.shape[0]
+                if not start_pos.is_integer() or not end_pos.is_integer():
+                    warnings.warn(combio._warnings.framerounding)
+                start_pos = int(np.ceil(start_pos))
+                end_pos = int(np.ceil(end_pos))
 
+                # Add event samples to output array
                 samples[start_pos:end_pos] = samples[start_pos:end_pos] + event_samples
 
             else:
                 pass
 
         if np.max(samples) > 1:
-            warnings.warn("Sound was normalized to avoid distortion. If undesirable, change amplitude of the sounds.")
-            return combio._helpers.normalize_audio(samples)
+            warnings.warn(combio._warnings.normalization)
+            samples = combio._helpers.normalize_audio(samples)
 
         return samples
 
+    def _get_lp_from_events(self,
+                            key: str,
+                            time_signature: tuple,
+                            print_staff: bool = True):
 
-def _get_lp_from_events(events,
-                        n_layers: int,
-                        time_signature: tuple,
-                        print_staff: bool = True,
-                        simultaneous: bool = True):
-    # Set up what we need
-    maker = abjad.makers.NoteMaker()
-    time_signature = abjad.TimeSignature(time_signature)
-    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-    oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
-    remove_staff = """\stopStaff \override Staff.Clef.color = #white'"""
+        # Set up what we need
+        note_maker = abjad.makers.NoteMaker()
+        time_signature = abjad.TimeSignature(time_signature)
+        key = abjad.KeySignature(key)
+        remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+        oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+        remove_staff = """\stopStaff \override Staff.Clef.color = #white'"""
 
-    # Here are the ajbad voice objects saved
-    voices = []
-
-    for i in range(n_layers):
-        events = [event for event in events if event.layer == i]
-        tone_heights = [event.tone_height_hz for event in events]
-        note_values = [event.note_value for event in events]
+        tone_heights = [event.tone_height_hz for event in self.events]
+        note_values = [event.note_value for event in self.events]
+        is_played = [event.is_played for event in self.events]
 
         notes = []
 
-        for tone_height, note_value in zip(tone_heights, note_values):
-            pitch = abjad.NamedPitch.from_hertz(tone_height)
+        for tone_height, note_value, is_played in zip(tone_heights, note_values, is_played):
             duration = abjad.Duration((1, int(note_value)))
-            n = maker(pitch, duration)
-            notes.append(n)
+            if is_played is True:
+                pitch = abjad.NamedPitch.from_hertz(tone_height)
+                note = note_maker(pitch, duration)
+            else:
+                note = abjad.Rest(duration)
+            notes.append(note)
 
         voice = abjad.Voice(notes)
-        voices.append(voice)
-        abjad.attach(time_signature, voice[i])
+        abjad.attach(time_signature, voice[0])
+        abjad.attach(key, voice[0])
 
-    staff = abjad.Staff(voices, simultaneous=simultaneous)
-    score = abjad.Score([staff])
-    score_lp = abjad.lilypond(score)
+        staff = abjad.Staff([voice])
+        score = abjad.Score([staff])
+        score_lp = abjad.lilypond(score)
 
-    if print_staff is False:
-        lp = [remove_staff, remove_footers, score_lp]
-    else:
-        lp = [remove_footers, score_lp]
+        if print_staff is False:
+            lp = [remove_staff, remove_footers, score_lp]
+        else:
+            lp = [remove_footers, score_lp]
 
-    lpf = abjad.LilyPondFile(lp)
-    lpf_str = abjad.lilypond(lpf)
+        lpf = abjad.LilyPondFile(lp)
+        lpf_str = abjad.lilypond(lpf)
 
-    return lpf_str
+        return lpf_str

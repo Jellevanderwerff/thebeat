@@ -138,7 +138,7 @@ class Stimulus:
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
         osc
-            Either 'sine' (the default) or 'square'.
+            Either 'sine' (the default) 'square' or 'sawtooth'.
         onramp
             The sound's 'attack' in milliseconds.
         offramp

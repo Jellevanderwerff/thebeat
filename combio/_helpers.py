@@ -2,6 +2,8 @@ import os
 import importlib.resources as pkg_resources
 import warnings
 
+import scipy.signal
+
 import combio.resources
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,11 +18,9 @@ import subprocess
 import matplotlib.image as mpimg
 
 try:
-    import mingus
-    from mingus.extra import lilypond as mingus_lilypond
+    import abjad
 except ImportError:
-    mingus = None
-    mingus_lilypond = None
+    abjad
 
 
 # todo Fix type hints
@@ -49,8 +49,7 @@ def all_possibilities(nums, target):
 
 # todo Fix type hints
 def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
-                        time_signature: tuple[int],
-                        target_n: Optional[int] = None):
+                        time_signature: tuple[int]):
     # Find common denominator so we can work with integers, rather than floats
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
 
@@ -63,33 +62,43 @@ def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
     possibilities = all_possibilities(allowed_numerators, target)
     out_array = possibilities / common_denom
 
-    if target_n is not None:
-        out_array = np.where(len(out_array) == target_n)
-        if len(out_array) == 0:
-            raise ValueError("No random rhythms exist that adhere to these parameters. "
-                             "Try providing different parameters.")
-
     return out_array
 
 
+def check_for_overlap(stimulus_durations, onsets):
+    for i in range(len(onsets)):
+        try:
+            ioi_after_onset = onsets[i + 1] - onsets[i]
+            if ioi_after_onset < stimulus_durations[i]:
+                raise ValueError(
+                    "The duration of one or more stimuli is longer than its respective IOI. "
+                    "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")
+        except IndexError:
+            pass
+
+
 # todo Fix type hints
-def get_lp_from_track(t, print_staff: bool):
-    """
-    Internal method for plotting a mingus Track object via lilypond.
-    """
 
-    remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
-    remove_staff = '{ \stopStaff \override Staff.Clef.color = #white'
+def get_major_scale(tonic: str,
+                    octave: int):
+    if abjad is None:
+        raise ImportError("This requires the abjad package")
 
-    if print_staff is True:
-        lp = '\\version "2.10.33"\n' + mingus_lilypond.from_Track(t) + remove_footers
-    elif print_staff is False:
-        lp = '\\version "2.10.33"\n' + remove_staff + mingus_lilypond.from_Track(t)[1:] + remove_footers
-    else:
-        raise ValueError("Wrong value specified for print_staff.")
+    intervals = "M2 M2 m2 M2 M2 M2 m2".split()
+    intervals = [abjad.NamedInterval(_) for _ in intervals]
 
-    return lp
+    pitches = []
+
+    pitch = abjad.NamedPitch(tonic, octave=octave)
+
+    pitches.append(pitch)
+
+    for interval in intervals:
+        pitch = pitch + interval
+
+        pitches.append(pitch)
+
+    return pitches
 
 
 def get_sound_with_metronome(samples: np.ndarray,
@@ -150,10 +159,7 @@ def join_rhythms(iterator):
     iois = np.concatenate(iois)
     n_bars = int(np.sum([rhythm.n_bars for rhythm in iterator]))
 
-    return combio.rhythm.Rhythm(iois,
-                                n_bars=n_bars,
-                                time_signature=iterator[0].time_signature,
-                                beat_ms=iterator[0].beat_ms)
+    return combio.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
 def make_ramps(samples, fs, onramp, offramp, ramp_type):
@@ -209,7 +215,8 @@ def make_ramps(samples, fs, onramp, offramp, ramp_type):
 
 def normalize_audio(samples: np.ndarray) -> np.ndarray:
     """This helper function normalizes audio based on the absolute max amplitude from the provided sound samples."""
-    samples /= np.max(np.abs(samples), axis=0)
+    # todo Allow stereo
+    samples = samples / np.max(np.abs(samples), axis=0)
     return samples
 
 
@@ -267,49 +274,7 @@ def plot_lp(lp,
     if filepath and save_format == '.png':
         plt.imsave(filepath, img_cropped)
 
-
-def plot_sequence_single(onsets: Union[list, np.ndarray],
-                         style: str = 'seaborn',
-                         title: Optional[str] = None,
-                         linewidths: Optional[Union[list, np.ndarray, None]] = None,
-                         figsize: Optional[tuple] = None,
-                         suppress_display: bool = False):
-    """This helper function returns a sequence plot."""
-
-    # Make onsets array
-    onsets = np.array(list(onsets))
-
-    # X axis
-    x_start = 0
-    max_onset_ms = np.max(onsets)
-
-    # Above 10s we want seconds on the x axis, otherwise milliseconds
-    if max_onset_ms > 10000:
-        onsets = onsets / 1000
-        linewidths = np.array(linewidths) / 1000
-        x_end = (max_onset_ms / 1000) + linewidths[-1]
-        x_label = "Time (s)"
-    else:
-        onsets = onsets
-        x_end = max_onset_ms + linewidths[-1]
-        x_label = "Time (ms)"
-
-    # Make plot
-    with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.axes.set_xlabel(x_label)
-        ax.set_ylim(0, 1)
-        ax.set_xlim(x_start, x_end)
-        ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
-        ax.axes.set_title(title)
-        ax.axes.yaxis.set_visible(False)
-
-    # Show plot
-    if suppress_display is False:
-        plt.show()
-
-    # Additionally return plot
-    return fig, ax
+    return plt.gca(), plt.gcf()
 
 
 def plot_waveform(samples: np.ndarray,
@@ -370,9 +335,10 @@ def plot_waveform(samples: np.ndarray,
                              num=samples.shape[0])
         x_label = "Time (ms)"
 
+    # Plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.plot_rhythm(frames, samples)
+        ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
             ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
 
@@ -414,8 +380,11 @@ def synthesize_sound(duration_ms: int,
 
     if osc == 'sine':
         samples = amplitude * np.sin(2 * np.pi * freq * samples)
+        plt.plot(samples)
     elif osc == 'square':
-        samples = amplitude * np.square(2 * np.pi * freq * samples)
+        samples = amplitude * scipy.signal.square(2 * np.pi * freq * samples)
+    elif osc == 'sawtooth':
+        samples = amplitude * scipy.signal.sawtooth(2 * np.pi * freq * samples)
     else:
         raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")
 
@@ -441,4 +410,3 @@ def write_wav(samples: np.ndarray,
         warnings.warn("File saved with extension other than .wav")
 
     wavfile.write(filename=filepath, rate=fs, data=samples)
-
