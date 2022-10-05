@@ -439,8 +439,8 @@ def write_wav(samples: np.ndarray,
               fs: int,
               filepath: Union[str, os.PathLike],
               metronome: bool,
-              metronome_ioi: int,
-              metronome_amplitude: float) -> None:
+              metronome_ioi: Optional[int] = None,
+              metronome_amplitude: Optional[float] = None) -> None:
     """
     This helper function writes the provided sound samples to disk as a wave file.
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html for more info.
@@ -451,6 +451,6 @@ def write_wav(samples: np.ndarray,
     filepath = str(filepath)
 
     if not filepath.endswith('.wav'):
-        warnings.warn("File saved with extension other than .wav")
+        warnings.warn("File saved with extension other than .wav even though it is a .wav file.")
 
     wavfile.write(filename=filepath, rate=fs, data=samples)

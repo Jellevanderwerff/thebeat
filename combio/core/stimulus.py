@@ -218,7 +218,7 @@ class Stimulus:
                          name: Optional[str] = None) -> Stimulus:
 
         """
-        This class method generates a :py:class:`Stimulus` object from a :class:`parselmouth.sound` object.
+        This class method generates a :py:class:`Stimulus` object from a :class:`parselmouth.Sound` object.
 
         Parameters
         ----------
@@ -355,14 +355,14 @@ class Stimulus:
         """
         return np.float64(self.samples.shape[0] / self.fs * 1000)
 
-    # Out
-    def write_wav(self, out_path: Union[str, os.PathLike]) -> None:
+    def write_wav(self,
+                  filepath: Union[str, os.PathLike]) -> None:
         """
         Save the Stimulus sound to disk as a wave file.
 
         Parameters
         ----------
-        out_path
+        filepath
             The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
             Of course be aware of OS-specific filepath conventions.
 
@@ -372,6 +372,9 @@ class Stimulus:
         >>> stim.write_wav('my_stimulus.wav')  # doctest: +SKIP
 
         """
+
+        combio._helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
+
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],
