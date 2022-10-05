@@ -23,26 +23,28 @@ class Melody(combio.core.sequence.BaseSequence):
 
     def __init__(self,
                  rhythm: combio.rhythm.Rhythm,
-                 pitch_hz: Union[npt.NDArray[Union[int, float]], list[Union[int, float]]],
+                 pitch_names: Union[npt.NDArray[Union[int, float]], list[Union[int, float]]],
+                 key: Optional[str] = None,
                  is_played: Optional[list] = None,
                  name: Optional[str] = None):
         # Initialize namedtuple. The namedtuple template is saved as an attribute.
-        self.Event = namedtuple('event', 'onset_ms duration_ms note_value tone_height_hz is_played')
+        self.Event = namedtuple('event', 'onset_ms duration_ms note_value pitch_name is_played')
 
         # Make is_played if None supplied
         if is_played is None:
             is_played = [True] * len(rhythm.onsets)
 
         # Add initial events
-        self.events = self._make_events(rhythm=rhythm,
-                                        iois=rhythm.iois,
-                                        note_values=rhythm.get_note_values,
-                                        pitch_hz=pitch_hz,
-                                        is_played=is_played)
+        self.events = self._make_namedtuples(rhythm=rhythm,
+                                             iois=rhythm.iois,
+                                             note_values=rhythm.get_note_values,
+                                             pitch_names=pitch_names,
+                                             is_played=is_played)
 
-        # Save rhythm attributes
+        # Save rhythmic/musical attributes
         self.time_signature = rhythm.time_signature  # Used for metrical sequences
         self.beat_ms = rhythm.beat_ms  # Used for metrical sequences
+        self.key = key
 
         # Check whether the provided IOIs result in a sequence only containing whole bars
         n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
@@ -70,9 +72,9 @@ class Melody(combio.core.sequence.BaseSequence):
             notes = re.split(r"([A-Z|a-z][0-9]?)", notes)
             notes = list(filter(None, notes))
 
-        pitch_hz = [abjad.NamedPitch(note, octave=octave).hertz for note in notes]
+        pitch_names = [abjad.NamedPitch(note, octave=octave).name for note in notes]
 
-        return cls(rhythm, pitch_hz=pitch_hz, is_played=is_played, name=name)
+        return cls(rhythm, pitch_names=pitch_names, is_played=is_played, name=name)
 
     @classmethod
     def generate_random_melody(cls,
@@ -98,9 +100,9 @@ class Melody(combio.core.sequence.BaseSequence):
         # Generate random rhythm and random tone_heights
         rhythm = combio.rhythm.Rhythm.generate_random_rhythm(allowed_note_values=allowed_note_values, n_bars=n_bars,
                                                              time_signature=time_signature, beat_ms=beat_ms, rng=rng)
-        pitches = [pitch.hertz for pitch in combio._helpers.get_major_scale(tonic=key, octave=octave)]
+        pitch_names_possible = [pitch.name for pitch in combio._helpers.get_major_scale(tonic=key, octave=octave)]
 
-        pitch_hz = list(rng.choice(pitches, size=len(rhythm.onsets)))
+        pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
 
         if n_rests > len(rhythm.onsets):
             raise ValueError("The provided number of rests is higher than the number of sounds.")
@@ -109,7 +111,7 @@ class Melody(combio.core.sequence.BaseSequence):
         is_played = n_rests * [False] + (len(rhythm.onsets) - n_rests) * [True]
         rng.shuffle(is_played)
 
-        return cls(rhythm=rhythm, pitch_hz=pitch_hz, is_played=is_played, name=name)
+        return cls(rhythm=rhythm, pitch_names=pitch_names_chosen, is_played=is_played, name=name, key=key)
 
     @property
     def get_note_values(self):
@@ -128,11 +130,13 @@ class Melody(combio.core.sequence.BaseSequence):
     @requires_lilypond
     def plot_melody(self,
                     filepath: Optional[Union[os.PathLike, str]] = None,
-                    key: str = 'C',
-                    print_staff: bool = False,
+                    key: Optional[str] = None,
                     suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+        """Poeperdepoep"""
 
-        lp = self._get_lp_from_events(time_signature=self.time_signature, key=key, print_staff=print_staff)
+        key = self.key if key is None else key
+
+        lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
         fig, ax = combio._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
 
@@ -207,15 +211,15 @@ class Melody(combio.core.sequence.BaseSequence):
         combio._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
-    def _make_events(self,
-                     rhythm,
-                     iois,
-                     note_values,
-                     pitch_hz,
-                     is_played) -> list:
+    def _make_namedtuples(self,
+                          rhythm,
+                          iois,
+                          note_values,
+                          pitch_names,
+                          is_played) -> list:
         events = []
 
-        for event in zip(rhythm.onsets, iois, note_values, pitch_hz, is_played):
+        for event in zip(rhythm.onsets, iois, note_values, pitch_names, is_played):
             entry = self.Event(event[0], event[1], event[2], event[3], event[4])
             events.append(entry)
 
@@ -255,7 +259,8 @@ class Melody(combio.core.sequence.BaseSequence):
         for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
                 event_samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
-                                                                 freq=event.tone_height_hz, amplitude=amplitude,
+                                                                 freq=abjad.NamedPitch(event.pitch_name).hertz,
+                                                                 amplitude=amplitude,
                                                                  osc=oscillator)
                 if onramp or offramp:
                     event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
@@ -284,27 +289,25 @@ class Melody(combio.core.sequence.BaseSequence):
 
     def _get_lp_from_events(self,
                             key: str,
-                            time_signature: tuple,
-                            print_staff: bool = True):
+                            time_signature: tuple):
 
         # Set up what we need
         note_maker = abjad.makers.NoteMaker()
         time_signature = abjad.TimeSignature(time_signature)
         key = abjad.KeySignature(key)
-        remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-        oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
-        remove_staff = """\stopStaff \override Staff.Clef.color = #white'"""
+        preamble = """\n \\version "2.22.2" \n \language "english" \n \paper {\nindent = 0\mm\nline-width = 
+        110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = "" oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
-        tone_heights = [event.tone_height_hz for event in self.events]
+        pitch_names = [event.pitch_name for event in self.events]
         note_values = [event.note_value for event in self.events]
         is_played = [event.is_played for event in self.events]
 
         notes = []
 
-        for tone_height, note_value, is_played in zip(tone_heights, note_values, is_played):
+        for pitch_name, note_value, is_played in zip(pitch_names, note_values, is_played):
             duration = abjad.Duration((1, int(note_value)))
             if is_played is True:
-                pitch = abjad.NamedPitch.from_hertz(tone_height)
+                pitch = abjad.NamedPitch(pitch_name)
                 note = note_maker(pitch, duration)
             else:
                 note = abjad.Rest(duration)
@@ -318,12 +321,6 @@ class Melody(combio.core.sequence.BaseSequence):
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
-        if print_staff is False:
-            lp = [remove_staff, remove_footers, score_lp]
-        else:
-            lp = [remove_footers, score_lp]
-
-        lpf = abjad.LilyPondFile(lp)
-        lpf_str = abjad.lilypond(lpf)
+        lpf_str = preamble + score_lp
 
         return lpf_str

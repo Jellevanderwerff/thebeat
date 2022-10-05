@@ -1,9 +1,9 @@
-from functools import wraps
+import functools
 import shutil
 
 
 def requires_lilypond(f):
-    @wraps(f)
+    @functools.wraps(f)
     def requires_lilypond_wrapper(*args, **kwds):
         if not shutil.which('lilypond'):
             raise ImportError("This function or method requires lilypond for plotting notes. "

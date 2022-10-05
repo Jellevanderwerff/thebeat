@@ -1,11 +1,14 @@
 # Required imports
 from __future__ import annotations
+
+import os
 from typing import Union, Optional
 import numpy as np
 import numpy.typing as npt
 
 # Optional imports
-# Abjad
+from matplotlib import pyplot as plt
+
 try:
     import abjad
 except ImportError:
@@ -22,26 +25,27 @@ class Rhythm(combio.core.sequence.BaseSequence):
                  iois: Union[np.ndarray, list],
                  time_signature: tuple,
                  beat_ms: Union[int, float],
-                 name: Optional[str] = None,
-                 is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None):
+                 is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None,
+                 name: Optional[str] = None):
 
         # Save attributes
         self.time_signature = time_signature  # Used for metrical sequences
         self.beat_ms = beat_ms  # Used for metrical sequences
         self.is_played = [True] * len(iois) if not is_played else list(is_played)
 
-        # Check whether the provided IOIs result in a sequence only containing whole bars
+        # Calculate n_bars and check whether that makes whole bars
         n_bars = np.sum(iois) / time_signature[0] / beat_ms
         if not n_bars.is_integer():
             raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
-        # Save number of bars as an attribute
         self.n_bars = n_bars
 
         # Call initializer of super class
         combio.core.sequence.BaseSequence.__init__(self, iois=iois, metrical=True, name=name)
 
     def __str__(self):
-        return (f"Object of type Rhythm.\nTime signature: {self.time_signature}\n"
+        return (f"Object of type Rhythm.\n"
+                f"Name: {self.name}"
+                f"Time signature: {self.time_signature}\n"
                 f"Number of bars: {self.n_bars}\n"
                 f"Beat (ms): {self.beat_ms}\n"
                 f"Number of events: {len(self.onsets)}\n"
@@ -69,17 +73,46 @@ class Rhythm(combio.core.sequence.BaseSequence):
         return note_values
 
     @classmethod
-    def from_note_values(cls, note_values, time_signature=(4, 4), beat_ms=500, is_played=None):
+    def from_iois(cls,
+                  iois: Union[npt.NDArray[Union[int, float]], list[Union[int, float]]],
+                  time_signature: tuple[int],
+                  beat_ms: int,
+                  is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                  name: Optional[str] = None) -> Rhythm:
         """
+        Conveniance function; exactly the same as class constructor.
+
+        Parameters
+        ----------
+        iois
+        time_signature
+        beat_ms
+        is_played
+        name
+
+        Returns
+        -------
+
         """
+        n_bars = np.sum(iois) / time_signature[0] / beat_ms
+
+        if not n_bars.is_integer():
+            raise ValueError("The provided note values do not amount to whole bars.")
+
+        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+
+    @classmethod
+    def from_note_values(cls,
+                         note_values: Union[npt.NDArray[int], list[int]],
+                         time_signature: tuple[int] = (4, 4),
+                         beat_ms: int = 500,
+                         is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                         name: Optional[str] = None) -> Rhythm:
 
         ratios = np.array([1 / note * time_signature[1] for note in note_values])
         iois = ratios * beat_ms
 
-        return cls(iois=iois,
-                   time_signature=time_signature,
-                   beat_ms=beat_ms,
-                   is_played=is_played)
+        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
 
     @classmethod
     def generate_random_rhythm(cls,
@@ -89,7 +122,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
                                allowed_note_values: Optional[Union[list[int], npt.NDArray[int]]] = None,
                                n_rests: int = 0,
                                rng: Optional[np.random.Generator] = None,
-                               name: str = None):
+                               name: Optional[str] = None) -> Rhythm:
         """
         This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
         """
@@ -118,30 +151,36 @@ class Rhythm(combio.core.sequence.BaseSequence):
         else:
             is_played = None
 
-        return cls(iois, time_signature=time_signature, beat_ms=beat_ms, name=name, is_played=is_played)
+        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
 
     @classmethod
-    def generate_isochronous(cls, n_bars, time_signature, beat_ms, is_played=None):
+    def generate_isochronous(cls,
+                             n_bars: int = 1,
+                             time_signature: tuple[int] = (4, 4),
+                             beat_ms: int = 500,
+                             is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                             name: Optional[str] = None) -> Rhythm:
 
         n_iois = time_signature[0] * n_bars
 
         iois = n_iois * [beat_ms]
 
-        return cls(iois=iois,
-                   time_signature=time_signature,
-                   beat_ms=beat_ms,
-                   is_played=is_played)
+        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
 
     @requires_lilypond
-    def plot_rhythm(self, filepath=None, print_staff=True, suppress_display=False):
+    def plot_rhythm(self,
+                    filepath: Union[os.PathLike, str] = None,
+                    print_staff: bool = False,
+                    suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+        # Check whether abjad is installed
         if abjad is None:
             raise ImportError("This method requires the 'abjad' Python package."
                               "Install it, for instance by typing 'pip install abjad' into your terminal.")
+
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
         remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
-        remove_staff = """\stopStaff \override Staff.Clef.color = #white'"""
 
         # Make the notes
         pitches = [abjad.NamedPitch('A3')] * len(self.onsets)
@@ -162,17 +201,23 @@ class Rhythm(combio.core.sequence.BaseSequence):
         abjad.attach(abjad.Clef('percussion'), staff[0])
         abjad.attach(time_signature, staff[0])
 
+        # Make cleff transparent if necessary
+        if print_staff is False:
+            abjad.override(staff).clef.transparent = '##t'
+
+        # Make the score and convert to lilypond object
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
-        if print_staff is False:
-            lp = [remove_staff, remove_footers, score_lp]
-        else:
-            lp = [remove_footers, score_lp]
-
-        lpf = abjad.LilyPondFile(lp)
+        # Make lilypond string, adding the remove footers string (removes all unnecessary stuff, changes page size etc.)
+        lpf = abjad.LilyPondFile([remove_footers, score_lp])
         lpf_str = abjad.lilypond(lpf)
 
+        # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
+        if print_staff is False:
+            lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
+
+        # Plot!
         fig, ax = combio._helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax

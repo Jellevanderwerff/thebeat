@@ -5,13 +5,13 @@ import pytest
 
 def test_rhythm():
     # generate random rhythm
-    rrhythm = combio.rhythm.Rhythm.generate_random_rhythm([4, 8])
+    rrhythm = combio.rhythm.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
     assert rrhythm
 
     # combine two rhythms
 
-    rhythm1 = combio.rhythm.Rhythm.generate_random_rhythm([4, 8])
-    rhythm2 = combio.rhythm.Rhythm.generate_random_rhythm([4, 8])
+    rhythm1 = combio.rhythm.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
+    rhythm2 = combio.rhythm.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
     combined_rhythm = rhythm1 + rhythm2
     assert len(combined_rhythm) == len(rhythm1) + len(rhythm2)
 

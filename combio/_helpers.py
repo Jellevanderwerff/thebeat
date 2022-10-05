@@ -277,6 +277,50 @@ def plot_lp(lp,
     return plt.gca(), plt.gcf()
 
 
+def plot_sequence_single(onsets: Union[list, np.ndarray],
+                         style: str = 'seaborn',
+                         title: Optional[str] = None,
+                         linewidths: Optional[Union[list, np.ndarray, None]] = None,
+                         figsize: Optional[tuple] = None,
+                         suppress_display: bool = False):
+    """This helper function returns a sequence plot."""
+
+    # Make onsets array
+    onsets = np.array(list(onsets))
+
+    # X axis
+    x_start = 0
+    max_onset_ms = np.max(onsets)
+
+    # Above 10s we want seconds on the x axis, otherwise milliseconds
+    if max_onset_ms > 10000:
+        onsets = onsets / 1000
+        linewidths = np.array(linewidths) / 1000
+        x_end = (max_onset_ms / 1000) + linewidths[-1]
+        x_label = "Time (s)"
+    else:
+        onsets = onsets
+        x_end = max_onset_ms + linewidths[-1]
+        x_label = "Time (ms)"
+
+    # Make plot
+    with plt.style.context(style):
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        ax.axes.set_xlabel(x_label)
+        ax.set_ylim(0, 1)
+        ax.set_xlim(x_start, x_end)
+        ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
+        ax.axes.set_title(title)
+        ax.axes.yaxis.set_visible(False)
+
+    # Show plot
+    if suppress_display is False:
+        plt.show()
+
+    # Additionally return plot
+    return fig, ax
+
+
 def plot_waveform(samples: np.ndarray,
                   fs: int,
                   n_channels: int,

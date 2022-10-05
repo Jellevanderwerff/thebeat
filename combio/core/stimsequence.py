@@ -127,7 +127,7 @@ class StimSequence(BaseSequence):
         BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
 
         # Check whether there's overlap between the stimuli with these IOIs
-        stimulus_durations = [len(stim) / self.fs * 1000 for stim in stimuli]
+        stimulus_durations = [len(stim.samples) / self.fs * 1000 for stim in stimuli]
         combio._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
 
         # Make sound which saves the samples to self.samples
@@ -355,7 +355,7 @@ class StimSequence(BaseSequence):
             warnings.warn(combio._warnings.framerounding)
 
         # Round off array length to ceiling if necessary
-        array_length = int(np.ceil(length))
+        array_length = int(np.ceil(array_length))
 
         if self.n_channels == 1:
             samples = np.zeros(array_length, dtype=self.dtype)
