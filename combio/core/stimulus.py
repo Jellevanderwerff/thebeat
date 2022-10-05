@@ -18,20 +18,6 @@ class Stimulus:
     This :py:class:`Stimulus` sound is used when generating a trial with the :py:class:`StimSequence` class.
     Additionally, one can plot the object, change the amplitude, etc.
 
-    Attributes
-    ----------
-    fs : int
-        Sampling frequency of the sound. 48000 is used as the standard in this package.
-    samples : numpy.ndarray
-        Contains the samples of the sound.
-    dtype : numpy.dtype
-        Contains the NumPy data type object. Hard-coded as ``numpy.dtype('float64')``. If a read .wav file has a
-        different ``dtype`` the samples will be converted to ``numpy.dtype('float64')``.
-    n_channels : int
-        The sound's number of channels. 1 for mono, 2 for stereo.
-    name : str
-        Defaults to ``None``. If name is provided during object construction it is saved here.
-
     """
 
     def __init__(self,

@@ -2,6 +2,7 @@ from scipy.io import wavfile
 from combio.core.sequence import BaseSequence, Sequence
 from combio.core.stimulus import Stimulus
 import numpy as np
+import numpy.typing as npt
 import combio._helpers
 import combio._warnings
 import warnings
@@ -31,38 +32,10 @@ class StimSequence(BaseSequence):
     than the IOIs (impossible), that the sampling frequencies of all the :py:class:`Stimulus` objects are the same
     (undesirable), and that the :py:class:`Stimulus` objects' number of channels are the same (probable).
 
-    Attributes
-    ----------
-    dtype : numpy.dtype
-        Contains the NumPy data type object. ``numpy.dtype('float64') is used throughout.
-    fs : int
-        Sampling frequency of the sound. 48000 is used as the standard in this package.
-    metrical : bool
-        If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for `n` event onsets. If ``True``,
-        sequence has an equal number of IOIs and event onsets.
-    n_channels : int
-        The ::py:class:`StimSequence`'s number of channels. 1 for mono, 2 for stereo.
-    name : str
-        Defaults to ``None``. If name is provided during object construction it is saved here.
-    samples : :class:`numpy.ndarray`
-        Contains the samples of the sound.
-    stim_names : list
-        A list containing the names from the passed :py:class:`Stimulus` object(s).
-
-    Examples
-    --------
-    >>> stim = Stimulus.generate(freq=440)
-    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> trial = StimSequence(stim, seq)
-
-    >>> from random import randint
-    >>> stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]
-    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> trial = StimSequence(stims, seq)
     """
 
     def __init__(self,
-                 stimulus: Union[Stimulus, list, np.ndarray],
+                 stimulus: Union[Stimulus, list[Stimulus], npt.NDArray[Stimulus]],
                  sequence: Sequence,
                  name: Optional[str] = None):
         """

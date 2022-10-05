@@ -20,13 +20,58 @@ from combio._decorators import requires_lilypond
 
 
 class Rhythm(combio.core.sequence.BaseSequence):
+    """
+    The :py:class:`Rhythm` class can be used for working sequences that are rhythmical in the musical sense.
+    This means that in addition to having inter-onset intervals (IOIs) that represent the timing of the events in the
+    sequence, :py:class:`Rhythm` objects have musical properties such as a time signature, a beat duration,
+    and they may contain rests.
+
+    The :py:class:`Rhythm` class is also used as the basis for a :py:class:`~combio.melody.Melody`.
+
+    For more info on these properties, please refer to the class's :py:meth:`~combio.rhythm.Rhythm.__init__`.
+    """
 
     def __init__(self,
                  iois: Union[np.ndarray, list],
-                 time_signature: tuple,
-                 beat_ms: Union[int, float],
+                 time_signature: tuple = (4, 4),
+                 beat_ms: Union[int, float] = 500,
                  is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None,
                  name: Optional[str] = None):
+        r"""
+        Constructs a :py:class:`Rhythm` object.
+
+        Parameters
+        ----------
+        iois
+            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
+        time_signature
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
+            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
+            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
+            :math:`\frac{1}{8}` th notes.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
+        is_played
+            A list or array containing booleans indicating whether a note should be played or not.
+            Defaults to ``[True, True, True, ...]``.
+        name
+            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
+            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+
+        Examples
+        --------
+        >>> iois = [500, 250, 250, 500, 500]
+        >>> r = Rhythm(iois)
+        >>> print(r.onsets)
+        [   0.  500.  750. 1000. 1500.]
+
+        >>> iois = [500, 250, 250, 500]
+        >>> r = Rhythm(iois=iois, time_signature=(3, 4), beat_ms=250)
+        >>> print(r.get_note_values)
+        [2 4 4 2]
+
+        """
 
         # Save attributes
         self.time_signature = time_signature  # Used for metrical sequences
@@ -61,10 +106,26 @@ class Rhythm(combio.core.sequence.BaseSequence):
     @property
     def get_note_values(self):
         """
-        Get note values from the IOIs, based on beat_ms.
-        """
+        This property returns the denominators of the note values in this sequence, calculated from the
+        inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note value of ``4`` means a
+        quarternote, etc. One triplet of three notes would be ``[12, 12, 12]``.
 
-        # todo check this, I don't understand what the '4' means.
+        Caution
+        -------
+        Please note that this function is basic (e.g. there is no support for dotted notes etc.). That's beyond
+        the scope of this package.
+
+        Examples
+        --------
+        >>> r = Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)  # doctest: +SKIP
+        >>> print(r.get_note_values)  # doctest: +SKIP
+        [4 2 8 8]
+
+        >>> r = Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
+        >>> print(r.get_note_values)  # doctest: +SKIP
+        [12 12 12  4  4  4]
+
+        """
 
         ratios = self.iois / self.beat_ms / 4
 
@@ -73,41 +134,45 @@ class Rhythm(combio.core.sequence.BaseSequence):
         return note_values
 
     @classmethod
-    def from_iois(cls,
-                  iois: Union[npt.NDArray[Union[int, float]], list[Union[int, float]]],
-                  time_signature: tuple[int],
-                  beat_ms: int,
-                  is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
-                  name: Optional[str] = None) -> Rhythm:
-        """
-        Conveniance function; exactly the same as class constructor.
-
-        Parameters
-        ----------
-        iois
-        time_signature
-        beat_ms
-        is_played
-        name
-
-        Returns
-        -------
-
-        """
-        n_bars = np.sum(iois) / time_signature[0] / beat_ms
-
-        if not n_bars.is_integer():
-            raise ValueError("The provided note values do not amount to whole bars.")
-
-        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
-
-    @classmethod
     def from_note_values(cls,
                          note_values: Union[npt.NDArray[int], list[int]],
-                         time_signature: tuple[int] = (4, 4),
+                         time_signature: tuple[int, int] = (4, 4),
                          beat_ms: int = 500,
                          is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
                          name: Optional[str] = None) -> Rhythm:
+        r"""
+
+        This class method may be used for creating a Rhythm object on the basis of note values (i.e. durations).
+
+        Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
+        a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
+
+        Parameters
+        ----------
+        note_values
+            A list or array containing the denominators of the note values. A note value of ``2`` means a half note,
+            a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
+        time_signature
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
+            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
+            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
+            :math:`\frac{1}{8}` th notes.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
+        is_played
+            A list or array containing booleans indicating whether a note should be played or not.
+            Defaults to ``[True, True, True, ...]``.
+        name
+            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
+            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+
+        Examples
+        --------
+        >>> r = Rhythm.from_note_values([16, 16, 16, 16, 4, 4, 4], beat_ms=500)
+        >>> print(r.iois)
+        [125. 125. 125. 125. 500. 500. 500.]
+        """
 
         ratios = np.array([1 / note * time_signature[1] for note in note_values])
         iois = ratios * beat_ms
@@ -117,14 +182,57 @@ class Rhythm(combio.core.sequence.BaseSequence):
     @classmethod
     def generate_random_rhythm(cls,
                                n_bars: int = 1,
-                               time_signature: tuple[int] = (4, 4),
+                               time_signature: tuple[int, int] = (4, 4),
                                beat_ms: int = 500,
                                allowed_note_values: Optional[Union[list[int], npt.NDArray[int]]] = None,
                                n_rests: int = 0,
                                rng: Optional[np.random.Generator] = None,
                                name: Optional[str] = None) -> Rhythm:
-        """
-        This function returns a randomly generated integer ratio Sequence on the basis of the provided params.
+        r"""
+        This function generates a random rhythmic sequence on the basis of the provided parameters.
+
+        It does so by first generating all possible combinations of note values that amount to one bar based on the
+        ``allowed_note_values`` parameter, and then selecting (with replacement) ``n_bars`` combinations out of
+        the possibilities.
+
+        Parameters
+        ----------
+        n_bars
+            The desired number of musical bars.
+        time_signature
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
+            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
+            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
+            :math:`\frac{1}{8}` th notes.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
+        allowed_note_values
+            An iterable containing the denominators of the allowed note values. A note value of ``2`` means a half note,
+            a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+        n_rests
+            If desired, one can provide a number of rests to be inserted at random locations. These are placed after
+            the random selection of note values.
+        rng
+            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
+            used.
+        name
+            If desired, one can give a rhythm a name. This is for instance used when printing the rhythm,
+            or when plotting the rhythm. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+
+        Examples
+        --------
+        >>> import numpy as np  # not required, here for reproducability
+        >>> generator = np.random.default_rng(seed=321)  # not required, for reproducability
+        >>> r = Rhythm.generate_random_rhythm(rng=generator)
+        >>> print(r.iois)
+        [125. 250. 125. 125. 500. 125. 125. 125. 500.]
+
+        >>> import numpy as np  # not required, here for reproducability
+        >>> generator = np.random.default_rng(seed=321)  # not required, here for reproducability
+        >>> r = Rhythm.generate_random_rhythm(allowed_note_values=[2, 4, 8], beat_ms=1000, rng=generator)
+        >>> print(r.iois)
+        [ 500. 1000.  500.  500. 1000.  500.]
         """
 
         if rng is None:
@@ -139,7 +247,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         for bar in range(n_bars):
             ratios = rng.choice(all_ratios, 1)[0]
-            new_iois = ratios * 4 * beat_ms  # todo check what this 4 means
+            new_iois = ratios * 4 * beat_ms
             iois = np.append(iois, new_iois)
 
         # Make rests
@@ -156,10 +264,35 @@ class Rhythm(combio.core.sequence.BaseSequence):
     @classmethod
     def generate_isochronous(cls,
                              n_bars: int = 1,
-                             time_signature: tuple[int] = (4, 4),
+                             time_signature: tuple[int, int] = (4, 4),
                              beat_ms: int = 500,
                              is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
                              name: Optional[str] = None) -> Rhythm:
+        r"""
+
+        Simply generates an isochronous (i.e. with equidistant inter-onset intervals) rhythm. Will have
+        the bars filled with intervals of ``beat_ms``.
+
+        Parameters
+        ----------
+        n_bars
+            The desired number of musical bars.
+        time_signature
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
+            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
+            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
+            :math:`\frac{1}{8}` th notes.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
+        is_played
+            A list or array containing booleans indicating whether a note should be played or not.
+            Defaults to ``[True, True, True, ...]``.
+        name
+            If desired, one can give a rhythm a name. This is for instance used when printing the rhythm,
+            or when plotting the rhythm. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+
+        """
 
         n_iois = time_signature[0] * n_bars
 
@@ -172,6 +305,67 @@ class Rhythm(combio.core.sequence.BaseSequence):
                     filepath: Union[os.PathLike, str] = None,
                     print_staff: bool = False,
                     suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+        """
+        Make a plot containing the musical notation of the rhythm. This function requires you to install:
+
+        * `abjad <https://abjad.github.io/>`_ (install via ``pip install abjad``).
+        * `lilypond <https://lilypond.org/download.en.html>`_
+
+        For lilypond on Windows, make sure to follow the website's instructions on how to make lilypond available to
+        be run through the command line. Linux and Mac OS users are advised to either ``apt install lilypond`` or
+        ``brew install lilypond``. On Mac that requires you to install `Homebrew <https://brew.sh/>`_.
+
+        The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
+        which you can manipulate.
+
+
+        .. figure:: images/plot_rhythm_nostaff.png
+            :scale: 50 %
+            :class: with-border
+
+            A plot with the default ``print_staff=False``.
+
+
+        .. figure:: images/plot_rhythm_withstaff.png
+            :scale: 50 %
+            :class: with-border
+
+            A plot with ``print_staff=True``.
+
+        Caution
+        -------
+        This method does not check whether the plot makes musical sense. It simply converts
+        inter-onset intervals (IOIs) to note values and plots those. Always manually check the plot.
+
+
+        Parameters
+        ----------
+        filepath
+            Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.eps'.
+            The desired file format will be selected based on what the filepath ends with.
+        print_staff
+            If desired, you can choose to print a musical staff (the default is not to do this). The staff will be a
+            `percussion staff <https://en.wikipedia.org/wiki/Percussion_notation>`_.
+        suppress_display
+            If desired,you can choose to suppress displaying the plot in your IDE. This means that
+            :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
+            use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+
+
+        Examples
+        --------
+        >>> r = Rhythm([500, 250, 1000, 250], beat_ms=500)
+        >>> r.plot_rhythm()  # doctest: +SKIP
+
+        >>> r = Rhythm([250, 250, 500, 500, 1500], time_signature=(3, 4))
+        >>> fig, ax = r.plot_rhythm(print_staff=True, suppress_display=True)  # doctest: +SKIP
+        >>> plt.show()  # doctest: +SKIP
+
+        >>> r = Rhythm.from_note_values([4, 4, 4, 4])
+        >>> r.plot_rhythm(filepath='isochronous_rhythm.eps')  # doctest: +SKIP
+
+
+        """
         # Check whether abjad is installed
         if abjad is None:
             raise ImportError("This method requires the 'abjad' Python package."

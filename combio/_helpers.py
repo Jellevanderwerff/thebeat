@@ -49,7 +49,7 @@ def all_possibilities(nums, target):
 
 # todo Fix type hints
 def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
-                        time_signature: tuple[int]):
+                        time_signature: tuple[int, int]):
     # Find common denominator so we can work with integers, rather than floats
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
 

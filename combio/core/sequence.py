@@ -32,8 +32,8 @@ class BaseSequence:
         If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
         sequence has an equal number of IOIs and event onsets.
     name : str
-    If desired, one can give the (Base)Sequence object a name. This is for instance used when printing the sequence,
-    or when plotting the sequence. It can always be retrieved and changed via this attribute.
+        If desired, one can give the (Base)Sequence object a name. This is for instance used when printing the sequence,
+        or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     """
 
@@ -117,29 +117,7 @@ class Sequence(BaseSequence):
     This class additionally contains methods and attributes to, for instance, get the event onset values, to
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
-    Attributes
-    ----------
-    iois : :class:`numpy.ndarray`
-        One-dimensional array containing the inter-onset intervals (IOIs). This is the bread and butter of the
-        :py:class:`Sequence` class.
-        Non-metrical sequences have `n` IOIs and `n`+1 onsets. Metrical sequences have an equal number of IOIs
-        and onsets.
-    metrical : bool
-        If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for n event onsets. If ``True``,
-        sequence has an equal number of IOIs and event onsets.
-
-    Examples
-    --------
-    >>> iois = [500, 400, 600]
-    >>> seq = Sequence(iois)
-    >>> print(seq.onsets)
-    [   0.  500.  900. 1500.]
-
-    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> print(len(seq.iois))
-    4
-    >>> print(len(seq.onsets))
-    5
+    For more info, check out the :py:meth:`~combio.core.Sequence.__init__` and the different methods below.
     """
 
     def __init__(self,
@@ -153,7 +131,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         iois
-            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``
+            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
