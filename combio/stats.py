@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Union, Optional
+from typing import Union, Optional
 import scipy.stats
 import scipy.fft
 import numpy as np
@@ -61,7 +61,7 @@ def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list,
                               resolution_ms=resolution_ms,
                               smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
-    correlations = correlations / max(correlations)  # normalize
+    correlations = correlations / max(correlations)
     times_ms = np.arange(start=0, stop=len(correlations) * resolution_ms, step=resolution_ms)
 
     df = pd.DataFrame(
@@ -201,7 +201,7 @@ def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, l
     signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
 
     # npdf
-    if not smoothing_window == 0 and not smoothing_sd == 0:
+    if smoothing_window is not None or smoothing_sd is not None:
         x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution_ms)
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
@@ -408,3 +408,4 @@ def _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
         signal[index] = 1
 
     return np.array(signal)
+

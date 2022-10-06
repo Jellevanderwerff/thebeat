@@ -204,3 +204,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
             plt.show()
 
     return fig, ax
+
+
+def plot_multiple_rhythms(rhythms):
+    raise NotImplementedError
+

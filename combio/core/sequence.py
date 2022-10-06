@@ -1,7 +1,6 @@
 from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
 from fractions import Fraction
 from typing import Union, Optional
-
 import matplotlib.pyplot as plt
 import numpy as np
 import combio._helpers
@@ -32,17 +31,23 @@ class BaseSequence:
     metrical : bool
         If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
         sequence has an equal number of IOIs and event onsets.
+    name : str
+        If desired, one can give the (Base)Sequence object a name. This is for instance used when printing the sequence,
+        or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     """
 
     def __init__(self,
                  iois: Union[list, np.ndarray],
-                 metrical: Optional[bool] = False):
+                 metrical: Optional[bool] = False,
+                 name: Optional[str] = None):
         """Initialization of BaseSequence class."""
 
         # Save attributes
         self.iois = iois
         self.metrical = metrical
+        # Additionally save the provided name (may be None)
+        self.name = name
 
     @property
     def iois(self) -> np.ndarray:
@@ -112,32 +117,7 @@ class Sequence(BaseSequence):
     This class additionally contains methods and attributes to, for instance, get the event onset values, to
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
-    Attributes
-    ----------
-    iois : :class:`numpy.ndarray`
-        One-dimensional array containing the inter-onset intervals (IOIs). This is the bread and butter of the
-        :py:class:`Sequence` class.
-        Non-metrical sequences have `n` IOIs and `n`+1 onsets. Metrical sequences have an equal number of IOIs
-        and onsets.
-    metrical : bool
-        If ``False``, sequence has an `n`-1 inter-onset intervals (IOIs) for n event onsets. If ``True``,
-        sequence has an equal number of IOIs and event onsets.
-    name : str
-        If desired, one can give a Sequence object a name. This is for instance used when printing the sequence,
-        or when plotting the sequence. It can always be retrieved and changed via this attribute.
-
-    Examples
-    --------
-    >>> iois = [500, 400, 600]
-    >>> seq = Sequence(iois)
-    >>> print(seq.onsets)
-    [   0.  500.  900. 1500.]
-
-    >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-    >>> print(len(seq.iois))
-    4
-    >>> print(len(seq.onsets))
-    5
+    For more info, check out the :py:meth:`~combio.core.Sequence.__init__` and the different methods below.
     """
 
     def __init__(self,
@@ -151,7 +131,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         iois
-            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``
+            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
@@ -169,10 +149,7 @@ class Sequence(BaseSequence):
         """
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, metrical=metrical)
-
-        # Additionally save the provided name (may be None)
-        self.name = name
+        BaseSequence.__init__(self, iois=iois, metrical=metrical, name=name)
 
     def __str__(self):
         if self.metrical:
@@ -614,14 +591,14 @@ class Sequence(BaseSequence):
         self.iois /= np.linspace(1, total_change, len(self.iois))
 
     # Visualization
-    def plot(self,
-             style: str = 'seaborn',
-             title: Optional[str] = None,
-             linewidth: int = 50,
-             figsize: Optional[tuple] = None,
-             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+    def plot_sequence(self,
+                      style: str = 'seaborn',
+                      title: Optional[str] = None,
+                      linewidth: int = 50,
+                      figsize: Optional[tuple] = None,
+                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
-        Plot the Sequence object as an event plot on the basis of the event onsets.
+        Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
 
         In principle, the `x` axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
         this changes to seconds.
@@ -646,7 +623,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-        >>> seq.plot()  # doctest: +SKIP
+        >>> seq.plot_rhythm()  # doctest: +SKIP
         """
 
         # If a title was provided that has preference. If none is provided,
