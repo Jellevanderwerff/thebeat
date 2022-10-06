@@ -82,10 +82,12 @@ class Melody(combio.core.sequence.BaseSequence):
         if isinstance(pitch_names, str):
             pitch_names_list = re.split(r"([A-Z])([0-9]?)", pitch_names)
             pitch_names_list = list(filter(None, pitch_names_list))
-            if re.search(r"[0-9]", pitch_names) is None and octave is not None:
-                pitch_names_list = [pitch + str(octave) for pitch in pitch_names_list]
-            elif re.search(r"[0-9]", pitch_names) is None and octave is None:
-                pitch_names_list = [pitch + str(4) for pitch in pitch_names_list]
+            search = re.search(r"[0-9]", pitch_names)
+            if search is None:
+                if octave is None:
+                    pitch_names_list = [pitch + str(4) for pitch in pitch_names_list]
+                elif octave is not None:
+                    pitch_names_list = [pitch + str(octave) for pitch in pitch_names_list]
         else:
             pitch_names_list = pitch_names
 
@@ -99,11 +101,9 @@ class Melody(combio.core.sequence.BaseSequence):
                                              is_played=is_played)
 
         # Save rhythmic/musical attributes
-        self.time_signature = rhythm.time_signature  # Used for metrical sequences
-        self.beat_ms = rhythm.beat_ms  # Used for metrical sequences
+        self.time_signature = rhythm.time_signature
+        self.beat_ms = rhythm.beat_ms
         self.key = key
-
-
 
         # Check whether the provided IOIs result in a sequence only containing whole bars
         n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
