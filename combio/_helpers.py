@@ -416,18 +416,18 @@ def synthesize_sound(duration_ms: int,
                      fs: int,
                      freq: Union[int, float],
                      amplitude: float,
-                     osc: str) -> np.ndarray:
+                     oscillator: str) -> np.ndarray:
     # Get duration in s
     t = duration_ms / 1000
 
     samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float64)
 
-    if osc == 'sine':
+    if oscillator == 'sine':
         samples = amplitude * np.sin(2 * np.pi * freq * samples)
         plt.plot(samples)
-    elif osc == 'square':
+    elif oscillator == 'square':
         samples = amplitude * scipy.signal.square(2 * np.pi * freq * samples)
-    elif osc == 'sawtooth':
+    elif oscillator == 'sawtooth':
         samples = amplitude * scipy.signal.sawtooth(2 * np.pi * freq * samples)
     else:
         raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")

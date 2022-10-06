@@ -10,4 +10,4 @@ def test_melody():
 
     r = combio.rhythm.Rhythm.from_note_values([4, 4, 4, 4])
     m = combio.melody.Melody.from_notes(r, 'CEGC', octave=3)
-    assert list(m.get_note_values) == [4, 4, 4, 4]
+    assert list(m.note_values) == [4, 4, 4, 4]

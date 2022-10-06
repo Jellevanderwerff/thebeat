@@ -68,7 +68,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         >>> iois = [500, 250, 250, 500]
         >>> r = Rhythm(iois=iois, time_signature=(3, 4), beat_ms=250)
-        >>> print(r.get_note_values)
+        >>> print(r.note_values)
         [2 4 4 2]
 
         """
@@ -104,7 +104,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
         return len(self.onsets)
 
     @property
-    def get_note_values(self):
+    def note_values(self):
         """
         This property returns the denominators of the note values in this sequence, calculated from the
         inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note value of ``4`` means a
@@ -118,11 +118,11 @@ class Rhythm(combio.core.sequence.BaseSequence):
         Examples
         --------
         >>> r = Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)  # doctest: +SKIP
-        >>> print(r.get_note_values)  # doctest: +SKIP
+        >>> print(r.note_values)  # doctest: +SKIP
         [4 2 8 8]
 
         >>> r = Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
-        >>> print(r.get_note_values)  # doctest: +SKIP
+        >>> print(r.note_values)  # doctest: +SKIP
         [12 12 12  4  4  4]
 
         """
@@ -182,8 +182,8 @@ class Rhythm(combio.core.sequence.BaseSequence):
     @classmethod
     def generate_random_rhythm(cls,
                                n_bars: int = 1,
-                               time_signature: tuple[int, int] = (4, 4),
                                beat_ms: int = 500,
+                               time_signature: tuple[int, int] = (4, 4),
                                allowed_note_values: Optional[Union[list[int], npt.NDArray[int]]] = None,
                                n_rests: int = 0,
                                rng: Optional[np.random.Generator] = None,
@@ -199,17 +199,17 @@ class Rhythm(combio.core.sequence.BaseSequence):
         ----------
         n_bars
             The desired number of musical bars.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
         time_signature
             A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
             *how many beats* there are in a bar. The lower number indicates the denominator of the value that
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
             :math:`\frac{1}{8}` th notes.
-        beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
         allowed_note_values
-            An iterable containing the denominators of the allowed note values. A note value of ``2`` means a half note,
-            a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
+            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
         n_rests
             If desired, one can provide a number of rests to be inserted at random locations. These are placed after
             the random selection of note values.
@@ -230,7 +230,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         >>> import numpy as np  # not required, here for reproducability
         >>> generator = np.random.default_rng(seed=321)  # not required, here for reproducability
-        >>> r = Rhythm.generate_random_rhythm(allowed_note_values=[2, 4, 8], beat_ms=1000, rng=generator)
+        >>> r = Rhythm.generate_random_rhythm(beat_ms=1000,allowed_note_values=[2, 4, 8],rng=generator)
         >>> print(r.iois)
         [ 500. 1000.  500.  500. 1000.  500.]
         """
@@ -378,7 +378,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         # Make the notes
         pitches = [abjad.NamedPitch('A3')] * len(self.onsets)
-        durations = [abjad.Duration((1, int(note_value))) for note_value in self.get_note_values]
+        durations = [abjad.Duration((1, int(note_value))) for note_value in self.note_values]
         note_maker = abjad.makers.NoteMaker()
 
         notes = []

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Iterable, Union, Optional
+from typing import Union, Optional
 import scipy.stats
 import scipy.fft
 import numpy as np

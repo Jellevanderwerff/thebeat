@@ -173,7 +173,7 @@ class StimSequence(BaseSequence):
             If ``True``, a metronome sound is added for playback.
         metronome_amplitude
             If desired, when playing the object with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
+            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value larger than 1 means
             a louder metronome sound.
 
         Examples
@@ -285,14 +285,15 @@ class StimSequence(BaseSequence):
         return fig, ax
 
     def write_wav(self,
-                  out_path: Union[str, os.PathLike],
+                  filepath: Union[str, os.PathLike],
                   metronome: bool = False,
                   metronome_amplitude: float = 1.0) -> None:
         """
+        # todo use the write function in _helpers
 
         Parameters
         ----------
-        out_path
+        filepath
             The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be
             aware of OS-specific filepath conventions.
         metronome
@@ -308,7 +309,7 @@ class StimSequence(BaseSequence):
         >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
         """
 
-        _write_wav(self.samples, self.fs, out_path, self.name, metronome, self.mean_ioi, metronome_amplitude)
+        _write_wav(self.samples, self.fs, filepath, self.name, metronome, self.mean_ioi, metronome_amplitude)
 
     def _make_stimseq_sound(self, stimuli, onsets):
         """Internal function used for combining different Stimulus samples and a passed Sequence object

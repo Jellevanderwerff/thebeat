@@ -43,7 +43,7 @@ class Stimulus:
         fs
             The sampling frequency.
         name
-            Optionally, the :py:class:`Stimulus` can have a name. This is saved to the :py:attr:`Stimulus.name`
+            Optionally, the :py:class:`Stimulus` object can have a name. This is saved to the :py:attr:`Stimulus.name`
             attribute.
         """
 
@@ -88,7 +88,8 @@ class Stimulus:
             If desired, one can give a Stimulus object a name. This is used, for instance,
             when plotting or printing. It can always be retrieved from the Stimulus.name atrribute.
         new_fs
-            If resampling is required, you can provide the target sampling frequency here, for instance 48000.
+            If resampling is required, you can provide the target sampling frequency here, for instance ``48000``.
+
         """
 
         # Read in the sampling frequency and all the samples from the wav file
@@ -103,7 +104,7 @@ class Stimulus:
                  fs: int = 48000,
                  duration_ms: int = 50,
                  amplitude: float = 1.0,
-                 osc: str = 'sine',
+                 oscillator: str = 'sine',
                  onramp: int = 0,
                  offramp: int = 0,
                  ramp_type: str = 'linear',
@@ -123,7 +124,7 @@ class Stimulus:
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
-        osc
+        oscillator
             Either 'sine' (the default) 'square' or 'sawtooth'.
         onramp
             The sound's 'attack' in milliseconds.
@@ -143,7 +144,8 @@ class Stimulus:
         """
 
         # Generate signal
-        samples = combio._helpers.synthesize_sound(duration_ms, fs, freq, amplitude, osc)
+        samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, amplitude=amplitude,
+                                                   oscillator=oscillator)
 
         # Make ramps
         samples = combio._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
@@ -154,10 +156,10 @@ class Stimulus:
     @classmethod
     def from_note(cls,
                   note_str: str,
-                  duration: int = 50,
+                  duration_ms: int = 50,
                   fs: int = 48000,
                   amplitude: float = 1.0,
-                  osc: str = 'sine',
+                  oscillator: str = 'sine',
                   onramp: int = 0,
                   offramp: int = 0,
                   ramp: str = 'linear',
@@ -170,15 +172,15 @@ class Stimulus:
         ----------
         note_str
             A note as a string. Can either be provided as ``'G'`` or ``'G4'``.
-        duration
+        duration_ms
             The duration in milliseconds.
         fs
             The sampling frequency in hertz.
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
-        osc
-            Either 'sine' (the default) or 'square'.
+        oscillator
+            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
         onramp
             The sound's 'attack' in milliseconds.
         offramp
@@ -209,8 +211,8 @@ class Stimulus:
         else:
             raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
 
-        return Stimulus.generate(freq=freq, fs=fs, amplitude=amplitude, osc=osc, onramp=onramp, offramp=offramp,
-                                 ramp_type=ramp, name=name)
+        return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration_ms, amplitude=amplitude, osc=oscillator, onramp=onramp,
+                                 offramp=offramp, ramp_type=ramp, name=name)
 
     @classmethod
     def from_parselmouth(cls,
@@ -374,7 +376,6 @@ class Stimulus:
         """
 
         combio._helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
-
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],
