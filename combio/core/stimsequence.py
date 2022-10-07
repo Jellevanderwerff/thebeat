@@ -2,7 +2,6 @@ from scipy.io import wavfile
 from combio.core.sequence import BaseSequence, Sequence
 from combio.core.stimulus import Stimulus
 import numpy as np
-import numpy.typing as npt
 import combio._helpers
 import combio._warnings
 import warnings
@@ -35,7 +34,7 @@ class StimSequence(BaseSequence):
     """
 
     def __init__(self,
-                 stimulus: Union[Stimulus, list[Stimulus], npt.NDArray[Stimulus]],
+                 stimulus: Union[Stimulus, list[Stimulus], np.typing.NDArray[Stimulus]],
                  sequence: Sequence,
                  name: Optional[str] = None):
         """
@@ -195,8 +194,8 @@ class StimSequence(BaseSequence):
         --------
         >>> import time  # doctest: +SKIP
         >>> stim = Stimulus.generate()  # doctest: +SKIP
-        >>> seq = Sequence([500, 300, 800])
-        >>> stimseq = StimSequence(stim, seq)
+        >>> seq = Sequence([500, 300, 800])  # doctest: +SKIP
+        >>> stimseq = StimSequence(stim, seq)  # doctest: +SKIP
         >>> stimseq.play()  # doctest: +SKIP
         >>> time.sleep(secs=1)  # doctest: +SKIP
         >>> stimseq.stop()  # doctest: +SKIP

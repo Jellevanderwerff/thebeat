@@ -193,7 +193,7 @@ class Stimulus:
 
         Examples
         --------
-        >>> stim = Stimulus.from_note('G', duration=20)
+        >>> stim = Stimulus.from_note('G', duration_ms=20)
 
         >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
 
@@ -211,8 +211,8 @@ class Stimulus:
         else:
             raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
 
-        return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration_ms, amplitude=amplitude, osc=oscillator, onramp=onramp,
-                                 offramp=offramp, ramp_type=ramp, name=name)
+        return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration_ms, amplitude=amplitude, oscillator=oscillator,
+                                 onramp=onramp, offramp=offramp, ramp_type=ramp, name=name)
 
     @classmethod
     def from_parselmouth(cls,

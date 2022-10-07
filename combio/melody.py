@@ -276,9 +276,9 @@ class Melody(combio.core.sequence.BaseSequence):
         >>> m = Melody(r, 'CCGC')
         >>> m.plot_melody()  # doctest: +SKIP
 
-        >>> m.plot_melody(filepath='mymelody.png', suppress_display=True)
+        >>> m.plot_melody(filepath='mymelody.png', suppress_display=True)  # doctest: +SKIP
 
-        >>> fig, ax = m.plot_melody(key='C', suppress_display=True)
+        >>> fig, ax = m.plot_melody(key='C', suppress_display=True)  # doctest: +SKIP
 
         """
         if abjad is None:

@@ -1,12 +1,16 @@
 import os
 import importlib.resources as pkg_resources
 import warnings
+
+import matplotlib.axes
+
 from combio._warnings import framerounding
 
 import scipy.signal
 
 import combio.resources
 import numpy as np
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import resample
@@ -278,45 +282,33 @@ def plot_lp(lp,
     return plt.gca(), plt.gcf()
 
 
-def plot_sequence_single(onsets: Union[list, np.ndarray],
+def plot_sequence_single(onsets: Union[list[float], npt.NDArray[float]],
                          style: str = 'seaborn',
                          title: Optional[str] = None,
-                         linewidths: Optional[Union[list, np.ndarray, None]] = None,
+                         x_axis_label: str = "Time",
+                         linewidths: Optional[Union[list[float], npt.NDArray[float], float]] = None,
                          figsize: Optional[tuple] = None,
-                         suppress_display: bool = False):
+                         suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """This helper function returns a sequence plot."""
 
     # Make onsets array
-    onsets = np.array(list(onsets))
-
-    # X axis
-    x_start = 0
-    max_onset_ms = np.max(onsets)
-
-    # Above 10s we want seconds on the x axis, otherwise milliseconds
-    if max_onset_ms > 10000:
-        onsets = onsets / 1000
-        linewidths = np.array(linewidths) / 1000
-        x_end = (max_onset_ms / 1000) + linewidths[-1]
-        x_label = "Time (s)"
-    else:
-        onsets = onsets
-        x_end = max_onset_ms + linewidths[-1]
-        x_label = "Time (ms)"
+    onsets = np.array(onsets)
 
     # Make plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.axes.set_xlabel(x_label)
+        ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
-        ax.set_xlim(x_start, x_end)
         ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
+        # Make sure we always have 0 on the left side of the x axis
+        current_lims = ax.get_xlim()
+        ax.set_xlim(0, current_lims[1])
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
     # Show plot
     if suppress_display is False:
-        plt.show()
+        fig.show()
 
     # Additionally return plot
     return fig, ax
@@ -392,7 +384,7 @@ def plot_waveform(samples: np.ndarray,
         ax.set_title(title)
 
     if suppress_display is False:
-        plt.show()
+        fig.show()
 
     return fig, ax
 
@@ -431,7 +423,6 @@ def synthesize_sound(duration_ms: int,
 
     if oscillator == 'sine':
         samples = amplitude * np.sin(2 * np.pi * freq * samples)
-        plt.plot(samples)
     elif oscillator == 'square':
         samples = amplitude * scipy.signal.square(2 * np.pi * freq * samples)
     elif oscillator == 'sawtooth':

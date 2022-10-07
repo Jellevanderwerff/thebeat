@@ -5,7 +5,7 @@ from typing import Optional
 
 
 def generate_moraic_sequence(n_feet: int,
-                             foot_ioi: int = 500,
+                             foot_ioi: float,
                              rng: Optional[np.random.Generator] = None) -> combio.core.Sequence:
     """
     This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
@@ -29,7 +29,7 @@ def generate_moraic_sequence(n_feet: int,
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = generate_moraic_sequence(n_feet=3, foot_ioi=500, rng=rng)
     >>> print(seq.iois)
-    [500.      208.33333 291.66666 500.     ]
+    [500.         208.33333333 291.66666667 500.        ]
 
     Notes
     -----
