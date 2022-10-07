@@ -48,6 +48,8 @@ html_theme_options = {
 }
 html_static_path = ['_static']
 
+# default role for easy lookup using :py:`whatever`
+default_role = 'py:obj'
 
 
 # Napoleon settings

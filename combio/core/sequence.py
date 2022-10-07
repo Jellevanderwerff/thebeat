@@ -12,13 +12,13 @@ class BaseSequence:
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either be metrical or not.
-    The default is non-metrical, meaning that if there are `n` onset values (i.e. `t` values),
-    there are `n`-1 IOIs. This is what people will need in most cases.
+    The default is non-metrical, meaning that if there are *n* onset values (i.e. *t* values),
+    there are *n*-1 IOIs. This is what people will need in most cases.
     Metrical sequences have an additional final IOI (so they end with a gap of silence).
     This is what you will need in cases with e.g. rhythmical/musical sequences.
 
     The BaseSequence class protects against impossible values for the IOIs, as well as for the
-    event onsets (`t` values).
+    event onsets (*t* values).
 
     Finally, remember that the first event onset is always at :math:`t = 0`!
 
@@ -110,7 +110,7 @@ class Sequence(BaseSequence):
     """
     The Sequence class is the most important class in this package. It is used as the basis
     for many functions as it contains timing information in the form of inter-onset intervals (IOIs; the times between
-    the onset of an event, and the onset of the next event) and event onsets (i.e. `t` values).
+    the onset of an event, and the onset of the next event) and event onsets (i.e. *t* values).
     IOIs are what we use to construct :py:class:`Sequence` objects.
 
     The most basic way of constructing a :py:class:`Sequence` object is by passing it a list (or other iterable) of
@@ -129,7 +129,7 @@ class Sequence(BaseSequence):
                  name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When metrical is ``True``, the sequence contains an equal number of IOIs and event onsets.
-        If ``False`` (the default), the sequence contains `n` event onsets, and `n`-1 IOIs.
+        If ``False`` (the default), the sequence contains *n* event onsets, and *n*-1 IOIs.
 
         Parameters
         ----------
@@ -152,7 +152,7 @@ class Sequence(BaseSequence):
         """
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, first_onset = first_onset, metrical=metrical, name=name)
+        super().__init__(iois=iois, first_onset=first_onset, metrical=metrical, name=name)
 
     def __str__(self):
         if self.metrical:
@@ -465,7 +465,7 @@ class Sequence(BaseSequence):
                              name: Optional[str] = None) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
-        Note that there will be `n`-1 IOIs in a sequence. IOIs are rounded off to integers.
+        Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to integers.
 
         Parameters
         ----------
@@ -669,7 +669,8 @@ class Sequence(BaseSequence):
 
     @property
     def duration(self) -> np.float64:
-        """Get the total duration of the :py:class:`Sequence` object in milliseconds.
+        """Get the total duration of the :py:class:`Sequence` object. This is simply the sum of the
+        inter-onset intervals (IOIs).
         """
         return np.float64(np.sum(self.iois))
 

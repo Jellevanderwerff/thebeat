@@ -108,7 +108,7 @@ def get_major_scale(tonic: str,
 
 def get_sound_with_metronome(samples: np.ndarray,
                              fs: int,
-                             metronome_ioi: int,
+                             metronome_ioi: float,
                              metronome_amplitude: float) -> np.ndarray:
     """This helper function adds a metronome sound to a NumPy array of sound samples.
      It works for both mono and stereo sounds."""
@@ -119,7 +119,9 @@ def get_sound_with_metronome(samples: np.ndarray,
     n_metronome_clicks = int(duration_s // metronome_ioi)  # We want all the metronome clicks that fit in the seq.
     onsets = np.concatenate((np.array([0]), np.cumsum(np.repeat(metronome_ioi, n_metronome_clicks - 1))))
 
-    with pkg_resources.path(combio.resources, 'metronome.wav') as metronome_path:
+    metronome_file = 'metronome_mono.wav' if samples.ndim == 1 else 'metronome_stereo.wav'
+
+    with pkg_resources.path(combio.resources, metronome_file) as metronome_path:
         metronome_fs, metronome_samples = wavfile.read(metronome_path)
 
     # resample metronome sound if provided sound has different sampling frequency
@@ -184,7 +186,11 @@ def make_ramps(samples, fs, onramp, offramp, ramp_type):
         else:
             raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
-        samples[:end_point] *= onramp_amps
+        if samples.ndim == 1:
+            samples[:end_point] *= onramp_amps
+        elif samples.ndim == 2:
+            samples[:end_point, 0] *= onramp_amps
+            samples[:end_point, 1] *= onramp_amps
 
     elif onramp < 0:
         raise ValueError("Onramp cannot be negative")
@@ -206,7 +212,11 @@ def make_ramps(samples, fs, onramp, offramp, ramp_type):
         else:
             raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
-        samples[start_point:] *= offramp_amps
+        if samples.ndim == 1:
+            samples[start_point:] *= offramp_amps
+        elif samples.ndim == 2:
+            samples[start_point:, 0] *= offramp_amps
+            samples[start_point:, 1] *= offramp_amps
 
     elif offramp < 0:
         raise ValueError("Offramp cannot be negative")
@@ -408,6 +418,7 @@ def play_samples(samples: np.ndarray,
 def synthesize_sound(duration_ms: int,
                      fs: int,
                      freq: float,
+                     n_channels: int,
                      amplitude: float,
                      oscillator: str) -> np.ndarray:
     # Get duration in s
@@ -420,6 +431,12 @@ def synthesize_sound(duration_ms: int,
     n_samples = int(np.ceil(n_samples))
 
     samples = np.arange(n_samples, dtype=np.float64) / fs
+
+    if n_channels == 2:
+        empty = np.empty(shape=(n_samples, 2))
+        empty[:, 0] = samples
+        empty[:, 1] = samples
+        samples = empty
 
     if oscillator == 'sine':
         samples = amplitude * np.sin(2 * np.pi * freq * samples)
@@ -437,7 +454,7 @@ def write_wav(samples: np.ndarray,
               fs: int,
               filepath: Union[str, os.PathLike],
               metronome: bool,
-              metronome_ioi: Optional[int] = None,
+              metronome_ioi: Optional[float] = None,
               metronome_amplitude: Optional[float] = None) -> None:
     """
     This helper function writes the provided sound samples to disk as a wave file.

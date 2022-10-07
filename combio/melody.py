@@ -113,7 +113,7 @@ class Melody(combio.core.sequence.BaseSequence):
         self.n_bars = n_bars
 
         # Call BaseSequence constructor
-        combio.core.sequence.BaseSequence.__init__(self, iois=rhythm.iois, metrical=True, name=name)
+        super().__init__(iois=rhythm.iois, metrical=True, name=name)
 
     @classmethod
     def generate_random_melody(cls,
@@ -296,6 +296,7 @@ class Melody(combio.core.sequence.BaseSequence):
     def synthesize_and_return(self,
                               event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                               fs: int = 48000,
+                              n_channels: int = 1,
                               amplitude: float = 1.0,
                               oscillator: str = 'sine',
                               onramp: int = 0,
@@ -322,6 +323,8 @@ class Melody(combio.core.sequence.BaseSequence):
             requires an array or list with a size equal to the number of notes in the melody.
         fs
             The desired sampling frequency in hertz.
+        n_channels
+            The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds. Defaults to 1.0.
@@ -350,7 +353,8 @@ class Melody(combio.core.sequence.BaseSequence):
         """
 
         samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
-                                          offramp=offramp, ramp_type=ramp_type, event_durations=event_durations)
+                                          n_channels=n_channels, offramp=offramp, ramp_type=ramp_type,
+                                          event_durations=event_durations)
 
         if metronome is True:
             samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
@@ -510,6 +514,7 @@ class Melody(combio.core.sequence.BaseSequence):
 
     def _make_melody_sound(self,
                            fs: int,
+                           n_channels: int,
                            oscillator: str,
                            amplitude: float,
                            onramp: int,
@@ -527,7 +532,10 @@ class Melody(combio.core.sequence.BaseSequence):
         n_frames = int(np.ceil(n_frames))
 
         # Create empty array with length n_frames
-        samples = np.zeros(n_frames)
+        if n_channels == 1:
+            samples = np.zeros(n_frames, dtype=np.float64)
+        else:
+            samples = np.zeros((n_frames, 2), dtype=np.float64)
 
         # Set event durations to the IOIs if no event durations were supplied (i.e. use full length notes)
         if event_durations is None:
@@ -542,8 +550,8 @@ class Melody(combio.core.sequence.BaseSequence):
             if event.is_played is True:
                 event_samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
                                                                  freq=abjad.NamedPitch(event.pitch_name).hertz,
-                                                                 amplitude=amplitude,
-                                                                 oscillator=oscillator)
+                                                                 n_channels=n_channels, oscillator=oscillator,
+                                                                 amplitude=amplitude)
                 if onramp or offramp:
                     event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
                                                                offramp=offramp, ramp_type=ramp_type)

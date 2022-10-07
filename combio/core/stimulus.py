@@ -64,8 +64,11 @@ class Stimulus:
 
     def __str__(self):
 
-        return f"Object of type Stimulus\nStimulus name: {self.name}\nStimulus duration: {self.duration_ms} " \
-               f"milliseconds"
+        return (f"Object of type Stimulus\n"
+                f"Stimulus name: {self.name if self.name else 'Not provided'}\n"
+                f"Stimulus duration: {self.duration_ms} ms\n"
+                f"Number of channels: {self.n_channels}\n"
+                f"Sampling frequency {self.fs}")
 
     @classmethod
     def from_wav(cls,
@@ -103,6 +106,7 @@ class Stimulus:
                  freq: int = 440,
                  fs: int = 48000,
                  duration_ms: int = 50,
+                 n_channels: int = 1,
                  amplitude: float = 1.0,
                  oscillator: str = 'sine',
                  onramp: int = 0,
@@ -121,6 +125,8 @@ class Stimulus:
             The sampling frequency in hertz.
         duration_ms
             The duration in milliseconds.
+        n_channels
+            The number of channels. 1 for mono, 2 for stereo.
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds.
@@ -144,8 +150,8 @@ class Stimulus:
         """
 
         # Generate signal
-        samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, amplitude=amplitude,
-                                                   oscillator=oscillator)
+        samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
+                                                   amplitude=amplitude, oscillator=oscillator)
 
         # Make ramps
         samples = combio._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
