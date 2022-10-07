@@ -49,7 +49,7 @@ class BaseSequence:
 
         # Save attributes
         self.iois = iois
-        self.first_onset = first_onset
+        self._first_onset = first_onset
         self.metrical = metrical
         # Additionally save the provided name (may be None)
         self.name = name
@@ -84,9 +84,9 @@ class BaseSequence:
         """
 
         if self.metrical is True:
-            return np.cumsum(np.append(self.first_onset, self.iois[:-1]))
+            return np.cumsum(np.append(self._first_onset, self.iois[:-1]))
         else:
-            return np.cumsum(np.append(self.first_onset, self.iois))
+            return np.cumsum(np.append(self._first_onset, self.iois))
 
     @onsets.setter
     def onsets(self, values):
@@ -103,7 +103,7 @@ class BaseSequence:
                              "IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.")
 
         self._iois = np.array(np.diff(values), dtype=np.float64)
-        self.first_onset = float(values[0])
+        self._first_onset = float(values[0])
 
 
 class Sequence(BaseSequence):
