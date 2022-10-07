@@ -365,6 +365,7 @@ class Melody(combio.core.sequence.BaseSequence):
     def synthesize_and_play(self,
                             event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                             fs: int = 48000,
+                            n_channels: int = 1,
                             amplitude: float = 1.0,
                             oscillator: str = 'sine',
                             onramp: int = 0,
@@ -391,6 +392,8 @@ class Melody(combio.core.sequence.BaseSequence):
             requires an array or list with a size equal to the number of notes in the melody.
         fs
             The desired sampling frequency in hertz.
+        n_channels
+            The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds. Defaults to 1.0.
@@ -420,9 +423,9 @@ class Melody(combio.core.sequence.BaseSequence):
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, amplitude=amplitude,
-                                                oscillator=oscillator, onramp=onramp, offramp=offramp,
-                                                ramp_type=ramp_type, metronome=metronome,
+        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
+                                                amplitude=amplitude, oscillator=oscillator, onramp=onramp,
+                                                offramp=offramp, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
 
         sounddevice.play(samples, samplerate=fs)
@@ -432,6 +435,7 @@ class Melody(combio.core.sequence.BaseSequence):
                              filepath: Union[str, os.PathLike],
                              event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                              fs: int = 48000,
+                             n_channels: int = 1,
                              amplitude: float = 1.0,
                              oscillator: str = 'sine',
                              onramp: int = 0,
@@ -460,6 +464,8 @@ class Melody(combio.core.sequence.BaseSequence):
             requires an array or list with a size equal to the number of notes in the melody.
         fs
             The desired sampling frequency in hertz.
+        n_channels
+            The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds. Defaults to 1.0.
@@ -486,9 +492,9 @@ class Melody(combio.core.sequence.BaseSequence):
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, amplitude=amplitude,
-                                                oscillator=oscillator, onramp=onramp, offramp=offramp,
-                                                ramp_type=ramp_type, metronome=metronome,
+        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
+                                                amplitude=amplitude, oscillator=oscillator, onramp=onramp,
+                                                offramp=offramp, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
 
         if metronome is True:

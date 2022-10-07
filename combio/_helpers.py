@@ -129,11 +129,11 @@ def get_sound_with_metronome(samples: np.ndarray,
         metronome_samples = resampled
 
     # change amplitude if necessary
-    metronome_samples *= np.float64(metronome_amplitude)
+    metronome_samples *= metronome_amplitude
 
     for onset in onsets:
         start_pos = int(onset * fs / 1000)
-        end_pos = int(start_pos + metronome_samples.size)
+        end_pos = int(start_pos + metronome_samples.shape[0])
         new_samples = sound_samples[start_pos:end_pos] + metronome_samples
         sound_samples[start_pos:end_pos] = new_samples  # we add the metronome sound to the existing sound
 
