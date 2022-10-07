@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fractions import Fraction
+import textwrap
 from typing import Optional, Union
 
 import matplotlib.pyplot as plt
@@ -126,7 +127,7 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self,
-                 iois: Union[list[float], np.ndarray[float]],
+                 iois: npt.ArrayLike[float],
                  first_onset: float = 0.0,
                  metrical: bool = False,
                  name: Optional[str] = None):
@@ -151,7 +152,6 @@ class Sequence(BaseSequence):
         >>> seq = Sequence(iois)
         >>> print(seq.onsets)
         [   0.  500.  900. 1500. 1900.]
-
         """
 
         # Call super init method
@@ -159,12 +159,23 @@ class Sequence(BaseSequence):
 
     def __str__(self):
         if self.metrical:
-            return f"Object of type Sequence (metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return textwrap.dedent(f"""\
+                Object of type Sequence (metrical)
+                Sequence name: {self.name}
+                {len(self.onsets)} events
+                IOIs: {self.iois}
+                Onsets: {self.onsets}
+                """)
         else:
-            return f"Object of type Sequence (non-metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+            return textwrap.dedent(f"""\
+                Object of type Sequence (non-metrical)
+                Sequence name: {self.name}
+                {len(self.onsets)} events
+                IOIs: {self.iois}
+                Onsets: {self.onsets}
+                """)
 
     def __add__(self, other):
-
         # Check whether all the objects are of the same type
         if not isinstance(other, Sequence):
             raise ValueError("Right-hand side object is not a Sequence")
@@ -176,21 +187,13 @@ class Sequence(BaseSequence):
                              "flag, this means there's an equal number of IOIs and onsets.")
 
         iois = np.concatenate([self.iois, other.iois])
-
-        if other.metrical:
-            return Sequence(iois, metrical=True)
-        else:
-            return Sequence(iois)
-
-    def __len__(self):
-        return len(self.onsets)
+        return Sequence(iois, metrical=other.metrical)
 
     @classmethod
     def from_integer_ratios(cls,
-                            numerators: Union[np.ndarray, list],
+                            numerators: npt.ArrayLike[float],
                             value_of_one: float,
-                            metrical: bool = False,
-                            name: Optional[str] = None) -> Sequence:
+                            **kwargs) -> Sequence:
         """
 
         This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
@@ -204,12 +207,8 @@ class Sequence(BaseSequence):
             This represents the duration of the 1, multiples of this value are used.
             For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a :py:class:`Sequence` with
             IOIs: ``[1000 2000]``.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`). Defaults to ``False``.
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -220,12 +219,12 @@ class Sequence(BaseSequence):
         """
 
         numerators = np.array(numerators)
-        return cls(numerators * value_of_one, metrical=metrical, name=name)
+        return cls(numerators * value_of_one, **kwargs)
 
     @classmethod
     def from_onsets(cls,
                     onsets: Union[np.ndarray[float], list[float]],
-                    name: Optional[str] = None) -> Sequence:
+                    **kwargs) -> Sequence:
         """
         Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
 
@@ -233,9 +232,9 @@ class Sequence(BaseSequence):
         ----------
         onsets
             An iterable of event onsets which must start from 0, e.g.: ``[0, 500, 1000]``.
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor (excluding
+            ``first_onset`` and ``metrical``, which are set by this method).
 
 
         Examples
@@ -244,9 +243,9 @@ class Sequence(BaseSequence):
         >>> print(seq.iois)
         [500. 500.]
         """
-        iois = np.diff(onsets)
 
-        return cls(iois, first_onset=onsets[0], metrical=False, name=name)
+        iois = np.diff(onsets)
+        return cls(iois, first_onset=onsets[0], metrical=False, **kwargs)
 
     @classmethod
     def generate_random_normal(cls,
@@ -255,7 +254,7 @@ class Sequence(BaseSequence):
                                sigma: float,
                                rng: Optional[np.random.Generator] = None,
                                metrical: bool = False,
-                               name: Optional[str] = None) -> Sequence:
+                               **kwargs) -> Sequence:
         """
         Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
         normal distribution.
@@ -274,10 +273,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
-
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
         Examples
         --------
@@ -302,7 +299,7 @@ class Sequence(BaseSequence):
 
         iois = rng.normal(loc=mu, scale=sigma, size=n_iois)
 
-        return cls(iois, metrical=metrical, name=name)
+        return cls(iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_uniform(cls,
@@ -311,7 +308,7 @@ class Sequence(BaseSequence):
                                 b: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: Optional[str] = None) -> Sequence:
+                                **kwargs) -> Sequence:
         """
         Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
 
@@ -329,9 +326,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -339,7 +335,7 @@ class Sequence(BaseSequence):
         >>> generator = np.random.default_rng(seed=123)
         >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, rng=generator)
         >>> print(seq.iois)
-        [536. 411. 444. 437.]
+        [536.47037265 410.76420376 444.07197455 436.87436214]
 
         >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, metrical=True)
         >>> len(seq.onsets) == len(seq.iois)
@@ -356,9 +352,8 @@ class Sequence(BaseSequence):
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
-
-        return cls(round_iois, metrical=metrical, name=name)
+        iois = rng.uniform(low=a, high=b, size=n_iois)
+        return cls(iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_poisson(cls,
@@ -366,7 +361,7 @@ class Sequence(BaseSequence):
                                 lam: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: Optional[str] = None) -> Sequence:
+                                **kwargs) -> Sequence:
 
         """
         Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
@@ -383,9 +378,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -394,8 +388,8 @@ class Sequence(BaseSequence):
         >>> seq = Sequence.generate_random_poisson(n=5, lam=500, rng=generator)
         >>> print(seq.iois)
         [512. 480. 476. 539.]
-
         """
+
         if rng is None:
             rng = np.random.default_rng()
 
@@ -408,7 +402,7 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
 
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(round_iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_exponential(cls,
@@ -416,7 +410,7 @@ class Sequence(BaseSequence):
                                     lam: float,
                                     rng: Optional[np.random.Generator] = None,
                                     metrical: bool = False,
-                                    name: Optional[str] = None) -> Sequence:
+                                    **kwargs) -> Sequence:
         """
 
         Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
@@ -433,9 +427,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -458,14 +451,14 @@ class Sequence(BaseSequence):
 
         round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
 
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(round_iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_isochronous(cls,
                              n: int,
                              ioi: float,
                              metrical: bool = False,
-                             name: Optional[str] = None) -> Sequence:
+                             **kwargs) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
         Note that there will be `n`-1 IOIs in a sequence. IOIs are rounded off to integers.
@@ -479,9 +472,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -509,16 +501,14 @@ class Sequence(BaseSequence):
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        return cls(np.round([ioi] * n_iois), metrical=metrical, name=name)
+        return cls(np.round([ioi] * n_iois), metrical=metrical, **kwargs)
 
     # Manipulation methods
     def add_noise_gaussian(self,
                            noise_sd: float,
                            rng: Optional[np.random.Generator] = None) -> None:
-        """
-        This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
-        of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
-        of ``noise_sd``.
+        """Add some Gaussian noise to the inter-onset intervals (IOIs) of the `Sequence` object.
+        It uses a normal distribution with mean 0, and a standard deviation of ``noise_sd``.
 
         Parameters
         ----------
@@ -546,8 +536,7 @@ class Sequence(BaseSequence):
 
     def change_tempo(self,
                      factor: float) -> None:
-        """
-        Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in
+        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the tempo (but results in
         smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
         inter-onset intervals).
 
@@ -573,14 +562,13 @@ class Sequence(BaseSequence):
 
     def change_tempo_linearly(self,
                               total_change: float) -> None:
-        """
-        This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
+        """Create a ritardando or accelerando effect in the inter-onset intervals (IOIs).
         It divides the IOIs by a vector linearly spaced between 1 and ``total_change``.
 
         Parameters
         ----------
         total_change
-            Total tempo change at the end of the Sequence compared to the beginning.
+            Total tempo change at the end of the `Sequence` compared to the beginning.
             So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.
             A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.
 
@@ -617,7 +605,7 @@ class Sequence(BaseSequence):
                       style: str = 'seaborn',
                       title: Optional[str] = None,
                       x_axis_label: str = "Time",
-                      linewidth: Optional[list[float], np.typing.NDArray[float], float] = None,
+                      linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
                       figsize: Optional[tuple] = None,
                       suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
@@ -657,11 +645,11 @@ class Sequence(BaseSequence):
 
         # Linewidths
         if linewidth is None:
-            linewidths = np.repeat(np.min(self.iois)/5, len(self.onsets))
+            linewidths = np.repeat(np.min(self.iois) / 10, len(self.onsets))
         elif isinstance(linewidth, float):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
-            linewidths = linewidth
+            linewidths = np.array(linewidth)
 
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                        x_axis_label=x_axis_label,
@@ -672,14 +660,13 @@ class Sequence(BaseSequence):
 
     @property
     def duration(self) -> np.float64:
-        """Get the total duration of the :py:class:`Sequence` object in milliseconds.
+        """Get the total duration of the :py:class:`Sequence` object.
         """
         return np.float64(np.sum(self.iois))
 
     @property
     def integer_ratios(self) -> np.ndarray:
-        r"""
-        This property calculates how to describe a sequence of IOIs in integer ratio numerators from
+        r"""Calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
 
         **Example:**
@@ -698,8 +685,8 @@ class Sequence(BaseSequence):
         >>> seq = Sequence([250, 500, 1000, 250])
         >>> print(seq.integer_ratios)
         [1 2 4 1]
-
         """
+
         fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
 
@@ -709,10 +696,8 @@ class Sequence(BaseSequence):
 
     @property
     def interval_ratios_from_dyads(self) -> np.ndarray:
-        r"""
-        This property returns sequential interval ratios, calculated as:
+        r"""Return sequential interval ratios, calculated as:
         :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
-
 
         Note that for `n` IOIs this property returns `n`-1 ratios.
 
@@ -730,4 +715,5 @@ class Sequence(BaseSequence):
 
         """
 
-        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
+        iois = self.iois
+        return iois[:-1] / (iois[1:] + iois[:-1])
