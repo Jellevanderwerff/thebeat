@@ -9,5 +9,5 @@ def test_melody():
     assert fig, ax
 
     r = combio.rhythm.Rhythm.from_note_values([4, 4, 4, 4])
-    m = combio.melody.Melody.from_notes(r, 'CEGC', octave=3)
+    m = combio.melody.Melody(r, 'CEGC', octave=3)
     assert list(m.note_values) == [4, 4, 4, 4]

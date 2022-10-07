@@ -39,12 +39,17 @@ class BaseSequence:
 
     def __init__(self,
                  iois: Union[list, np.ndarray],
+                 first_onset: float = 0,
                  metrical: Optional[bool] = False,
                  name: Optional[str] = None):
         """Initialization of BaseSequence class."""
 
+        if metrical is True and first_onset != 0:
+            raise ValueError("First onset must be 0 for metrical sequences.")
+
         # Save attributes
         self.iois = iois
+        self.first_onset = first_onset
         self.metrical = metrical
         # Additionally save the provided name (may be None)
         self.name = name
@@ -79,19 +84,15 @@ class BaseSequence:
         """
 
         if self.metrical is True:
-            return np.cumsum(np.append(0, self.iois[:-1]))
+            return np.cumsum(np.append(self.first_onset, self.iois[:-1]))
         else:
-            return np.cumsum(np.append(0, self.iois))
+            return np.cumsum(np.append(self.first_onset, self.iois))
 
     @onsets.setter
     def onsets(self, values):
         """Setter for the event onsets. First onset must be zero, onsets must be in order,
         and there cannot be two simultaneous onsets that occur simultaneously.
         """
-
-        # Check whether first onset is 0 (requirement of this package)
-        if values[0] != 0:
-            raise ValueError("First onset is not 0")
 
         if np.any(values[:-1] >= values[1:]):
             raise ValueError("Onsets are not ordered strictly monotonically.")
@@ -102,6 +103,7 @@ class BaseSequence:
                              "IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.")
 
         self._iois = np.array(np.diff(values), dtype=np.float64)
+        self.first_onset = float(values[0])
 
 
 class Sequence(BaseSequence):
@@ -122,6 +124,7 @@ class Sequence(BaseSequence):
 
     def __init__(self,
                  iois: Union[list, np.ndarray],
+                 first_onset: float = 0,
                  metrical: bool = False,
                  name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
@@ -149,7 +152,7 @@ class Sequence(BaseSequence):
         """
 
         # Call super init method
-        BaseSequence.__init__(self, iois=iois, metrical=metrical, name=name)
+        BaseSequence.__init__(self, iois=iois, first_onset = first_onset, metrical=metrical, name=name)
 
     def __str__(self):
         if self.metrical:
@@ -240,7 +243,7 @@ class Sequence(BaseSequence):
         """
         iois = np.diff(onsets)
 
-        return cls(iois, metrical=False, name=name)
+        return cls(iois, first_onset=onsets[0], metrical=False, name=name)
 
     @classmethod
     def generate_random_normal(cls,

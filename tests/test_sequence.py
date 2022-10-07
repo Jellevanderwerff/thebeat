@@ -40,4 +40,14 @@ def test_exception():
         seq.change_tempo(-1)
 
     with pytest.raises(ValueError):
-        seq = combio.core.Sequence.from_onsets([20, 20, 20])
+        combio.core.Sequence.from_onsets([20, 20, 20])
+
+
+def test_onset_not_zero():
+    seq = combio.core.Sequence.from_onsets([20, 50, 100])
+    assert np.all(seq.onsets == [20, 50, 100])
+    assert seq.first_onset == 20
+    assert np.all(seq.iois == [30, 50])
+
+    with pytest.raises(ValueError):
+        combio.core.Sequence([50, 50, 50], metrical=True, first_onset=50)
