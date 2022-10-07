@@ -1,17 +1,18 @@
 from __future__ import annotations
 import combio.core
 import matplotlib.pyplot as plt
-from typing import Union, Iterable, Optional
+from typing import Union, Optional
 import combio._helpers
 import numpy as np
 
 
-def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list[float], np.ndarray[float]],
                          style: str = 'seaborn',
                          title: Optional[str] = None,
-                         linewidths: Optional[Union[list[int], np.ndarray[int], int]] = None,
+                         x_axis_label: str = "Time",
+                         linewidths: Optional[Union[list[float], np.ndarray[float], float]] = None,
                          figsize: Optional[tuple] = None,
-                         suppress_display: bool = False):
+                         suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     This function may be used to plot a single sequence of event onsets.
     Either pass it a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object,
@@ -31,9 +32,11 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
         StimSequence name as the title of the plot (if the object has one).
+    x_axis_label
+        A label for the x axis.
     linewidths
-        A list or array containing the desired width of the bars (events) in milliseconds.
-        If a single int is provided, this width is used for all the bars.
+        A list or array containing the desired width of the bars (events) in data points.
+        If a single int is provided, this width is used for all the bars. Defaults to 1/10th of the smallest IOI.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -56,7 +59,7 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
         onsets = sequence.onsets
         # linewidths
         if linewidths is None:
-            linewidths = [50] * len(onsets)
+            linewidths = [np.min(np.diff(onsets))/10] * len(onsets)
         # title
         if sequence.name and title is None:
             title = sequence.name
@@ -70,12 +73,12 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
         if sequence.name and title is None:
             title = sequence.name
 
-    elif hasattr(sequence, '__iter__'):
+    elif isinstance(sequence, (list, np.ndarray)):
         # onsets
         onsets = sequence
         # linewidths
         if linewidths is None:
-            linewidths = [50] * len(onsets)
+            linewidths = [np.min(np.diff(onsets))/10] * len(onsets)
         # title
         title = title
 
@@ -87,8 +90,9 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
     if isinstance(linewidths, int):
         linewidths = [linewidths] * len(onsets)
 
-    fig, ax = combio._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, linewidths=linewidths,
-                                                   figsize=figsize, suppress_display=suppress_display)
+    fig, ax = combio._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, x_axis_label=x_axis_label,
+                                                   linewidths=linewidths, figsize=figsize,
+                                                   suppress_display=suppress_display)
     return fig, ax
 
 
@@ -96,7 +100,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn',
                             sequence_names: Optional[list[str], np.ndarray[str]] = None,
                             title: Optional[str] = None,
-                            linewidths: Optional[int] = None,
+                            x_axis_label: str = "Time",
+                            linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False):
     """
@@ -104,11 +109,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~combio.core.Sequence`
     objects, :py:class:`~combio.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
-    If the total duration is shorter than 10 seconds, the `x` axis values are in milliseconds. If the total duration is
-    longer than 10 seconds, the `x` axis values are in seconds.
-
     Parameters
     ----------
+    x_axis_label
     sequences
         A list or array of :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` objects.
         Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
@@ -125,9 +128,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         Sequence or StimSequence name as the title of the plot (if passed and the object has one).
     linewidths
         An array or list of ints (e.g. ``[50, 50, 50]`` ) or nested array or list containing the desired widths of the
-        bars (event durations) in milliseconds, for instance: ``[[50, 30, 60], [20, 40, 10], [60, 30, 10]]``.
+        bars (event durations), for instance: ``[[50, 30, 60], [20, 40, 10], [60, 30, 10]]``.
         By default, if :py:class:`~combio.core.StimSequence` objects are passed, the event durations are used.
-        In other cases, a default of 50 milliseconds is used throughout.
+        In other cases, a default of 1/10th of the smallest IOI is used.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -138,7 +141,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     --------
     >>> generator = np.random.default_rng(seed=123)
     >>> seqs = [combio.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
-    >>> plot_multiple_sequences(seqs,linewidths=50)
+    >>> plot_multiple_sequences(seqs, linewidths=50)  # doctest: +SKIP
 
     """
 
@@ -163,27 +166,13 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         if isinstance(sequences[0], combio.core.StimSequence):
             linewidths = [trial.event_durations for trial in sequences]
         else:
-            linewidths = [50] * len(sequences)
+            all_iois = [sequence.iois for sequence in sequences]
+            smallest_ioi = np.min(np.concatenate(all_iois))
+            linewidths = [smallest_ioi / 10] * len(sequences)
     elif not hasattr(linewidths, '__iter__'):
         linewidths = [linewidths] * len(sequences)
     else:
         raise ValueError("Please provide an iterable for the linewidths.")
-
-    # Get the highest value
-    temp_onsets = np.concatenate(onsets)
-    max_onsets_ms = np.max(np.max(temp_onsets))
-
-    if max_onsets_ms > 10000:
-        onsets = np.array(onsets) / 1000
-        linewidths = np.array(linewidths) / 1000
-        x_label = "Time (s)"
-    else:
-        onsets = onsets
-        x_label = "Time (ms)"
-
-    # Calculate x lims
-    # The reasoning here is that linewidths is either an iterable containing integers
-    # or an iterable containing iterables with individual linewidths
 
     # Plot
     with plt.style.context(style):
@@ -191,7 +180,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
         # Labels
         ax.axes.set_title(title)
-        ax.axes.set_xlabel(x_label)
+        ax.axes.set_xlabel(x_axis_label)
 
         for onsets, label, linewidths in zip(onsets, sequence_names, linewidths):
             ax.barh(y=label, width=linewidths, left=onsets)

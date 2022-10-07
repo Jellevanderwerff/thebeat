@@ -188,7 +188,7 @@ class Sequence(BaseSequence):
     @classmethod
     def from_integer_ratios(cls,
                             numerators: Union[np.ndarray, list],
-                            value_of_one_in_ms: float,
+                            value_of_one: float,
                             metrical: bool = False,
                             name: Optional[str] = None) -> Sequence:
         """
@@ -200,9 +200,9 @@ class Sequence(BaseSequence):
         ----------
         numerators
             Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
-        value_of_one_in_ms
+        value_of_one
             This represents the duration of the 1, multiples of this value are used.
-            For instance, a sequence of ``[2, 4]`` using ``value_of_one_in_ms=500`` would be a :py:class:`Sequence` with
+            For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a :py:class:`Sequence` with
             IOIs: ``[1000 2000]``.
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
@@ -214,13 +214,13 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.from_integer_ratios(numerators=[1, 2, 4], value_of_one_in_ms=500)
+        >>> seq = Sequence.from_integer_ratios(numerators=[1, 2, 4], value_of_one=500)
         >>> print(seq.iois)
         [ 500. 1000. 2000.]
         """
 
         numerators = np.array(numerators)
-        return cls(numerators * value_of_one_in_ms, metrical=metrical, name=name)
+        return cls(numerators * value_of_one, metrical=metrical, name=name)
 
     @classmethod
     def from_onsets(cls,
@@ -284,7 +284,7 @@ class Sequence(BaseSequence):
         >>> generator = np.random.default_rng(seed=123)
         >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, rng=generator)
         >>> print(seq.iois)
-        [451. 482. 564. 510.]
+        [450.54393248 481.61066743 564.39626306 509.69872096]
 
         >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, metrical=True)
         >>> len(seq.onsets) == len(seq.iois)
@@ -596,18 +596,32 @@ class Sequence(BaseSequence):
 
         self.iois /= np.linspace(1, total_change, len(self.iois))
 
+    def round_onsets(self,
+                     decimals: int = 0):
+        """
+
+        Use this function to round the onsets. This can, for instance, be useful to get rid of warnings regarding frame
+        rounding.
+
+        Parameters
+        ----------
+        decimals
+            The number of decimals desired.
+
+        """
+
+        self.onsets = np.round(self.onsets, decimals=decimals)
+
     # Visualization
     def plot_sequence(self,
                       style: str = 'seaborn',
                       title: Optional[str] = None,
-                      linewidth: int = 50,
+                      x_axis_label: str = "Time",
+                      linewidth: Optional[list[float], np.typing.NDArray[float], float] = None,
                       figsize: Optional[tuple] = None,
                       suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
-
-        In principle, the `x` axis shows milliseconds. However, if the total sequence duration is over 10 seconds,
-        this changes to seconds.
 
         Parameters
         ----------
@@ -618,8 +632,10 @@ class Sequence(BaseSequence):
         title
             If desired, one can provide a title for the plot. This takes precedence over using the
             StimSequence name as the title of the plot (if the object has one).
+        x_axis_label
+            A label for the x axis.
         linewidth
-            The desired width of the bars (events) in milliseconds.
+            The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -629,7 +645,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-        >>> seq.plot_rhythm()  # doctest: +SKIP
+        >>> seq.plot_sequence()  # doctest: +SKIP
         """
 
         # If a title was provided that has preference. If none is provided,
@@ -640,25 +656,25 @@ class Sequence(BaseSequence):
             title = self.name
 
         # Linewidths
-        linewidths = np.repeat(linewidth, len(self.onsets))
+        if linewidth is None:
+            linewidths = np.repeat(np.min(self.iois)/5, len(self.onsets))
+        elif isinstance(linewidth, float):
+            linewidths = np.repeat(linewidth, len(self.onsets))
+        else:
+            linewidths = linewidth
 
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                       x_axis_label=x_axis_label,
                                                        linewidths=linewidths, figsize=figsize,
                                                        suppress_display=suppress_display)
 
         return fig, ax
 
     @property
-    def duration_ms(self) -> np.float64:
+    def duration(self) -> np.float64:
         """Get the total duration of the :py:class:`Sequence` object in milliseconds.
         """
         return np.float64(np.sum(self.iois))
-
-    @property
-    def duration_s(self) -> np.float64:
-        """Get the total duration of the :py:class:`Sequence` object in seconds.
-        """
-        return np.float64(np.sum(self.iois) / 1000)
 
     @property
     def integer_ratios(self) -> np.ndarray:
@@ -684,7 +700,7 @@ class Sequence(BaseSequence):
         [1 2 4 1]
 
         """
-        fractions = [Fraction(int(ioi), int(self.duration_ms)) for ioi in self.iois]
+        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
 
         vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
@@ -706,7 +722,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.from_integer_ratios([2, 2, 1, 1], value_of_one_in_ms=500)
+        >>> seq = Sequence.from_integer_ratios([2, 2, 1, 1], value_of_one=500)
         >>> print(seq.iois)
         [1000. 1000.  500.  500.]
         >>> print(seq.interval_ratios_from_dyads)

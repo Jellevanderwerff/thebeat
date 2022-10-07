@@ -255,7 +255,7 @@ def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = combio.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
     >>> print(ks_test(seq))
-    KstestResult(statistic=0.07706198218153354, pvalue=0.5722897529628035)
+    KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911)
 
     """
 
@@ -310,7 +310,7 @@ def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = combio.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
     >>> print(get_npvi(seq))
-    37.481644
+    37.6263174529546
     """
 
     if isinstance(sequence, (combio.core.Sequence, combio.core.StimSequence)):
