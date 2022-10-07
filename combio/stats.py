@@ -11,8 +11,8 @@ import pandas as pd
 
 def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
            resolution_ms: int = 1,
-           smoothing_window: Optional[Union[int, float]] = None,
-           smoothing_sd: Optional[Union[int, float]] = None) -> pd.DataFrame:
+           smoothing_window: Optional[float] = None,
+           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
     """
 
     This function takes a :py:class:`Sequence` or :py:class:`StimSequence` object, or a list of event onsets,
@@ -76,8 +76,8 @@ def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list,
 
 def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
              resolution_ms: int = 1,
-             smoothing_window: Optional[Union[int, float]] = None,
-             smoothing_sd: Optional[Union[int, float]] = None,
+             smoothing_window: Optional[float] = None,
+             smoothing_sd: Optional[float] = None,
              style: str = 'seaborn',
              title: str = 'Autocorrelation',
              figsize: Optional[tuple] = None,
@@ -162,8 +162,8 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
 
 def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
                resolution_ms: int = 1,
-               smoothing_window: Optional[Union[int, float]] = None,
-               smoothing_sd: Optional[Union[int, float]] = None) -> np.ndarray:
+               smoothing_window: Optional[float] = None,
+               smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
 
     This function takes a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object,
@@ -331,7 +331,7 @@ def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
 
 
 def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
-             theoretical_ioi: Union[int, float],
+             theoretical_ioi: float,
              output_statistic: str = 'mean') -> np.float64:
     """
 

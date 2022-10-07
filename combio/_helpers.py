@@ -1,6 +1,7 @@
 import os
 import importlib.resources as pkg_resources
 import warnings
+from combio._warnings import framerounding
 
 import scipy.signal
 
@@ -414,13 +415,19 @@ def play_samples(samples: np.ndarray,
 
 def synthesize_sound(duration_ms: int,
                      fs: int,
-                     freq: Union[int, float],
+                     freq: float,
                      amplitude: float,
                      oscillator: str) -> np.ndarray:
     # Get duration in s
     t = duration_ms / 1000
 
-    samples = np.linspace(0, t, int(fs * t), endpoint=False, dtype=np.float64)
+    # Check whether
+    n_samples = fs * t
+    if not n_samples.is_integer():
+        warnings.warn(combio._warnings.framerounding)
+    n_samples = int(np.ceil(n_samples))
+
+    samples = np.arange(n_samples, dtype=np.float64) / fs
 
     if oscillator == 'sine':
         samples = amplitude * np.sin(2 * np.pi * freq * samples)

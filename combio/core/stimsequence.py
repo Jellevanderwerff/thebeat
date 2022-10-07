@@ -340,8 +340,14 @@ class StimSequence(BaseSequence):
 
         for stimulus, onset in samples_with_onsets:
 
-            start_pos = int(onset * self.fs / 1000)
-            end_pos = int(start_pos + stimulus.shape[0])
+            start_pos = onset * self.fs / 1000
+            end_pos = start_pos + stimulus.shape[0]
+
+            if not start_pos.is_integer() or not end_pos.is_integer():
+                warnings.warn(combio._warnings.framerounding)
+
+            start_pos = int(start_pos)
+            end_pos = int(end_pos)
 
             if self.n_channels == 1:
                 samples[start_pos:end_pos] = stimulus

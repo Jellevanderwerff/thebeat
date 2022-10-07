@@ -218,7 +218,7 @@ class Melody(combio.core.sequence.BaseSequence):
         >>> print(r.note_values)  # doctest: +SKIP
         [4 2 8 8]
 
-        >>> r = Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
+        >>> r = combio.rhythm.Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
         >>> print(r.note_values)  # doctest: +SKIP
         [12 12 12  4  4  4]
 
@@ -543,7 +543,7 @@ class Melody(combio.core.sequence.BaseSequence):
                 event_samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
                                                                  freq=abjad.NamedPitch(event.pitch_name).hertz,
                                                                  amplitude=amplitude,
-                                                                 osc=oscillator)
+                                                                 oscillator=oscillator)
                 if onramp or offramp:
                     event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
                                                                offramp=offramp, ramp_type=ramp_type)

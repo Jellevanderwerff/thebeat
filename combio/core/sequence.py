@@ -38,8 +38,8 @@ class BaseSequence:
     """
 
     def __init__(self,
-                 iois: Union[list, np.ndarray],
-                 first_onset: float = 0,
+                 iois: Union[list[float], np.ndarray[float]],
+                 first_onset: float = 0.0,
                  metrical: Optional[bool] = False,
                  name: Optional[str] = None):
         """Initialization of BaseSequence class."""
@@ -123,8 +123,8 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self,
-                 iois: Union[list, np.ndarray],
-                 first_onset: float = 0,
+                 iois: Union[list[float], np.ndarray[float]],
+                 first_onset: float = 0.0,
                  metrical: bool = False,
                  name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
@@ -185,7 +185,7 @@ class Sequence(BaseSequence):
     @classmethod
     def from_integer_ratios(cls,
                             numerators: Union[np.ndarray, list],
-                            value_of_one_in_ms: int,
+                            value_of_one_in_ms: float,
                             metrical: bool = False,
                             name: Optional[str] = None) -> Sequence:
         """
@@ -221,7 +221,7 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_onsets(cls,
-                    onsets: Union[np.ndarray, list],
+                    onsets: Union[np.ndarray[float], list[float]],
                     name: Optional[str] = None) -> Sequence:
         """
         Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
@@ -248,8 +248,8 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_random_normal(cls,
                                n: int,
-                               mu: int,
-                               sigma: int,
+                               mu: float,
+                               sigma: float,
                                rng: Optional[np.random.Generator] = None,
                                metrical: bool = False,
                                name: Optional[str] = None) -> Sequence:
@@ -297,15 +297,15 @@ class Sequence(BaseSequence):
         else:
             raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
 
-        round_iois = np.round(rng.normal(loc=mu, scale=sigma, size=n_iois))
+        iois = rng.normal(loc=mu, scale=sigma, size=n_iois)
 
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(iois, metrical=metrical, name=name)
 
     @classmethod
     def generate_random_uniform(cls,
                                 n: int,
-                                a: int,
-                                b: int,
+                                a: float,
+                                b: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
                                 name: Optional[str] = None) -> Sequence:
@@ -360,7 +360,7 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_random_poisson(cls,
                                 n: int,
-                                lam: int,
+                                lam: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
                                 name: Optional[str] = None) -> Sequence:
@@ -410,7 +410,7 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_random_exponential(cls,
                                     n: int,
-                                    lam: int,
+                                    lam: float,
                                     rng: Optional[np.random.Generator] = None,
                                     metrical: bool = False,
                                     name: Optional[str] = None) -> Sequence:
@@ -460,7 +460,7 @@ class Sequence(BaseSequence):
     @classmethod
     def generate_isochronous(cls,
                              n: int,
-                             ioi: int,
+                             ioi: float,
                              metrical: bool = False,
                              name: Optional[str] = None) -> Sequence:
         """
@@ -510,7 +510,7 @@ class Sequence(BaseSequence):
 
     # Manipulation methods
     def add_noise_gaussian(self,
-                           noise_sd: Union[int, float],
+                           noise_sd: float,
                            rng: Optional[np.random.Generator] = None) -> None:
         """
         This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
@@ -542,7 +542,7 @@ class Sequence(BaseSequence):
         self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self,
-                     factor: Union[int, float]) -> None:
+                     factor: float) -> None:
         """
         Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in
         smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
@@ -569,7 +569,7 @@ class Sequence(BaseSequence):
             raise ValueError("Please provide a factor larger than 0.")
 
     def change_tempo_linearly(self,
-                              total_change: Union[int, float]) -> None:
+                              total_change: float) -> None:
         """
         This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
         It divides the IOIs by a vector linearly spaced between 1 and ``total_change``.

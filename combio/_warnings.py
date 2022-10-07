@@ -1,5 +1,5 @@
-framerounding = Warning("For one of the stimuli, the exact start or end position in frames (i.e. samples) was "
-                        "rounded off to the neirest integer ceiling. This shouldn't be a problem. "
+framerounding = Warning("For one ore more of the used sounds, the exact start or end positions in frames (i.e. "
+                        "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem. "
                         "If you want to avoid this you can use a sampling rate of 48000 Hz throughout, and use only "
                         "integer values for the IOIs and event durations.")
 

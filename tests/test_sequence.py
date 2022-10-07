@@ -13,7 +13,7 @@ def test_iois(rng):
 
     assert isinstance(seq.iois, np.ndarray)
     assert len(seq.iois) == 9
-    assert np.all(seq.iois == [508., 474., 519., 524., 451., 467., 503., 492., 500.])
+    assert np.all(np.round(seq.iois) == [508., 474., 519., 524., 451., 467., 503., 492., 500.])
     assert len(seq.onsets) == 10
     assert seq.metrical is False
 

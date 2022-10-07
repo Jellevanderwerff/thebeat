@@ -34,7 +34,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
     def __init__(self,
                  iois: Union[np.ndarray, list],
                  time_signature: tuple = (4, 4),
-                 beat_ms: Union[int, float] = 500,
+                 beat_ms: float = 500,
                  is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None,
                  name: Optional[str] = None):
         r"""
