@@ -1,8 +1,12 @@
-from __future__ import annotations  # this is to make sure we can type hint the return value in a class method
+from __future__ import annotations
+
 from fractions import Fraction
-from typing import Union, Optional
+from typing import Optional, Union
+
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
+
 import combio._helpers
 
 
@@ -20,8 +24,6 @@ class BaseSequence:
     The BaseSequence class protects against impossible values for the IOIs, as well as for the
     event onsets (`t` values).
 
-    Finally, remember that the first event onset is always at :math:`t = 0`!
-
     Attributes
     ----------
     iois : NumPy 1-D array
@@ -38,7 +40,7 @@ class BaseSequence:
     """
 
     def __init__(self,
-                 iois: Union[list[float], np.ndarray[float]],
+                 iois: npt.ArrayLike[float],
                  first_onset: float = 0.0,
                  metrical: Optional[bool] = False,
                  name: Optional[str] = None):
@@ -60,13 +62,13 @@ class BaseSequence:
         between the onset of an event, and the onset of the next event. This is the most important
         attribute of the Sequence class and is used throughout.
 
-        This getter returns a copy of the IOIs instead of the actual variable.
+        This getter returns a copy of the IOIs instead of the actual attribute.
         """
 
         return np.array(self._iois, dtype=np.float64, copy=True)
 
     @iois.setter
-    def iois(self, values):
+    def iois(self, values: npt.ArrayLike[float]):
         """IOI setter. Checks against negative IOIs."""
 
         # We always want a NumPy array
@@ -79,8 +81,8 @@ class BaseSequence:
 
     @property
     def onsets(self) -> np.ndarray:
-        """ Returns the event onsets (t values) in milliseconds on the basis of the sequence objects'
-        inter-onset intervals (IOIs). An additional first onset is additionally prepended at :math:`t = 0`.
+        """Returns the event onsets (t values) on the basis of the sequence objects'
+        inter-onset intervals (IOIs).
         """
 
         if self.metrical is True:
@@ -90,17 +92,18 @@ class BaseSequence:
 
     @onsets.setter
     def onsets(self, values):
-        """Setter for the event onsets. First onset must be zero, onsets must be in order,
-        and there cannot be two simultaneous onsets that occur simultaneously.
+        """Setter for the event onsets. Onsets must be in order, and there cannot be two
+        simultaneous onsets that occur simultaneously.
         """
-
-        if np.any(values[:-1] >= values[1:]):
-            raise ValueError("Onsets are not ordered strictly monotonically.")
 
         # Set the IOIs
         if self.metrical is True:
             raise ValueError("Cannot change onsets of metrical sequences. This is because we need to know the final "
                              "IOI for metrical sequences. Either reconstruct the sequence, or change the IOIs.")
+
+        values = np.array(values, dtype=np.float64)
+        if np.any(values[:-1] >= values[1:]):
+            raise ValueError("Onsets are not ordered strictly monotonically.")
 
         self._iois = np.array(np.diff(values), dtype=np.float64)
         self._first_onset = float(values[0])

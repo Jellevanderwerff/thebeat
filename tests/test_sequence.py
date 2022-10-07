@@ -33,6 +33,48 @@ def test_iois(rng):
         seq.onsets = [0, 50, 100]
 
 
+def test_iois_property(rng):
+    seq = combio.core.Sequence.generate_random_normal(10, 500, 25, rng=rng)
+    assert len(seq.iois) == 9
+
+    iois = seq.iois.copy()
+    seq.iois[0] = 42
+    assert np.all(seq.iois == iois)
+
+    seq.iois = [5, 6, 7]
+    assert isinstance(seq.iois, np.ndarray)
+    assert len(seq.iois) == 3
+    assert len(seq.onsets) == 4
+    assert np.all(seq.onsets == [0, 5, 11, 18])
+
+    with pytest.raises(ValueError, match=r"Inter-onset intervals \(IOIs\) cannot be zero or negative"):
+        seq.iois = [1, 2, 3, 0, 4, 5]
+
+    with pytest.raises(ValueError, match=r"Inter-onset intervals \(IOIs\) cannot be zero or negative"):
+        seq.iois = [1, 2, 3, -1, 4, 5]
+
+
+def test_onsets_property(rng):
+    seq = combio.core.Sequence.generate_random_normal(10, 500, 25, rng=rng)
+    assert len(seq.onsets) == 10
+
+    onsets = seq.onsets.copy()
+    seq.onsets[0] = 42
+    assert np.all(seq.onsets == onsets)
+
+    seq.onsets = [1, 2, 3, 5, 8, 13, 21, 34, 55]
+    assert isinstance(seq.onsets, np.ndarray)
+    assert len(seq.onsets) == 9
+    assert len(seq.iois) == 8
+    assert np.all(seq.iois == [1, 1, 2, 3, 5, 8, 13, 21])
+
+    with pytest.raises(ValueError, match="Onsets are not ordered strictly monotonically"):
+        seq.onsets = [1, 1, 2, 3, 5]
+
+    with pytest.raises(ValueError, match="Onsets are not ordered strictly monotonically"):
+        seq.onsets = [1, -1, 1, -1, 1]
+
+
 def test_exception():
     seq = combio.core.Sequence.generate_isochronous(n=10, ioi=500)
     seq.change_tempo(0.5)
