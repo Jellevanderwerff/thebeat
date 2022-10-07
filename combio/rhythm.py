@@ -85,7 +85,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
         self.n_bars = n_bars
 
         # Call initializer of super class
-        combio.core.sequence.BaseSequence.__init__(self, iois=iois, metrical=True, name=name)
+        super().__init__(iois=iois, metrical=True, name=name)
 
     def __str__(self):
         return (f"Object of type Rhythm.\n"

@@ -89,7 +89,6 @@ class StimSequence(BaseSequence):
 
         # Save attributes
         self.fs = stimuli[0].fs
-        self.dtype = stimuli[0].dtype
         self.n_channels = stimuli[0].n_channels
         self.name = name
         self.stim_names = [stimulus.name for stimulus in stimuli]
@@ -286,9 +285,8 @@ class StimSequence(BaseSequence):
     def write_wav(self,
                   filepath: Union[str, os.PathLike],
                   metronome: bool = False,
-                  metronome_amplitude: float = 1.0) -> None:
+                  metronome_amplitude: float = 1.0):
         """
-        # todo use the write function in _helpers
 
         Parameters
         ----------
@@ -331,9 +329,9 @@ class StimSequence(BaseSequence):
         array_length = int(np.ceil(array_length))
 
         if self.n_channels == 1:
-            samples = np.zeros(array_length, dtype=self.dtype)
+            samples = np.zeros(array_length, dtype=np.float64)
         else:
-            samples = np.zeros((array_length, 2), dtype=self.dtype)
+            samples = np.zeros((array_length, 2), dtype=np.float64)
 
         samples_with_onsets = list(zip([stimulus.samples for stimulus in stimuli], onsets))
 
@@ -357,6 +355,7 @@ class StimSequence(BaseSequence):
         self.event_durations = np.array([stim.duration_ms for stim in stimuli])
 
         # return sound
+
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
             return combio._helpers.normalize_audio(samples)

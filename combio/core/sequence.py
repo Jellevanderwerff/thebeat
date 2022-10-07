@@ -660,13 +660,14 @@ class Sequence(BaseSequence):
 
     @property
     def duration(self) -> np.float64:
-        """Get the total duration of the :py:class:`Sequence` object.
+        """Get the total duration of the :py:class:`Sequence` object. This is simply the sum of the
+        inter-onset intervals (IOIs).
         """
         return np.float64(np.sum(self.iois))
 
     @property
     def integer_ratios(self) -> np.ndarray:
-        r"""Calculates how to describe a sequence of IOIs in integer ratio numerators from
+        r"""Calculate how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
 
         **Example:**
