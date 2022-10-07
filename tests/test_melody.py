@@ -18,4 +18,4 @@ def test_melody(tmp_path):
     assert isinstance(samples, np.ndarray)
     assert fs
 
-    mel.synthesize_and_write(pytest / 'test_melody', n_channels=2, metronome=True)
+    mel.synthesize_and_write(tmp_path / 'test_melody', n_channels=2, metronome=True)

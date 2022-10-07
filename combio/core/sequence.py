@@ -232,7 +232,8 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         onsets
-            An iterable of event onsets which must start from 0, e.g.: ``[0, 500, 1000]``.
+            An array or list containg event onsets, for instance: ``[0, 500, 1000]``. The onsets do not have to
+            start with zero.
         name
             If desired, one can give a sequence a name. This is for instance used when printing the sequence,
             or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.

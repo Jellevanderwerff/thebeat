@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import re
+import textwrap
 from typing import Union, Optional
 
 import matplotlib.pyplot as plt
@@ -591,8 +592,18 @@ class Melody(combio.core.sequence.BaseSequence):
         note_maker = abjad.makers.NoteMaker()
         time_signature = abjad.TimeSignature(time_signature)
         key = abjad.KeySignature(key)
-        preamble = """\n \\version "2.22.2" \n \language "english" \n \paper {\nindent = 0\mm\nline-width = 
-        110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = "" oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+        preamble = textwrap.dedent(r"""
+             \version "2.22.2"
+             \language "english"
+             \paper {
+             indent = 0\mm
+             line-width = 110\mm
+             oddHeaderMarkup = ""
+             evenHeaderMarkup = ""
+             oddFooterMarkup = ""
+             evenFooterMarkup = ""
+             }
+             """)
 
         pitch_names = [event.pitch_name for event in self.events]
         note_values = [event.note_value for event in self.events]
