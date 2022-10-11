@@ -108,6 +108,16 @@ class BaseSequence:
         self._iois = np.array(np.diff(values), dtype=np.float64)
         self._first_onset = float(values[0])
 
+    @property
+    def mean_ioi(self) -> np.float64:
+        """The average inter-onset interval (IOI)."""
+        return np.float64(np.mean(self.iois))
+
+    @property
+    def duration(self) -> np.float64:
+        """Property that returns the summed total of the inter-onset intervals."""
+        return np.float64(np.sum(self.iois))
+
 
 class Sequence(BaseSequence):
     """
@@ -116,13 +126,13 @@ class Sequence(BaseSequence):
     the onset of an event, and the onset of the next event) and event onsets (i.e. *t* values).
     IOIs are what we use to construct :py:class:`Sequence` objects.
 
-    The most basic way of constructing a :py:class:`Sequence` object is by passing it a list (or other iterable) of
+    The most basic way of constructing a :py:class:`Sequence` object is by passing it a list or array of
     IOIs. However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
 
-    This class additionally contains methods and attributes to, for instance, get the event onset values, to
+    This class additionally contains methods and attributes to, for instance,
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
-    For more info, check out the :py:meth:`~combio.core.Sequence.__init__` and the different methods below.
+    For more info, check out the :py:meth:`~combio.core.Sequence.__init__` method, and the different methods below.
     """
 
     def __init__(self,
@@ -137,7 +147,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         iois
-            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
+            An array or list containing inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
@@ -158,16 +168,19 @@ class Sequence(BaseSequence):
         super().__init__(iois=iois, first_onset=first_onset, metrical=metrical, name=name)
 
     def __str__(self):
-        if self.metrical:
-            return f"Object of type Sequence (metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
-        else:
-            return f"Object of type Sequence (non-metrical)\nSequence name: {self.name}\n{len(self.onsets)} events\nIOIs: {self.iois}\nOnsets: {self.onsets}\n"
+        name = self.name if self.name else "Not provided"
+        metricality = "(metrical)" if self.metrical else "(non-metrical)"
+
+        return (f"Object of type Sequence {metricality}\n"
+                f"{len(self.onsets)} events\n"
+                f"IOIs: {self.iois}\n"
+                f"Onsets: {self.onsets}\n"
+                f"Sequence name: {name}")
 
     def __add__(self, other):
-
-        # Check whether all the objects are of the same type
+        # Check whether the objects are of the same type
         if not isinstance(other, Sequence):
-            raise ValueError("Right-hand side object is not a Sequence")
+            raise ValueError("Right-hand side object is not a Sequence object.")
 
         # Sequence objects need to be metrical:
         if not self.metrical:
@@ -182,9 +195,6 @@ class Sequence(BaseSequence):
         else:
             return Sequence(iois)
 
-    def __len__(self):
-        return len(self.onsets)
-
     @classmethod
     def from_integer_ratios(cls,
                             numerators: Union[np.ndarray, list],
@@ -192,7 +202,6 @@ class Sequence(BaseSequence):
                             metrical: bool = False,
                             name: Optional[str] = None) -> Sequence:
         """
-
         This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
         See :py:attr:`Sequence.integer_ratios` for explanation.
 
@@ -294,16 +303,10 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical is True:
-            n_iois = n
-        elif metrical is False:
-            n_iois = n - 1
-        else:
-            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+        # Number of IOIs depends on metricality
+        n_iois = n if metrical else n - 1
 
-        iois = rng.normal(loc=mu, scale=sigma, size=n_iois)
-
-        return cls(iois, metrical=metrical, name=name)
+        return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), metrical=metrical, name=name)
 
     @classmethod
     def generate_random_uniform(cls,
@@ -340,7 +343,7 @@ class Sequence(BaseSequence):
         >>> generator = np.random.default_rng(seed=123)
         >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, rng=generator)
         >>> print(seq.iois)
-        [536. 411. 444. 437.]
+        [536.47037265 410.76420376 444.07197455 436.87436214]
 
         >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, metrical=True)
         >>> len(seq.onsets) == len(seq.iois)
@@ -350,16 +353,10 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical is True:
-            n_iois = n
-        elif metrical is False:
-            n_iois = n - 1
-        else:
-            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+        # Number of IOIs depends on metricality
+        n_iois = n if metrical else n - 1
 
-        round_iois = np.round(rng.uniform(low=a, high=b, size=n_iois))
-
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(rng.uniform(low=a, high=b, size=n_iois), metrical=metrical, name=name)
 
     @classmethod
     def generate_random_poisson(cls,
@@ -400,16 +397,10 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical:
-            n_iois = n
-        elif not metrical:
-            n_iois = n - 1
-        else:
-            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+        # Number of IOIs depends on metricality
+        n_iois = n if metrical else n - 1
 
-        round_iois = np.round(rng.poisson(lam=lam, size=n_iois))
-
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(rng.poisson(lam=lam, size=n_iois), metrical=metrical, name=name)
 
     @classmethod
     def generate_random_exponential(cls,
@@ -444,22 +435,15 @@ class Sequence(BaseSequence):
         >>> generator = np.random.default_rng(seed=123)
         >>> seq = Sequence.generate_random_exponential(n=5, lam=500, rng=generator)
         >>> print(seq.iois)
-        [298.  59. 126. 154.]
+        [298.48624756  58.51553052 125.89734975 153.98272273]
 
         """
         if rng is None:
             rng = np.random.default_rng()
 
-        if metrical is True:
-            n_iois = n
-        elif metrical is False:
-            n_iois = n - 1
-        else:
-            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+        n_iois = n if metrical else n - 1
 
-        round_iois = np.round(rng.exponential(scale=lam, size=n_iois))
-
-        return cls(round_iois, metrical=metrical, name=name)
+        return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, name=name)
 
     @classmethod
     def generate_isochronous(cls,
@@ -503,19 +487,14 @@ class Sequence(BaseSequence):
 
         """
 
-        if metrical is True:
-            n_iois = n
-        elif metrical is False:
-            n_iois = n - 1
-        else:
-            raise ValueError("Illegal value passed to 'metrical' argument. Can only be True or False.")
+        n_iois = n if metrical else n - 1
 
-        return cls(np.round([ioi] * n_iois), metrical=metrical, name=name)
+        return cls([ioi] * n_iois, metrical=metrical, name=name)
 
     # Manipulation methods
     def add_noise_gaussian(self,
                            noise_sd: float,
-                           rng: Optional[np.random.Generator] = None) -> None:
+                           rng: Optional[np.random.Generator] = None):
         """
         This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
@@ -543,10 +522,11 @@ class Sequence(BaseSequence):
 
         if rng is None:
             rng = np.random.default_rng()
-        self.iois = self.iois + rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
+
+        self.iois += rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self,
-                     factor: float) -> None:
+                     factor: float):
         """
         Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in
         smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
@@ -573,7 +553,7 @@ class Sequence(BaseSequence):
             raise ValueError("Please provide a factor larger than 0.")
 
     def change_tempo_linearly(self,
-                              total_change: float) -> None:
+                              total_change: float):
         """
         This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
         It divides the IOIs by a vector linearly spaced between 1 and ``total_change``.
@@ -595,14 +575,14 @@ class Sequence(BaseSequence):
         [500. 375. 300. 250.]
         """
 
-        self.iois /= np.linspace(1, total_change, len(self.iois))
+        self.iois /= np.linspace(start=1, stop=total_change, num=len(self.iois))
 
     def round_onsets(self,
                      decimals: int = 0):
         """
 
-        Use this function to round the onsets. This can, for instance, be useful to get rid of warnings regarding frame
-        rounding.
+        Use this function to round off the :py:`Sequence` object's onsets (i.e. *t* values). This can, for instance,
+        be useful to get rid of warnings that are the result of frame rounding. See e.g. :py:`StimSequence.__init__`.
 
         Parameters
         ----------
@@ -649,21 +629,19 @@ class Sequence(BaseSequence):
         >>> seq.plot_sequence()  # doctest: +SKIP
         """
 
-        # If a title was provided that has preference. If none is provided,
-        # use the Sequence object's name. Otherwise use ``None``.
-        if title:
-            title = title
-        elif self.name:
-            title = self.name
+        # For the title, use the Sequence name if it has one. Otherwise use the title parameter,
+        # which may be None.
+        title = self.name if self.name is not None else title
 
         # Linewidths
         if linewidth is None:
-            linewidths = np.repeat(np.min(self.iois)/5, len(self.onsets))
+            linewidths = np.repeat(np.min(self.iois) / 10, len(self.onsets))
         elif isinstance(linewidth, float):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
             linewidths = linewidth
 
+        # Plot the sequence
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
                                                        x_axis_label=x_axis_label,
                                                        linewidths=linewidths, figsize=figsize,
@@ -672,19 +650,13 @@ class Sequence(BaseSequence):
         return fig, ax
 
     @property
-    def duration(self) -> np.float64:
-        """Get the total duration of the :py:class:`Sequence` object. This is simply the sum of the
-        inter-onset intervals (IOIs).
-        """
-        return np.float64(np.sum(self.iois))
-
-    @property
     def integer_ratios(self) -> np.ndarray:
         r"""
         This property calculates how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
 
-        **Example:**
+        Example
+        -------
 
         A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
         This can be described using the least common multiplier as
@@ -715,8 +687,7 @@ class Sequence(BaseSequence):
         This property returns sequential interval ratios, calculated as:
         :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
 
-
-        Note that for `n` IOIs this property returns `n`-1 ratios.
+        Note that for *n* IOIs this property returns *n*-1 ratios.
 
         Notes
         -----

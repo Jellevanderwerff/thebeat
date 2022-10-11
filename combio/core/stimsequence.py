@@ -41,6 +41,12 @@ class StimSequence(BaseSequence):
         Initialize a :py:class:`StimSequence` object using a :py:class:`Stimulus` object, or list or array of
         :py:class:`Stimulus` objects, and a :py:class:`Sequence` object.
 
+        During the construction of a :py:`StimSequence` object, sound is generated on the basis of the passed
+        :py:`Stimulus` objects and the passed `Sequence` object. A warning is issued if the frame number, where
+        one of the sounds would be placed, had to be rounded off. To get rid of this warning, you can use
+        the :py:`Sequence.round_onsets` method before passing it to the :py:`StimSequence` constructor,
+        or try a different sampling frequency for the :py:`Stimulus` sound.
+
         Parameters
         ----------
         stimulus
@@ -66,10 +72,13 @@ class StimSequence(BaseSequence):
         """
 
         # If a single Stimulus object is passed, repeat that stimulus for each onset
+        # Otherwise use the array/list of Stimlus objects.
         if isinstance(stimulus, Stimulus):
             stimuli = [stimulus] * len(sequence.onsets)
-        else:
+        elif isinstance(stimulus, list) or isinstance(stimulus, np.ndarray):
             stimuli = stimulus
+        else:
+            raise ValueError("Please pass a Stimulus object, or a list or array of Stimulus objects.")
 
         # Type checking for sequence
         if not isinstance(sequence, Sequence):
@@ -98,67 +107,37 @@ class StimSequence(BaseSequence):
         BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
 
         # Check whether there's overlap between the stimuli with these IOIs
-        stimulus_durations = [len(stim.samples) / self.fs * 1000 for stim in stimuli]
+        stimulus_durations = [stim.duration_ms for stim in stimuli]
         combio._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
 
         # Make sound which saves the samples to self.samples
         self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
 
     def __str__(self):
+        # Name of the StimSequence
+        name = self.name if self.name else "Not provided"
 
-        if self.name:
-            name = self.name
-        else:
-            name = "Not provided"
-
-        if np.all(self.stim_names is None):
+        # Names of the stimuli
+        if all(self.stim_names is None):
             stim_names = "None provided"
         else:
             stim_names = []
             for stim_name in self.stim_names:
-                if stim_name is None:
-                    stim_names.append("Unknown")
-                else:
-                    stim_names.append(stim_name)
+                stim_names.append(stim_name if stim_name else "Unknown")
 
-        if self.metrical:
-            return (f"\n"
-                    f"Object of type StimSequence (metrical version):\n"
-                    f"StimSequence name: {name}\n"
-                    f"{len(self.onsets)} events\n"
-                    f"IOIs: {self.iois}\n"
-                    f"Onsets: {self.onsets}\n"
-                    f"Stimulus names: {stim_names}\n")
-        else:
-            return (f"\n"
-                    f"Object of type StimSequence (non-metrical version):\n"
-                    f"StimSequence name: {name}\n"
-                    f"{len(self.onsets)} events\n"
-                    f"IOIs: {self.iois}\n"
-                    f"Onsets: {self.onsets}\n"
-                    f"Stimulus names: {stim_names}\n")
+        metricality = "(metrical version)" if self.metrical else "(non-metrical version)"
 
-    @property
-    def mean_ioi(self) -> np.float64:
-        """The average inter-onset interval (IOI) in milliseconds."""
-        return np.float64(np.mean(self.iois))
-
-    @property
-    def duration_ms(self) -> np.float64:
-        """The total duration of the object in milliseconds.
-        """
-        return np.float64(np.sum(self.iois))
-
-    @property
-    def duration_s(self) -> np.float64:
-        """The total duration of the object in seconds.
-        """
-        return np.float64(np.sum(self.iois) / 1000)
+        return (f"Object of type StimSequence {metricality}:\n"
+                f"{len(self.onsets)} events\n"
+                f"IOIs: {self.iois}\n"
+                f"Onsets: {self.onsets}\n"
+                f"Stimulus names: {stim_names}\n"
+                f"StimSequence name: {name}")
 
     def play(self,
              loop: bool = False,
              metronome: bool = False,
-             metronome_amplitude: float = 1.0) -> None:
+             metronome_amplitude: float = 1.0):
         """
         This method uses the :func:`sounddevice.play` to play the object's audio.
 
@@ -273,8 +252,8 @@ class StimSequence(BaseSequence):
         >>> trial.plot_waveform(,,  # doctest: +SKIP
 
         """
-        if self.name and title is None:
-            title = self.name
+        if title is None:
+            title = self.name if self.name else "StimSequence waveform"
 
         fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
                                                 style=style, title=title, figsize=figsize,
@@ -287,7 +266,6 @@ class StimSequence(BaseSequence):
                   metronome: bool = False,
                   metronome_amplitude: float = 1.0):
         """
-
         Parameters
         ----------
         filepath
@@ -306,7 +284,27 @@ class StimSequence(BaseSequence):
         >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
         """
 
-        _write_wav(self.samples, self.fs, filepath, self.name, metronome, self.mean_ioi, metronome_amplitude)
+        if metronome is True:
+            samples = combio._helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
+                                                               metronome_ioi=self.mean_ioi,
+                                                               metronome_amplitude=metronome_amplitude)
+        else:
+            samples = self.samples
+
+        # Make filepath string if it is a Path object
+        filepath = str(filepath)
+
+        # Process filepath
+        if filepath.endswith('.wav'):
+            path, filename = os.path.split(filepath)
+        elif os.path.isdir(filepath):
+            path = filepath
+            filename = f"{self.name}.wav" if self.name else "out.wav"
+        else:
+            raise ValueError("Wrong filepath specified. Please provide a directory or a complete filepath.")
+
+        # Write the wav
+        wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=samples)
 
     def _make_stimseq_sound(self, stimuli, onsets):
         """Internal function used for combining different Stimulus samples and a passed Sequence object
@@ -323,7 +321,7 @@ class StimSequence(BaseSequence):
             raise ValueError("Error during calculation of array_length")
 
         if not array_length.is_integer():  # let's avoid rounding issues
-            warnings.warn(combio._warnings.framerounding)
+            warnings.warn(combio._warnings.framerounding_stimseq)
 
         # Round off array length to ceiling if necessary
         array_length = int(np.ceil(array_length))
@@ -333,19 +331,22 @@ class StimSequence(BaseSequence):
         else:
             samples = np.zeros((array_length, 2), dtype=np.float64)
 
-        samples_with_onsets = list(zip([stimulus.samples for stimulus in stimuli], onsets))
+        samples_with_onsets = zip([stimulus.samples for stimulus in stimuli], onsets)
 
         for stimulus, onset in samples_with_onsets:
-
+            # Calculate start and end point in frames
             start_pos = onset * self.fs / 1000
             end_pos = start_pos + stimulus.shape[0]
 
+            # Check whether there was frame rounding
             if not start_pos.is_integer() or not end_pos.is_integer():
-                warnings.warn(combio._warnings.framerounding)
+                warnings.warn(combio._warnings.framerounding_stimseq)
 
+            # Now we can safely round
             start_pos = int(start_pos)
             end_pos = int(end_pos)
 
+            # Add the stimulus to the samples array. For stereo, do this for both channels.
             if self.n_channels == 1:
                 samples[start_pos:end_pos] = stimulus
             elif self.n_channels == 2:
@@ -355,33 +356,8 @@ class StimSequence(BaseSequence):
         self.event_durations = np.array([stim.duration_ms for stim in stimuli])
 
         # return sound
-
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
             return combio._helpers.normalize_audio(samples)
         else:
             return samples
-
-
-def _write_wav(samples, fs, out_path, name, metronome, metronome_ioi, metronome_amplitude):
-    """Internal function used for writing a .wav to disk."""
-    if metronome is True:
-        samples = combio._helpers.get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
-    else:
-        samples = samples
-
-    out_path = str(out_path)
-
-    if out_path.endswith('.wav'):
-        path, filename = os.path.split(out_path)
-    elif os.path.isdir(out_path):
-        path = out_path
-        if name:
-            filename = f"{name}.wav"
-        else:
-            filename = f"out.wav"
-
-    else:
-        raise ValueError("Wrong out_path specified. Please provide a directory or a complete filepath.")
-
-    wavfile.write(filename=os.path.join(path, filename), rate=fs, data=samples)

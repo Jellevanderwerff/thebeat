@@ -330,7 +330,7 @@ def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     return np.float64(npvi)
 
 
-def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list[float], np.ndarray[float]],
              theoretical_ioi: float,
              output_statistic: str = 'mean') -> np.float64:
     """

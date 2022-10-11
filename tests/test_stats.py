@@ -11,7 +11,7 @@ def test_ugof():
 def test_ks():
     rng = np.random.default_rng(seed=123)
     seq = Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
-    assert ks_test(seq.iois)[0] == 0.27372626598286903
+    assert ks_test(seq.iois)[0] == 0.2724021511351798
 
 
 def test_npvi():

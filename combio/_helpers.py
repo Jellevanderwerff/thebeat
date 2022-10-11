@@ -2,7 +2,7 @@ import os
 import importlib.resources as pkg_resources
 import warnings
 
-from combio._warnings import framerounding
+from combio._warnings import framerounding_soundsynthesis
 
 import scipy.signal
 
@@ -23,23 +23,23 @@ import matplotlib.image as mpimg
 try:
     import abjad
 except ImportError:
-    abjad
+    abjad = None
 
 
-# todo Fix type hints
-def all_possibilities(nums, target):
+def all_possibilities(numbers: list, target: float) -> np.typing.NDArray[np.object]:
     """
-    I stole this code
+    Use a deep-first search to find all possible combinations of 'numbers' that sum to 'target'.
+    Returns a NumPy array of NumPy arrays (with dtype=object to allow nested array).
     """
 
     res = []
-    nums.sort()
+    numbers.sort()
 
     def dfs(left, path):
         if not left:
             res.append(np.array(path))
         else:
-            for val in nums:
+            for val in numbers:
                 if val > left:
                     break
                 current_path = np.append(path, val)
@@ -50,19 +50,24 @@ def all_possibilities(nums, target):
     return np.array(res, dtype=object)
 
 
-# todo Fix type hints
 def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
                         time_signature: tuple[int, int]):
     # Find common denominator so we can work with integers, rather than floats
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
 
+    # Which numerators are allowed?
     allowed_numerators = common_denom // np.array(allowed_note_values)
 
+    # How much do we need for one bar?
     full_bar = time_signature[0] * (1 / time_signature[1])
+
     # The target is the desired length that should be returned by the deep first search.
     target = int(full_bar * common_denom)
 
+    # Get all combinations of allowed_numerators that sum to target
     possibilities = all_possibilities(allowed_numerators, target)
+
+    # Convert integers back to floats
     out_array = possibilities / common_denom
 
     return out_array
@@ -80,12 +85,11 @@ def check_for_overlap(stimulus_durations, onsets):
             pass
 
 
-# todo Fix type hints
-
 def get_major_scale(tonic: str,
                     octave: int):
     if abjad is None:
-        raise ImportError("This requires the abjad package")
+        raise ImportError("This function requires the abjad package. Install, for instance by typing "
+                          "'pip install abjad' into your terminal.")
 
     intervals = "M2 M2 m2 M2 M2 M2 m2".split()
     intervals = [abjad.NamedInterval(_) for _ in intervals]
@@ -162,7 +166,6 @@ def join_rhythms(iterator):
 
     iois = [rhythm.iois for rhythm in iterator]
     iois = np.concatenate(iois)
-    n_bars = int(np.sum([rhythm.n_bars for rhythm in iterator]))
 
     return combio.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
@@ -425,7 +428,7 @@ def synthesize_sound(duration_ms: int,
     # Check whether
     n_samples = fs * t
     if not n_samples.is_integer():
-        warnings.warn(combio._warnings.framerounding)
+        warnings.warn(combio._warnings.framerounding_soundsynthesis)
     n_samples = int(np.ceil(n_samples))
 
     samples = np.arange(n_samples, dtype=np.float64) / fs
