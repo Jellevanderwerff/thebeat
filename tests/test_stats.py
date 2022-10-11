@@ -25,5 +25,3 @@ def test_acf():
     fig, ax = acf_plot(seq, resolution_ms=1, smoothing_window=50, smoothing_sd=10, suppress_display=True)
     assert fig
     assert ax
-
-

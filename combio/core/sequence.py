@@ -1,18 +1,14 @@
 from __future__ import annotations
-
 from fractions import Fraction
 from typing import Optional, Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-
 import combio._helpers
 
 
 class BaseSequence:
-    """
-    This is the most basic of classes that the Sequence class inherits from, as well as the Rhythm class.
+    """This is the most basic of classes that the Sequence class inherits from, as well as the Rhythm class.
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either be metrical or not.
@@ -136,7 +132,7 @@ class Sequence(BaseSequence):
     """
 
     def __init__(self,
-                 iois: Union[list[float], np.ndarray[float]],
+                 iois: npt.ArrayLike[float],
                  first_onset: float = 0.0,
                  metrical: bool = False,
                  name: Optional[str] = None):
@@ -147,7 +143,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         iois
-            An array or list containing inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
+            An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         metrical
             Indicates whether sequence has an extra final inter-onset interval; this is useful for musical/rhythmical
             sequences.
@@ -197,12 +193,11 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_integer_ratios(cls,
-                            numerators: Union[np.ndarray, list],
+                            numerators: npt.ArrayLike[float],
                             value_of_one: float,
                             metrical: bool = False,
                             name: Optional[str] = None) -> Sequence:
-        """
-        This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
+        """This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
         See :py:attr:`Sequence.integer_ratios` for explanation.
 
         Parameters
@@ -235,8 +230,7 @@ class Sequence(BaseSequence):
     def from_onsets(cls,
                     onsets: Union[np.ndarray[float], list[float]],
                     name: Optional[str] = None) -> Sequence:
-        """
-        Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
+        """Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
 
         Parameters
         ----------
@@ -266,8 +260,7 @@ class Sequence(BaseSequence):
                                rng: Optional[np.random.Generator] = None,
                                metrical: bool = False,
                                name: Optional[str] = None) -> Sequence:
-        """
-        Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
+        """Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
         normal distribution.
 
         Parameters
@@ -316,8 +309,7 @@ class Sequence(BaseSequence):
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
                                 name: Optional[str] = None) -> Sequence:
-        """
-        Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
+        """Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
 
         Parameters
         ----------
@@ -366,8 +358,7 @@ class Sequence(BaseSequence):
                                 metrical: bool = False,
                                 name: Optional[str] = None) -> Sequence:
 
-        """
-        Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
+        """Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
 
         Parameters
         ----------
@@ -409,9 +400,7 @@ class Sequence(BaseSequence):
                                     rng: Optional[np.random.Generator] = None,
                                     metrical: bool = False,
                                     name: Optional[str] = None) -> Sequence:
-        """
-
-        Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
+        """Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
 
         Parameters
         ----------
@@ -495,8 +484,7 @@ class Sequence(BaseSequence):
     def add_noise_gaussian(self,
                            noise_sd: float,
                            rng: Optional[np.random.Generator] = None):
-        """
-        This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
+        """This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
         of ``noise_sd``.
 
@@ -527,10 +515,9 @@ class Sequence(BaseSequence):
 
     def change_tempo(self,
                      factor: float):
-        """
-        Change the tempo of the Sequence object, where a factor of 1 or bigger increases the tempo (but results in
-        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
-        inter-onset intervals).
+        """Change the tempo of the :py:`Sequence` object, where a factor of 1 or bigger increases the tempo 
+        (but results in smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in 
+        larger inter-onset intervals).
 
         Parameters
         ----------
@@ -554,14 +541,13 @@ class Sequence(BaseSequence):
 
     def change_tempo_linearly(self,
                               total_change: float):
-        """
-        This method can be used for creating a ritardando or accelerando effect in the inter-onset intervals (IOIs).
+        """Create a ritardando or accelerando effect in the inter-onset intervals (IOIs).
         It divides the IOIs by a vector linearly spaced between 1 and ``total_change``.
 
         Parameters
         ----------
         total_change
-            Total tempo change at the end of the Sequence compared to the beginning.
+            Total tempo change at the end of the `Sequence` compared to the beginning.
             So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.
             A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.
 
@@ -579,9 +565,7 @@ class Sequence(BaseSequence):
 
     def round_onsets(self,
                      decimals: int = 0):
-        """
-
-        Use this function to round off the :py:`Sequence` object's onsets (i.e. *t* values). This can, for instance,
+        """Use this function to round off the :py:`Sequence` object's onsets (i.e. *t* values). This can, for instance,
         be useful to get rid of warnings that are the result of frame rounding. See e.g. :py:`StimSequence.__init__`.
 
         Parameters
@@ -598,7 +582,7 @@ class Sequence(BaseSequence):
                       style: str = 'seaborn',
                       title: Optional[str] = None,
                       x_axis_label: str = "Time",
-                      linewidth: Optional[list[float], np.typing.NDArray[float], float] = None,
+                      linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
                       figsize: Optional[tuple] = None,
                       suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
@@ -639,7 +623,7 @@ class Sequence(BaseSequence):
         elif isinstance(linewidth, float):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
-            linewidths = linewidth
+            linewidths = np.array(linewidth)
 
         # Plot the sequence
         fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
@@ -651,8 +635,7 @@ class Sequence(BaseSequence):
 
     @property
     def integer_ratios(self) -> np.ndarray:
-        r"""
-        This property calculates how to describe a sequence of IOIs in integer ratio numerators from
+        r"""Calculate how to describe a sequence of IOIs in integer ratio numerators from
         the total duration of the sequence by finding the least common multiplier.
 
         Example
@@ -674,6 +657,7 @@ class Sequence(BaseSequence):
         [1 2 4 1]
 
         """
+
         fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
 
@@ -683,8 +667,7 @@ class Sequence(BaseSequence):
 
     @property
     def interval_ratios_from_dyads(self) -> np.ndarray:
-        r"""
-        This property returns sequential interval ratios, calculated as:
+        r"""Return sequential interval ratios, calculated as:
         :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
 
         Note that for *n* IOIs this property returns *n*-1 ratios.
@@ -703,4 +686,5 @@ class Sequence(BaseSequence):
 
         """
 
-        return np.array([self.iois[k] / (self.iois[k] + self.iois[k + 1]) for k in range(len(self.iois) - 1)])
+        iois = self.iois
+        return iois[:-1] / (iois[1:] + iois[:-1])
