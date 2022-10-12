@@ -201,9 +201,10 @@ class Sequence(BaseSequence):
     def from_integer_ratios(cls,
                             numerators: npt.ArrayLike[float],
                             value_of_one: float,
-                            metrical: bool = False,
-                            name: Optional[str] = None) -> Sequence:
-        """This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
+                            **kwargs) -> Sequence:
+        """
+
+        This class method can be used to construct a new :py:class:`Sequence` object on the basis of integer ratios.
         See :py:attr:`Sequence.integer_ratios` for explanation.
 
         Parameters
@@ -214,12 +215,8 @@ class Sequence(BaseSequence):
             This represents the duration of the 1, multiples of this value are used.
             For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a :py:class:`Sequence` with
             IOIs: ``[1000 2000]``.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`). Defaults to ``False``.
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -230,22 +227,23 @@ class Sequence(BaseSequence):
         """
 
         numerators = np.array(numerators)
-        return cls(numerators * value_of_one, metrical=metrical, name=name)
+        return cls(numerators * value_of_one, **kwargs)
 
     @classmethod
     def from_onsets(cls,
                     onsets: Union[np.ndarray[float], list[float]],
-                    name: Optional[str] = None) -> Sequence:
-        """Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
+                    **kwargs) -> Sequence:
+        """
+        Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
 
         Parameters
         ----------
         onsets
             An array or list containg event onsets, for instance: ``[0, 500, 1000]``. The onsets do not have to
             start with zero.
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor (excluding
+            ``first_onset`` and ``metrical``, which are set by this method).
 
 
         Examples
@@ -255,8 +253,7 @@ class Sequence(BaseSequence):
         [500. 500.]
         """
         iois = np.diff(onsets)
-
-        return cls(iois, first_onset=onsets[0], metrical=False, name=name)
+        return cls(iois, first_onset=onsets[0], metrical=False, **kwargs)
 
     @classmethod
     def generate_random_normal(cls,
@@ -265,8 +262,9 @@ class Sequence(BaseSequence):
                                sigma: float,
                                rng: Optional[np.random.Generator] = None,
                                metrical: bool = False,
-                               name: Optional[str] = None) -> Sequence:
-        """Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
+                               **kwargs) -> Sequence:
+        """
+        Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
         normal distribution.
 
         Parameters
@@ -283,10 +281,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
-
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
         Examples
         --------
@@ -305,7 +301,7 @@ class Sequence(BaseSequence):
         # Number of IOIs depends on metricality
         n_iois = n if metrical else n - 1
 
-        return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), metrical=metrical, name=name)
+        return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_uniform(cls,
@@ -314,8 +310,9 @@ class Sequence(BaseSequence):
                                 b: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: Optional[str] = None) -> Sequence:
-        """Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
+                                **kwargs) -> Sequence:
+        """
+        Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
 
         Parameters
         ----------
@@ -331,9 +328,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -354,7 +350,8 @@ class Sequence(BaseSequence):
         # Number of IOIs depends on metricality
         n_iois = n if metrical else n - 1
 
-        return cls(rng.uniform(low=a, high=b, size=n_iois), metrical=metrical, name=name)
+        iois = rng.uniform(low=a, high=b, size=n_iois)
+        return cls(iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_poisson(cls,
@@ -362,9 +359,10 @@ class Sequence(BaseSequence):
                                 lam: float,
                                 rng: Optional[np.random.Generator] = None,
                                 metrical: bool = False,
-                                name: Optional[str] = None) -> Sequence:
+                                **kwargs) -> Sequence:
 
-        """Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
+        """
+        Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
 
         Parameters
         ----------
@@ -378,9 +376,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -397,7 +394,7 @@ class Sequence(BaseSequence):
         # Number of IOIs depends on metricality
         n_iois = n if metrical else n - 1
 
-        return cls(rng.poisson(lam=lam, size=n_iois), metrical=metrical, name=name)
+        return cls(rng.poisson(lam=lam, size=n_iois), metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_exponential(cls,
@@ -405,7 +402,7 @@ class Sequence(BaseSequence):
                                     lam: float,
                                     rng: Optional[np.random.Generator] = None,
                                     metrical: bool = False,
-                                    name: Optional[str] = None) -> Sequence:
+                                    **kwargs) -> Sequence:
         """Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
 
         Parameters
@@ -420,9 +417,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -438,14 +434,14 @@ class Sequence(BaseSequence):
 
         n_iois = n if metrical else n - 1
 
-        return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, name=name)
+        return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, **kwargs)
 
     @classmethod
     def generate_isochronous(cls,
                              n: int,
                              ioi: float,
                              metrical: bool = False,
-                             name: Optional[str] = None) -> Sequence:
+                             **kwargs) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
         Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to integers.
@@ -459,9 +455,8 @@ class Sequence(BaseSequence):
         metrical
             Indicates whether a metrical or non-metrical sequence should be generated
             (see :py:attr:`Sequence.metrical`).
-        name
-            If desired, one can give a sequence a name. This is for instance used when printing the sequence,
-            or when plotting the sequence. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
 
         Examples
@@ -484,7 +479,7 @@ class Sequence(BaseSequence):
 
         n_iois = n if metrical else n - 1
 
-        return cls([ioi] * n_iois, metrical=metrical, name=name)
+        return cls([ioi] * n_iois, metrical=metrical, **kwargs)
 
     # Manipulation methods
     def add_noise_gaussian(self,
@@ -520,10 +515,10 @@ class Sequence(BaseSequence):
         self.iois += rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self,
-                     factor: float):
-        """Change the tempo of the :py:`Sequence` object, where a factor of 1 or bigger increases the tempo 
-        (but results in smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in 
-        larger inter-onset intervals).
+                     factor: float) -> None:
+        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the tempo (but results in
+        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
+        inter-onset intervals).
 
         Parameters
         ----------
@@ -571,8 +566,8 @@ class Sequence(BaseSequence):
 
     def round_onsets(self,
                      decimals: int = 0):
-        """Use this function to round off the :py:`Sequence` object's onsets (i.e. *t* values). This can, for instance,
-        be useful to get rid of warnings that are the result of frame rounding. See e.g. :py:`StimSequence.__init__`.
+        """Use this function to round off the `Sequence` object's onsets (i.e. *t* values). This can, for instance,
+        be useful to get rid of warnings that are the result of frame rounding. See e.g. `StimSequence.__init__`.
 
         Parameters
         ----------
