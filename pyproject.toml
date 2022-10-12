@@ -31,7 +31,8 @@ dynamic = ["version"]
 [tool.setuptools]
 packages = [
     "thebeat",
-    "thebeat.core"
+    "thebeat.core",
+    "thebeat.resources"
 ]
 
 [tool.setuptools.dynamic]

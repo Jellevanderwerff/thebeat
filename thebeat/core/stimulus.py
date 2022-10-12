@@ -5,10 +5,13 @@ from typing import Optional, Union
 import numpy as np
 import sounddevice as sd
 from matplotlib import pyplot as plt
-from mingus.containers import Note
 import scipy.io
 import scipy.signal
 import thebeat._helpers
+try:
+    import abjad
+except ImportError:
+    abjad = None
 
 
 class Stimulus:
@@ -208,17 +211,21 @@ class Stimulus:
 
         """
 
+        if abjad is None:
+            raise ImportError("This method requires the abjad package. Please install, for instance by typing "
+                              "'pip install abjad' in your terminal.")
+
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
         note_strings = [string for string in note_strings if string != '']
 
         if len(note_strings) == 1:
-            freq = Note(note_strings[0]).to_hertz()
-
+            freq = abjad.NamedPitch(note_strings[0], octave=4).hertz
         elif len(note_strings) == 2:
-            note, num = tuple(note_strings)
-            freq = Note(note, int(num)).to_hertz()
+            freq = abjad.NamedPitch(note_strings[0], octave=note_strings[1]).hertz
         else:
-            raise ValueError("Provide one note as either e.g. 'G' or 'G4' ")
+            raise ValueError("Please provide a string of format 'G' or 'G4'.")
+
+        print(freq)
 
         return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration_ms, amplitude=amplitude, oscillator=oscillator,
                                  onramp=onramp, offramp=offramp, ramp_type=ramp, name=name)
@@ -234,7 +241,7 @@ class Stimulus:
         Parameters
         ----------
         sound_object : :class:`parselmouth.Sound` object
-            The to-be imported Parselmouth Sound object
+            The to-be imported Parselmouth Sound object.
         name : str, optional
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
             A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
