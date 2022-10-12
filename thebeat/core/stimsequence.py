@@ -135,6 +135,9 @@ class StimSequence(BaseSequence):
                 f"StimSequence name: {name}")
 
     def __repr__(self):
+        if self.name:
+            return f"StimSequence(name={self.name}, n_events={len(self.onsets)})"
+
         return f"StimSequence(n_events={len(self.onsets)})"
 
     def play(self,
@@ -219,9 +222,11 @@ class StimSequence(BaseSequence):
 
         linewidths = self.event_durations
 
-        fig, ax = thebeat.visualization.plot_single_sequence(sequence=self.onsets, style=style, title=title,
-                                                             linewidths=linewidths, figsize=figsize,
-                                                             suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical,
+                                                        final_ioi=self.iois[-1],
+                                                        style=style, title=title,
+                                                        linewidths=linewidths, figsize=figsize,
+                                                        suppress_display=suppress_display)
 
         return fig, ax
 

@@ -293,7 +293,9 @@ def plot_lp(lp,
     return plt.gca(), plt.gcf()
 
 
-def plot_sequence_single(onsets: Union[list[float], npt.NDArray[float]],
+def plot_single_sequence(onsets: Union[list, np.ndarray],
+                         metrical: bool,
+                         final_ioi: np.typing.ArrayLike = None,
                          style: str = 'seaborn',
                          title: Optional[str] = None,
                          x_axis_label: str = "Time",
@@ -310,10 +312,9 @@ def plot_sequence_single(onsets: Union[list[float], npt.NDArray[float]],
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
+        right_x_lim = onsets[-1] + final_ioi if metrical else onsets[-1] + linewidths[-1]
+        ax.set_xlim(0, right_x_lim)
         ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
-        # Make sure we always have 0 on the left side of the x axis
-        current_lims = ax.get_xlim()
-        ax.set_xlim(0, current_lims[1])
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 

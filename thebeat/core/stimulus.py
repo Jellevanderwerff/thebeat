@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 import scipy.io
 import scipy.signal
 import thebeat._helpers
+
 try:
     import abjad
 except ImportError:
@@ -74,6 +75,8 @@ class Stimulus:
                 f"Sampling frequency {self.fs}")
 
     def __repr__(self):
+        if self.name:
+            return f"Stimulus(name={self.name}, duration_ms={self.duration_ms})"
         return f"Stimulus(duration_ms={self.duration_ms})"
 
     @classmethod
@@ -111,7 +114,7 @@ class Stimulus:
     def generate(cls,
                  freq: int = 440,
                  fs: int = 48000,
-                 duration_ms: int = 50,
+                 duration: int = 50,
                  n_channels: int = 1,
                  amplitude: float = 1.0,
                  oscillator: str = 'sine',
@@ -129,7 +132,7 @@ class Stimulus:
             The pitch frequency in hertz.
         fs
             The sampling frequency in hertz.
-        duration_ms
+        duration
             The duration in milliseconds.
         n_channels
             The number of channels. 1 for mono, 2 for stereo.
@@ -156,7 +159,7 @@ class Stimulus:
         """
 
         # Generate signal
-        samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
+        samples = thebeat._helpers.synthesize_sound(duration_ms=duration, fs=fs, freq=freq, n_channels=n_channels,
                                                     amplitude=amplitude, oscillator=oscillator)
 
         # Make ramps
@@ -168,7 +171,7 @@ class Stimulus:
     @classmethod
     def from_note(cls,
                   note_str: str,
-                  duration_ms: int = 50,
+                  duration: int = 50,
                   fs: int = 48000,
                   amplitude: float = 1.0,
                   oscillator: str = 'sine',
@@ -184,7 +187,7 @@ class Stimulus:
         ----------
         note_str
             A note as a string. Can either be provided as ``'G'`` or ``'G4'``.
-        duration_ms
+        duration
             The duration in milliseconds.
         fs
             The sampling frequency in hertz.
@@ -205,9 +208,9 @@ class Stimulus:
 
         Examples
         --------
-        >>> stim = Stimulus.from_note('G', duration_ms=20)
+        >>> stim = Stimulus.from_note('G',duration=20)
 
-        >>> stim = Stimulus.from_note('G4', onramp=10, offramp=10, ramp='raised-cosine')
+        >>> stim = Stimulus.from_note('G4',onramp=10,offramp=10,ramp='raised-cosine')
 
         """
 
@@ -225,9 +228,7 @@ class Stimulus:
         else:
             raise ValueError("Please provide a string of format 'G' or 'G4'.")
 
-        print(freq)
-
-        return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration_ms, amplitude=amplitude, oscillator=oscillator,
+        return Stimulus.generate(freq=freq, fs=fs, duration=duration, amplitude=amplitude, oscillator=oscillator,
                                  onramp=onramp, offramp=offramp, ramp_type=ramp, name=name)
 
     @classmethod

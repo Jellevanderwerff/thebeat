@@ -98,7 +98,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 f"Onsets:{self.onsets}\n")
 
     def __repr__(self):
-        return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature}, beat_ms={self.beat_ms})"
+        if self.name:
+            return f"Rhythm(name={self.name}, n_bars={self.n_bars}"
+
+        return f"Rhythm(n_bars={self.n_bars}"
 
     def __add__(self, other):
         return thebeat._helpers.join_rhythms([self, other])

@@ -116,7 +116,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
         # Call BaseSequence constructor
         super().__init__(iois=rhythm.iois, metrical=True, name=name)
 
+    # todo add __str__
+
     def __repr__(self):
+        if self.name:
+            return f"Melody(name={self.name}, n_bars={self.n_bars}, key={self.key})"
+
         return f"Melody(n_bars={self.n_bars}, key={self.key})"
 
     @classmethod

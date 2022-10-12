@@ -174,6 +174,9 @@ class Sequence(BaseSequence):
                 f"Sequence name: {name}\n")
 
     def __repr__(self):
+        if self.name:
+            f"Sequence(name={self.name}, iois={np.array2string(self.iois, threshold=8, precision=2)})"
+
         return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
 
     def __add__(self, other):
@@ -628,9 +631,12 @@ class Sequence(BaseSequence):
         else:
             linewidths = np.array(linewidth)
 
+        # If the sequence is metrical we also want to plot the final ioi
+        final_ioi = self.iois[-1] if self.metrical else None
+
         # Plot the sequence
-        fig, ax = thebeat._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                        x_axis_label=x_axis_label,
+        fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
+                                                        style=style, title=title, x_axis_label=x_axis_label,
                                                         linewidths=linewidths, figsize=figsize,
                                                         suppress_display=suppress_display)
 

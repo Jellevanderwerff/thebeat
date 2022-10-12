@@ -6,96 +6,6 @@ import thebeat._helpers
 import numpy as np
 
 
-def plot_single_sequence(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list[float], np.ndarray[float]],
-                         style: str = 'seaborn',
-                         title: Optional[str] = None,
-                         x_axis_label: str = "Time",
-                         linewidths: Optional[Union[list[float], np.ndarray[float], float]] = None,
-                         figsize: Optional[tuple] = None,
-                         suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
-    """
-    This function may be used to plot a single sequence of event onsets.
-    Either pass it a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object,
-    or a list or array of event onsets in milliseconds.
-
-    This function is internally used by the :meth:`thebeat.core.Sequence.plot` and
-    :meth:`thebeat.core.StimSequence.plot_sequence` methods.
-
-    Parameters
-    ----------
-    sequence
-        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or an list
-        or an array of event onsets, e.g. ``[0, 500, 1000]``. If using a list or array, 0 is not required.
-    style
-        Matplotlib style to use for the plot. See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-    title
-        If desired, one can provide a title for the plot. This takes precedence over using the
-        StimSequence name as the title of the plot (if the object has one).
-    x_axis_label
-        A label for the x axis.
-    linewidths
-        A list or array containing the desired width of the bars (events) in data points.
-        If a single int is provided, this width is used for all the bars. Defaults to 1/10th of the smallest IOI.
-    figsize
-        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-    suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
-
-    Examples
-    --------
-    >>> seq = thebeat.core.Sequence.generate_isochronous(n=5, ioi=500)
-    >>> plot_single_sequence(seq)  # doctest: +SKIP
-
-    >>> seq = [0, 500, 1000, 1500]
-    >>> plot_single_sequence(seq)  # doctest: +SKIP
-
-    """
-
-    # Input validation, get onsets, set linewidths (the widths of the bars) and title.
-    if isinstance(sequence, thebeat.core.Sequence):
-        # onsets
-        onsets = sequence.onsets
-        # linewidths
-        if linewidths is None:
-            linewidths = [np.min(np.diff(onsets))/10] * len(onsets)
-        # title
-        if sequence.name and title is None:
-            title = sequence.name
-
-    elif isinstance(sequence, thebeat.core.StimSequence):
-        # onsets
-        onsets = sequence.onsets
-        # linewidths
-        linewidths = sequence.event_durations
-        # title
-        if sequence.name and title is None:
-            title = sequence.name
-
-    elif isinstance(sequence, (list, np.ndarray)):
-        # onsets
-        onsets = sequence
-        # linewidths
-        if linewidths is None:
-            linewidths = [np.min(np.diff(onsets))/10] * len(onsets)
-        # title
-        title = title
-
-    else:
-        raise ValueError("Please provide a Sequence object, a StimSequence object, "
-                         "or an iterable of event onsets.")
-
-    # If single value linewidth is passed, use that for each event.
-    if isinstance(linewidths, int):
-        linewidths = [linewidths] * len(onsets)
-
-    fig, ax = thebeat._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, x_axis_label=x_axis_label,
-                                                    linewidths=linewidths, figsize=figsize,
-                                                    suppress_display=suppress_display)
-    return fig, ax
-
-
 def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn',
                             sequence_names: Optional[list[str], np.ndarray[str]] = None,
@@ -104,9 +14,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False):
-    """
 
-    Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
+    """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
     Parameters
@@ -195,6 +104,5 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     return fig, ax
 
 
-def plot_multiple_rhythms(rhythms):
+def recurrence_plot():
     raise NotImplementedError
-

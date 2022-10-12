@@ -5,3 +5,4 @@ Use case scenarios
    :maxdepth: 1
    :caption: Use case scenarios:
    
+   usecases/oddball

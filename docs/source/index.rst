@@ -1,5 +1,5 @@
-Welcome to Combio package's documentation!
-==========================================
+Welcome to *thebeat*
+====================
 
 Awesome that you're here. Here's a picture of a seal:
 
