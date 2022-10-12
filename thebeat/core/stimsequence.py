@@ -102,6 +102,7 @@ class StimSequence(BaseSequence):
         self.name = name
         self.stim_names = [stimulus.name for stimulus in stimuli]
         self.metrical = sequence.metrical
+        self.stim_objects = stimuli
 
         # Initialize Sequence class
         BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
@@ -222,9 +223,20 @@ class StimSequence(BaseSequence):
 
         linewidths = self.event_durations
 
-        fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical,
-                                                        final_ioi=self.iois[-1],
-                                                        style=style, title=title,
+        # If we're dealing with a long StimSequence, plot seconds instead of milliseconds
+        if np.max(self.onsets) > 1000:
+            linewidths /= 1000
+            onsets = self.onsets / 1000
+            x_axis_label = "Time (s)"
+            final_ioi = self.iois[-1] / 1000
+        else:
+            onsets = self.onsets
+            x_axis_label = "Time (ms)"
+            final_ioi = self.iois[-1]
+
+        fig, ax = thebeat._helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
+                                                        final_ioi=final_ioi,
+                                                        style=style, title=title, x_axis_label=x_axis_label,
                                                         linewidths=linewidths, figsize=figsize,
                                                         suppress_display=suppress_display)
 
@@ -369,3 +381,4 @@ class StimSequence(BaseSequence):
             return thebeat._helpers.normalize_audio(samples)
         else:
             return samples
+
