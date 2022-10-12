@@ -269,10 +269,10 @@ class StimSequence(BaseSequence):
         Examples
         --------
         >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=10, ioi=500))
-        >>> trial.plot_waveform(,,  # doctest: +SKIP
+        >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
-        if title is None:
+        if not title:
             title = self.name if self.name else "StimSequence waveform"
 
         fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,

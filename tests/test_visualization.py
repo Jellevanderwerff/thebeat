@@ -1,19 +1,5 @@
 from thebeat.core import Stimulus, StimSequence, Sequence
-from thebeat.visualization import plot_single_sequence, plot_multiple_sequences
-import random
-
-
-def test_event_plot_single():
-    seq = Sequence([500, 200, 1000])
-    stims = [Stimulus.generate(),
-             Stimulus.generate(),
-             Stimulus.generate(),
-             Stimulus.generate()]
-    trial = StimSequence(stims, seq)
-    plot_single_sequence(trial, style='seaborn', suppress_display=True)
-
-    fig, ax = plot_single_sequence([50, 500, 1000], linewidths=50)
-    assert fig, ax
+from thebeat.visualization import plot_multiple_sequences
 
 
 def test_event_plot_multiple():
