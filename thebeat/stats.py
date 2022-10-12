@@ -3,13 +3,13 @@ from typing import Union, Optional
 import scipy.stats
 import scipy.fft
 import numpy as np
-import combio.core
+import thebeat.core
 import matplotlib.pyplot as plt
 import scipy.signal
 import pandas as pd
 
 
-def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
            resolution_ms: int = 1,
            smoothing_window: Optional[float] = None,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
@@ -22,7 +22,7 @@ def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list,
     ----------
 
     sequence
-        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or a list or an
+        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or a list or an
         array containing event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
     resolution_ms
         The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
@@ -47,7 +47,7 @@ def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list,
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)  # for reproducability
-    >>> seq = combio.core.Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
     >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
     >>> print(df.head(3))
        time_ms  correlation
@@ -74,7 +74,7 @@ def acf_df(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list,
     return df
 
 
-def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
              resolution_ms: int = 1,
              smoothing_window: Optional[float] = None,
              smoothing_sd: Optional[float] = None,
@@ -84,13 +84,13 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
 
-    This function can be used for plotting an autocorrelation plot from a :class:`~combio.core.Sequence` or
-    :class:`~combio.core.StimSequence` object, or from a list or an array of event onsets.
+    This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence` or
+    :class:`~thebeat.core.StimSequence` object, or from a list or an array of event onsets.
 
     Parameters
     ----------
     sequence
-        Either a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object,
+        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
         or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
     resolution_ms
         The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
@@ -106,7 +106,7 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` name as the title of the plot
+        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` name as the title of the plot
         (if passed and the object has one).
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
@@ -121,7 +121,7 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
 
     """
 
-    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -160,13 +160,13 @@ def acf_plot(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     return fig, ax
 
 
-def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
                resolution_ms: int = 1,
                smoothing_window: Optional[float] = None,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
 
-    This function takes a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object,
+    This function takes a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
     or a list of event onsets, and returns an array with steps of ``resolution_ms`` of unstandardized correlation
     factors.
 
@@ -193,7 +193,7 @@ def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, l
 
     """
 
-    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
         onsets_ms = sequence.onsets
     else:
         onsets_ms = sequence
@@ -218,7 +218,7 @@ def acf_values(sequence: Union[combio.core.Sequence, combio.core.StimSequence, l
     return correlation
 
 
-def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray],
+def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -231,7 +231,7 @@ def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list
     Parameters
     ----------
     sequence
-        Either a :class:`~combio.core.Sequence` or :class:`~combio.core.StimSequence` object or an iterable (e.g. list)
+        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object or an iterable (e.g. list)
         containing inter-onset intervals (IOIs), e.g. ``[500, 500, 500]``.
     reference_distribution
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
@@ -253,13 +253,13 @@ def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = combio.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
     >>> print(ks_test(seq))
     KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911)
 
     """
 
-    if isinstance(sequence, (combio.core.Sequence, combio.core.StimSequence)):
+    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.StimSequence)):
         sequence = sequence.iois
 
     if reference_distribution == 'normal':
@@ -277,7 +277,7 @@ def ks_test(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list, np.ndarray]) -> np.float64:
+def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray]) -> np.float64:
     """
 
     This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
@@ -303,17 +303,17 @@ def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
 
     Examples
     --------
-    >>> seq = combio.core.Sequence.generate_isochronous(n=10, ioi=500)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=500)
     >>> print(get_npvi(seq))
     0.0
 
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = combio.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
     >>> print(get_npvi(seq))
     37.6263174529546
     """
 
-    if isinstance(sequence, (combio.core.Sequence, combio.core.StimSequence)):
+    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.StimSequence)):
         iois = sequence.iois
     else:
         iois = np.array(sequence)
@@ -330,7 +330,7 @@ def get_npvi(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     return np.float64(npvi)
 
 
-def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list[float], np.ndarray[float]],
+def get_ugof(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list[float], np.ndarray[float]],
              theoretical_ioi: float,
              output_statistic: str = 'mean') -> np.float64:
     """
@@ -342,7 +342,7 @@ def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     Parameters
     ----------
     sequence
-        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or a list or an
+        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or a list or an
         array containing event onsets, e.g. ``[0, 500, 1000]``.
     theoretical_ioi
         The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.
@@ -362,7 +362,7 @@ def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
 
     Examples
     --------
-    >>> seq = combio.core.Sequence.generate_isochronous(n=10, ioi=1000)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=1000)
     >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
     >>> print(ugof)
     0.59636414
@@ -370,7 +370,7 @@ def get_ugof(sequence: Union[combio.core.Sequence, combio.core.StimSequence, lis
     """
 
     # Get the onsets
-    if isinstance(sequence, (combio.core.sequence.Sequence, combio.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
         onsets = sequence.onsets  # in ms
     else:
         onsets = np.array(sequence)

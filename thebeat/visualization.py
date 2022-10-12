@@ -1,12 +1,12 @@
 from __future__ import annotations
-import combio.core
+import thebeat.core
 import matplotlib.pyplot as plt
 from typing import Union, Optional
-import combio._helpers
+import thebeat._helpers
 import numpy as np
 
 
-def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimSequence, list[float], np.ndarray[float]],
+def plot_single_sequence(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list[float], np.ndarray[float]],
                          style: str = 'seaborn',
                          title: Optional[str] = None,
                          x_axis_label: str = "Time",
@@ -15,16 +15,16 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
                          suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     This function may be used to plot a single sequence of event onsets.
-    Either pass it a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object,
+    Either pass it a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object,
     or a list or array of event onsets in milliseconds.
 
-    This function is internally used by the :meth:`combio.core.Sequence.plot` and
-    :meth:`combio.core.StimSequence.plot_sequence` methods.
+    This function is internally used by the :meth:`thebeat.core.Sequence.plot` and
+    :meth:`thebeat.core.StimSequence.plot_sequence` methods.
 
     Parameters
     ----------
     sequence
-        Either a :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` object, or an list
+        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or an list
         or an array of event onsets, e.g. ``[0, 500, 1000]``. If using a list or array, 0 is not required.
     style
         Matplotlib style to use for the plot. See `matplotlib style sheets reference
@@ -45,7 +45,7 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
 
     Examples
     --------
-    >>> seq = combio.core.Sequence.generate_isochronous(n=5, ioi=500)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n=5, ioi=500)
     >>> plot_single_sequence(seq)  # doctest: +SKIP
 
     >>> seq = [0, 500, 1000, 1500]
@@ -54,7 +54,7 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
     """
 
     # Input validation, get onsets, set linewidths (the widths of the bars) and title.
-    if isinstance(sequence, combio.core.Sequence):
+    if isinstance(sequence, thebeat.core.Sequence):
         # onsets
         onsets = sequence.onsets
         # linewidths
@@ -64,7 +64,7 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
         if sequence.name and title is None:
             title = sequence.name
 
-    elif isinstance(sequence, combio.core.StimSequence):
+    elif isinstance(sequence, thebeat.core.StimSequence):
         # onsets
         onsets = sequence.onsets
         # linewidths
@@ -90,9 +90,9 @@ def plot_single_sequence(sequence: Union[combio.core.Sequence, combio.core.StimS
     if isinstance(linewidths, int):
         linewidths = [linewidths] * len(onsets)
 
-    fig, ax = combio._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, x_axis_label=x_axis_label,
-                                                   linewidths=linewidths, figsize=figsize,
-                                                   suppress_display=suppress_display)
+    fig, ax = thebeat._helpers.plot_sequence_single(onsets=onsets, style=style, title=title, x_axis_label=x_axis_label,
+                                                    linewidths=linewidths, figsize=figsize,
+                                                    suppress_display=suppress_display)
     return fig, ax
 
 
@@ -106,14 +106,14 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             suppress_display: bool = False):
     """
 
-    Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~combio.core.Sequence`
-    objects, :py:class:`~combio.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
+    Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
+    objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
     Parameters
     ----------
     x_axis_label
     sequences
-        A list or array of :py:class:`~combio.core.Sequence` or :py:class:`~combio.core.StimSequence` objects.
+        A list or array of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` objects.
         Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
         ``[[0, 500, 1000], [0, 600, 800], [0, 400, 550]]``.
     style
@@ -129,7 +129,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     linewidths
         An array or list of ints (e.g. ``[50, 50, 50]`` ) or nested array or list containing the desired widths of the
         bars (event durations), for instance: ``[[50, 30, 60], [20, 40, 10], [60, 30, 10]]``.
-        By default, if :py:class:`~combio.core.StimSequence` objects are passed, the event durations are used.
+        By default, if :py:class:`~thebeat.core.StimSequence` objects are passed, the event durations are used.
         In other cases, a default of 1/10th of the smallest IOI is used.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
@@ -140,7 +140,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     Examples
     --------
     >>> generator = np.random.default_rng(seed=123)
-    >>> seqs = [combio.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
+    >>> seqs = [thebeat.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
     >>> plot_multiple_sequences(seqs, linewidths=50)  # doctest: +SKIP
 
     """
@@ -148,7 +148,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     onsets = []
 
     for seq in sequences:
-        if isinstance(seq, (combio.core.Sequence, combio.core.StimSequence)):
+        if isinstance(seq, (thebeat.core.Sequence, thebeat.core.StimSequence)):
             onsets.append(seq.onsets)
         else:
             onsets.append(np.array(seq))
@@ -163,7 +163,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
     # default to 50 milliseconds).
     if linewidths is None:
-        if isinstance(sequences[0], combio.core.StimSequence):
+        if isinstance(sequences[0], thebeat.core.StimSequence):
             linewidths = [trial.event_durations for trial in sequences]
         else:
             all_iois = [sequence.iois for sequence in sequences]

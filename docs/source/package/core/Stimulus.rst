@@ -3,6 +3,6 @@ Stimulus class
 
 The Stimulus class holds an auditory stimulus. 
 
-.. autoclass:: combio.core.Stimulus
+.. autoclass:: thebeat.core.Stimulus
     :members:
     :undoc-members:

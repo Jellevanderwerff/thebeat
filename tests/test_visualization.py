@@ -1,5 +1,5 @@
-from combio.core import Stimulus, StimSequence, Sequence
-from combio.visualization import plot_single_sequence, plot_multiple_sequences
+from thebeat.core import Stimulus, StimSequence, Sequence
+from thebeat.visualization import plot_single_sequence, plot_multiple_sequences
 import random
 
 

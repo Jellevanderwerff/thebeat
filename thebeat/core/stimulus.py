@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from mingus.containers import Note
 import scipy.io
 import scipy.signal
-import combio._helpers
+import thebeat._helpers
 
 
 class Stimulus:
@@ -153,11 +153,11 @@ class Stimulus:
         """
 
         # Generate signal
-        samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
-                                                   amplitude=amplitude, oscillator=oscillator)
+        samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
+                                                    amplitude=amplitude, oscillator=oscillator)
 
         # Make ramps
-        samples = combio._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
+        samples = thebeat._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
 
         # Return class
         return cls(samples, fs, name)
@@ -345,9 +345,9 @@ class Stimulus:
         if self.name and title is None:
             title = self.name
 
-        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                style=style,
-                                                title=title, figsize=figsize, suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                 style=style,
+                                                 title=title, figsize=figsize, suppress_display=suppress_display)
 
         return fig, ax
 
@@ -384,7 +384,7 @@ class Stimulus:
 
         """
 
-        combio._helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
+        thebeat._helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],

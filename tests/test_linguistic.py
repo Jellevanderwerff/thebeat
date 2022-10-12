@@ -1,11 +1,11 @@
-import combio.linguistic
+import thebeat.linguistic
 
 
 def test_stress():
-    seq = combio.linguistic.generate_stress_timed_sequence(10)
+    seq = thebeat.linguistic.generate_stress_timed_sequence(10)
     assert len(seq.onsets) == 10
 
 
 def test_mora():
-    seq = combio.linguistic.generate_moraic_sequence(10, foot_ioi=600)
+    seq = thebeat.linguistic.generate_moraic_sequence(10, foot_ioi=600)
     assert seq.duration == 6000

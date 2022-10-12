@@ -15,20 +15,20 @@ except ImportError:
     abjad = None
 
 # Local imports
-import combio.core
-from combio._decorators import requires_lilypond
+import thebeat.core
+from thebeat._decorators import requires_lilypond
 
 
-class Rhythm(combio.core.sequence.BaseSequence):
+class Rhythm(thebeat.core.sequence.BaseSequence):
     """
     The :py:class:`Rhythm` class can be used for working sequences that are rhythmical in the musical sense.
     This means that in addition to having inter-onset intervals (IOIs) that represent the timing of the events in the
     sequence, :py:class:`Rhythm` objects have musical properties such as a time signature, a beat duration,
     and they may contain rests.
 
-    The :py:class:`Rhythm` class is also used as the basis for a :py:class:`~combio.melody.Melody`.
+    The :py:class:`Rhythm` class is also used as the basis for a :py:class:`~thebeat.melody.Melody`.
 
-    For more info on these properties, please refer to the class's :py:meth:`~combio.rhythm.Rhythm.__init__`.
+    For more info on these properties, please refer to the class's :py:meth:`~thebeat.rhythm.Rhythm.__init__`.
     """
 
     def __init__(self,
@@ -101,7 +101,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
         return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature}, beat_ms={self.beat_ms})"
 
     def __add__(self, other):
-        return combio._helpers.join_rhythms([self, other])
+        return thebeat._helpers.join_rhythms([self, other])
 
     def __len__(self):
         return len(self.onsets)
@@ -246,7 +246,7 @@ class Rhythm(combio.core.sequence.BaseSequence):
 
         iois = np.empty(0)
 
-        all_ratios = combio._helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
+        all_ratios = thebeat._helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
 
         for bar in range(n_bars):
             ratios = rng.choice(all_ratios, 1)[0]
@@ -415,6 +415,6 @@ class Rhythm(combio.core.sequence.BaseSequence):
             lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
 
         # Plot!
-        fig, ax = combio._helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax

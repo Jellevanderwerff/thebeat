@@ -1,4 +1,4 @@
-project = 'Combio package 🦭'
+project = 'thebeat'
 copyright = '2022, Jelle van der Werff & Yannick Jadoul'
 author = 'Jelle van der Werff & Yannick Jadoul'
 

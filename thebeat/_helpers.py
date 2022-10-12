@@ -2,11 +2,11 @@ import os
 import importlib.resources as pkg_resources
 import warnings
 
-from combio._warnings import framerounding_soundsynthesis
+from thebeat._warnings import framerounding_soundsynthesis
 
 import scipy.signal
 
-import combio.resources
+import thebeat.resources
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ from scipy.io import wavfile
 from scipy.signal import resample
 import sounddevice as sd
 from typing import Union, Optional
-from combio._decorators import requires_lilypond
+from thebeat._decorators import requires_lilypond
 import tempfile
 import shutil
 import subprocess
@@ -123,7 +123,7 @@ def get_sound_with_metronome(samples: np.ndarray,
 
     metronome_file = 'metronome_mono.wav' if samples.ndim == 1 else 'metronome_stereo.wav'
 
-    with pkg_resources.path(combio.resources, metronome_file) as metronome_path:
+    with pkg_resources.path(thebeat.resources, metronome_file) as metronome_path:
         metronome_fs, metronome_samples = wavfile.read(metronome_path)
 
     # resample metronome sound if provided sound has different sampling frequency
@@ -155,7 +155,7 @@ def join_rhythms(iterator):
         raise ValueError("Please pass this function a list or other iterable object.")
 
     # Check whether all the objects are of the same type
-    if not all(isinstance(rhythm, combio.rhythm.Rhythm) for rhythm in iterator):
+    if not all(isinstance(rhythm, thebeat.rhythm.Rhythm) for rhythm in iterator):
         raise ValueError("You can only join multiple Rhythm objects.")
 
     if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
@@ -167,7 +167,7 @@ def join_rhythms(iterator):
     iois = [rhythm.iois for rhythm in iterator]
     iois = np.concatenate(iois)
 
-    return combio.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
+    return thebeat.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
 def make_ramps(samples, fs, onramp, offramp, ramp_type):
@@ -428,7 +428,7 @@ def synthesize_sound(duration_ms: int,
     # Check whether
     n_samples = fs * t
     if not n_samples.is_integer():
-        warnings.warn(combio._warnings.framerounding_soundsynthesis)
+        warnings.warn(thebeat._warnings.framerounding_soundsynthesis)
     n_samples = int(np.ceil(n_samples))
 
     samples = np.arange(n_samples, dtype=np.float64) / fs

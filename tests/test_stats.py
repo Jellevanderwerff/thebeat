@@ -1,5 +1,5 @@
-from combio.stats import *
-from combio.core import Sequence
+from thebeat.stats import *
+from thebeat.core import Sequence
 import numpy as np
 
 

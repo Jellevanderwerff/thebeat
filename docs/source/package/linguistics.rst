@@ -3,7 +3,7 @@ Linguistics
 
 This module contains functions that are useful when doing (rhythmic) linguistic research.
 
-.. automodule:: combio.linguistic
+.. automodule:: thebeat.linguistic
     :members:
     :undoc-members:
 

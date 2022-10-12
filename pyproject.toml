@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "combio"
+name = "thebeat"
 description = "TODO FOR JELLE"
 authors = [
     {name = "Jelle van der Werff", email="jellevanderwerff@gmail.com"},
@@ -30,12 +30,12 @@ dynamic = ["version"]
 
 [tool.setuptools]
 packages = [
-    "combio",
-    "combio.core"
+    "thebeat",
+    "thebeat.core"
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "combio.__version__"}
+version = {attr = "thebeat.__version__"}
 
 [tool.mypy]
 ignore_missing_imports = true

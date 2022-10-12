@@ -13,15 +13,15 @@ try:
     import abjad
 except ImportError:
     abjad = None
-from combio._decorators import requires_lilypond
-import combio._warnings
-import combio.rhythm
-import combio._helpers
+from thebeat._decorators import requires_lilypond
+import thebeat._warnings
+import thebeat.rhythm
+import thebeat._helpers
 import sounddevice
 import numpy.typing as npt
 
 
-class Melody(combio.core.sequence.BaseSequence):
+class Melody(thebeat.core.sequence.BaseSequence):
     """
     A :py:class:`Melody` object contains a both a **rhythm** and **pitch information**.
     It does not contain sound. However, the :py:class:`Melody` can be synthesized and played or written to
@@ -38,7 +38,7 @@ class Melody(combio.core.sequence.BaseSequence):
     """
 
     def __init__(self,
-                 rhythm: combio.rhythm.Rhythm,
+                 rhythm: thebeat.rhythm.Rhythm,
                  pitch_names: Union[npt.NDArray[str], list[str], str],
                  octave: Optional[int] = None,
                  key: Optional[str] = None,
@@ -67,7 +67,7 @@ class Melody(combio.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = combio.rhythm.Rhythm.from_note_values([4, 4, 4, 4, 4, 4, 2])
+        >>> r = thebeat.rhythm.Rhythm.from_note_values([4, 4, 4, 4, 4, 4, 2])
         >>> mel = Melody(r, 'CCGGAAG')
 
         """
@@ -187,10 +187,10 @@ class Melody(combio.core.sequence.BaseSequence):
             allowed_note_values = [4, 8, 16]
 
         # Generate random rhythm and random tone_heights
-        rhythm = combio.rhythm.Rhythm.generate_random_rhythm(n_bars=n_bars, beat_ms=beat_ms,
-                                                             time_signature=time_signature,
-                                                             allowed_note_values=allowed_note_values, rng=rng)
-        pitch_names_possible = [pitch.name for pitch in combio._helpers.get_major_scale(tonic=key, octave=octave)]
+        rhythm = thebeat.rhythm.Rhythm.generate_random_rhythm(n_bars=n_bars, beat_ms=beat_ms,
+                                                              time_signature=time_signature,
+                                                              allowed_note_values=allowed_note_values, rng=rng)
+        pitch_names_possible = [pitch.name for pitch in thebeat._helpers.get_major_scale(tonic=key, octave=octave)]
 
         pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
 
@@ -217,12 +217,12 @@ class Melody(combio.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = combio.rhythm.Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)
+        >>> r = thebeat.rhythm.Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)
         >>> m = Melody(r, pitch_names='CCGC')
         >>> print(r.note_values)  # doctest: +SKIP
         [4 2 8 8]
 
-        >>> r = combio.rhythm.Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
+        >>> r = thebeat.rhythm.Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
         >>> print(r.note_values)  # doctest: +SKIP
         [12 12 12  4  4  4]
 
@@ -276,7 +276,7 @@ class Melody(combio.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = combio.rhythm.Rhythm(iois=[250, 500, 250, 500], time_signature=(3, 4))
+        >>> r = thebeat.rhythm.Rhythm(iois=[250, 500, 250, 500], time_signature=(3, 4))
         >>> m = Melody(r, 'CCGC')
         >>> m.plot_melody()  # doctest: +SKIP
 
@@ -293,7 +293,7 @@ class Melody(combio.core.sequence.BaseSequence):
 
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
-        fig, ax = combio._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax
 
@@ -361,8 +361,8 @@ class Melody(combio.core.sequence.BaseSequence):
                                           event_durations=event_durations)
 
         if metronome is True:
-            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                               metronome_amplitude=metronome_amplitude)
+            samples = thebeat._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                                metronome_amplitude=metronome_amplitude)
 
         return samples, fs
 
@@ -502,11 +502,11 @@ class Melody(combio.core.sequence.BaseSequence):
                                                 metronome_amplitude=metronome_amplitude)
 
         if metronome is True:
-            samples = combio._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                               metronome_amplitude=metronome_amplitude)
+            samples = thebeat._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                                metronome_amplitude=metronome_amplitude)
 
-        combio._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
-                                  metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
+        thebeat._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
+                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
     def _make_namedtuples(self,
                           rhythm,
@@ -538,7 +538,7 @@ class Melody(combio.core.sequence.BaseSequence):
 
         # Avoid rounding issues
         if not n_frames.is_integer():
-            warnings.warn(combio._warnings.framerounding)
+            warnings.warn(thebeat._warnings.framerounding)
         n_frames = int(np.ceil(n_frames))
 
         # Create empty array with length n_frames
@@ -558,20 +558,20 @@ class Melody(combio.core.sequence.BaseSequence):
         # times.
         for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
-                event_samples = combio._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
-                                                                 freq=abjad.NamedPitch(event.pitch_name).hertz,
-                                                                 n_channels=n_channels, oscillator=oscillator,
-                                                                 amplitude=amplitude)
+                event_samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
+                                                                  freq=abjad.NamedPitch(event.pitch_name).hertz,
+                                                                  n_channels=n_channels, oscillator=oscillator,
+                                                                  amplitude=amplitude)
                 if onramp or offramp:
-                    event_samples = combio._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
-                                                               offramp=offramp, ramp_type=ramp_type)
+                    event_samples = thebeat._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
+                                                                offramp=offramp, ramp_type=ramp_type)
 
                 # Calculate start- and end locations for inserting the event into the output array
                 # and warn if the location in terms of frames was rounded off.
                 start_pos = event.onset_ms / 1000 * fs
                 end_pos = start_pos + event_samples.shape[0]
                 if not start_pos.is_integer() or not end_pos.is_integer():
-                    warnings.warn(combio._warnings.framerounding)
+                    warnings.warn(thebeat._warnings.framerounding)
                 start_pos = int(np.ceil(start_pos))
                 end_pos = int(np.ceil(end_pos))
 
@@ -582,8 +582,8 @@ class Melody(combio.core.sequence.BaseSequence):
                 pass
 
         if np.max(samples) > 1:
-            warnings.warn(combio._warnings.normalization)
-            samples = combio._helpers.normalize_audio(samples)
+            warnings.warn(thebeat._warnings.normalization)
+            samples = thebeat._helpers.normalize_audio(samples)
 
         return samples
 

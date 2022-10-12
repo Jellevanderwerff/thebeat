@@ -1,12 +1,12 @@
 from __future__ import annotations
 import numpy as np
-import combio.core
+import thebeat.core
 from typing import Optional
 
 
 def generate_moraic_sequence(n_feet: int,
                              foot_ioi: float,
-                             rng: Optional[np.random.Generator] = None) -> combio.core.Sequence:
+                             rng: Optional[np.random.Generator] = None) -> thebeat.core.Sequence:
     """
     This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
     structure of mora-timed languages. The feet contain clusters of either one or two IOIs with the same total duration.
@@ -68,13 +68,13 @@ def generate_moraic_sequence(n_feet: int,
     # Calculate with proper tempo
     iois = iois * (foot_ioi / 3)
 
-    return combio.core.Sequence(iois)
+    return thebeat.core.Sequence(iois)
 
 
 def generate_stress_timed_sequence(n_events_per_phrase: int,
                                    syllable_ioi: int = 500,
                                    n_phrases: int = 1,
-                                   rng: Optional[np.random.Generator] = None) -> combio.core.Sequence:
+                                   rng: Optional[np.random.Generator] = None) -> thebeat.core.Sequence:
     """
     This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
     structure of stress-timed languages.
@@ -133,5 +133,5 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
     pattern_shifted = ioi_sums[:-1] + start_of_pattern
     pattern = np.concatenate([[start_of_pattern], pattern_shifted])
 
-    return combio.core.Sequence.from_onsets(pattern)
+    return thebeat.core.Sequence.from_onsets(pattern)
 

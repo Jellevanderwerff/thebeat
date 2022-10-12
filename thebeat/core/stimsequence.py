@@ -1,9 +1,9 @@
 from scipy.io import wavfile
-from combio.core.sequence import BaseSequence, Sequence
-from combio.core.stimulus import Stimulus
+from thebeat.core.sequence import BaseSequence, Sequence
+from thebeat.core.stimulus import Stimulus
 import numpy as np
-import combio._helpers
-import combio._warnings
+import thebeat._helpers
+import thebeat._warnings
 import warnings
 import os
 from typing import Union, Optional
@@ -108,7 +108,7 @@ class StimSequence(BaseSequence):
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
-        combio._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
+        thebeat._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
 
         # Make sound which saves the samples to self.samples
         self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
@@ -164,8 +164,8 @@ class StimSequence(BaseSequence):
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
         """
-        combio._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
-                                     metronome=metronome, metronome_amplitude=metronome_amplitude)
+        thebeat._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
+                                      metronome=metronome, metronome_amplitude=metronome_amplitude)
 
     def stop(self) -> None:
         """
@@ -191,7 +191,7 @@ class StimSequence(BaseSequence):
                       suppress_display: bool = False):
         """
         Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
-        See :py:func:`combio.visualization.plot_single_sequence`.
+        See :py:func:`thebeat.visualization.plot_single_sequence`.
 
         Parameters
         ----------
@@ -219,9 +219,9 @@ class StimSequence(BaseSequence):
 
         linewidths = self.event_durations
 
-        fig, ax = combio.visualization.plot_single_sequence(sequence=self.onsets, style=style, title=title,
-                                                            linewidths=linewidths, figsize=figsize,
-                                                            suppress_display=suppress_display)
+        fig, ax = thebeat.visualization.plot_single_sequence(sequence=self.onsets, style=style, title=title,
+                                                             linewidths=linewidths, figsize=figsize,
+                                                             suppress_display=suppress_display)
 
         return fig, ax
 
@@ -258,9 +258,9 @@ class StimSequence(BaseSequence):
         if title is None:
             title = self.name if self.name else "StimSequence waveform"
 
-        fig, ax = combio._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                style=style, title=title, figsize=figsize,
-                                                suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                 style=style, title=title, figsize=figsize,
+                                                 suppress_display=suppress_display)
 
         return fig, ax
 
@@ -288,9 +288,9 @@ class StimSequence(BaseSequence):
         """
 
         if metronome is True:
-            samples = combio._helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
-                                                               metronome_ioi=self.mean_ioi,
-                                                               metronome_amplitude=metronome_amplitude)
+            samples = thebeat._helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
+                                                                metronome_ioi=self.mean_ioi,
+                                                                metronome_amplitude=metronome_amplitude)
         else:
             samples = self.samples
 
@@ -324,7 +324,7 @@ class StimSequence(BaseSequence):
             raise ValueError("Error during calculation of array_length")
 
         if not array_length.is_integer():  # let's avoid rounding issues
-            warnings.warn(combio._warnings.framerounding_stimseq)
+            warnings.warn(thebeat._warnings.framerounding_stimseq)
 
         # Round off array length to ceiling if necessary
         array_length = int(np.ceil(array_length))
@@ -343,7 +343,7 @@ class StimSequence(BaseSequence):
 
             # Check whether there was frame rounding
             if not start_pos.is_integer() or not end_pos.is_integer():
-                warnings.warn(combio._warnings.framerounding_stimseq)
+                warnings.warn(thebeat._warnings.framerounding_stimseq)
 
             # Now we can safely round
             start_pos = int(start_pos)
@@ -361,6 +361,6 @@ class StimSequence(BaseSequence):
         # return sound
         if np.max(samples) > 1:
             warnings.warn("Sound was normalized")
-            return combio._helpers.normalize_audio(samples)
+            return thebeat._helpers.normalize_audio(samples)
         else:
             return samples

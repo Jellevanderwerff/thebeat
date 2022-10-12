@@ -1,5 +1,5 @@
-from combio.stats import acf_plot, acf_df, get_ugof, acf_values
-from combio.linguistic import generate_trimoraic_sequence
+from thebeat.stats import acf_plot, acf_df, get_ugof, acf_values
+from thebeat.linguistic import generate_trimoraic_sequence
 import scipy.signal
 
 

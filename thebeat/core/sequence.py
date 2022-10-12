@@ -4,7 +4,7 @@ from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import combio._helpers
+import thebeat._helpers
 
 
 class BaseSequence:
@@ -128,7 +128,7 @@ class Sequence(BaseSequence):
     This class additionally contains methods and attributes to, for instance,
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
-    For more info, check out the :py:meth:`~combio.core.Sequence.__init__` method, and the different methods below.
+    For more info, check out the :py:meth:`~thebeat.core.Sequence.__init__` method, and the different methods below.
     """
 
     def __init__(self,
@@ -629,10 +629,10 @@ class Sequence(BaseSequence):
             linewidths = np.array(linewidth)
 
         # Plot the sequence
-        fig, ax = combio._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
-                                                       x_axis_label=x_axis_label,
-                                                       linewidths=linewidths, figsize=figsize,
-                                                       suppress_display=suppress_display)
+        fig, ax = thebeat._helpers.plot_sequence_single(onsets=self.onsets, style=style, title=title,
+                                                        x_axis_label=x_axis_label,
+                                                        linewidths=linewidths, figsize=figsize,
+                                                        suppress_display=suppress_display)
 
         return fig, ax
 
