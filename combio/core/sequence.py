@@ -171,7 +171,10 @@ class Sequence(BaseSequence):
                 f"{len(self.onsets)} events\n"
                 f"IOIs: {self.iois}\n"
                 f"Onsets: {self.onsets}\n"
-                f"Sequence name: {name}")
+                f"Sequence name: {name}\n")
+
+    def __repr__(self):
+        return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
 
     def __add__(self, other):
         # Check whether the objects are of the same type

@@ -134,6 +134,9 @@ class StimSequence(BaseSequence):
                 f"Stimulus names: {stim_names}\n"
                 f"StimSequence name: {name}")
 
+    def __repr__(self):
+        return f"StimSequence(n_events={len(self.onsets)})"
+
     def play(self,
              loop: bool = False,
              metronome: bool = False,

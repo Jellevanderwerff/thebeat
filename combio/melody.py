@@ -116,6 +116,9 @@ class Melody(combio.core.sequence.BaseSequence):
         # Call BaseSequence constructor
         super().__init__(iois=rhythm.iois, metrical=True, name=name)
 
+    def __repr__(self):
+        return f"Melody(n_bars={self.n_bars}, key={self.key})"
+
     @classmethod
     def generate_random_melody(cls,
                                n_bars: int = 1,

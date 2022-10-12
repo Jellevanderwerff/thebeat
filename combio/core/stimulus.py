@@ -70,6 +70,9 @@ class Stimulus:
                 f"Number of channels: {self.n_channels}\n"
                 f"Sampling frequency {self.fs}")
 
+    def __repr__(self):
+        return f"Stimulus(duration_ms={self.duration_ms})"
+
     @classmethod
     def from_wav(cls,
                  filepath: Union[os.PathLike, str],

@@ -97,6 +97,9 @@ class Rhythm(combio.core.sequence.BaseSequence):
                 f"IOIs: {self.iois}\n"
                 f"Onsets:{self.onsets}\n")
 
+    def __repr__(self):
+        return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature}, beat_ms={self.beat_ms})"
+
     def __add__(self, other):
         return combio._helpers.join_rhythms([self, other])
 
