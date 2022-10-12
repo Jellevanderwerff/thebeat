@@ -378,19 +378,21 @@ def plot_waveform(samples: np.ndarray,
                              stop=samples.shape[0] / fs,
                              num=samples.shape[0])
         x_label = "Time (s)"
+        x_right_lim = samples.shape[0] / fs
     else:
         frames = np.linspace(start=0,
                              stop=samples.shape[0] / fs * 1000,
                              num=samples.shape[0])
         x_label = "Time (ms)"
+        x_right_lim = samples.shape[0] / fs * 1000
 
-    # Plot
+        # Plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        ax.set_xlim(0, x_right_lim)
         ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
             ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
-
         ax.set_ylabel("Amplitude")
         ax.set_xlabel(x_label)
         ax.set_title(title)

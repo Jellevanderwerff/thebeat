@@ -38,14 +38,14 @@ class StimSequence(BaseSequence):
                  sequence: Sequence,
                  name: Optional[str] = None):
         """
-        Initialize a :py:class:`StimSequence` object using a :py:class:`Stimulus` object, or list or array of
+        Initialize a `StimSequence` object using a `Stimulus` object, or list or array of
         :py:class:`Stimulus` objects, and a :py:class:`Sequence` object.
 
-        During the construction of a :py:`StimSequence` object, sound is generated on the basis of the passed
-        :py:`Stimulus` objects and the passed `Sequence` object. A warning is issued if the frame number, where
+        During the construction of a `StimSequence` object, sound is generated on the basis of the passed
+        `Stimulus` objects and the passed `Sequence` object. A warning is issued if the frame number, where
         one of the sounds would be placed, had to be rounded off. To get rid of this warning, you can use
-        the :py:`Sequence.round_onsets` method before passing it to the :py:`StimSequence` constructor,
-        or try a different sampling frequency for the :py:`Stimulus` sound.
+        the `Sequence.round_onsets` method before passing it to the `StimSequence` constructor,
+        or try a different sampling frequency for the `Stimulus` sound.
 
         Parameters
         ----------
