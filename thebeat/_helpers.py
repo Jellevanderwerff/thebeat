@@ -239,7 +239,7 @@ def normalize_audio(samples: np.ndarray) -> np.ndarray:
 @requires_lilypond
 def plot_lp(lp,
             filepath: Union[os.PathLike, str] = None,
-            suppress_display: bool = False):
+            suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
@@ -279,18 +279,19 @@ def plot_lp(lp,
             path_to_file_for_saving = os.path.join(tmp_dir, 'rhythm-1.eps')
             shutil.copy(path_to_file_for_saving, filepath)
 
-    plt.imshow(img_cropped)
-    plt.axis('off')
+    fig, ax = plt.subplots()
+    ax.imshow(img_cropped)
+    ax.set_axis_off()
 
     # show plot if necessary
     if not suppress_display:
-        plt.show()
+        fig.show()
 
     # Save cropped .png if necessary
     if filepath and save_format == '.png':
         plt.imsave(filepath, img_cropped)
 
-    return plt.gca(), plt.gcf()
+    return fig, ax
 
 
 def plot_single_sequence(onsets: Union[list, np.ndarray],
