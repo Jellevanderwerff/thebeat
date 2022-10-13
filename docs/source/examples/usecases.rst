@@ -6,3 +6,4 @@ Use case scenarios
    :caption: Use case scenarios:
    
    usecases/oddball
+
