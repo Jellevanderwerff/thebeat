@@ -167,6 +167,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         name
             Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
             the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+
         """
 
         numerators = np.array(numerators)

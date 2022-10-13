@@ -108,8 +108,8 @@ class StimSequence(BaseSequence):
         self.metrical = sequence.metrical
         self.stim_objects = stimuli
 
-        # Initialize Sequence class
-        BaseSequence.__init__(self, sequence.iois, metrical=sequence.metrical)
+        # Initialize BaseSequence class
+        super().__init__(sequence.iois, metrical=sequence.metrical, name=name)
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
