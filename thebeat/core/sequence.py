@@ -71,7 +71,7 @@ class BaseSequence:
 
     @iois.setter
     def iois(self, values: npt.ArrayLike[float]):
-        """IOI setter. Checks against negative IOIs."""
+        """IOI setter. Checks against negative (or zero) IOIs."""
 
         # We always want a NumPy array
         iois = np.array(values, dtype=np.float64, copy=True)

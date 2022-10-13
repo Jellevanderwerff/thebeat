@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from fractions import Fraction
 from typing import Union, Optional
 import numpy as np
 import numpy.typing as npt
@@ -13,7 +14,6 @@ try:
     import abjad
 except ImportError:
     abjad = None
-
 # Local imports
 import thebeat.core
 from thebeat._decorators import requires_lilypond
@@ -106,9 +106,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     def __add__(self, other):
         return thebeat._helpers.join_rhythms([self, other])
 
-    def __len__(self):
-        return len(self.onsets)
-
     @property
     def note_values(self):
         """
@@ -132,12 +129,46 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [12 12 12  4  4  4]
 
         """
+        # todo possibly just return tuples (so we can e.g. have a duration of 3 quarter notes)
+        #  Simply use the abjad note durations function!
 
         ratios = self.iois / self.beat_ms / 4
 
         note_values = np.array([int(1 // ratio) for ratio in ratios])
 
         return note_values
+
+    @property
+    def integer_ratios(self) -> np.ndarray:
+        r"""Calculate how to describe the rhythm in integer ratio numerators from
+        the total duration of the sequence by finding the least common multiplier.
+
+        Example
+        -------
+
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
+        This can be described using the least common multiplier as
+        :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
+        so this method returns the numerators ``[1, 2, 4, 1]``.
+
+        Notes
+        -----
+        The method for calculating the integer ratios is based on :footcite:t:`jacobyIntegerRatioPriors2017`.
+
+        Examples
+        --------
+        >>> r = Rhythm([250, 500, 1000, 250])
+        >>> print(r.integer_ratios)
+        [1 2 4 1]
+
+        """
+
+        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
+
+        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
+
+        return np.array(vals)
 
     @classmethod
     def from_integer_ratios(cls,
@@ -346,7 +377,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     @requires_lilypond
     def plot_rhythm(self,
                     filepath: Union[os.PathLike, str] = None,
-                    print_staff: bool = False,
+                    staff_type: str = "percussion",
+                    print_staff: bool = True,
                     suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
@@ -386,6 +418,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         filepath
             Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.eps'.
             The desired file format will be selected based on what the filepath ends with.
+        staff_type
+            Either 'percussion' or 'rhythm'. 'Rhythm' is a single line (like a woodblock score). Percussion
+            is drum notation.
         print_staff
             If desired, you can choose to print a musical staff (the default is not to do this). The staff will be a
             `percussion staff <https://en.wikipedia.org/wiki/Percussion_notation>`_.
@@ -420,22 +455,43 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
-        pitches = [abjad.NamedPitch('A3')] * len(self.onsets)
-        durations = [abjad.Duration((1, int(note_value))) for note_value in self.note_values]
+        durations = self._get_abjad_note_durations()
+        durations, ties_at = self._get_abjad_ties(durations)
+        pitches = [abjad.NamedPitch('A3')] * len(durations)
         note_maker = abjad.makers.NoteMaker()
 
         notes = []
 
-        for pitch, duration, is_played in zip(pitches, durations, self.is_played):
-            if is_played is True:
-                note = note_maker(pitch, duration)
-            else:
-                note = abjad.Rest(duration)
+        # Here we insert another of the same type of is_played
+        # at the place where it was split
+        count = 0
+        is_played = self.is_played
+
+        # if we split a note at the end of a bar and tie it to the first note in the subsequent bar,
+        # we now suddenly have two notes instead of one. so we need to add another of the same
+        # boolean value to is_played for that note.
+        for tie_at in ties_at:
+            is_played.insert(tie_at + count, is_played[tie_at])
+
+        # loop over the pitch duration and whether it is a note or rest, and add to notes
+        for pitch, duration, is_plyd in zip(pitches, durations, is_played):
+            note = note_maker(pitch, duration) if is_plyd else abjad.Rest(duration)
             notes.append(note)
 
         # plot the notes
         staff = abjad.Staff(notes)
-        abjad.attach(abjad.Clef('percussion'), staff[0])
+        # add ties at the places where _get_abjad_ties thinks they should be (most of the time this is skipped)
+        for tie_at in ties_at:
+            # but only for notes, not for rests
+            if is_played[tie_at]:
+                tie = abjad.Tie()
+                abjad.attach(tie, staff[tie_at])
+
+        # Change clef and staff type
+        if staff_type == "percussion":
+            abjad.attach(abjad.Clef('percussion'), staff[0])
+        elif staff_type == "rhythm":
+            staff.lilypond_type = "RhythmicStaff"
         abjad.attach(time_signature, staff[0])
 
         # Make cleff transparent if necessary
@@ -458,3 +514,52 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         fig, ax = thebeat._helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax
+
+    def _get_abjad_note_durations(self):
+        """Get abjad note durations from the integer_ratios
+        #todo This needs to be done with lcm to avoid rounding problems,
+          though seems to work for now.
+        """
+        total_duration = np.sum(self.integer_ratios)
+        duration_of_bar = total_duration / self.n_bars
+        ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
+        numerators = ratios * self.time_signature[0]
+
+        durations = [abjad.Duration(numerator, self.time_signature[1]) for numerator in numerators]
+
+        return durations
+
+    def _get_abjad_ties(self, durations):
+        full_bar = self.time_signature[0] / self.time_signature[1]
+        # will be output
+        notes = []
+        ties_at = []
+
+        # Keep track of how full the current bar is
+        bar_fullness = 0
+
+        for i, note in enumerate(durations):
+            # if the note fits in the bar
+            if (note + bar_fullness) <= full_bar:
+                bar_fullness += note
+                notes.append(note)
+            # if note doesn't fit the bar
+            else:
+                # try to divide the note up into smaller bits
+                for division in (2, 4, 8):
+                    # if now it fits in the bar
+                    if (note / division) + bar_fullness <= 1:
+                        # we split up the original note into a small bit, and the rest (e.g. 1/4 and 3/4)
+                        split_notes = [note / division, note - (note / division)]
+                        # We need to remember which notes to tie later
+                        notes += split_notes
+                        ties_at.append(i)
+                        bar_fullness += sum(split_notes)
+                        bar_fullness -= full_bar
+                        break
+
+            # if bar is full set bar_fullness to zero
+            if bar_fullness % full_bar == 0:
+                bar_fullness = 0
+
+        return notes, ties_at
