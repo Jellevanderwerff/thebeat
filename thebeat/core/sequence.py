@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import copy
 from fractions import Fraction
 from typing import Optional, Union
 import matplotlib.pyplot as plt
@@ -51,6 +53,10 @@ class BaseSequence:
         self.metrical = metrical
         # Additionally save the provided name (may be None)
         self.name = name
+
+    def copy(self):
+        """Returns a shallow copy of itself"""
+        return copy.copy(self)
 
     @property
     def iois(self) -> np.ndarray:
@@ -563,6 +569,27 @@ class Sequence(BaseSequence):
         """
 
         self.iois /= np.linspace(start=1, stop=total_change, num=len(self.iois))
+
+    def repeat(self, times: int) -> Sequence:
+        """
+        Repeat the inter-onset intervals (IOIs) ``times`` times. Returns a new instance of the Sequence if required.
+        Only works for metrical sequences! Otherwise, we do not know what the IOI is between the offset of the
+        final sound in the original sequence, and the onset of the first sound in the repeated sequence.
+
+        Parameters
+        ----------
+        times
+            How many times should the inter-onset intervals be repeated?
+
+        """
+
+        if not self.metrical:
+            raise ValueError("You can only repeat metrical sequences. Try adding the metrical=True flag"
+                             "when creating this object.")
+
+        np.repeat(self.iois, repeats=times)
+
+        return self
 
     def round_onsets(self,
                      decimals: int = 0):

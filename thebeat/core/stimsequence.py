@@ -1,3 +1,5 @@
+import copy
+
 from scipy.io import wavfile
 from thebeat.core.sequence import BaseSequence, Sequence
 from thebeat.core.stimulus import Stimulus
@@ -76,6 +78,8 @@ class StimSequence(BaseSequence):
         if isinstance(stimulus, Stimulus):
             stimuli = [stimulus] * len(sequence.onsets)
         elif isinstance(stimulus, list) or isinstance(stimulus, np.ndarray):
+            if len(stimulus) != len(sequence.onsets):
+                raise ValueError("Please provide an equal number of stimuli as onsets.")
             stimuli = stimulus
         else:
             raise ValueError("Please pass a Stimulus object, or a list or array of Stimulus objects.")

@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 import scipy.io
 import scipy.signal
 import thebeat._helpers
+import copy
 
 try:
     import abjad
@@ -78,6 +79,10 @@ class Stimulus:
         if self.name:
             return f"Stimulus(name={self.name}, duration_ms={self.duration_ms})"
         return f"Stimulus(duration_ms={self.duration_ms})"
+
+    def copy(self):
+        """Returns a shallow copy of itself"""
+        return copy.copy(self)
 
     @classmethod
     def from_wav(cls,
@@ -262,9 +267,8 @@ class Stimulus:
 
         return cls(samples, fs, name)
 
-    # Manipulation
     def change_amplitude(self,
-                         factor: float) -> None:
+                         factor: float):
         """
         This method can be used to change the amplitude of the Stimulus sound.
         A factor between 0 and 1 decreases the amplitude; a factor larger than 1 increases the amplitude.
@@ -273,14 +277,13 @@ class Stimulus:
         ----------
         factor
             The factor by which the sound should be amplified.
-
         """
 
         if not factor > 0:
             raise ValueError("Please provide a 'factor' larger than zero.")
 
-        # get original frequencies
-        self.samples *= factor
+        # set samples to new amplitude
+        self.samples = self.samples * factor
 
     # Visualization
     def play(self,

@@ -140,15 +140,51 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         return note_values
 
     @classmethod
+    def from_integer_ratios(cls,
+                            numerators: npt.ArrayLike[float],
+                            time_signature: tuple[int, int] = (4, 4),
+                            beat_ms: int = 500,
+                            is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                            name: Optional[str] = None) -> Rhythm:
+        """Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
+        (IOIs) as ``numerators * beat_ms``.
+
+        Parameters
+        ----------
+        numerators
+            Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
+        time_signature
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
+            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
+            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
+            :math:`\frac{1}{8}` th notes.
+        beat_ms
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
+            number in the time signature is 4.
+        is_played
+            A list or array containing booleans indicating whether a note should be played or not.
+            Defaults to ``[True, True, True, ...]``.
+        name
+            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
+            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+        """
+
+        numerators = np.array(numerators)
+
+        return cls(iois=numerators * beat_ms,
+                   beat_ms=beat_ms,
+                   time_signature=time_signature,
+                   is_played=is_played,
+                   name=name)
+
+    @classmethod
     def from_note_values(cls,
                          note_values: Union[npt.NDArray[int], list[int]],
                          time_signature: tuple[int, int] = (4, 4),
                          beat_ms: int = 500,
                          is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
                          name: Optional[str] = None) -> Rhythm:
-        r"""
-
-        This class method may be used for creating a Rhythm object on the basis of note values (i.e. durations).
+        r"""Create a Rhythm object on the basis of note values (i.e. note durations).
 
         Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
         a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
