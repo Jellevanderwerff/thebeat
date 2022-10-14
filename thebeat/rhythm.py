@@ -525,7 +525,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
         numerators = ratios * self.time_signature[0]
 
-        durations = [abjad.Duration(numerator, self.time_signature[1]) for numerator in numerators]
+        durations = [abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators]
 
         return durations
 
