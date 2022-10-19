@@ -394,27 +394,16 @@ class Stimulus:
         sd.stop()
 
     def plot_waveform(self,
-                      style: str = 'seaborn',
-                      title: Optional[str] = None,
-                      figsize: Optional[tuple] = None,
-                      dpi: int = 300,
-                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                      **kwargs) -> tuple[plt.Figure, plt.Axes]:
         """
         Parameters
         ----------
-        style
-            Style used by matplotlib. See `matplotlib style sheets reference
-            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-        title
-            If desired, one can provide a title for the plot.
-        figsize
-            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-        dpi
-            The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
-            :func:`matplotlib.pyplot.figure`.
-        suppress_display
-            If ``True``, :func:`matplotlib.pyplot.show` is not run.
+        Plot the StimSequence as a waveform. Equivalent to :py:meth:`Stimulus.plot`.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat._helpers.plot_waveform`).
 
         Examples
         --------
@@ -429,12 +418,11 @@ class Stimulus:
 
         """
 
-        if self.name and title is None:
-            title = self.name
+        if self.name and kwargs.get('title') is None:
+            kwargs.get('title', self.name)
 
         fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                 style=style, title=title, figsize=figsize, dpi=dpi,
-                                                 suppress_display=suppress_display)
+                                                 **kwargs)
 
         return fig, ax
 

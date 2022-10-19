@@ -201,36 +201,21 @@ class StimSequence(BaseSequence):
         sd.stop()
 
     def plot_sequence(self,
-                      style: str = 'seaborn',
-                      title: str = None,
-                      figsize: tuple = None,
-                      dpi: int = 300,
                       linewidth: Optional[Union[float, list[float], np.typing.NDArray[float]]] = None,
-                      suppress_display: bool = False):
+                      **kwargs):
         """
         Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
         See :py:func:`thebeat.visualization.plot_single_sequence`.
 
         Parameters
         ----------
-        style
-            Matplotlib style to use for the plot. See `matplotlib style sheets reference
-            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-        title
-            If desired, one can provide a title for the plot. This takes precedence over using the
-            StimSequence name as the title of the plot (if the object has one).
-        figsize
-            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-        dpi
-            The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
         linewidth
             The desired width of the bars (events). Defaults to the event durations.
             Can be a single value that will be used for each onset, or a list or array of values
             (i.e with a value for each respective onsets).
-        suppress_display
-            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
-
+        **kwargs
+            Additional parameters (e.g. 'title', 'dpi' etc.) are passed to
+            :py:func:`thebeat._helpers.plot_single_sequence`.
 
         Examples
         --------
@@ -242,7 +227,8 @@ class StimSequence(BaseSequence):
         """
 
         # Make title
-        title = self.name if self.name else title
+        if self.name and kwargs.get('title') is None:
+            kwargs.get('title', self.name)
 
         # The linewidths are the event durations for a StimSequence unless otherwise specified
         if linewidth:
@@ -263,35 +249,19 @@ class StimSequence(BaseSequence):
 
         fig, ax = thebeat._helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
                                                         final_ioi=final_ioi,
-                                                        style=style, title=title, x_axis_label=x_axis_label,
-                                                        linewidths=linewidths, figsize=figsize, dpi=dpi,
-                                                        suppress_display=suppress_display)
+                                                        x_axis_label=x_axis_label,
+                                                        linewidths=linewidths, **kwargs)
 
         return fig, ax
 
-    def plot_waveform(self,
-                      style: str = 'seaborn',
-                      title: str = None,
-                      figsize: tuple = None,
-                      suppress_display: bool = False):
+    def plot_waveform(self, **kwargs):
         """
-
         Plot the StimSequence as a waveform. Equivalent to :py:meth:`Stimulus.plot`.
 
         Parameters
         ----------
-        style
-            Matplotlib style to use for the plot. Defaults to 'seaborn'.
-            See `matplotlib style sheets reference
-            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-        title
-            If desired, one can provide a title for the plot. This takes precedence over using the
-            StimSequence name as the title of the plot (if the object has one).
-        figsize
-            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-        suppress_display
-            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+        **kwargs
+            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat._helpers.plot_waveform`).
 
         Examples
         --------
@@ -299,11 +269,11 @@ class StimSequence(BaseSequence):
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
-        title = self.name if self.name else title
+        if self.name and kwargs.get('title') is None:
+            kwargs.get('title', self.name)
 
         fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                 style=style, title=title, figsize=figsize,
-                                                 suppress_display=suppress_display)
+                                                 **kwargs)
 
         return fig, ax
 

@@ -331,7 +331,40 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
                          figsize: Optional[tuple] = None,
                          dpi: int = 300,
                          suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
-    """This helper function returns a sequence plot."""
+    """
+    This function plots the onsets of a Sequence or StimSequence object in an event plot.
+
+    Parameters
+    ----------
+    onsets
+        The onsets (i.e. t values) of the sequence.
+    metrical
+        Indicates whether there is a final inter-onset interval in the sequence.
+    final_ioi
+        The final inter-onset interval of the sequence. This is only used if the sequence is
+        metrical.
+    style
+        Matplotlib style to use for the plot. Defaults to 'seaborn'.
+        See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        If desired, one can provide a title for the plot. This takes precedence over using the
+        StimSequence name as the title of the plot (if the object has one).
+    x_axis_label
+        A label for the x axis.
+    linewidths
+        The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
+        Can be a single value that will be used for each onset, or a list or array of values
+        (i.e with a value for each respective onsets).
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    dpi
+        The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
+    suppress_display
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+
+    """
 
     # Make onsets array
     onsets = np.array(onsets)
@@ -362,9 +395,9 @@ def plot_waveform(samples: np.ndarray,
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
                   dpi: int = 300,
-                  suppress_display: bool = False) -> tuple[plt.Axes, plt.Figure]:
+                  suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
-    This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
+    This helper function plots a waveform of a sound using matplotlib.
 
     Parameters
     ----------
@@ -375,23 +408,18 @@ def plot_waveform(samples: np.ndarray,
     n_channels
         Number of channels (1 for mono, 2 for stereo).
     style
-        Style used by matplotlib, defaults to 'seaborn'. See matplotlib docs for other styles.
+        Style used by matplotlib. See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot.
     figsize
-        A tuple containing the desired output size of the plot in inches.
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
     dpi
-        The desired resolution of the plot in dots per inch.
+        The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
+        :func:`matplotlib.pyplot.figure`.
     suppress_display
-        If 'True', plt.show() is not run. Defaults to 'False'.
-
-
-    Returns
-    -------
-    fig
-        A matplotlib Figure object
-    ax
-        A matplotlib Axes object
+        If ``True``, :meth:`matplotlib.pyplot.Figure.show` is not run.
 
     """
 
@@ -418,7 +446,7 @@ def plot_waveform(samples: np.ndarray,
         x_label = "Time (ms)"
         x_right_lim = samples.shape[0] / fs * 1000
 
-        # Plot
+    # Plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
         ax.set_xlim(0, x_right_lim)

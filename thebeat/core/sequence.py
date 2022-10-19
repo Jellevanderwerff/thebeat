@@ -593,38 +593,20 @@ class Sequence(BaseSequence):
 
     # Visualization
     def plot_sequence(self,
-                      style: str = 'seaborn',
-                      title: Optional[str] = None,
-                      x_axis_label: str = "Time",
                       linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
-                      figsize: Optional[tuple] = None,
-                      dpi: int = 300,
-                      suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                      **kwargs) -> tuple[plt.Figure, plt.Axes]:
         """
         Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
 
         Parameters
         ----------
-        style
-            Matplotlib style to use for the plot. Defaults to 'seaborn'.
-            See `matplotlib style sheets reference
-            <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-        title
-            If desired, one can provide a title for the plot. This takes precedence over using the
-            StimSequence name as the title of the plot (if the object has one).
-        x_axis_label
-            A label for the x axis.
         linewidth
             The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
             Can be a single value that will be used for each onset, or a list or array of values
             (i.e with a value for each respective onsets).
-        figsize
-            A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-            This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-        dpi
-            The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
-        suppress_display
-            If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+        **kwargs
+            Additional parameters (e.g. 'title', 'dpi' etc.) are passed to
+            :py:func:`thebeat._helpers.plot_single_sequence`.
 
         Examples
         --------
@@ -634,7 +616,8 @@ class Sequence(BaseSequence):
 
         # For the title, use the Sequence name if it has one. Otherwise use the title parameter,
         # which may be None.
-        title = self.name if self.name else title
+        if self.name and kwargs.get('title') is None:
+            kwargs.get('title', self.name)
 
         # Linewidths
         if linewidth is None:
@@ -649,9 +632,7 @@ class Sequence(BaseSequence):
 
         # Plot the sequence
         fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
-                                                        style=style, title=title, x_axis_label=x_axis_label,
-                                                        linewidths=linewidths, figsize=figsize, dpi=dpi,
-                                                        suppress_display=suppress_display)
+                                                        linewidths=linewidths, **kwargs)
 
         return fig, ax
 
