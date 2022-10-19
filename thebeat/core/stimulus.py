@@ -192,6 +192,60 @@ class Stimulus:
         return cls(samples, fs, name)
 
     @classmethod
+    def generate_white_noise(cls,
+                             duration_ms: int = 50,
+                             sigma: float = 1,
+                             fs: int = 48000,
+                             n_channels: int = 1,
+                             amplitude: float = 1.0,
+                             rng: Optional[np.random.Generator] = None,
+                             name: Optional[str] = None) -> Stimulus:
+        """
+        This class method returns a Stimulus object with white noise. They are simply random samples from a normal
+        distribution with mean 0 and standard deviation ``sd``.
+
+        Parameters
+        ----------
+        duration_ms
+            The desired duration in milliseconds.
+        sigma
+            The standard deviation of the normal distribution from which the samples are drawn.
+        fs
+            The sampling frequency in hertz.
+        n_channels
+            The number of channels. 1 for mono, 2 for stereo.
+        amplitude
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
+            values higher than 1 in louder sounds.
+        rng
+            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
+            used.
+        name
+            Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
+            A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
+
+        Examples
+        --------
+        >>> stim = Stimulus.generate_white_noise()
+        >>> stim.plot_waveform()  # doctest: +SKIP
+
+        """
+        if rng is None:
+            rng = np.random.default_rng()
+
+        # Generate signal
+        n_frames = fs * duration_ms // 1000
+        output_shape = n_frames if n_channels == 1 else (n_frames, 2)
+        samples = amplitude * rng.normal(loc=0,
+                                         scale=sigma,
+                                         size=output_shape)
+
+        samples = thebeat._helpers.normalize_audio(samples)
+
+        # Return class
+        return cls(samples=samples, fs=fs, name=name)
+
+    @classmethod
     def from_note(cls,
                   note_str: str,
                   duration: int = 50,
@@ -343,6 +397,7 @@ class Stimulus:
                       style: str = 'seaborn',
                       title: Optional[str] = None,
                       figsize: Optional[tuple] = None,
+                      dpi: int = 300,
                       suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Parameters
@@ -355,6 +410,9 @@ class Stimulus:
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        dpi
+            The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
+            :func:`matplotlib.pyplot.figure`.
         suppress_display
             If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
@@ -375,8 +433,8 @@ class Stimulus:
             title = self.name
 
         fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                 style=style,
-                                                 title=title, figsize=figsize, suppress_display=suppress_display)
+                                                 style=style, title=title, figsize=figsize, dpi=dpi,
+                                                 suppress_display=suppress_display)
 
         return fig, ax
 

@@ -329,6 +329,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
                          x_axis_label: str = "Time",
                          linewidths: Optional[Union[list[float], npt.NDArray[float], float]] = None,
                          figsize: Optional[tuple] = None,
+                         dpi: int = 300,
                          suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """This helper function returns a sequence plot."""
 
@@ -337,7 +338,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
 
     # Make plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
         right_x_lim = onsets[-1] + final_ioi if metrical else onsets[-1] + linewidths[-1]
@@ -360,6 +361,7 @@ def plot_waveform(samples: np.ndarray,
                   style: str = 'seaborn',
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
+                  dpi: int = 300,
                   suppress_display: bool = False) -> tuple[plt.Axes, plt.Figure]:
     """
     This helper function plots a waveform of a sound using matplotlib. It returns a fig and an ax object.
@@ -378,6 +380,8 @@ def plot_waveform(samples: np.ndarray,
         If desired, one can provide a title for the plot.
     figsize
         A tuple containing the desired output size of the plot in inches.
+    dpi
+        The desired resolution of the plot in dots per inch.
     suppress_display
         If 'True', plt.show() is not run. Defaults to 'False'.
 
@@ -416,7 +420,7 @@ def plot_waveform(samples: np.ndarray,
 
         # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
         ax.set_xlim(0, x_right_lim)
         ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
@@ -456,7 +460,7 @@ def synthesize_sound(duration_ms: int,
     # Get duration in s
     t = duration_ms / 1000
 
-    # Check whether
+    # Check whether frame locations were rounded off
     n_samples = fs * t
     if not n_samples.is_integer():
         warnings.warn(thebeat._warnings.framerounding_soundsynthesis)

@@ -204,6 +204,7 @@ class StimSequence(BaseSequence):
                       style: str = 'seaborn',
                       title: str = None,
                       figsize: tuple = None,
+                      dpi: int = 300,
                       linewidth: Optional[Union[float, list[float], np.typing.NDArray[float]]] = None,
                       suppress_display: bool = False):
         """
@@ -221,6 +222,8 @@ class StimSequence(BaseSequence):
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        dpi
+            The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
         linewidth
             The desired width of the bars (events). Defaults to the event durations.
             Can be a single value that will be used for each onset, or a list or array of values
@@ -261,7 +264,7 @@ class StimSequence(BaseSequence):
         fig, ax = thebeat._helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
                                                         final_ioi=final_ioi,
                                                         style=style, title=title, x_axis_label=x_axis_label,
-                                                        linewidths=linewidths, figsize=figsize,
+                                                        linewidths=linewidths, figsize=figsize, dpi=dpi,
                                                         suppress_display=suppress_display)
 
         return fig, ax
@@ -296,8 +299,7 @@ class StimSequence(BaseSequence):
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
-        if not title:
-            title = self.name if self.name else "StimSequence waveform"
+        title = self.name if self.name else title
 
         fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
                                                  style=style, title=title, figsize=figsize,

@@ -598,6 +598,7 @@ class Sequence(BaseSequence):
                       x_axis_label: str = "Time",
                       linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
                       figsize: Optional[tuple] = None,
+                      dpi: int = 300,
                       suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
@@ -620,6 +621,8 @@ class Sequence(BaseSequence):
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        dpi
+            The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
         suppress_display
             If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
@@ -644,12 +647,10 @@ class Sequence(BaseSequence):
         # If the sequence is metrical we also want to plot the final ioi
         final_ioi = self.iois[-1] if self.metrical else None
 
-        # todo There is a bug here! Something to do with the seconds and milliseconds.
-
         # Plot the sequence
         fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
                                                         style=style, title=title, x_axis_label=x_axis_label,
-                                                        linewidths=linewidths, figsize=figsize,
+                                                        linewidths=linewidths, figsize=figsize, dpi=dpi,
                                                         suppress_display=suppress_display)
 
         return fig, ax
