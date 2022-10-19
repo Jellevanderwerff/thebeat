@@ -85,6 +85,19 @@ def check_for_overlap(stimulus_durations, onsets):
             pass
 
 
+def check_sound_properties_sameness(objects: np.typing.ArrayLike):
+    """This helper function checks whether the objects in the passed iterable have the same sound properties.
+    Raises errors if properties are not the same."""
+    if not all(obj.fs == objects[0].fs for obj in objects):
+        raise ValueError("The objects do not have the same sampling frequency.")
+    elif not all(obj.n_channels == objects[0].n_channels for obj in objects):
+        raise ValueError("These objects do not have the same number of channels.")
+    elif not all(obj.dtype == objects[0].dtype for obj in objects):
+        raise ValueError("These objects do not have the same data type. Check out")
+    else:
+        return True
+
+
 def get_major_scale(tonic: str,
                     octave: int):
     if abjad is None:
@@ -170,71 +183,85 @@ def join_rhythms(iterator):
     return thebeat.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
-def make_ramps(samples, fs, onramp, offramp, ramp_type):
+def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
+
     # Create onramp
-    if onramp > 0:
-        onramp_samples_len = int(onramp / 1000 * fs)
-        end_point = onramp_samples_len
+    onramp_samples_len = int(onramp_ms / 1000 * fs)
+    offramp_samples_len = int(offramp_ms / 1000 * fs)
 
-        if ramp_type == 'linear':
-            onramp_amps = np.linspace(0, 1, onramp_samples_len)
+    if onramp_ms < 0 or offramp_ms < 0:
+        raise ValueError("Ramp duration must be positive.")
+    elif onramp_ms == 0 and offramp_ms == 0:
+        return samples
+    elif onramp_samples_len > len(samples):
+        raise ValueError("Onramp is longer than stimulus")
+    elif offramp_samples_len > len(samples):
+        raise ValueError("Offramp is longer than stimulus")
 
-        elif ramp_type == 'raised-cosine':
-            hanning_complete = np.hanning(onramp_samples_len * 2)
-            onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+    # ONRAMP
 
-        else:
-            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+    if ramp_type == 'linear':
+        onramp_amps = np.linspace(0, 1, onramp_samples_len)
 
-        if samples.ndim == 1:
-            samples[:end_point] *= onramp_amps
-        elif samples.ndim == 2:
-            samples[:end_point, 0] *= onramp_amps
-            samples[:end_point, 1] *= onramp_amps
+    elif ramp_type == 'raised-cosine':
+        hanning_complete = np.hanning(onramp_samples_len * 2)
+        onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
 
-    elif onramp < 0:
-        raise ValueError("Onramp cannot be negative")
-    elif onramp == 0:
-        pass
     else:
-        raise ValueError("Wrong value supplied to onramp argument.")
+        raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
-    # Create offramp
-    if offramp > 0:
-        offramp_samples_len = int(offramp / 1000 * fs)
-        start_point = samples.shape[0] - offramp_samples_len
+    end_point = onramp_samples_len
 
-        if ramp_type == 'linear':
-            offramp_amps = np.linspace(1, 0, int(offramp / 1000 * fs))
-        elif ramp_type == 'raised-cosine':
-            hanning_complete = np.hanning(offramp_samples_len * 2)
-            offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
-        else:
-            raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+    if samples.ndim == 1:
+        samples[:end_point] *= onramp_amps
+    elif samples.ndim == 2:
+        samples[:end_point, 0] *= onramp_amps
+        samples[:end_point, 1] *= onramp_amps
 
-        if samples.ndim == 1:
-            samples[start_point:] *= offramp_amps
-        elif samples.ndim == 2:
-            samples[start_point:, 0] *= offramp_amps
-            samples[start_point:, 1] *= offramp_amps
+    # OFFRAMP
+    start_point = len(samples) - offramp_samples_len
 
-    elif offramp < 0:
-        raise ValueError("Offramp cannot be negative")
-    elif offramp == 0:
-        pass
+    if ramp_type == 'linear':
+        offramp_amps = np.linspace(1, 0, int(offramp_ms / 1000 * fs))
+    elif ramp_type == 'raised-cosine':
+        hanning_complete = np.hanning(offramp_samples_len * 2)
+        offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
     else:
-        raise ValueError("Wrong value supplied to offramp argument.")
+        raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
+
+    if samples.ndim == 1:
+        samples[start_point:] *= offramp_amps
+    elif samples.ndim == 2:
+        samples[start_point:, 0] *= offramp_amps
+        samples[start_point:, 1] *= offramp_amps
 
     return samples
 
 
 def normalize_audio(samples: np.ndarray) -> np.ndarray:
     """This helper function normalizes audio based on the absolute max amplitude from the provided sound samples."""
-    # todo Allow stereo
     samples = samples / np.max(np.abs(samples), axis=0)
     return samples
 
+
+def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
+    """Overlay all the samples in the iterable"""
+
+    # Find longest stimulus, which will be used as the 'background'
+    n_frames = np.max([len(obj) for obj in samples_arrays])
+    # Make empty sound
+    output = np.zeros(n_frames)
+    # Overlay all samples
+    for samples in samples_arrays:
+        output[:len(samples)] += samples
+
+    # Check whether to normalize and return
+    if np.max(np.abs(output)) > 1:
+        warnings.warn(thebeat._warnings.normalization)
+        return thebeat._helpers.normalize_audio(output)
+    else:
+        return output
 
 @requires_lilypond
 def plot_lp(lp,

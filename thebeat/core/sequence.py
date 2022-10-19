@@ -131,6 +131,10 @@ class Sequence(BaseSequence):
     The most basic way of constructing a :py:class:`Sequence` object is by passing it a list or array of
     IOIs. However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
 
+    For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds or milliseconds.
+    However, it does matter when passing the :py:class:`Sequence` object to a :py:class:`StimSequence` object
+    (see :py:class:`StimSequence.__init__`).
+
     This class additionally contains methods and attributes to, for instance,
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
@@ -169,22 +173,6 @@ class Sequence(BaseSequence):
         # Call super init method
         super().__init__(iois=iois, first_onset=first_onset, metrical=metrical, name=name)
 
-    def __str__(self):
-        name = self.name if self.name else "Not provided"
-        metricality = "(metrical)" if self.metrical else "(non-metrical)"
-
-        return (f"Object of type Sequence {metricality}\n"
-                f"{len(self.onsets)} events\n"
-                f"IOIs: {self.iois}\n"
-                f"Onsets: {self.onsets}\n"
-                f"Sequence name: {name}\n")
-
-    def __repr__(self):
-        if self.name:
-            f"Sequence(name={self.name}, iois={np.array2string(self.iois, threshold=8, precision=2)})"
-
-        return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
-
     def __add__(self, other):
         # Check whether the objects are of the same type
         if not isinstance(other, Sequence):
@@ -202,6 +190,25 @@ class Sequence(BaseSequence):
             return Sequence(iois, metrical=True)
         else:
             return Sequence(iois)
+
+    def __mul__(self, other: int):
+        return self._repeat(times=other)
+
+    def __str__(self):
+        name = self.name if self.name else "Not provided"
+        metricality = "(metrical)" if self.metrical else "(non-metrical)"
+
+        return (f"Object of type Sequence {metricality}\n"
+                f"{len(self.onsets)} events\n"
+                f"IOIs: {self.iois}\n"
+                f"Onsets: {self.onsets}\n"
+                f"Sequence name: {name}\n")
+
+    def __repr__(self):
+        if self.name:
+            f"Sequence(name={self.name}, iois={np.array2string(self.iois, threshold=8, precision=2)})"
+
+        return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
 
     @classmethod
     def from_integer_ratios(cls,
@@ -570,27 +577,6 @@ class Sequence(BaseSequence):
 
         self.iois /= np.linspace(start=1, stop=total_change, num=len(self.iois))
 
-    def repeat(self, times: int) -> Sequence:
-        """
-        Repeat the inter-onset intervals (IOIs) ``times`` times. Returns a new instance of the Sequence if required.
-        Only works for metrical sequences! Otherwise, we do not know what the IOI is between the offset of the
-        final sound in the original sequence, and the onset of the first sound in the repeated sequence.
-
-        Parameters
-        ----------
-        times
-            How many times should the inter-onset intervals be repeated?
-
-        """
-
-        if not self.metrical:
-            raise ValueError("You can only repeat metrical sequences. Try adding the metrical=True flag"
-                             "when creating this object.")
-
-        np.repeat(self.iois, repeats=times)
-
-        return self
-
     def round_onsets(self,
                      decimals: int = 0):
         """Use this function to round off the `Sequence` object's onsets (i.e. *t* values). This can, for instance,
@@ -629,6 +615,8 @@ class Sequence(BaseSequence):
             A label for the x axis.
         linewidth
             The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
+            Can be a single value that will be used for each onset, or a list or array of values
+            (i.e with a value for each respective onsets).
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -643,18 +631,20 @@ class Sequence(BaseSequence):
 
         # For the title, use the Sequence name if it has one. Otherwise use the title parameter,
         # which may be None.
-        title = self.name if self.name is not None else title
+        title = self.name if self.name else title
 
         # Linewidths
         if linewidth is None:
             linewidths = np.repeat(np.min(self.iois) / 10, len(self.onsets))
-        elif isinstance(linewidth, float):
+        elif isinstance(linewidth, (int, float)):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
             linewidths = np.array(linewidth)
 
         # If the sequence is metrical we also want to plot the final ioi
         final_ioi = self.iois[-1] if self.metrical else None
+
+        # todo There is a bug here! Something to do with the seconds and milliseconds.
 
         # Plot the sequence
         fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
@@ -719,3 +709,26 @@ class Sequence(BaseSequence):
 
         iois = self.iois
         return iois[:-1] / (iois[1:] + iois[:-1])
+
+    def _repeat(self, times: int) -> Sequence:
+        """
+        Repeat the inter-onset intervals (IOIs) ``times`` times. Returns a new Sequence instance.
+        Only works for metrical sequences! Otherwise, we do not know what the IOI is between the offset of the
+        final sound in the original sequence, and the onset of the first sound in the repeated sequence.
+
+        Parameters
+        ----------
+        times
+            How many times should the inter-onset intervals be repeated?
+
+        """
+        if not isinstance(times, int):
+            raise ValueError("You can only multiply Sequence objects by integers.")
+
+        if not self.metrical or not self.onsets[0] == 0:
+            raise ValueError("You can only repeat metrical sequences with first_onset == 0.0. "
+                             "Try adding the metrical=True flag when creating this object.")
+
+        new_iois = np.tile(self.iois, reps=times)
+
+        return Sequence(iois=new_iois, first_onset=0.0, metrical=True, name=self.name)

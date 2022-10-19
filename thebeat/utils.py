@@ -28,18 +28,22 @@ def join(objects: np.typing.ArrayLike,
             isinstance(obj, StimSequence) for obj in objects):
         raise ValueError("Please pass only Sequence or only StimSequence objects.")
 
-    if not all(obj.metrical for obj in objects):
-        raise ValueError("Please only pass metrical objects. Otherwise we miss an interval between the onset of the "
+    if not all(obj.metrical for obj in objects[:-1]):
+        raise ValueError("All passed Sequences or StimSequences need to be metrical, except for the final one. "
+                         "Otherwise we miss an interval between the onset of the "
                          "final event in a Sequence and the onset of the first event in the next sequence.")
 
     if not all(obj.onsets[0] == 0.0 for obj in objects):
         raise ValueError("Please only pass sequences that have their first event at onset 0.0")
 
-    # Concatenate the IOIs
-    iois = np.concatenate([obj.iois for obj in objects])
-    seq = Sequence(iois, metrical=True)
+    # the metricality of the sequence depends only on the final object passed
+    metricality = objects[-1].metrical
 
-    # If we're dealing with Sequences, we're done
+    # concatenate iois and create new Sequence
+    iois = np.concatenate([obj.iois for obj in objects])
+    seq = Sequence(iois, metrical=metricality)
+
+    # For Sequence objects we're done:
     if isinstance(objects[0], Sequence):
         return seq
 

@@ -35,7 +35,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                  iois: Union[np.ndarray, list],
                  time_signature: tuple = (4, 4),
                  beat_ms: float = 500,
-                 is_played: Optional[Union[npt.NDArray[bool], list[bool]]] = None,
+                 is_played: Optional[np.typing.ArrayLike[bool]] = None,
                  name: Optional[str] = None):
         r"""
         Constructs a :py:class:`Rhythm` object.
@@ -89,22 +89,25 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def __str__(self):
         return (f"Object of type Rhythm.\n"
-                f"Name: {self.name}"
                 f"Time signature: {self.time_signature}\n"
                 f"Number of bars: {self.n_bars}\n"
                 f"Beat (ms): {self.beat_ms}\n"
                 f"Number of events: {len(self.onsets)}\n"
                 f"IOIs: {self.iois}\n"
-                f"Onsets:{self.onsets}\n")
+                f"Onsets:{self.onsets}\n"
+                f"Name: {self.name}\n")
 
     def __repr__(self):
         if self.name:
-            return f"Rhythm(name={self.name}, n_bars={self.n_bars}"
+            return f"Rhythm(name={self.name}, n_bars={self.n_bars}, time_signature={self.time_signature})"
 
-        return f"Rhythm(n_bars={self.n_bars}"
+        return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature})"
 
     def __add__(self, other):
         return thebeat._helpers.join_rhythms([self, other])
+
+    def __mul__(self, other):
+        return self._repeat(times=other)
 
     @property
     def note_values(self):
@@ -175,20 +178,22 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                             numerators: npt.ArrayLike[float],
                             time_signature: tuple[int, int] = (4, 4),
                             beat_ms: int = 500,
-                            is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                            is_played: np.typing.ArrayLike[bool] = None,
                             name: Optional[str] = None) -> Rhythm:
-        """Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
+        r"""
+
+        Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
         (IOIs) as ``numerators * beat_ms``.
 
         Parameters
         ----------
         numerators
-            Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
+            Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``.
         time_signature
             A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
             *how many beats* there are in a bar. The lower number indicates the denominator of the value that
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            :math:`\frac{1}{8}`th notes.
         beat_ms
             The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
             number in the time signature is 4.
@@ -211,10 +216,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     @classmethod
     def from_note_values(cls,
-                         note_values: Union[npt.NDArray[int], list[int]],
+                         note_values: np.typing.ArrayLike[int],
                          time_signature: tuple[int, int] = (4, 4),
                          beat_ms: int = 500,
-                         is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                         is_played: Optional[np.typing.ArrayLike[bool]] = None,
                          name: Optional[str] = None) -> Rhythm:
         r"""Create a Rhythm object on the basis of note values (i.e. note durations).
 
@@ -258,7 +263,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                                n_bars: int = 1,
                                beat_ms: int = 500,
                                time_signature: tuple[int, int] = (4, 4),
-                               allowed_note_values: Optional[Union[list[int], npt.NDArray[int]]] = None,
+                               allowed_note_values: Optional[np.typing.ArrayLike[int]] = None,
                                n_rests: int = 0,
                                rng: Optional[np.random.Generator] = None,
                                name: Optional[str] = None) -> Rhythm:
@@ -340,7 +345,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                              n_bars: int = 1,
                              time_signature: tuple[int, int] = (4, 4),
                              beat_ms: int = 500,
-                             is_played: Optional[Union[list[bool], npt.NDArray[bool]]] = None,
+                             is_played: Optional[np.typing.ArrayLike[bool]] = None,
                              name: Optional[str] = None) -> Rhythm:
         r"""
 
@@ -377,7 +382,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     @requires_lilypond
     def plot_rhythm(self,
                     filepath: Union[os.PathLike, str] = None,
-                    staff_type: str = "percussion",
+                    staff_type: str = "rhythm",
                     print_staff: bool = True,
                     suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
@@ -393,24 +398,23 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
         which you can manipulate.
 
+        .. figure:: images/plot_rhythm_rhythmstaff.png
+            :scale: 100 %
 
-        .. figure:: images/plot_rhythm_nostaff.png
-            :scale: 50 %
-            :class: with-border
+            A plot with the default ``print_staff=True`` and the default ``staff_type="rhythm"``.
 
-            A plot with the default ``print_staff=False``.
 
 
         .. figure:: images/plot_rhythm_withstaff.png
             :scale: 50 %
-            :class: with-border
 
-            A plot with ``print_staff=True``.
+            A plot with the default ``print_staff=True`` and ``staff_type="percussion"``.
 
-        Caution
-        -------
-        This method does not check whether the plot makes musical sense. It simply converts
-        inter-onset intervals (IOIs) to note values and plots those. Always manually check the plot.
+
+        .. figure:: images/plot_rhythm_nostaff.png
+            :scale: 50 %
+
+            A plot with ``print_staff=False``.
 
 
         Parameters
@@ -515,6 +519,32 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         return fig, ax
 
+    def _repeat(self, times: int) -> Rhythm:
+        """
+        Repeat the Rhythm ``times`` times. Returns a new Rhythm object. The old one remains unchanged.
+
+        Parameters
+        ----------
+        times
+            How many times the Rhythm should be repeated.
+
+        """
+
+        if not isinstance(times, int):
+            raise ValueError("You can only multiply Sequence objects by integers.")
+
+        new_iois = np.tile(self.iois, reps=times)
+        is_played = self.is_played * times
+
+        return Rhythm(new_iois, beat_ms=self.beat_ms, time_signature=self.time_signature, is_played=is_played,
+                      name=self.name)
+
+    def to_sequence(self) -> thebeat.core.Sequence:
+        """
+        Convert the rhythm to a :class:`thebeat.core.Sequence` object.
+        """
+        return thebeat.core.Sequence(iois=self.iois, first_onset=0.0, metrical=True, name=self.name)
+
     def _get_abjad_note_durations(self):
         """Get abjad note durations from the integer_ratios
         #todo This needs to be done with lcm to avoid rounding problems,
@@ -561,5 +591,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             # if bar is full set bar_fullness to zero
             if bar_fullness % full_bar == 0:
                 bar_fullness = 0
+
+        # If at the end of all this the bars are not full yet, raise an error
+        if not bar_fullness % full_bar == 0:
+            raise ValueError("There was an error while trying to tie the final note of a bar to the first note"
+                             "of the subsequent bar. Try a different rhythm.")
 
         return notes, ties_at

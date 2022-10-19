@@ -7,4 +7,5 @@ Use case scenarios
    
    usecases/oddball
    usecases/bosker
-
+   usecases/repplondonkeller
+   usecases/bianco

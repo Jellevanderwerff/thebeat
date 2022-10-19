@@ -38,6 +38,7 @@ class StimSequence(BaseSequence):
     def __init__(self,
                  stimulus: Union[Stimulus, list[Stimulus], np.typing.NDArray[Stimulus]],
                  sequence: Sequence,
+                 sequence_time_unit: str = "ms",
                  name: Optional[str] = None):
         """
         Initialize a `StimSequence` object using a `Stimulus` object, or list or array of
@@ -56,6 +57,8 @@ class StimSequence(BaseSequence):
             list or array of Stimulus objects (in which case different sounds are used for each event onset).
         sequence
             A Sequence object. This contains the timing information for the played events.
+        sequence_time_unit
+            If the Sequence object was created using seconds, use "s". The default is milliseconds ("ms").
         name
             You can provide a name for the :py:class:`StimSequence` which is sometimes used
             (e.g. when printing the object, or when plotting one). You can always retrieve this attribute from
@@ -88,17 +91,16 @@ class StimSequence(BaseSequence):
         if not isinstance(sequence, Sequence):
             raise ValueError("Please provide a Sequence object as the second argument.")
 
-        # Check whether fs, dtype, and n_channels are the same for all stimuli
-        all_fs = [snd.fs for snd in stimuli]
-        all_dtypes = [snd.dtype for snd in stimuli]
-        all_n_channels = [snd.n_channels for snd in stimuli]
+        # Get IOIs from sequence
+        iois = sequence.iois
 
-        if not all(fs == all_fs[0] for fs in all_fs):
-            raise ValueError("The Stimulus objects in the passed list have different sampling frequencies!")
-        elif not all(dtype == all_dtypes[0] for dtype in all_dtypes):
-            raise ValueError("The Stimulus objects in the passed list have different dtypes!")
-        elif not all(n_channels == all_n_channels[0] for n_channels in all_n_channels):
-            raise ValueError("The Stimulus objects in the passed list have differing number of channels!")
+        # If we're dealing with seconds, internally change to milliseconds
+        if sequence_time_unit == "s":
+            iois *= 1000
+
+        # Check whether dtype, number of channels etc. is the same. This function raises errors if that's
+        # not the case
+        thebeat._helpers.check_sound_properties_sameness(stimuli)
 
         # Save attributes
         self.fs = stimuli[0].fs
@@ -109,7 +111,7 @@ class StimSequence(BaseSequence):
         self.stim_objects = stimuli
 
         # Initialize BaseSequence class
-        super().__init__(sequence.iois, metrical=sequence.metrical, name=name)
+        super().__init__(iois, metrical=sequence.metrical, name=name)
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
@@ -118,12 +120,18 @@ class StimSequence(BaseSequence):
         # Make sound which saves the samples to self.samples
         self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
 
+    def __add__(self, other):
+        return thebeat.utils.join([self, other])
+
+    def __mul__(self, other: int):
+        return self._repeat(times=other)
+
     def __str__(self):
         # Name of the StimSequence
         name = self.name if self.name else "Not provided"
 
         # Names of the stimuli
-        if all(self.stim_names is None):
+        if all(stim_name is None for stim_name in self.stim_names):
             stim_names = "None provided"
         else:
             stim_names = []
@@ -166,7 +174,7 @@ class StimSequence(BaseSequence):
 
         Examples
         --------
-        >>> stim = Stimulus.generate(offramp=10)
+        >>> stim = Stimulus.generate(offramp_ms=10)
         >>> seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50)
         >>> stimseq = StimSequence(stim, seq)
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
@@ -196,6 +204,7 @@ class StimSequence(BaseSequence):
                       style: str = 'seaborn',
                       title: str = None,
                       figsize: tuple = None,
+                      linewidth: Optional[Union[float, list[float], np.typing.NDArray[float]]] = None,
                       suppress_display: bool = False):
         """
         Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
@@ -212,6 +221,10 @@ class StimSequence(BaseSequence):
         figsize
             A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
             This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        linewidth
+            The desired width of the bars (events). Defaults to the event durations.
+            Can be a single value that will be used for each onset, or a list or array of values
+            (i.e with a value for each respective onsets).
         suppress_display
             If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
 
@@ -225,10 +238,17 @@ class StimSequence(BaseSequence):
 
         """
 
-        linewidths = self.event_durations
+        # Make title
+        title = self.name if self.name else title
+
+        # The linewidths are the event durations for a StimSequence unless otherwise specified
+        if linewidth:
+            linewidths = [linewidth] * len(self.onsets) if isinstance(linewidth, (int, float)) else linewidth
+        else:
+            linewidths = self.event_durations
 
         # If we're dealing with a long StimSequence, plot seconds instead of milliseconds
-        if np.max(self.onsets) > 1000:
+        if np.max(self.onsets) > 10000:
             linewidths /= 1000
             onsets = self.onsets / 1000
             x_axis_label = "Time (s)"
@@ -380,9 +400,22 @@ class StimSequence(BaseSequence):
         self.event_durations = np.array([stim.duration_ms for stim in stimuli])
 
         # return sound
-        if np.max(samples) > 1:
-            warnings.warn("Sound was normalized")
+        if np.max(np.abs(samples)) > 1:
+            warnings.warn(thebeat._warnings.normalization)
             return thebeat._helpers.normalize_audio(samples)
         else:
             return samples
 
+    def _repeat(self, times: int):
+        if not isinstance(times, int):
+            raise ValueError("Can only multiply the StimSequenec by an integer value")
+
+        if not self.metrical or not self.onsets[0] == 0:
+            raise ValueError("You can only repeat metrical sequences."
+                             "Try adding the metrical=True flag when creating the Sequence object.")
+
+        new_iois = np.tile(self.iois, reps=times)
+        new_seq = Sequence(iois=new_iois, first_onset=0, metrical=True)
+        new_stims = np.tile(self.stim_objects, reps=times)
+
+        return StimSequence(stimulus=new_stims, sequence=new_seq, name=self.name)

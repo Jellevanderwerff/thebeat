@@ -31,7 +31,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
     of the different class methods, such as the
     :py:meth:`~Melody.generate_random_melody` method.
 
-    Most of the functions require you to install `abjad <https://abjad.github.io/>_. Please note that the
+    Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
     current version of `abjad` requires Python 3.10. The last version that supported Python 3.6-3.9 is
     `this one <https://pypi.org/project/abjad/3.4/>`_.
 
@@ -49,7 +49,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         Parameters
         ----------
         rhythm
-            A :py:class:`Rhythm` object.
+            A :py:class:`~thebeat.rhythm.Rhythm` object.
         pitch_names
             An array or list containing note names. They can be in a variety of formats, such as
             ``"G4"`` for a G note in the fourth octave, or ``"g'"``, or simply ``G``. The names are
@@ -246,22 +246,15 @@ class Melody(thebeat.core.sequence.BaseSequence):
                     suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
         """
         Use this function to plot the melody in musical notes. It requires lilypond to be installed. See
-        :meth:`Rhythm.plot_rhythm` for installation instructions.
+        :py:meth:`Rhythm.plot_rhythm` for installation instructions.
 
 
 
         .. figure:: images/plot_melody.png
             :scale: 50 %
-            :class: with-border
 
             An example of a melody plotted with this method.
 
-
-        Caution
-        -------
-        This method does not check whether the plot makes musical sense. It simply converts
-        inter-onset intervals (IOIs) to note values and plots those together with the notes.
-        Always manually check the plot!
 
         Parameters
         ----------
@@ -308,8 +301,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
                               n_channels: int = 1,
                               amplitude: float = 1.0,
                               oscillator: str = 'sine',
-                              onramp: int = 0,
-                              offramp: int = 0,
+                              onramp_ms: int = 0,
+                              offramp_ms: int = 0,
                               ramp_type: str = 'linear',
                               metronome: bool = False,
                               metronome_amplitude: float = 1.0) -> tuple[np.ndarray, int]:
@@ -339,12 +332,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
             values higher than 1 in louder sounds. Defaults to 1.0.
         oscillator
             The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
-        onramp
+        onramp_ms
             The sound's 'attack' in milliseconds.
-        offramp
+        offramp_ms
             The sound's 'decay' in milliseconds.
         ramp_type
-            The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
+            The type of on- and offramp_ms used. Either 'linear' (the default) or 'raised-cosine'.
         metronome
             If ``True``, a metronome sound is added to the samples. It uses :py:attr:`Melody.beat_ms` as the inter-onset
             interval.
@@ -361,8 +354,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp=onramp,
-                                          n_channels=n_channels, offramp=offramp, ramp_type=ramp_type,
+        samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp_ms=onramp_ms,
+                                          n_channels=n_channels, offramp_ms=offramp_ms, ramp_type=ramp_type,
                                           event_durations=event_durations)
 
         if metronome is True:
@@ -377,8 +370,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
                             n_channels: int = 1,
                             amplitude: float = 1.0,
                             oscillator: str = 'sine',
-                            onramp: int = 0,
-                            offramp: int = 0,
+                            onramp_ms: int = 0,
+                            offramp_ms: int = 0,
                             ramp_type: str = 'linear',
                             metronome: bool = False,
                             metronome_amplitude: float = 1.0):
@@ -408,9 +401,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             values higher than 1 in louder sounds. Defaults to 1.0.
         oscillator
             The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
-        onramp
+        onramp_ms
             The sound's 'attack' in milliseconds.
-        offramp
+        offramp_ms
             The sound's 'decay' in milliseconds.
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
@@ -433,8 +426,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         """
 
         samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
-                                                amplitude=amplitude, oscillator=oscillator, onramp=onramp,
-                                                offramp=offramp, ramp_type=ramp_type, metronome=metronome,
+                                                amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
+                                                offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
 
         sounddevice.play(samples, samplerate=fs)
@@ -447,8 +440,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
                              n_channels: int = 1,
                              amplitude: float = 1.0,
                              oscillator: str = 'sine',
-                             onramp: int = 0,
-                             offramp: int = 0,
+                             onramp_ms: int = 0,
+                             offramp_ms: int = 0,
                              ramp_type: str = 'linear',
                              metronome: bool = False,
                              metronome_amplitude: float = 1.0):
@@ -480,9 +473,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             values higher than 1 in louder sounds. Defaults to 1.0.
         oscillator
             The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
-        onramp
+        onramp_ms
             The sound's 'attack' in milliseconds.
-        offramp
+        offramp_ms
             The sound's 'decay' in milliseconds.
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
@@ -502,8 +495,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         """
 
         samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
-                                                amplitude=amplitude, oscillator=oscillator, onramp=onramp,
-                                                offramp=offramp, ramp_type=ramp_type, metronome=metronome,
+                                                amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
+                                                offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
 
         if metronome is True:
@@ -532,8 +525,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
                            n_channels: int,
                            oscillator: str,
                            amplitude: float,
-                           onramp: int,
-                           offramp: int,
+                           onramp_ms: int,
+                           offramp_ms: int,
                            ramp_type: str,
                            event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None):
 
@@ -567,9 +560,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
                                                                   freq=abjad.NamedPitch(event.pitch_name).hertz,
                                                                   n_channels=n_channels, oscillator=oscillator,
                                                                   amplitude=amplitude)
-                if onramp or offramp:
-                    event_samples = thebeat._helpers.make_ramps(samples=event_samples, fs=fs, onramp=onramp,
-                                                                offramp=offramp, ramp_type=ramp_type)
+                if onramp_ms or offramp_ms:
+                    event_samples = thebeat._helpers.make_ramps(samples=event_samples, fs=fs, onramp_ms=onramp_ms,
+                                                                offramp_ms=offramp_ms, ramp_type=ramp_type)
 
                 # Calculate start- and end locations for inserting the event into the output array
                 # and warn if the location in terms of frames was rounded off.

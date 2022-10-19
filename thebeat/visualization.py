@@ -8,9 +8,9 @@ import numpy as np
 
 def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn',
-                            sequence_names: Optional[list[str], np.ndarray[str]] = None,
                             title: Optional[str] = None,
                             x_axis_label: str = "Time",
+                            y_axis_labels: Optional[list[str], np.ndarray[str]] = None,
                             linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False):
@@ -20,7 +20,6 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     Parameters
     ----------
-    x_axis_label
     sequences
         A list or array of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` objects.
         Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
@@ -28,7 +27,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     style
         Matplotlib style to use for the plot. See `matplotlib style sheets reference
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
-    sequence_names
+    x_axis_label
+        A label for the x axis.
+    y_axis_labels
         A list or array containing names for the sequences as strings. For instance ``['Sequence 1', 'Sequence 2']``
         etc. Must be of the same length as the number of sequences passed. If no names are provided, defaults to
         numbering the sequences.
@@ -50,7 +51,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     --------
     >>> generator = np.random.default_rng(seed=123)
     >>> seqs = [thebeat.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
-    >>> plot_multiple_sequences(seqs, linewidths=50)  # doctest: +SKIP
+    >>> plot_multiple_sequences(seqs,linewidths=50)  # doctest: +SKIP
 
     """
 
@@ -64,9 +65,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     # Make names for the bars
     n_seqs = len(sequences)
-    if sequence_names is None:
-        sequence_names = [str(i) for i in range(1, n_seqs + 1)]
-    elif len(sequence_names) != len(sequences):
+    if y_axis_labels is None:
+        y_axis_labels = ([str(i) for i in range(1, n_seqs + 1)])
+    elif len(y_axis_labels) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
@@ -78,10 +79,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
             all_iois = [sequence.iois for sequence in sequences]
             smallest_ioi = np.min(np.concatenate(all_iois))
             linewidths = [smallest_ioi / 10] * len(sequences)
-    elif not hasattr(linewidths, '__iter__'):
-        linewidths = [linewidths] * len(sequences)
     else:
-        raise ValueError("Please provide an iterable for the linewidths.")
+        linewidths = [linewidths] * len(sequences)
 
     # Plot
     with plt.style.context(style):
@@ -91,7 +90,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         ax.axes.set_title(title)
         ax.axes.set_xlabel(x_axis_label)
 
-        for onsets, label, linewidths in zip(onsets, sequence_names, linewidths):
+        for onsets, label, linewidths in zip(reversed(onsets), reversed(y_axis_labels), reversed(linewidths)):
             ax.barh(y=label, width=linewidths, left=onsets)
 
         # Make sure we always have 0 on the left side of the x axis

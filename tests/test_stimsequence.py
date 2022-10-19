@@ -1,7 +1,7 @@
 import pytest
 import thebeat.core
 import os
-
+import numpy as np
 
 def test_stimsequence(tmp_path):
     seq = thebeat.core.Sequence.generate_isochronous(10, 500)
@@ -23,3 +23,21 @@ def test_stimsequence(tmp_path):
     trial = thebeat.core.StimSequence(stim, seq)
 
     trial.write_wav(tmp_path / 'test.wav', metronome=True)
+
+    # compare seconds and milliseconds
+    trial_s = thebeat.core.StimSequence(thebeat.core.Stimulus.generate(),
+                                        thebeat.core.Sequence.generate_isochronous(n=10, ioi=0.5),
+                                        sequence_time_unit="s")
+    trial_ms = thebeat.core.StimSequence(thebeat.core.Stimulus.generate(),
+                                         thebeat.core.Sequence.generate_isochronous(n=10, ioi=500),
+                                         sequence_time_unit="ms")
+
+    assert np.all(trial_s.iois == trial_ms.iois)
+
+
+def test_multiplication():
+    trial = thebeat.core.StimSequence(thebeat.core.Stimulus.generate(),
+                                      thebeat.core.Sequence.generate_isochronous(n=5, ioi=100, metrical=True))
+    trial *= 10
+
+    assert len(trial.onsets) == 50

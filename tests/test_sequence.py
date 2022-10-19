@@ -92,3 +92,12 @@ def test_onset_not_zero():
 
     with pytest.raises(ValueError):
         thebeat.core.Sequence([50, 50, 50], metrical=True, first_onset=50)
+
+
+def test_multiplication():
+    seq = thebeat.core.Sequence([500, 500, 500])
+    with pytest.raises(ValueError):
+        seq_m = seq * 10
+    seq = thebeat.core.Sequence([500, 500, 500], metrical=True)
+    seq *= 10
+    assert len(seq.iois) == 30

@@ -9,6 +9,6 @@ seq = generate_trimoraic_sequence(10)
 seq.add_noise_gaussian(25)
 
 # check out ACF plot and get ACF dataframe
-acf_plot(seq, smoothe_width=100, smoothe_sd=30)
+acf_plot(seq)
 print(scipy.signal.find_peaks(acf_values(seq, 1, 100, 30)))
 print(acf_df(seq))

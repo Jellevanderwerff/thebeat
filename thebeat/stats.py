@@ -9,7 +9,7 @@ import scipy.signal
 import pandas as pd
 
 
-def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
+def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
            resolution_ms: int = 1,
            smoothing_window: Optional[float] = None,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
@@ -57,9 +57,7 @@ def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, lis
 
     """
 
-    correlations = acf_values(sequence=sequence,
-                              resolution_ms=resolution_ms,
-                              smoothing_window=smoothing_window,
+    correlations = acf_values(sequence=sequence, resolution=resolution_ms, smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
     correlations = correlations / max(correlations)
     times_ms = np.arange(start=0, stop=len(correlations) * resolution_ms, step=resolution_ms)
@@ -74,12 +72,13 @@ def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, lis
     return df
 
 
-def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
-             resolution_ms: int = 1,
+def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+             resolution: int = 1,
              smoothing_window: Optional[float] = None,
              smoothing_sd: Optional[float] = None,
              style: str = 'seaborn',
              title: str = 'Autocorrelation',
+             x_axis_label: str = 'Lag',
              figsize: Optional[tuple] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
@@ -92,7 +91,7 @@ def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, l
     sequence
         Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
         or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
-    resolution_ms
+    resolution
         The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
         calculated for the autocorrelation function can be calculated as
         ``n_lags = sequence_duration_in_ms / resolution_ms``
@@ -108,6 +107,8 @@ def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, l
         If desired, one can provide a title for the plot. This takes precedence over using the
         :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` name as the title of the plot
         (if passed and the object has one).
+    x_axis_label
+        A label for the x axis.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -122,17 +123,15 @@ def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, l
     """
 
     if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
-        onsets_ms = sequence.onsets
+        onsets = sequence.onsets
     else:
-        onsets_ms = sequence
+        onsets = sequence
 
-    correlation = acf_values(sequence=sequence,
-                             resolution_ms=resolution_ms,
-                             smoothing_window=smoothing_window,
+    correlation = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
                              smoothing_sd=smoothing_sd)
 
-    x_step = resolution_ms
-    max_lag = np.floor(np.max(onsets_ms))
+    x_step = resolution
+    max_lag = np.floor(np.max(onsets))
 
     # plot
     y = correlation[:int(max_lag)]
@@ -141,27 +140,25 @@ def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, l
     # Make x axis
     x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
 
-    # Do seconds instead of milliseconds above 10s
-    if np.max(x) > 10000:
-        x = x / 1000
-        x_label = "Lag [s]"
-    else:
-        x_label = "Lag [ms]"
+    if isinstance(sequence, thebeat.core.StimSequence):
+        x /= 1000
+        if np.max(x) > 10000:
+            x /= 1000
 
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.axes.set_xlabel(x_label)
+        ax.axes.set_xlabel(x_axis_label)
         ax.axes.set_title(title)
         ax.plot(x, y)
 
-    if suppress_display is False:
+    if not suppress_display:
         plt.show()
 
     return fig, ax
 
 
-def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
-               resolution_ms: int = 1,
+def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+               resolution: int = 1,
                smoothing_window: Optional[float] = None,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
@@ -175,7 +172,7 @@ def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence,
     sequence
         Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
         e.g. ``[0, 500, 1000]``.
-    resolution_ms
+    resolution
         The temporal resolution in milliseconds (i.e. sampling frequency). The number of lags calculated for the
         autocorrelation function can be calculated as ``n_lags = sequence_duration_in_ms / resolution_ms``.
     smoothing_window
@@ -198,27 +195,27 @@ def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence,
     else:
         onsets_ms = sequence
 
-    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms)
+    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution)
 
     # npdf
-    if smoothing_window is not None or smoothing_sd is not None:
-        x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution_ms)
+    if smoothing_window and smoothing_sd:
+        x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution)
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
         signal_convoluted = np.convolve(signal, npdf)
-        signal = signal_convoluted[round(resolution_ms * smoothing_window / 2):]
+        signal = signal_convoluted[round(resolution * smoothing_window / 2):]
 
     try:
         correlation = np.correlate(signal, signal, 'full')
         correlation = correlation[round(len(correlation) / 2) - 1:]
     except ValueError as e:
-        raise ValueError("Error! Hint: Most likely your resolution_ms is too large for the chosen smoothing_window"
+        raise ValueError("Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
                          "and smoothing_sd. Try choosing a smaller resolution_ms.") from e
 
     return correlation
 
 
-def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray],
+def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -277,7 +274,7 @@ def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, li
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list, np.ndarray]) -> np.float64:
+def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike]) -> np.float64:
     """
 
     This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
@@ -330,7 +327,7 @@ def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, l
     return np.float64(npvi)
 
 
-def get_ugof(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, list[float], np.ndarray[float]],
+def get_ugof(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike[float]],
              theoretical_ioi: float,
              output_statistic: str = 'mean') -> np.float64:
     """

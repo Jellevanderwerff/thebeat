@@ -67,6 +67,29 @@ class Stimulus:
         self.n_channels = n_channels
         self.name = name
 
+    def __add__(self, other: Stimulus):
+        if not isinstance(other, Stimulus):
+            raise ValueError("Can only overlay another Stimulus object on this Stimulus object.")
+
+        # Check sameness of number of channels etc.
+        thebeat._helpers.check_sound_properties_sameness([self, other])
+
+        # Overlay sounds
+        samples = thebeat._helpers.overlay_samples([self.samples, other.samples])
+
+        return Stimulus(samples=samples, fs=self.fs, name=self.name)
+
+    def __mul__(self, other: int):
+        if not isinstance(other, int):
+            raise ValueError("Can only multiply by an integer.")
+
+        return Stimulus(samples=np.tile(self.samples, other), fs=self.fs, name=self.name)
+
+    def __repr__(self):
+        if self.name:
+            return f"Stimulus(name={self.name}, duration_ms={self.duration_ms})"
+        return f"Stimulus(duration_ms={self.duration_ms})"
+
     def __str__(self):
 
         return (f"Object of type Stimulus\n"
@@ -74,11 +97,6 @@ class Stimulus:
                 f"Stimulus duration: {self.duration_ms} ms\n"
                 f"Number of channels: {self.n_channels}\n"
                 f"Sampling frequency {self.fs}")
-
-    def __repr__(self):
-        if self.name:
-            return f"Stimulus(name={self.name}, duration_ms={self.duration_ms})"
-        return f"Stimulus(duration_ms={self.duration_ms})"
 
     def copy(self):
         """Returns a shallow copy of itself"""
@@ -119,12 +137,12 @@ class Stimulus:
     def generate(cls,
                  freq: int = 440,
                  fs: int = 48000,
-                 duration: int = 50,
+                 duration_ms: int = 50,
                  n_channels: int = 1,
                  amplitude: float = 1.0,
                  oscillator: str = 'sine',
-                 onramp: int = 0,
-                 offramp: int = 0,
+                 onramp_ms: int = 0,
+                 offramp_ms: int = 0,
                  ramp_type: str = 'linear',
                  name: Optional[str] = None) -> Stimulus:
         """
@@ -137,7 +155,7 @@ class Stimulus:
             The pitch frequency in hertz.
         fs
             The sampling frequency in hertz.
-        duration
+        duration_ms
             The duration in milliseconds.
         n_channels
             The number of channels. 1 for mono, 2 for stereo.
@@ -146,9 +164,9 @@ class Stimulus:
             values higher than 1 in louder sounds.
         oscillator
             Either 'sine' (the default) 'square' or 'sawtooth'.
-        onramp
+        onramp_ms
             The sound's 'attack' in milliseconds.
-        offramp
+        offramp_ms
             The sound's 'decay' in milliseconds.
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
@@ -158,17 +176,17 @@ class Stimulus:
 
         Examples
         --------
-        >>> stim = Stimulus.generate(freq=1000,onramp=10,offramp=10)
+        >>> stim = Stimulus.generate(freq=1000, onramp_ms=10, offramp_ms=10)
         >>> stim.plot_waveform()  # doctest: +SKIP
 
         """
 
         # Generate signal
-        samples = thebeat._helpers.synthesize_sound(duration_ms=duration, fs=fs, freq=freq, n_channels=n_channels,
+        samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
                                                     amplitude=amplitude, oscillator=oscillator)
 
         # Make ramps
-        samples = thebeat._helpers.make_ramps(samples, fs, onramp, offramp, ramp_type)
+        samples = thebeat._helpers.make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type)
 
         # Return class
         return cls(samples, fs, name)
@@ -180,8 +198,8 @@ class Stimulus:
                   fs: int = 48000,
                   amplitude: float = 1.0,
                   oscillator: str = 'sine',
-                  onramp: int = 0,
-                  offramp: int = 0,
+                  onramp_ms: int = 0,
+                  offramp_ms: int = 0,
                   ramp: str = 'linear',
                   name: Optional[str] = None) -> Stimulus:
         """
@@ -201,12 +219,12 @@ class Stimulus:
             values higher than 1 in louder sounds.
         oscillator
             The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
-        onramp
+        onramp_ms
             The sound's 'attack' in milliseconds.
-        offramp
+        offramp_ms
             The sound's 'decay' in milliseconds.
         ramp
-            The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
+            The type of on- and offramp_ms used. Either 'linear' (the default) or 'raised-cosine'.
         name
             Optionally, one can provide a name for the Stimulus. This is for instance useful when distinguishing
             A and B stimuli. It is used when the Stimulus sound is printed, written to a file, or when it is plotted.
@@ -215,7 +233,7 @@ class Stimulus:
         --------
         >>> stim = Stimulus.from_note('G',duration=20)
 
-        >>> stim = Stimulus.from_note('G4',onramp=10,offramp=10,ramp='raised-cosine')
+        >>> stim = Stimulus.from_note('G4',onramp_ms=10, offramp_ms=10, ramp='raised-cosine')
 
         """
 
@@ -233,8 +251,8 @@ class Stimulus:
         else:
             raise ValueError("Please provide a string of format 'G' or 'G4'.")
 
-        return Stimulus.generate(freq=freq, fs=fs, duration=duration, amplitude=amplitude, oscillator=oscillator,
-                                 onramp=onramp, offramp=offramp, ramp_type=ramp, name=name)
+        return Stimulus.generate(freq=freq, fs=fs, duration_ms=duration, amplitude=amplitude, oscillator=oscillator,
+                                 onramp_ms=onramp_ms, offramp_ms=offramp_ms, ramp_type=ramp, name=name)
 
     @classmethod
     def from_parselmouth(cls,
