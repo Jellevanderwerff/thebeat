@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from typing import Union, Optional
 import thebeat._helpers
 import numpy as np
+from matplotlib.colors import ListedColormap
+import scipy.spatial.distance
 
 
 def plot_multiple_sequences(sequences: Union[list, np.ndarray],
@@ -103,5 +105,22 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     return fig, ax
 
 
-def recurrence_plot():
-    raise NotImplementedError
+def recurrence_plot(sequence: thebeat.core.Sequence,
+                    figsize: tuple = (4, 4),
+                    threshold: float = 0.03):
+
+    iois_s = sequence.iois / 1000
+    distance_matrix = np.empty((len(iois_s), len(iois_s)))
+    # todo Do this vectorized
+    for i in range(len(iois_s)):
+        for j in range(len(iois_s)):
+            dist = np.abs(iois_s[i] - iois_s[j])
+            distance_matrix[i, j] = dist
+
+    binary_matrix = distance_matrix < threshold
+
+    binary_matrix = binary_matrix.astype(int)
+
+    fig, ax = plt.subplots(dpi=300, figsize=figsize, tight_layout=True)
+    ax.pcolormesh(binary_matrix, cmap="Greys")
+    fig.show()

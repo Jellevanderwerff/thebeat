@@ -329,7 +329,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
                          x_axis_label: str = "Time",
                          linewidths: Optional[Union[list[float], npt.NDArray[float], float]] = None,
                          figsize: Optional[tuple] = None,
-                         dpi: int = 300,
+                         dpi: int = 100,
                          suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     This function plots the onsets of a Sequence or StimSequence object in an event plot.
@@ -369,6 +369,11 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
     # Make onsets array
     onsets = np.array(onsets)
 
+    # Get matplotlib default size
+    if not figsize:
+        cur_size = plt.rcParams["figure.figsize"]
+        figsize = (cur_size[0], cur_size[1] / 2)
+
     # Make plot
     with plt.style.context(style):
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
@@ -394,7 +399,7 @@ def plot_waveform(samples: np.ndarray,
                   style: str = 'seaborn',
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
-                  dpi: int = 300,
+                  dpi: int = 100,
                   suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     This helper function plots a waveform of a sound using matplotlib.

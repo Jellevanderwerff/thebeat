@@ -643,8 +643,7 @@ class Sequence(BaseSequence):
 
         Example
         -------
-
-        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000.
         This can be described using the least common multiplier as
         :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
         so this method returns the numerators ``[1, 2, 4, 1]``.
@@ -696,19 +695,19 @@ class Sequence(BaseSequence):
         """
         Repeat the inter-onset intervals (IOIs) ``times`` times. Returns a new Sequence instance.
         Only works for metrical sequences! Otherwise, we do not know what the IOI is between the offset of the
-        final sound in the original sequence, and the onset of the first sound in the repeated sequence.
+        final event of the original sequence, and the onset of the first sound in the repeated sequence.
 
         Parameters
         ----------
         times
-            How many times should the inter-onset intervals be repeated?
+            The number of times the inter-onset intervals should be repeated.
 
         """
         if not isinstance(times, int):
             raise ValueError("You can only multiply Sequence objects by integers.")
 
         if not self.metrical or not self.onsets[0] == 0:
-            raise ValueError("You can only repeat metrical sequences with first_onset == 0.0. "
+            raise ValueError("You can only repeat metrical sequences that additionally have first_onset == 0.0. "
                              "Try adding the metrical=True flag when creating this object.")
 
         new_iois = np.tile(self.iois, reps=times)
