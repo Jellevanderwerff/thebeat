@@ -58,9 +58,15 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     Examples
     --------
+    >>> from thebeat.core import Sequence
     >>> generator = np.random.default_rng(seed=123)
-    >>> seqs = [thebeat.core.Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
+    >>> seqs = [Sequence.generate_random_normal(n=5, mu=5000, sigma=50, rng=generator) for _ in range(10)]
     >>> plot_multiple_sequences(seqs,linewidths=50)  # doctest: +SKIP
+
+    >>> seq1 = Sequence([500, 100, 200])
+    >>> seq2 = Sequence([100, 200, 500])
+    >>> fig, ax = plot_multiple_sequences([seq1, seq2], colors=['red', 'blue'])  # doctest: +SKIP
+    >>> fig.savefig('test.png')  # doctest: +SKIP
 
     """
 
@@ -131,10 +137,25 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
                     title: Optional[str] = None,
                     x_axis_label: str = "IOI number",
                     y_axis_label: str = "IOI number",
-                    figsize: tuple = (4, 4),
+                    figsize: tuple = (5, 4),
                     suppress_display: bool = False,
                     dpi: int = 100) -> tuple[plt.Figure, plt.Axes]:
     """
+    Plot a recurrence plot of a sequence. A recurrence plot is a plot with the IOI numbers (i.e. their indices) on the
+    x and y axis, and the distance between the IOIs on the color scale. For each combination of two IOIs,
+    the distance between these IOIs is calculated as their absolute difference (which may for instance
+    be in seconds or milliseconds, depending on your input during construction of the :py:class:`Sequence` object).
+
+    If you provide a ``threshold``, the plot will be binary, where color indicates anything below the threshold,
+    and where white indicates anything above the threshold.
+
+    Example
+    -------
+
+    .. figure:: images/recurrence_plot.png
+        :width: 85 %
+
+        Example recurrence plot with ``colorbar=True``.
 
     Parameters
     ----------
@@ -151,8 +172,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     cmap
         The colormap to use for the plot. See
         `matplotlib colormaps reference <https://matplotlib.org/stable/gallery/color/colormap_reference.html>`_
-        for the different options. For binary plots, the default is ``Greys``, for colored plots, the default is
-        ``viridis``.
+        for the different options. For binary plots, the default is ``'Greys'``, for colored plots, the default is
+        ``'viridis'``.
     style
         Matplotlib style to use for the plot. See `matplotlib style sheets reference
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
@@ -171,13 +192,18 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
 
     Examples
     --------
-    >>> from thebeat.core import Sequence
-    >>> from thebeat.visualization import recurrence_plot
-    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
-    >>> recurrence_plot(seq)  # doctest: +SKIP
 
     >>> from thebeat.core import Sequence
     >>> from thebeat.visualization import recurrence_plot
+    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
+
+    # No color bar, no threshold
+    >>> recurrence_plot(seq)  # doctest: +SKIP
+
+    # Color bar, no threshold
+    >>> fig, ax = recurrence_plot(seq, dpi=300, colorbar=True)
+    >>> fig.savefig('recurrence_plot.png', bbox_inches='tight')
+
     >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
     >>> fig, ax = recurrence_plot(seq, threshold=5, dpi=300, suppress_display=True)
     >>> fig.savefig('recurrence_plot.png')  # doctest: +SKIP
@@ -185,7 +211,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     Notes
     -----
     The binary recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
-    The coloured recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    The coloured recurrence plot is based on :footcite:t:`burchardtNovelIdeasFurther2021`.
 
     """
     # Make title
@@ -209,6 +235,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
+        ax.set_aspect('equal')
 
         if colorbar is True:
             fig.colorbar(pcm, ax=ax, label=colorbar_label)
