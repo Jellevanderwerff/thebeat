@@ -275,6 +275,7 @@ class Sequence(BaseSequence):
                                mu: float,
                                sigma: float,
                                rng: Optional[np.random.Generator] = None,
+                               metrical: bool = False,
                                **kwargs) -> Sequence:
         """
         Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
@@ -291,6 +292,9 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -309,7 +313,6 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
-        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), metrical=metrical, **kwargs)
@@ -320,6 +323,7 @@ class Sequence(BaseSequence):
                                 a: float,
                                 b: float,
                                 rng: Optional[np.random.Generator] = None,
+                                metrical: bool = False,
                                 **kwargs) -> Sequence:
         """
         Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on a
@@ -336,6 +340,9 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -356,7 +363,6 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
-        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         iois = rng.uniform(low=a, high=b, size=n_iois)
@@ -367,6 +373,7 @@ class Sequence(BaseSequence):
                                 n: int,
                                 lam: float,
                                 rng: Optional[np.random.Generator] = None,
+                                metrical: bool = False,
                                 **kwargs) -> Sequence:
 
         """
@@ -382,6 +389,9 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -398,7 +408,6 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
-        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.poisson(lam=lam, size=n_iois), metrical=metrical, **kwargs)
@@ -408,6 +417,7 @@ class Sequence(BaseSequence):
                                     n: int,
                                     lam: float,
                                     rng: Optional[np.random.Generator] = None,
+                                    metrical: bool = False,
                                     **kwargs) -> Sequence:
         """Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on
         an exponential distribution.
@@ -421,6 +431,9 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied NumPy's :func:`numpy.random.default_rng` is
             used.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -436,8 +449,6 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
-        # Number of IOIs depends on metricality
-        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, **kwargs)
@@ -446,6 +457,7 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: float,
+                             metrical: bool = False,
                              **kwargs) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
@@ -457,6 +469,9 @@ class Sequence(BaseSequence):
             The desired number of events in the sequence.
         ioi
             The inter-onset interval to be used between all events.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -480,7 +495,6 @@ class Sequence(BaseSequence):
         """
 
         # Number of IOIs depends on metricality
-        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls([ioi] * n_iois, metrical=metrical, **kwargs)
