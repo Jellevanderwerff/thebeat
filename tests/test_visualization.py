@@ -13,14 +13,28 @@ def test_event_plot_multiple():
 
     fig, ax = plot_multiple_sequences(trials, style='ggplot', suppress_display=True)
 
-    assert fig
-    assert ax
+    assert fig, ax
 
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25) for _ in range(10)]
     plot_multiple_sequences(seqs, suppress_display=True)
+
+    seq1 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, metrical=True)
+    seq2 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, metrical=True)
+    fig, ax = plot_multiple_sequences([seq1, seq2],
+                                      figsize=(10, 5),
+                                      colors=['red', 'blue'],
+                                      suppress_display=True)
+    assert fig, ax
+
+    fig, ax = plot_multiple_sequences([seq1, seq2],
+                                      figsize=(10, 5),
+                                      colors=[(1, 0, 0), (0, 0, 1)],
+                                      suppress_display=True)
+    assert fig, ax
 
 
 def test_recurrence_plot():
     seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, metrical=True) * 5
     fig, ax = recurrence_plot(seq, 0.03)
     assert fig, ax
+

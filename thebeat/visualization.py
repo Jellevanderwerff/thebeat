@@ -15,7 +15,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             y_axis_labels: Optional[list[str], np.ndarray[str]] = None,
                             linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
-                            suppress_display: bool = False):
+                            suppress_display: bool = False,
+                            dpi: int = 100,
+                            colors: Union[list, np.ndarray] = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
@@ -33,7 +35,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     y_axis_labels
         A list or array containing names for the sequences as strings. For instance ``['Sequence 1', 'Sequence 2']``
         etc. Must be of the same length as the number of sequences passed. If no names are provided, defaults to
-        numbering the sequences.
+        numbering the sequences. This is because matplotlib needs a label there.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
         Sequence or StimSequence name as the title of the plot (if passed and the object has one).
@@ -47,6 +49,12 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
     suppress_display
         If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+    dpi
+        The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
+        :func:`matplotlib.pyplot.figure`.
+    colors
+        A list or array of colors to use for the plot. If not provided, the default matplotlib colors are used.
+        Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
 
     Examples
     --------
@@ -85,14 +93,24 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
 
         # Labels
         ax.axes.set_title(title)
         ax.axes.set_xlabel(x_axis_label)
 
-        for onsets, label, linewidths in zip(reversed(onsets), reversed(y_axis_labels), reversed(linewidths)):
-            ax.barh(y=label, width=linewidths, left=onsets)
+        # Colors
+        if colors:
+            if len(colors) != len(sequences):
+                raise ValueError("Please provide an equal number of colors as sequences.")
+        else:
+            colors = [None] * len(sequences)
+
+        for onsets, label, linewidths, color in zip(reversed(onsets),
+                                                    reversed(y_axis_labels),
+                                                    reversed(linewidths),
+                                                    reversed(colors)):
+            ax.barh(y=label, width=linewidths, left=onsets, color=color)
 
         # Make sure we always have 0 on the left side of the x axis
         current_lims = ax.get_xlim()
@@ -167,7 +185,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     Notes
     -----
     The binary recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
-    The coloured recurrence plot is based on :footcite:t:`burchardtNovelIdeasFurther2021`.
+    The coloured recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     """
     # Make title
@@ -199,4 +217,3 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         fig.show()
 
     return fig, ax
-
