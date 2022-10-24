@@ -25,6 +25,7 @@ dependencies = [
     "scipy",
     "matplotlib",
     "sounddevice",
+    "pandas"
 ]
 dynamic = ["version"]
 

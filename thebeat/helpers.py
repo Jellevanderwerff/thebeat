@@ -183,6 +183,22 @@ def join_rhythms(iterator):
     return thebeat.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
+def make_binary_timeseries(onsets, resolution):
+    """
+    Converts a sequence of millisecond onsets to a series of zeros and ones.
+    Ones for the onsets.
+    """
+    duration = np.max(onsets)
+    zeros_n = int(np.ceil(duration / resolution)) + 1
+    signal = np.zeros(zeros_n)
+
+    for onset in onsets:
+        index = int(onset / resolution)
+        signal[index] = 1
+
+    return np.array(signal)
+
+
 def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
 
@@ -259,9 +275,10 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
     # Check whether to normalize and return
     if np.max(np.abs(output)) > 1:
         warnings.warn(thebeat._warnings.normalization)
-        return thebeat._helpers.normalize_audio(output)
+        return thebeat.helpers.normalize_audio(output)
     else:
         return output
+
 
 @requires_lilypond
 def plot_lp(lp,
@@ -323,7 +340,7 @@ def plot_lp(lp,
 
 def plot_single_sequence(onsets: Union[list, np.ndarray],
                          metrical: bool,
-                         final_ioi: np.typing.ArrayLike = None,
+                         final_ioi: Optional[float] = None,
                          style: str = 'seaborn',
                          title: Optional[str] = None,
                          x_axis_label: str = "Time",
@@ -349,7 +366,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        StimSequence name as the title of the plot (if the object has one).
+        name of the object as the title of the plot (if the object has one).
     x_axis_label
         A label for the x axis.
     linewidths
@@ -358,11 +375,11 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         (i.e with a value for each respective onsets).
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.subplots`.
     dpi
-        The number of dots per inch. This refers to the ``dpi`` parameter in :func:`matplotlib.pyplot.Figure`.
+        The number of dots per inch. This refers to the ``dpi`` parameter in :class:`matplotlib.figure.Figure`.
     suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.d
 
     """
 

@@ -6,11 +6,12 @@ from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-import thebeat._helpers
+import thebeat.helpers
 
 
 class BaseSequence:
-    """This is the most basic of classes that the Sequence class inherits from, as well as the Rhythm class.
+    """This is the most basic of classes that the :py:class:`~thebeat.core.Sequence`,
+    :py:class:`~thebeat.rhythm.Rhythm`, and :py:class:`~thebeat.core.StimSequence` classes inherit from.
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either be metrical or not.
@@ -26,13 +27,13 @@ class BaseSequence:
     ----------
     iois : NumPy 1-D array
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence class.
-        Non-metrical sequences have n IOIs and n+1 onsets. Metrical sequences have an equal number of IOIs
+        Non-metrical sequences have *n* onsets and *n*-1 IOIs. Metrical sequences have an equal number of IOIs
         and onsets.
     metrical : bool
-        If False, sequence has an n-1 inter-onset intervals (IOIs) for n event onsets. If True,
+        If ``False``, sequence has *n*-1 inter-onset intervals (IOIs) for *n* event onsets. If ``True``,
         sequence has an equal number of IOIs and event onsets.
     name : str
-        If desired, one can give the (Base)Sequence object a name. This is for instance used when printing the sequence,
+        If desired, one can give the object a name. This is for instance used when printing the sequence,
         or when plotting the sequence. It can always be retrieved and changed via this attribute.
 
     """
@@ -133,7 +134,7 @@ class Sequence(BaseSequence):
 
     For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds or milliseconds.
     However, it does matter when passing the :py:class:`Sequence` object to a :py:class:`StimSequence` object
-    (see :py:class:`StimSequence.__init__`).
+    (see :py:meth:`StimSequence.__init__`).
 
     This class additionally contains methods and attributes to, for instance,
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
@@ -159,7 +160,7 @@ class Sequence(BaseSequence):
             sequences.
         name
             Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Sequence.name`.
+            the Sequence object. It can always be retrieved and changed via :py:attr:`BaseSequence.name`.
 
         Examples
         --------
@@ -274,10 +275,9 @@ class Sequence(BaseSequence):
                                mu: float,
                                sigma: float,
                                rng: Optional[np.random.Generator] = None,
-                               metrical: bool = False,
                                **kwargs) -> Sequence:
         """
-        Class method that generates a py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on the
         normal distribution.
 
         Parameters
@@ -291,9 +291,6 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -312,6 +309,7 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
+        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), metrical=metrical, **kwargs)
@@ -322,10 +320,10 @@ class Sequence(BaseSequence):
                                 a: float,
                                 b: float,
                                 rng: Optional[np.random.Generator] = None,
-                                metrical: bool = False,
                                 **kwargs) -> Sequence:
         """
-        Class method that generates a sequence of random inter-onset intervals based on a uniform distribution.
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on a
+        uniform distribution.
 
         Parameters
         ----------
@@ -338,9 +336,6 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -361,6 +356,7 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
+        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         iois = rng.uniform(low=a, high=b, size=n_iois)
@@ -371,11 +367,11 @@ class Sequence(BaseSequence):
                                 n: int,
                                 lam: float,
                                 rng: Optional[np.random.Generator] = None,
-                                metrical: bool = False,
                                 **kwargs) -> Sequence:
 
         """
-        Class method that generates a sequence of random inter-onset intervals based on a Poisson distribution.
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on a
+        Poisson distribution.
 
         Parameters
         ----------
@@ -386,9 +382,6 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -405,6 +398,7 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on metricality
+        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.poisson(lam=lam, size=n_iois), metrical=metrical, **kwargs)
@@ -414,9 +408,9 @@ class Sequence(BaseSequence):
                                     n: int,
                                     lam: float,
                                     rng: Optional[np.random.Generator] = None,
-                                    metrical: bool = False,
                                     **kwargs) -> Sequence:
-        """Class method that generates a sequence of random inter-onset intervals based on an exponential distribution.
+        """Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on
+        an exponential distribution.
 
         Parameters
         ----------
@@ -427,9 +421,6 @@ class Sequence(BaseSequence):
         rng
             A :class:`numpy.random.Generator` object. If not supplied NumPy's :func:`numpy.random.default_rng` is
             used.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -445,6 +436,8 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
+        # Number of IOIs depends on metricality
+        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, **kwargs)
@@ -453,7 +446,6 @@ class Sequence(BaseSequence):
     def generate_isochronous(cls,
                              n: int,
                              ioi: float,
-                             metrical: bool = False,
                              **kwargs) -> Sequence:
         """
         Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
@@ -465,9 +457,6 @@ class Sequence(BaseSequence):
             The desired number of events in the sequence.
         ioi
             The inter-onset interval to be used between all events.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -490,6 +479,8 @@ class Sequence(BaseSequence):
 
         """
 
+        # Number of IOIs depends on metricality
+        metrical = kwargs.get('metrical')
         n_iois = n if metrical else n - 1
 
         return cls([ioi] * n_iois, metrical=metrical, **kwargs)
@@ -606,7 +597,7 @@ class Sequence(BaseSequence):
             (i.e with a value for each respective onsets).
         **kwargs
             Additional parameters (e.g. 'title', 'dpi' etc.) are passed to
-            :py:func:`thebeat._helpers.plot_single_sequence`.
+            :py:func:`thebeat.helpers.plot_single_sequence`.
 
         Examples
         --------
@@ -631,8 +622,8 @@ class Sequence(BaseSequence):
         final_ioi = self.iois[-1] if self.metrical else None
 
         # Plot the sequence
-        fig, ax = thebeat._helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
-                                                        linewidths=linewidths, **kwargs)
+        fig, ax = thebeat.helpers.plot_single_sequence(onsets=self.onsets, metrical=self.metrical, final_ioi=final_ioi,
+                                                       linewidths=linewidths, **kwargs)
 
         return fig, ax
 

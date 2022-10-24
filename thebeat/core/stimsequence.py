@@ -4,7 +4,7 @@ from scipy.io import wavfile
 from thebeat.core.sequence import BaseSequence, Sequence
 from thebeat.core.stimulus import Stimulus
 import numpy as np
-import thebeat._helpers
+import thebeat.helpers
 import thebeat._warnings
 import warnings
 import os
@@ -100,7 +100,7 @@ class StimSequence(BaseSequence):
 
         # Check whether dtype, number of channels etc. is the same. This function raises errors if that's
         # not the case
-        thebeat._helpers.check_sound_properties_sameness(stimuli)
+        thebeat.helpers.check_sound_properties_sameness(stimuli)
 
         # Save attributes
         self.fs = stimuli[0].fs
@@ -115,7 +115,7 @@ class StimSequence(BaseSequence):
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
-        thebeat._helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
+        thebeat.helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
 
         # Make sound which saves the samples to self.samples
         self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
@@ -180,8 +180,8 @@ class StimSequence(BaseSequence):
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
         """
-        thebeat._helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
-                                      metronome=metronome, metronome_amplitude=metronome_amplitude)
+        thebeat.helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
+                                     metronome=metronome, metronome_amplitude=metronome_amplitude)
 
     def stop(self) -> None:
         """
@@ -247,10 +247,10 @@ class StimSequence(BaseSequence):
             x_axis_label = "Time (ms)"
             final_ioi = self.iois[-1]
 
-        fig, ax = thebeat._helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
-                                                        final_ioi=final_ioi,
-                                                        x_axis_label=x_axis_label,
-                                                        linewidths=linewidths, **kwargs)
+        fig, ax = thebeat.helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
+                                                       final_ioi=final_ioi,
+                                                       x_axis_label=x_axis_label,
+                                                       linewidths=linewidths, **kwargs)
 
         return fig, ax
 
@@ -261,7 +261,7 @@ class StimSequence(BaseSequence):
         Parameters
         ----------
         **kwargs
-            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat._helpers.plot_waveform`).
+            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat.helpers.plot_waveform`).
 
         Examples
         --------
@@ -272,8 +272,8 @@ class StimSequence(BaseSequence):
         if self.name and kwargs.get('title') is None:
             kwargs.get('title', self.name)
 
-        fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                 **kwargs)
+        fig, ax = thebeat.helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                **kwargs)
 
         return fig, ax
 
@@ -301,9 +301,9 @@ class StimSequence(BaseSequence):
         """
 
         if metronome is True:
-            samples = thebeat._helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
-                                                                metronome_ioi=self.mean_ioi,
-                                                                metronome_amplitude=metronome_amplitude)
+            samples = thebeat.helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
+                                                               metronome_ioi=self.mean_ioi,
+                                                               metronome_amplitude=metronome_amplitude)
         else:
             samples = self.samples
 
@@ -374,7 +374,7 @@ class StimSequence(BaseSequence):
         # return sound
         if np.max(np.abs(samples)) > 1:
             warnings.warn(thebeat._warnings.normalization)
-            return thebeat._helpers.normalize_audio(samples)
+            return thebeat.helpers.normalize_audio(samples)
         else:
             return samples
 

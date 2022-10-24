@@ -65,3 +65,4 @@ bibtext_reference_style = 'author_year'
 
 # autosummary
 autosummary_generate = True
+

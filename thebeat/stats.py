@@ -7,9 +7,10 @@ import thebeat.core
 import matplotlib.pyplot as plt
 import scipy.signal
 import pandas as pd
+import thebeat.helpers
 
 
-def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+def acf_df(sequence: thebeat.core.Sequence,
            resolution_ms: int = 1,
            smoothing_window: Optional[float] = None,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
@@ -72,7 +73,7 @@ def acf_df(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.
     return df
 
 
-def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+def acf_plot(sequence: thebeat.core.Sequence,
              resolution: int = 1,
              smoothing_window: Optional[float] = None,
              smoothing_sd: Optional[float] = None,
@@ -157,7 +158,7 @@ def acf_plot(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, n
     return fig, ax
 
 
-def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+def acf_values(sequence: thebeat.core.Sequence,
                resolution: int = 1,
                smoothing_window: Optional[float] = None,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
@@ -195,7 +196,7 @@ def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence,
     else:
         onsets_ms = sequence
 
-    signal = _make_ones_and_zeros_timeseries(onsets_ms, resolution)
+    signal = thebeat.helpers.make_binary_timeseries(onsets_ms, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:
@@ -215,7 +216,20 @@ def acf_values(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence,
     return correlation
 
 
-def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike],
+def plot_fft(sequence: thebeat.core.Sequence,
+             resolution,
+             max_freq,
+             style: str = 'seaborn'):
+    #todo finish
+
+    onsets = sequence.onsets
+
+    binary_timeseries = thebeat.helpers.make_binary_timeseries(onsets, resolution)
+    fft = np.fft.fft(binary_timeseries)[:max_freq]
+
+
+
+def ks_test(sequence: thebeat.core.Sequence,
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):
     """
@@ -274,7 +288,7 @@ def ks_test(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike]) -> np.float64:
+def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     """
 
     This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
@@ -327,7 +341,7 @@ def get_npvi(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, n
     return np.float64(npvi)
 
 
-def get_ugof(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, np.typing.ArrayLike[float]],
+def get_ugof(sequence: thebeat.core.Sequence,
              theoretical_ioi: float,
              output_statistic: str = 'mean') -> np.float64:
     """
@@ -389,20 +403,3 @@ def get_ugof(sequence: Union[thebeat.core.Sequence, thebeat.core.StimSequence, n
         return np.float32(np.median(ugof_values))
     else:
         raise ValueError("Output can only be 'median' or 'mean'.")
-
-
-def _make_ones_and_zeros_timeseries(onsets_ms, resolution_ms):
-    """
-    Converts a sequence of millisecond onsets to a series of zeros and ones.
-    Ones for the onsets.
-    """
-    duration = max(onsets_ms)
-    zeros_n = int(np.ceil(duration / resolution_ms)) + 1
-    signal = np.zeros(zeros_n)
-
-    for onset in onsets_ms:
-        index = int(onset / resolution_ms)
-        signal[index] = 1
-
-    return np.array(signal)
-

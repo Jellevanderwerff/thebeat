@@ -11,6 +11,6 @@ Awesome that you're here. Here's a picture of a seal:
     :caption: Contents:
 
     Installation<installation.rst>
-    Getting started<gettingstarted.rst>
+    gettingstarted
     Examples<examples/index.rst>
     Package contents<package/index.rst>

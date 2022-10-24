@@ -6,4 +6,6 @@ The StimSequence class is a combination of the sound of a Stimulus (or stimuli) 
 .. autoclass:: thebeat.core.StimSequence
     :members:
     :undoc-members:
+    :inherited-members:
+
     

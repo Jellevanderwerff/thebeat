@@ -1,5 +1,6 @@
+import thebeat.visualization
 from thebeat.core import Stimulus, StimSequence, Sequence
-from thebeat.visualization import plot_multiple_sequences
+from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 
 
 def test_event_plot_multiple():
@@ -17,3 +18,9 @@ def test_event_plot_multiple():
 
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25) for _ in range(10)]
     plot_multiple_sequences(seqs, suppress_display=True)
+
+
+def test_recurrence_plot():
+    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, metrical=True) * 5
+    fig, ax = recurrence_plot(seq, 0.03)
+    assert fig, ax

@@ -104,7 +104,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature})"
 
     def __add__(self, other):
-        return thebeat._helpers.join_rhythms([self, other])
+        return thebeat.helpers.join_rhythms([self, other])
 
     def __mul__(self, other):
         return self._repeat(times=other)
@@ -322,7 +322,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         iois = np.empty(0)
 
-        all_ratios = thebeat._helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
+        all_ratios = thebeat.helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
 
         for bar in range(n_bars):
             ratios = rng.choice(all_ratios, 1)[0]
@@ -515,7 +515,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
 
         # Plot!
-        fig, ax = thebeat._helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax
 

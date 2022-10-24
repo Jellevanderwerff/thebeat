@@ -7,7 +7,7 @@ import sounddevice as sd
 from matplotlib import pyplot as plt
 import scipy.io
 import scipy.signal
-import thebeat._helpers
+import thebeat.helpers
 import copy
 
 try:
@@ -72,10 +72,10 @@ class Stimulus:
             raise ValueError("Can only overlay another Stimulus object on this Stimulus object.")
 
         # Check sameness of number of channels etc.
-        thebeat._helpers.check_sound_properties_sameness([self, other])
+        thebeat.helpers.check_sound_properties_sameness([self, other])
 
         # Overlay sounds
-        samples = thebeat._helpers.overlay_samples([self.samples, other.samples])
+        samples = thebeat.helpers.overlay_samples([self.samples, other.samples])
 
         return Stimulus(samples=samples, fs=self.fs, name=self.name)
 
@@ -182,11 +182,11 @@ class Stimulus:
         """
 
         # Generate signal
-        samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
-                                                    amplitude=amplitude, oscillator=oscillator)
+        samples = thebeat.helpers.synthesize_sound(duration_ms=duration_ms, fs=fs, freq=freq, n_channels=n_channels,
+                                                   amplitude=amplitude, oscillator=oscillator)
 
         # Make ramps
-        samples = thebeat._helpers.make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type)
+        samples = thebeat.helpers.make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type)
 
         # Return class
         return cls(samples, fs, name)
@@ -240,7 +240,7 @@ class Stimulus:
                                          scale=sigma,
                                          size=output_shape)
 
-        samples = thebeat._helpers.normalize_audio(samples)
+        samples = thebeat.helpers.normalize_audio(samples)
 
         # Return class
         return cls(samples=samples, fs=fs, name=name)
@@ -403,7 +403,7 @@ class Stimulus:
         Parameters
         ----------
         **kwargs
-            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat._helpers.plot_waveform`).
+            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat.helpers.plot_waveform`).
 
         Examples
         --------
@@ -421,8 +421,8 @@ class Stimulus:
         if self.name and kwargs.get('title') is None:
             kwargs.get('title', self.name)
 
-        fig, ax = thebeat._helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                 **kwargs)
+        fig, ax = thebeat.helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
+                                                **kwargs)
 
         return fig, ax
 
@@ -459,7 +459,7 @@ class Stimulus:
 
         """
 
-        thebeat._helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
+        thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
 
 
 def _read_wavfile(filepath: Union[str, os.PathLike],

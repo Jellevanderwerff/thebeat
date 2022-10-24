@@ -16,7 +16,7 @@ except ImportError:
 from thebeat._decorators import requires_lilypond
 import thebeat._warnings
 import thebeat.rhythm
-import thebeat._helpers
+import thebeat.helpers
 import sounddevice
 import numpy.typing as npt
 
@@ -195,7 +195,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         rhythm = thebeat.rhythm.Rhythm.generate_random_rhythm(n_bars=n_bars, beat_ms=beat_ms,
                                                               time_signature=time_signature,
                                                               allowed_note_values=allowed_note_values, rng=rng)
-        pitch_names_possible = [pitch.name for pitch in thebeat._helpers.get_major_scale(tonic=key, octave=octave)]
+        pitch_names_possible = [pitch.name for pitch in thebeat.helpers.get_major_scale(tonic=key, octave=octave)]
 
         pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
 
@@ -291,7 +291,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
-        fig, ax = thebeat._helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat.helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
 
         return fig, ax
 
@@ -359,8 +359,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
                                           event_durations=event_durations)
 
         if metronome is True:
-            samples = thebeat._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                                metronome_amplitude=metronome_amplitude)
+            samples = thebeat.helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                               metronome_amplitude=metronome_amplitude)
 
         return samples, fs
 
@@ -500,11 +500,11 @@ class Melody(thebeat.core.sequence.BaseSequence):
                                                 metronome_amplitude=metronome_amplitude)
 
         if metronome is True:
-            samples = thebeat._helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                                metronome_amplitude=metronome_amplitude)
+            samples = thebeat.helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
+                                                               metronome_amplitude=metronome_amplitude)
 
-        thebeat._helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
-                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
+        thebeat.helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
+                                  metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
     def _make_namedtuples(self,
                           rhythm,
@@ -556,13 +556,13 @@ class Melody(thebeat.core.sequence.BaseSequence):
         # times.
         for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
-                event_samples = thebeat._helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
-                                                                  freq=abjad.NamedPitch(event.pitch_name).hertz,
-                                                                  n_channels=n_channels, oscillator=oscillator,
-                                                                  amplitude=amplitude)
+                event_samples = thebeat.helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
+                                                                 freq=abjad.NamedPitch(event.pitch_name).hertz,
+                                                                 n_channels=n_channels, oscillator=oscillator,
+                                                                 amplitude=amplitude)
                 if onramp_ms or offramp_ms:
-                    event_samples = thebeat._helpers.make_ramps(samples=event_samples, fs=fs, onramp_ms=onramp_ms,
-                                                                offramp_ms=offramp_ms, ramp_type=ramp_type)
+                    event_samples = thebeat.helpers.make_ramps(samples=event_samples, fs=fs, onramp_ms=onramp_ms,
+                                                               offramp_ms=offramp_ms, ramp_type=ramp_type)
 
                 # Calculate start- and end locations for inserting the event into the output array
                 # and warn if the location in terms of frames was rounded off.
@@ -581,7 +581,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         if np.max(samples) > 1:
             warnings.warn(thebeat._warnings.normalization)
-            samples = thebeat._helpers.normalize_audio(samples)
+            samples = thebeat.helpers.normalize_audio(samples)
 
         return samples
 

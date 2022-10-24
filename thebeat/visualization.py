@@ -2,7 +2,7 @@ from __future__ import annotations
 import thebeat.core
 import matplotlib.pyplot as plt
 from typing import Union, Optional
-import thebeat._helpers
+import thebeat.helpers
 import numpy as np
 from matplotlib.colors import ListedColormap
 import scipy.spatial.distance
@@ -106,21 +106,42 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
 
 def recurrence_plot(sequence: thebeat.core.Sequence,
+                    threshold: float,
+                    style: str = 'seaborn',
+                    title: Optional[str] = None,
+                    x_axis_label: str = "IOI number",
+                    y_axis_label: str = "IOI number",
                     figsize: tuple = (4, 4),
-                    threshold: float = 0.03):
+                    suppress_display: bool = False,
+                    dpi: int = 100):
 
+    # Make title
+    title = sequence.name if sequence.name else title
+
+    # Use seconds for the IOIs
     iois_s = sequence.iois / 1000
-    distance_matrix = np.empty((len(iois_s), len(iois_s)))
+
+    # Calculate distance matrix
+    distance_matrix = np.empty((len(iois_s), len(iois_s)))  # Make n by n matrix
     # todo Do this vectorized
     for i in range(len(iois_s)):
         for j in range(len(iois_s)):
             dist = np.abs(iois_s[i] - iois_s[j])
             distance_matrix[i, j] = dist
 
+    # Make 0's and 1's
     binary_matrix = distance_matrix < threshold
-
     binary_matrix = binary_matrix.astype(int)
 
-    fig, ax = plt.subplots(dpi=300, figsize=figsize, tight_layout=True)
-    ax.pcolormesh(binary_matrix, cmap="Greys")
-    fig.show()
+    # Plot
+    with plt.style.context(style):
+        fig, ax = plt.subplots(dpi=dpi, figsize=figsize, tight_layout=True)
+        ax.pcolormesh(binary_matrix)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_title(title)
+
+    if not suppress_display:
+        fig.show()
+
+    return fig, ax
