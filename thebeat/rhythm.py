@@ -33,7 +33,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def __init__(self,
                  iois: Union[np.ndarray, list],
-                 time_signature: tuple = (4, 4),
+                 time_signature: tuple[int, int] = (4, 4),
                  beat_ms: float = 500,
                  is_played: Optional[np.typing.ArrayLike[bool]] = None,
                  name: Optional[str] = None):
@@ -541,7 +541,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def to_sequence(self) -> thebeat.core.Sequence:
         """
-        Convert the rhythm to a :class:`thebeat.core.Sequence` object.
+        Convert the rhythm to a :class:`~thebeat.core.Sequence` object.
         """
         return thebeat.core.Sequence(iois=self.iois, first_onset=0.0, metrical=True, name=self.name)
 

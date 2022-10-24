@@ -16,7 +16,6 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False):
-
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
@@ -106,42 +105,98 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
 
 def recurrence_plot(sequence: thebeat.core.Sequence,
-                    threshold: float,
+                    threshold: Optional[float] = None,
+                    colorbar: bool = False,
+                    colorbar_label: Optional[str] = "Distance",
+                    cmap: Optional[str] = None,
                     style: str = 'seaborn',
                     title: Optional[str] = None,
                     x_axis_label: str = "IOI number",
                     y_axis_label: str = "IOI number",
                     figsize: tuple = (4, 4),
                     suppress_display: bool = False,
-                    dpi: int = 100):
+                    dpi: int = 100) -> tuple[plt.Figure, plt.Axes]:
+    """
 
+    Parameters
+    ----------
+    sequence
+        A :py:class:`~thebeat.core.Sequence` object.
+    threshold
+        The threshold to use for the recurrence plot. If a threshold is given, the plot is binary,
+        with color (e.g. black) representing the inter-onset intervals that are below the threshold.
+        If no threshold is given, the plot is colored according to the distance between the inter-onset intervals.
+    colorbar
+        If ``True``, a colorbar is added to the plot.
+    colorbar_label
+        A label for the colorbar.
+    cmap
+        The colormap to use for the plot. See
+        `matplotlib colormaps reference <https://matplotlib.org/stable/gallery/color/colormap_reference.html>`_
+        for the different options. For binary plots, the default is ``Greys``, for colored plots, the default is
+        ``viridis``.
+    style
+        Matplotlib style to use for the plot. See `matplotlib style sheets reference
+        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        If desired, one can provide a title for the plot.
+    x_axis_label
+        A label for the x axis.
+    y_axis_label
+        A label for the y axis.
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+    suppress_display
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+    dpi
+        The resolution of the plot in dots per inch.
+
+    Examples
+    --------
+    >>> from thebeat.core import Sequence
+    >>> from thebeat.visualization import recurrence_plot
+    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
+    >>> recurrence_plot(seq)  # doctest: +SKIP
+
+    >>> from thebeat.core import Sequence
+    >>> from thebeat.visualization import recurrence_plot
+    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
+    >>> fig, ax = recurrence_plot(seq, threshold=5, dpi=300, suppress_display=True)
+    >>> fig.savefig('recurrence_plot.png')  # doctest: +SKIP
+
+    Notes
+    -----
+    The binary recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    The coloured recurrence plot is based on :footcite:t:`burchardtNovelIdeasFurther2021`.
+
+    """
     # Make title
     title = sequence.name if sequence.name else title
 
-    # Use seconds for the IOIs
-    iois_s = sequence.iois / 1000
-
     # Calculate distance matrix
-    distance_matrix = np.empty((len(iois_s), len(iois_s)))  # Make n by n matrix
-    # todo Do this vectorized
-    for i in range(len(iois_s)):
-        for j in range(len(iois_s)):
-            dist = np.abs(iois_s[i] - iois_s[j])
-            distance_matrix[i, j] = dist
+    iois = sequence.iois
+    distance_matrix = np.abs(iois[:, None] - iois[None, :])
 
-    # Make 0's and 1's
-    binary_matrix = distance_matrix < threshold
-    binary_matrix = binary_matrix.astype(int)
+    # Make either 0's or 1's (if threshold) and set default cmaps
+    if threshold:
+        distance_matrix = (distance_matrix < threshold).astype(int)
+        cmap = cmap if cmap else 'Greys'
+    else:
+        cmap = cmap if cmap else 'viridis'
 
     # Plot
     with plt.style.context(style):
         fig, ax = plt.subplots(dpi=dpi, figsize=figsize, tight_layout=True)
-        ax.pcolormesh(binary_matrix)
+        pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
+
+        if colorbar is True:
+            fig.colorbar(pcm, ax=ax, label=colorbar_label)
 
     if not suppress_display:
         fig.show()
 
     return fig, ax
+
