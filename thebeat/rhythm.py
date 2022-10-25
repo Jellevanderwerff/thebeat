@@ -193,7 +193,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
             *how many beats* there are in a bar. The lower number indicates the denominator of the value that
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}`th notes.
+            :math:`\frac{1}{8}` th notes.
         beat_ms
             The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
             number in the time signature is 4.
@@ -384,7 +384,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                     filepath: Union[os.PathLike, str] = None,
                     staff_type: str = "rhythm",
                     print_staff: bool = True,
-                    suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                    suppress_display: bool = False,
+                    dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
 
@@ -432,6 +433,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
             use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+        dpi
+            The resolution of the plot in dots per inch.
 
 
         Examples
@@ -515,7 +518,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
 
         # Plot!
-        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, dpi=dpi)
 
         return fig, ax
 

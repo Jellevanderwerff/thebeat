@@ -369,6 +369,8 @@ def get_ugof(sequence: thebeat.core.Sequence,
     Notes
     -----
     This measure is described in :footcite:t:`burchardtNovelIdeasFurther2021`.
+    Please also refer to `this Github page <https://github.com/LSBurchardt/R_app_rhythm>`_ for an R implementation of
+    the *ugof* measure.
 
 
     Examples

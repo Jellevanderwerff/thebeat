@@ -283,7 +283,8 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
 @requires_lilypond
 def plot_lp(lp,
             filepath: Union[os.PathLike, str] = None,
-            suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+            suppress_display: bool = False,
+            dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
@@ -300,7 +301,7 @@ def plot_lp(lp,
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
-        command = ['lilypond', '-dbackend=eps', '--silent', '-dresolution=600', f'--png', '-o',
+        command = ['lilypond', '-dbackend=eps', '--silent', f'-dresolution={dpi}', f'--png', '-o',
                    'rhythm', 'rhythm.ly']
 
         subprocess.run(command, cwd=tmp_dir, check=True)

@@ -1,5 +1,4 @@
-import copy
-
+from __future__ import annotations
 from scipy.io import wavfile
 from thebeat.core.sequence import BaseSequence, Sequence
 from thebeat.core.stimulus import Stimulus
