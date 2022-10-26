@@ -284,7 +284,25 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
 def plot_lp(lp,
             filepath: Union[os.PathLike, str] = None,
             suppress_display: bool = False,
-            dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
+            dpi: int = 300,
+            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    """
+    This function plots a LilyPond object.
+
+    Parameters
+    ----------
+    lp
+        A LilyPond string.
+    filepath
+        If provided, the plot will be saved to this path. Has to end with either .png or .eps.
+    suppress_display
+        If True, the plot will not be displayed using :func:`matplotlib.Figure.show`.
+    dpi
+        The resolution of the plot in dots per inch.
+    ax
+        If provided, the plot will be drawn on this axis.
+
+    """
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
@@ -324,12 +342,17 @@ def plot_lp(lp,
             path_to_file_for_saving = os.path.join(tmp_dir, 'rhythm-1.eps')
             shutil.copy(path_to_file_for_saving, filepath)
 
-    fig, ax = plt.subplots()
+    if ax is None:
+        fig, ax = plt.subplots(dpi=dpi)
+        ax_provided = False
+    else:
+        fig, _ = plt.subplots(dpi=dpi)
+        ax_provided = True
     ax.imshow(img_cropped)
     ax.set_axis_off()
 
     # show plot if necessary
-    if not suppress_display:
+    if not suppress_display and not ax_provided:
         fig.show()
 
     # Save cropped .png if necessary
@@ -348,7 +371,8 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
                          linewidths: Optional[Union[list[float], npt.NDArray[float], float]] = None,
                          figsize: Optional[tuple] = None,
                          dpi: int = 100,
-                         suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                         suppress_display: bool = False,
+                         ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
     This function plots the onsets of a Sequence or StimSequence object in an event plot.
 
@@ -380,7 +404,13 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
     dpi
         The number of dots per inch. This refers to the ``dpi`` parameter in :class:`matplotlib.figure.Figure`.
     suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.d
+        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
+    ax
+        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        See the Examples of the different plotting functions to see how to do this
+        (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
+        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
 
     """
 
@@ -394,7 +424,14 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
 
     # Make plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        # If an existing Axes object was passed, do not create new Figure and Axes.
+        # Else, only create a new Figure object (Then,)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
+        else:
+            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = True
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
         right_x_lim = onsets[-1] + final_ioi if metrical else onsets[-1] + linewidths[-1]
@@ -403,11 +440,10 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
-    # Show plot
-    if suppress_display is False:
+    # Show plot if desired, and if no existing Axes object was passed.
+    if suppress_display is False and not ax_provided:
         fig.show()
 
-    # Additionally return plot
     return fig, ax
 
 
@@ -418,7 +454,8 @@ def plot_waveform(samples: np.ndarray,
                   title: Optional[str] = None,
                   figsize: Optional[tuple] = None,
                   dpi: int = 100,
-                  suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                  suppress_display: bool = False,
+                  ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
     This helper function plots a waveform of a sound using matplotlib.
 
@@ -443,7 +480,12 @@ def plot_waveform(samples: np.ndarray,
         :func:`matplotlib.pyplot.figure`.
     suppress_display
         If ``True``, :meth:`matplotlib.pyplot.Figure.show` is not run.
-
+    ax
+        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        See the Examples of the different plotting functions to see how to do this
+        (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
+        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
     """
 
     # if we have two channels, we want the waveform to be opaque
@@ -471,7 +513,14 @@ def plot_waveform(samples: np.ndarray,
 
     # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        # If an Axes object is provided, we use that one. Save whether that was done to know
+        # if we need to return a newly created Figure and Axes.
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
+        else:
+            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = True
         ax.set_xlim(0, x_right_lim)
         ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
@@ -480,7 +529,7 @@ def plot_waveform(samples: np.ndarray,
         ax.set_xlabel(x_label)
         ax.set_title(title)
 
-    if suppress_display is False:
+    if suppress_display is False and not ax_provided:
         fig.show()
 
     return fig, ax

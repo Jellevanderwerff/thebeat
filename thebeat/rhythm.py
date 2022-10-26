@@ -385,7 +385,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                     staff_type: str = "rhythm",
                     print_staff: bool = True,
                     suppress_display: bool = False,
-                    dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
+                    dpi: int = 300,
+                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
 
@@ -435,6 +436,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
         dpi
             The resolution of the plot in dots per inch.
+        ax
+            Optionally, you can provide an existing :class:`matplotlib.axes.Axes` object to plot the rhythm on.
 
 
         Examples
@@ -518,7 +521,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
 
         # Plot!
-        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, dpi=dpi)
+        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, dpi=dpi,
+                                          ax=ax)
 
         return fig, ax
 

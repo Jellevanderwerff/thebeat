@@ -9,7 +9,7 @@ def join(objects: np.typing.ArrayLike,
 
     Note
     ----
-    Only works for Sequence or StimSequence objects created with a ``metrical=True`` flag.
+    Only works for Sequence or StimSequence objects where all but the last provided object has a ``metrical=True`` flag.
 
     Parameters
     ----------

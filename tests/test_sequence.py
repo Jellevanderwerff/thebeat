@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import thebeat.core
+import matplotlib.pyplot as plt
 
 
 @pytest.fixture
@@ -97,7 +98,20 @@ def test_onset_not_zero():
 def test_multiplication():
     seq = thebeat.core.Sequence([500, 500, 500])
     with pytest.raises(ValueError):
-        seq_m = seq * 10
+        _ = seq * 10
     seq = thebeat.core.Sequence([500, 500, 500], metrical=True)
     seq *= 10
     assert len(seq.iois) == 30
+
+
+def test_plot():
+    # simple case
+    seq = thebeat.core.Sequence([500, 1000, 200])
+    fig, ax = seq.plot_sequence(suppress_display=True)
+    assert fig, ax
+
+    # plot onto existing Axes
+    fig, axs = plt.subplots(1, 2)
+    seq.plot_sequence(ax=axs[0])
+    assert fig, axs
+

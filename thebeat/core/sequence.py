@@ -617,6 +617,14 @@ class Sequence(BaseSequence):
         --------
         >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
         >>> seq.plot_sequence()  # doctest: +SKIP
+
+        In this example, we plot onto an existing :class:`~matplotlib.pyplot.Axes` object.
+
+        >>> import matplotlib.pyplot as plt
+        >>> seq = Sequence([500, 200, 1000])
+        >>> fig, axs = plt.subplots(nrows=1, ncols=2)
+        >>> seq.plot_sequence(ax=axs[0])  # doctest: +SKIP
+
         """
 
         # For the title, use the Sequence name if it has one. Otherwise use the title parameter,

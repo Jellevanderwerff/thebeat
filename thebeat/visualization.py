@@ -17,7 +17,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False,
                             dpi: int = 100,
-                            colors: Union[list, np.ndarray] = None) -> tuple[plt.Figure, plt.Axes]:
+                            colors: Union[list, np.ndarray] = None,
+                            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
@@ -55,6 +56,12 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     colors
         A list or array of colors to use for the plot. If not provided, the default matplotlib colors are used.
         Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
+    ax
+        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        See the Examples of the different plotting functions to see how to do this
+        (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
+        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
 
     Examples
     --------
@@ -99,7 +106,14 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        # If an existing Axes object was passed, do not create new Figure and Axes.
+        # Else, only create a new Figure object (Then,)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
+        else:
+            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = True
 
         # Labels
         ax.axes.set_title(title)
@@ -122,8 +136,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         current_lims = ax.get_xlim()
         ax.set_xlim(0, current_lims[1])
 
-        if not suppress_display:
-            plt.show()
+    # Show plot if desired, and if no existing Axes object was passed.
+    if suppress_display is False and not ax_provided:
+        fig.show()
 
     return fig, ax
 
@@ -139,7 +154,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
                     y_axis_label: str = "$\mathregular{N_i}$",
                     figsize: tuple = (5, 4),
                     suppress_display: bool = False,
-                    dpi: int = 100) -> tuple[plt.Figure, plt.Axes]:
+                    dpi: int = 100,
+                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a recurrence plot of a sequence. A recurrence plot is a plot with the IOI numbers (i.e. their indices) on the
     x and y axis, and the distance between the IOIs on the color scale. For each combination of two IOIs,
@@ -166,7 +182,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         with color (e.g. black) representing the inter-onset intervals that are below the threshold.
         If no threshold is given, the plot is colored according to the distance between the inter-onset intervals.
     colorbar
-        If ``True``, a colorbar is added to the plot.
+        If ``True``, a colorbar is added to the plot. Note that no colorbar is plotted when an existing
+        Axes object is provided.
     colorbar_label
         A label for the colorbar.
     cmap
@@ -189,6 +206,12 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
     dpi
         The resolution of the plot in dots per inch.
+    ax
+        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        See the Examples of the different plotting functions to see how to do this
+        (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
+        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
 
     Examples
     --------
@@ -230,17 +253,23 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
 
     # Plot
     with plt.style.context(style):
-        fig, ax = plt.subplots(dpi=dpi, figsize=figsize, tight_layout=True)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
+        else:
+            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = True
         pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
         ax.set_aspect('equal')
 
-        if colorbar is True:
+        if colorbar is True and ax_provided is False:
             fig.colorbar(pcm, ax=ax, label=colorbar_label)
 
-    if not suppress_display:
+    # Show plot if desired, and if no existing Axes object was passed.
+    if suppress_display is False and not ax_provided:
         fig.show()
 
     return fig, ax

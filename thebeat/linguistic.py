@@ -134,4 +134,3 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
     pattern = np.concatenate([[start_of_pattern], pattern_shifted])
 
     return thebeat.core.Sequence.from_onsets(pattern)
-

@@ -1,4 +1,5 @@
 import thebeat.core
+import matplotlib.pyplot as plt
 
 
 def test_stimulus():
@@ -21,3 +22,15 @@ def test_ramps():
 def test_whitenoise():
     stim = thebeat.core.Stimulus.generate_white_noise(duration_ms=1000)
     assert stim.duration_ms == 1000
+
+
+def test_plot_waveform():
+    # regular example
+    stim = thebeat.core.Stimulus.generate_white_noise(duration_ms=1000)
+    fig, ax = stim.plot_waveform(suppress_display=True)
+    assert fig, ax
+
+    # plot onto existing Axes
+    fig, axs = plt.subplots(1, 2)
+    stim.plot_waveform(ax=axs[0])
+    assert fig, axs[0]
