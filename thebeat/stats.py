@@ -52,9 +52,9 @@ def acf_df(sequence: thebeat.core.Sequence,
     >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
     >>> print(df.head(3))
        time_ms  correlation
-    0        0     1.000000
-    1       10     0.851373
-    2       20     0.590761
+    0        0     0.851373
+    1       10     1.000000
+    2       20     0.851373
 
     """
 
@@ -69,6 +69,8 @@ def acf_df(sequence: thebeat.core.Sequence,
             "correlation": correlations
         }
     )
+
+    # todo Check whether still makes sense after changing the index.
 
     return df
 

@@ -189,7 +189,7 @@ def make_binary_timeseries(onsets, resolution):
     Ones for the onsets.
     """
     duration = np.max(onsets)
-    zeros_n = int(np.ceil(duration / resolution)) + 1
+    zeros_n = int(np.ceil(duration / resolution))
     signal = np.zeros(zeros_n)
 
     for onset in onsets:
