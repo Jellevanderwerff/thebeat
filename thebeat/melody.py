@@ -3,12 +3,10 @@ import os
 import re
 import textwrap
 from typing import Union, Optional
-
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import namedtuple
 import warnings
-
 try:
     import abjad
 except ImportError:
@@ -17,6 +15,7 @@ from thebeat._decorators import requires_lilypond
 import thebeat._warnings
 import thebeat.rhythm
 import thebeat.helpers
+import thebeat.utils
 import sounddevice
 import numpy.typing as npt
 
@@ -195,7 +194,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         rhythm = thebeat.rhythm.Rhythm.generate_random_rhythm(n_bars=n_bars, beat_ms=beat_ms,
                                                               time_signature=time_signature,
                                                               allowed_note_values=allowed_note_values, rng=rng)
-        pitch_names_possible = [pitch.name for pitch in thebeat.helpers.get_major_scale(tonic=key, octave=octave)]
+        pitch_names_possible = [pitch.name for pitch in thebeat.utils.get_major_scale(tonic=key, octave=octave)]
 
         pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
 

@@ -1,6 +1,33 @@
 import numpy as np
 from thebeat.core import Sequence, StimSequence
 from typing import Optional
+try:
+    import abjad
+except ImportError:
+    abjad = None
+
+
+def get_major_scale(tonic: str,
+                    octave: int):
+    if abjad is None:
+        raise ImportError("This function requires the abjad package. Install, for instance by typing "
+                          "'pip install abjad' into your terminal.")
+
+    intervals = "M2 M2 m2 M2 M2 M2 m2".split()
+    intervals = [abjad.NamedInterval(interval) for interval in intervals]
+
+    pitches = []
+
+    pitch = abjad.NamedPitch(tonic, octave=octave)
+
+    pitches.append(pitch)
+
+    for interval in intervals:
+        pitch = pitch + interval
+
+        pitches.append(pitch)
+
+    return pitches
 
 
 def join(objects: np.typing.ArrayLike,
@@ -54,3 +81,4 @@ def join(objects: np.typing.ArrayLike,
             all_stimuli += obj.stim_objects
         stimseq = StimSequence(stimulus=all_stimuli, sequence=seq, name=name)
         return stimseq
+

@@ -98,28 +98,6 @@ def check_sound_properties_sameness(objects: np.typing.ArrayLike):
         return True
 
 
-def get_major_scale(tonic: str,
-                    octave: int):
-    if abjad is None:
-        raise ImportError("This function requires the abjad package. Install, for instance by typing "
-                          "'pip install abjad' into your terminal.")
-
-    intervals = "M2 M2 m2 M2 M2 M2 m2".split()
-    intervals = [abjad.NamedInterval(_) for _ in intervals]
-
-    pitches = []
-
-    pitch = abjad.NamedPitch(tonic, octave=octave)
-
-    pitches.append(pitch)
-
-    for interval in intervals:
-        pitch = pitch + interval
-
-        pitches.append(pitch)
-
-    return pitches
-
 
 def get_sound_with_metronome(samples: np.ndarray,
                              fs: int,
@@ -385,6 +363,10 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
     final_ioi
         The final inter-onset interval of the sequence. This is only used if the sequence is
         metrical.
+    linewidths
+        The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
+        Can be a single value that will be used for each onset, or a list or array of values
+        (i.e with a value for each respective onsets).
     style
         Matplotlib style to use for the plot. Defaults to 'seaborn'.
         See `matplotlib style sheets reference
@@ -394,10 +376,6 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         name of the object as the title of the plot (if the object has one).
     x_axis_label
         A label for the x axis.
-    linewidths
-        The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
-        Can be a single value that will be used for each onset, or a list or array of values
-        (i.e with a value for each respective onsets).
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.subplots`.
