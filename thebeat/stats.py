@@ -218,19 +218,6 @@ def acf_values(sequence: thebeat.core.Sequence,
     return correlation
 
 
-def plot_fft(sequence: thebeat.core.Sequence,
-             resolution,
-             max_freq,
-             style: str = 'seaborn'):
-    #todo finish
-
-    onsets = sequence.onsets
-
-    binary_timeseries = thebeat.helpers.make_binary_timeseries(onsets, resolution)
-    fft = np.fft.fft(binary_timeseries)[:max_freq]
-
-
-
 def ks_test(sequence: thebeat.core.Sequence,
             reference_distribution: str = 'normal',
             alternative: str = 'two-sided'):

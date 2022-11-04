@@ -88,7 +88,10 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     # Make names for the bars
     n_seqs = len(sequences)
     if sequence_labels is None:
-        sequence_labels = ([str(i) for i in range(1, n_seqs + 1)])
+        if all(sequence.name for sequence in sequences):
+            sequence_labels = [sequence.name for sequence in sequences]
+        else:
+            sequence_labels = ([str(i) for i in range(1, n_seqs + 1)])
     elif len(sequence_labels) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
 

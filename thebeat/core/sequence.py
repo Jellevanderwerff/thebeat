@@ -175,22 +175,17 @@ class Sequence(BaseSequence):
         super().__init__(iois=iois, first_onset=first_onset, metrical=metrical, name=name)
 
     def __add__(self, other):
-        # Check whether the objects are of the same type
-        if not isinstance(other, Sequence):
-            raise ValueError("Right-hand side object is not a Sequence object.")
-
-        # Sequence objects need to be metrical:
-        if not self.metrical:
-            raise ValueError("The left-hand side Sequence must be metrical. Otherwise, we miss an inter-onset interval"
-                             "(IOI) in between the joined sequences. Try creating a Sequence with the metrical=True "
-                             "flag, this means there's an equal number of IOIs and onsets.")
-
-        iois = np.concatenate([self.iois, other.iois])
-
-        if other.metrical:
-            return Sequence(iois, metrical=True)
+        if isinstance(other, Sequence) and self.metrical:
+            return Sequence(iois=np.concatenate([self.iois, other.iois]), metrical=other.metrical)
+        elif isinstance(other, (int, float)) and not self.metrical:
+            return Sequence(iois=np.append(self.iois, other), metrical=True, name=self.name)
+        elif isinstance(other, (int, float)) and self.metrical:
+            iois = self.iois
+            iois[-1] += other
+            return Sequence(iois=iois, metrical=True, name=self.name)
         else:
-            return Sequence(iois)
+            raise ValueError("Can only concatenate metrical Sequence object with other (metrical or non-metrical) "
+                             "Sequence object or with a single number. For instance: 'seq1 + seq2' or 'seq1 + 100'.")
 
     def __mul__(self, other: int):
         return self._repeat(times=other)
@@ -268,6 +263,52 @@ class Sequence(BaseSequence):
         """
         iois = np.diff(onsets)
         return cls(iois, first_onset=onsets[0], metrical=False, **kwargs)
+
+    @classmethod
+    def generate_isochronous(cls,
+                             n: int,
+                             ioi: float,
+                             metrical: bool = False,
+                             **kwargs) -> Sequence:
+        """
+        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
+        Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to integers.
+
+        Parameters
+        ----------
+        n
+            The desired number of events in the sequence.
+        ioi
+            The inter-onset interval to be used between all events.
+        metrical
+            Indicates whether a metrical or non-metrical sequence should be generated
+            (see :py:attr:`Sequence.metrical`).
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
+
+
+        Examples
+        --------
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> print(seq.iois)
+        [500. 500. 500. 500.]
+        >>> print(len(seq.onsets))
+        5
+        >>> print(len(seq.iois))
+        4
+
+        >>> seq = Sequence.generate_isochronous(n=5, ioi=500, metrical=True)
+        >>> print(len(seq.onsets))
+        5
+        >>> print(len(seq.iois))
+        5
+
+        """
+
+        # Number of IOIs depends on metricality
+        n_iois = n if metrical else n - 1
+
+        return cls([ioi] * n_iois, metrical=metrical, **kwargs)
 
     @classmethod
     def generate_random_normal(cls,
@@ -452,52 +493,6 @@ class Sequence(BaseSequence):
         n_iois = n if metrical else n - 1
 
         return cls(rng.exponential(scale=lam, size=n_iois), metrical=metrical, **kwargs)
-
-    @classmethod
-    def generate_isochronous(cls,
-                             n: int,
-                             ioi: float,
-                             metrical: bool = False,
-                             **kwargs) -> Sequence:
-        """
-        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset intervals.
-        Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to integers.
-
-        Parameters
-        ----------
-        n
-            The desired number of events in the sequence.
-        ioi
-            The inter-onset interval to be used between all events.
-        metrical
-            Indicates whether a metrical or non-metrical sequence should be generated
-            (see :py:attr:`Sequence.metrical`).
-        **kwargs
-            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
-
-
-        Examples
-        --------
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
-        >>> print(seq.iois)
-        [500. 500. 500. 500.]
-        >>> print(len(seq.onsets))
-        5
-        >>> print(len(seq.iois))
-        4
-
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500, metrical=True)
-        >>> print(len(seq.onsets))
-        5
-        >>> print(len(seq.iois))
-        5
-
-        """
-
-        # Number of IOIs depends on metricality
-        n_iois = n if metrical else n - 1
-
-        return cls([ioi] * n_iois, metrical=metrical, **kwargs)
 
     # Manipulation methods
     def add_noise_gaussian(self,
@@ -726,3 +721,4 @@ class Sequence(BaseSequence):
         new_iois = np.tile(self.iois, reps=times)
 
         return Sequence(iois=new_iois, first_onset=0.0, metrical=True, name=self.name)
+

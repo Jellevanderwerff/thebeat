@@ -242,7 +242,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
     def plot_melody(self,
                     filepath: Optional[Union[os.PathLike, str]] = None,
                     key: Optional[str] = None,
-                    suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+                    suppress_display: bool = False,
+                    dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
         """
         Use this function to plot the melody in musical notes. It requires lilypond to be installed. See
         :py:meth:`Rhythm.plot_rhythm` for installation instructions.
@@ -268,6 +269,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
             use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+        dpi
+            The resolution of the plot in dots per inch.
 
 
 
@@ -290,12 +293,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
-        fig, ax = thebeat.helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display)
+        fig, ax = thebeat.helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display, dpi=dpi)
 
         return fig, ax
 
     def synthesize_and_return(self,
-                              event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                              event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                               fs: int = 48000,
                               n_channels: int = 1,
                               amplitude: float = 1.0,
@@ -318,7 +321,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         Parameters
         ----------
-        event_durations
+        event_durations_ms
             Can be supplied as a single integer, which means that duration will be used for all events
             in the melody, or as an array of list containing individual durations for each event. That of course
             requires an array or list with a size equal to the number of notes in the melody.
@@ -355,7 +358,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp_ms=onramp_ms,
                                           n_channels=n_channels, offramp_ms=offramp_ms, ramp_type=ramp_type,
-                                          event_durations=event_durations)
+                                          event_durations_ms=event_durations_ms)
 
         if metronome is True:
             samples = thebeat.helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
@@ -364,7 +367,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return samples, fs
 
     def synthesize_and_play(self,
-                            event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                            event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                             fs: int = 48000,
                             n_channels: int = 1,
                             amplitude: float = 1.0,
@@ -387,7 +390,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         Parameters
         ----------
-        event_durations
+        event_durations_ms
             Can be supplied as a single integer, which means that duration will be used for all events
             in the melody, or as an array of list containing individual durations for each event. That of course
             requires an array or list with a size equal to the number of notes in the melody.
@@ -420,11 +423,11 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> mel = Melody.generate_random_melody()
         >>> mel.synthesize_and_play()  # doctest: +SKIP
 
-        >>> mel.synthesize_and_play(event_durations=50)
+        >>> mel.synthesize_and_play(event_durations_ms=50)
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
+        samples, _ = self.synthesize_and_return(event_durations_ms=event_durations_ms, fs=fs, n_channels=n_channels,
                                                 amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
                                                 offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
@@ -434,7 +437,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
     def synthesize_and_write(self,
                              filepath: Union[str, os.PathLike],
-                             event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                             event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
                              fs: int = 48000,
                              n_channels: int = 1,
                              amplitude: float = 1.0,
@@ -459,7 +462,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         filepath
             The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
             Of course be aware of OS-specific filepath conventions.
-        event_durations
+        event_durations_ms
             Can be supplied as a single integer, which means that duration will be used for all events
             in the melody, or as an array of list containing individual durations for each event. That of course
             requires an array or list with a size equal to the number of notes in the melody.
@@ -493,7 +496,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations=event_durations, fs=fs, n_channels=n_channels,
+        samples, _ = self.synthesize_and_return(event_durations_ms=event_durations_ms, fs=fs, n_channels=n_channels,
                                                 amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
                                                 offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
@@ -527,7 +530,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                            onramp_ms: int,
                            offramp_ms: int,
                            ramp_type: str,
-                           event_durations: Optional[Union[list[int], npt.NDArray[int], int]] = None):
+                           event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None):
 
         # Calculate required number of frames
         total_duration_ms = np.sum(self.iois)
@@ -545,11 +548,13 @@ class Melody(thebeat.core.sequence.BaseSequence):
             samples = np.zeros((n_frames, 2), dtype=np.float64)
 
         # Set event durations to the IOIs if no event durations were supplied (i.e. use full length notes)
-        if event_durations is None:
+        if event_durations_ms is None:
             event_durations = self.iois
         # If a single integer is passed, use that value for all the events
-        elif isinstance(event_durations, int):
-            event_durations = np.tile(event_durations, len(self.events))
+        elif isinstance(event_durations_ms, (int, float)):
+            event_durations = np.tile(event_durations_ms, len(self.events))
+        else:
+            event_durations = event_durations_ms
 
         # Loop over the events, synthesize event sound, and add all of them to the samples array at the appropriate
         # times.

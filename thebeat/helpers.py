@@ -98,7 +98,6 @@ def check_sound_properties_sameness(objects: np.typing.ArrayLike):
         return True
 
 
-
 def get_sound_with_metronome(samples: np.ndarray,
                              fs: int,
                              metronome_ioi: float,
