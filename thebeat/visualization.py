@@ -60,8 +60,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
-        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
 
     Examples
     --------
@@ -113,10 +113,8 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         # Else, only create a new Figure object (Then,)
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
         else:
-            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = True
+            fig = ax.get_figure()
 
         # Labels
         ax.axes.set_title(title)
@@ -140,7 +138,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         ax.set_xlim(0, current_lims[1])
 
     # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False and not ax_provided:
+    if suppress_display is False:
         fig.show()
 
     return fig, ax
@@ -213,8 +211,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns a new Figure object
-        but the existing Axes object. It is advisable to not have the function return anything to avoid confusion.
+        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
 
     Examples
     --------
@@ -258,21 +256,19 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     with plt.style.context(style):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
         else:
-            fig, _ = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = True
+            fig = ax.get_figure()
         pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
         ax.set_aspect('equal')
 
-        if colorbar is True and ax_provided is False:
+        if colorbar is True:
             fig.colorbar(pcm, ax=ax, label=colorbar_label)
 
     # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False and not ax_provided:
+    if suppress_display is False:
         fig.show()
 
     return fig, ax
