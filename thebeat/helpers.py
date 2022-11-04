@@ -405,8 +405,11 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         # Else, only create a new Figure object (Then,)
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
         else:
             fig = ax.get_figure()
+            ax_provided = True
+
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
         right_x_lim = onsets[-1] + final_ioi if metrical else onsets[-1] + linewidths[-1]
@@ -416,7 +419,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
         ax.axes.yaxis.set_visible(False)
 
     # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False:
+    if suppress_display is False and ax_provided is False:
         fig.show()
 
     return fig, ax
@@ -492,8 +495,11 @@ def plot_waveform(samples: np.ndarray,
         # if we need to return a newly created Figure and Axes.
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
         else:
             fig = ax.get_figure()
+            ax_provided = True
+
         ax.set_xlim(0, x_right_lim)
         ax.plot(frames, samples, alpha=alph)
         if n_channels == 2:
@@ -502,7 +508,7 @@ def plot_waveform(samples: np.ndarray,
         ax.set_xlabel(x_label)
         ax.set_title(title)
 
-    if suppress_display is False:
+    if suppress_display is False and not ax_provided:
         fig.show()
 
     return fig, ax

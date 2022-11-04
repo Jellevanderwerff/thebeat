@@ -8,6 +8,51 @@ from matplotlib.colors import ListedColormap
 import scipy.spatial.distance
 
 
+def phase_space_plot(sequence: thebeat.core.Sequence,
+                     style: str = 'seaborn',
+                     linecolor: str = 'black',
+                     linewidth: float = 0.5,
+                     title: Optional[str] = None,
+                     x_axis_label: str = "$\mathregular{IOI_i}$",
+                     y_axis_label: str = "$\mathregular{IOI_{i+1}}$",
+                     figsize: Optional[tuple[int, int]] = None,
+                     suppress_display: bool = False,
+                     dpi: int = 100,
+                     ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    """Plot the phase space of a sequence.
+
+    #todo add documentation
+
+    Note
+    ----
+    Code adapted from :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+
+    """
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
+
+    with plt.style.context(style):
+        iois = sequence.iois
+        for i in range(len(iois) - 2):
+            ax.plot([iois[i], iois[i + 1]], [iois[i + 1], iois[i + 2]],
+                    color=linecolor,
+                    linewidth=linewidth)
+
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
+
+    if not suppress_display and not ax_provided:
+        fig.show()
+
+    return fig, ax
+
+
 def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn',
                             title: Optional[str] = None,
@@ -113,8 +158,10 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         # Else, only create a new Figure object (Then,)
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
         else:
             fig = ax.get_figure()
+            ax_provided = True
 
         # Labels
         ax.axes.set_title(title)
@@ -138,7 +185,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         ax.set_xlim(0, current_lims[1])
 
     # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False:
+    if suppress_display is False and ax_provided is False:
         fig.show()
 
     return fig, ax
@@ -256,8 +303,11 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     with plt.style.context(style):
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
         else:
             fig = ax.get_figure()
+            ax_provided = True
+
         pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
@@ -268,7 +318,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
             fig.colorbar(pcm, ax=ax, label=colorbar_label)
 
     # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False:
+    if suppress_display is False and ax_provided is False:
         fig.show()
 
     return fig, ax
