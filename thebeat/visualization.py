@@ -8,6 +8,135 @@ from matplotlib.colors import ListedColormap
 import scipy.spatial.distance
 
 
+def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
+                                                list[thebeat.core.Sequence],
+                                                np.ndarray[thebeat.core.Sequence]],
+                           reference_sequence: Union[thebeat.core.Sequence,
+                                                     float,
+                                                     list[thebeat.core.Sequence],
+                                                     np.ndarray[thebeat.core.Sequence]],
+                           binwidth: int = 10,
+                           color: str = None,
+                           style: str = 'seaborn',
+                           title: Optional[str] = None,
+                           radial_ticks: Optional[Union[list, np.ndarray]] = None,
+                           figsize: Optional[tuple[int, int]] = None,
+                           suppress_display: bool = False,
+                           dpi: int = 100,
+                           ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    """Plot the phase differences for ``test_sequence`` compared to ``sequence_2``. ``test_sequence`` can be a single
+    sequence, a list of sequences, or a numpy array of sequences.
+
+    The reference sequence can either be a single sequence in which case a comparison will be made between
+    each test sequence and the reference sequence, or a float in which case a comparison will be made between
+    each test sequence and an isochronous sequence with the provided IOI, or it can be an array or list
+    of sequences, in which case a comparison is made between each test and reference sequence element-wise.
+
+    Parameters
+    ----------
+    test_sequence
+        The sequence or sequences to be compared to ``reference_sequence``. Can be a single
+        :py:class:`thebeat.core.Sequence` object, or a list or array of :py:class:`thebeat.core.Sequence` objects.
+    reference_sequence
+        The reference sequence or sequences to be compared to ``test_sequence``. Can be a single
+        :py:class:`thebeat.core.Sequence` object, or a list or array of :py:class:`thebeat.core.Sequence` objects.
+        If both the test_sequence and reference sequences are lists or arrays, they must be of the same length.
+    binwidth
+        The width of the bins used to calculate the histogram bars.
+    color
+        The color of the bars. Can be a single color or a list of colors, one for each bar.
+        See :meth:`matplotlib.axes.Axes.bar` for more information.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        A title for the plot.
+    radial_ticks
+        Whether to show radial ticks.
+    figsize
+        The size of the figure to be created in inches.
+    suppress_display
+        If True, the figure will not be displayed.
+    dpi
+        The resolution of the figure in dots per inch.
+    ax
+        An optional :py:class:`matplotlib.axes.Axes` object to plot on. If not provided, a new Axes object will be
+        created. If an :py:class:`matplotlib.axes.Axes` object is provided, the function returns the original
+        :py:class:`matplotlib.axes.Figure` and :py:class:`matplotlib.axes.Axes` objects.
+
+    """
+
+    # Input validation for test sequence
+    if isinstance(test_sequence, (list, np.ndarray)):
+        test_iterable_passed = True
+    else:
+        test_iterable_passed = False
+
+    # Input validation for reference sequence
+    if isinstance(reference_sequence, (list, np.ndarray)):
+        ref_iterable_passed = True
+    else:
+        ref_iterable_passed = False
+
+    # If we have lists on both sides, they must be of equal length
+    if isinstance(test_sequence, (list, np.ndarray)) and isinstance(reference_sequence, (list, np.ndarray)):
+        if len(test_sequence) != len(reference_sequence):
+            raise ValueError("The test and reference sequences must be the same length.")
+
+    # Output array
+    phase_diffs = np.array([])
+
+    # Do all the different combinations of input types
+    if test_iterable_passed:
+        for i, test_seq in enumerate(test_sequence):
+            if ref_iterable_passed:
+                # we have list of test sequences and list of ref sequences
+                ref_seq = reference_sequence[i]
+            else:
+                # we have list of test sequences and single ref sequence
+                ref_seq = reference_sequence
+
+            phase_diffs = np.append(phase_diffs, thebeat.utils.get_phase_differences(test_seq, ref_seq))
+
+    else:
+        if ref_iterable_passed:
+            for ref_seq in reference_sequence:
+                phase_diffs = np.append(phase_diffs, thebeat.utils.get_phase_differences(test_sequence, ref_seq))
+        else:
+            # we have a single test sequence and a single ref sequences
+            phase_diffs = np.append(phase_diffs,
+                                    thebeat.utils.get_phase_differences(test_sequence, reference_sequence))
+
+    # Calculate the bins
+    a, b = np.histogram(phase_diffs, bins=np.arange(0, 360 + binwidth, binwidth))
+    centers = np.deg2rad(np.ediff1d(b) // 2 + b[:-1])
+
+    # Plot the histogram
+    with plt.style.context(style):
+        # If no Axes was provided, create one
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={'projection': 'polar'})
+            axes_provided = False
+        # If an Axes object was provided, use that one but check if it is a polar one
+        else:
+            fig = ax.get_figure()
+            if not ax.name == 'polar':
+                raise ValueError("Please provide a polar Axes object. Use projection='polar' when creating it.")
+            axes_provided = True
+        ax.bar(centers, a, width=np.deg2rad(binwidth), bottom=0.0, color=color, alpha=0.5)
+        ax.set_title(title)
+
+        # Make the plot face north
+        ax.set_theta_zero_location("N")
+        ax.set_theta_direction(-1)
+
+    # Show
+    if not suppress_display and axes_provided is False:
+        fig.show()
+
+    return fig, ax
+
+
 def phase_space_plot(sequence: thebeat.core.Sequence,
                      style: str = 'seaborn',
                      linecolor: str = 'black',

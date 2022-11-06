@@ -1,10 +1,83 @@
 import numpy as np
-from thebeat.core import Sequence, StimSequence
-from typing import Optional
+import thebeat.core
+from typing import Optional, Union
+
 try:
     import abjad
 except ImportError:
     abjad = None
+
+
+def get_phase_differences(sequence_1: thebeat.core.Sequence,
+                          sequence_2: Union[thebeat.core.Sequence, float],
+                          circular_unit="degrees"):
+    """Get the phase differences for ``sequence_1`` compared to ``sequence_2``. If the second argument is a number,
+    ``sequence_1`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of that
+    number and the same length as sequence 1.
+
+    The phase differences are calculated for each onset of sequence 1 compared to the onset with the same
+    index of sequence 1. Note, this means that this function does not handle missing values well.
+    """
+
+    # Input validation
+    if not isinstance(sequence_1, thebeat.core.Sequence):
+        raise ValueError("Please provide a Sequence object as the left argument.")
+    elif isinstance(sequence_2, (int, float)):
+        sequence_2 = thebeat.core.Sequence.generate_isochronous(n=len(sequence_1.onsets), ioi=sequence_2)
+    elif isinstance(sequence_2, thebeat.core.Sequence):
+        pass
+    else:
+        raise ValueError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
+                         "number as the right-hand argument.")
+
+    # Get onsets once
+    seq_1_onsets = sequence_1.onsets
+    seq_2_onsets = sequence_2.onsets
+
+    # Check length sameness
+    if not len(seq_1_onsets) == len(seq_2_onsets):
+        raise ValueError("This function only works if the number of events in the two sequences are equal.")
+
+    # Output array
+    phase_diffs = np.array([])
+
+    # Calculate phase differences
+    for i, seq_1_onset in enumerate(seq_1_onsets):
+
+        # For the first event, we use the period of the IOI that follows the event
+        if i == 0:
+            period_next = sequence_1.iois[0]
+            period_prev = period_next
+        # For the last event, we use the period of the IOI that precedes the event
+        elif i == len(seq_1_onsets) - 1:
+            period_prev = sequence_1.iois[i - 1]
+            period_next = period_prev
+        # For all other events, we need both the previous and the next IOI
+        else:
+            period_next = sequence_1.iois[i]
+            period_prev = sequence_1.iois[i - 1]
+
+        if seq_1_onset > seq_2_onsets[i]:
+            phase_diff = (seq_1_onset - seq_2_onsets[i]) / period_next
+        elif seq_1_onset < seq_2_onsets[i]:
+            phase_diff = (seq_1_onset - seq_2_onsets[i]) / period_prev
+        elif seq_1_onset == seq_2_onsets[i]:
+            phase_diff = 0.0
+        else:
+            raise ValueError("Something went wrong during the calculation of the phase differences.")
+
+        phase_diffs = np.append(phase_diffs, phase_diff)
+
+    # Convert to degrees
+    phase_diff_degrees = (phase_diffs * 360) % 360
+
+    # Return
+    if circular_unit == "degrees":
+        return phase_diff_degrees
+    elif circular_unit == "radians":
+        return np.deg2rad(phase_diff_degrees)
+    else:
+        raise ValueError("Please provide a valid circular unit. Either degrees or radians.")
 
 
 def get_major_scale(tonic: str,
@@ -51,8 +124,8 @@ def join(objects: np.typing.ArrayLike,
         The joined Sequence or StimSequence
     """
 
-    if not all(isinstance(obj, Sequence) for obj in objects) and not all(
-            isinstance(obj, StimSequence) for obj in objects):
+    if not all(isinstance(obj, thebeat.core.Sequence) for obj in objects) and not all(
+            isinstance(obj, thebeat.core.StimSequence) for obj in objects):
         raise ValueError("Please pass only Sequence or only StimSequence objects.")
 
     if not all(obj.metrical for obj in objects[:-1]):
@@ -68,17 +141,16 @@ def join(objects: np.typing.ArrayLike,
 
     # concatenate iois and create new Sequence
     iois = np.concatenate([obj.iois for obj in objects])
-    seq = Sequence(iois, metrical=metricality)
+    seq = thebeat.core.Sequence(iois, metrical=metricality)
 
     # For Sequence objects we're done:
-    if isinstance(objects[0], Sequence):
+    if isinstance(objects[0], thebeat.core.Sequence):
         return seq
 
     # Otherwise we get the stimuli from the StimSequence object, join them and return a new StimSequence
-    if isinstance(objects[0], StimSequence):
+    if isinstance(objects[0], thebeat.core.StimSequence):
         all_stimuli = []
         for obj in objects:
             all_stimuli += obj.stim_objects
-        stimseq = StimSequence(stimulus=all_stimuli, sequence=seq, name=name)
+        stimseq = thebeat.core.StimSequence(stimulus=all_stimuli, sequence=seq, name=name)
         return stimseq
-

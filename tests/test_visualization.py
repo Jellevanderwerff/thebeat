@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 import thebeat.visualization
 from thebeat.core import Stimulus, StimSequence, Sequence
 from thebeat.visualization import plot_multiple_sequences, recurrence_plot
@@ -38,3 +40,14 @@ def test_recurrence_plot():
     fig, ax = recurrence_plot(seq, 0.03)
     assert fig, ax
 
+
+def test_plot_phase_differences():
+    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, metrical=True) * 5
+    fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
+    assert fig, ax
+
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+
+    thebeat.visualization.plot_phase_differences(seq, 500, ax=ax)
+
+    assert fig, ax
