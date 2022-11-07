@@ -32,6 +32,14 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
     each test sequence and an isochronous sequence with the provided IOI, or it can be an array or list
     of sequences, in which case a comparison is made between each test and reference sequence element-wise.
 
+    Example
+    -------
+
+    .. figure:: images/phase_differences_plot.png
+        :width: 100 %
+
+        Example phase differences plot.
+
     Parameters
     ----------
     test_sequence
@@ -142,39 +150,80 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
                      linecolor: str = 'black',
                      linewidth: float = 0.5,
                      title: Optional[str] = None,
-                     x_axis_label: str = "$\mathregular{IOI_i}$",
-                     y_axis_label: str = "$\mathregular{IOI_{i+1}}$",
+                     x_axis_label: str = r"$\mathregular{IOI_i}$",
+                     y_axis_label: str = r"$\mathregular{IOI_{i+1}}$",
                      figsize: Optional[tuple[int, int]] = None,
                      suppress_display: bool = False,
                      dpi: int = 100,
                      ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
-    """Plot the phase space of a sequence.
+    """Plot the phase space of a sequence. In such a plot we loop over each IOI, and plot a line
+    between it on the x axis and the IOI that follows it on the y axis.
 
-    #todo add documentation
+    Parameters
+    ----------
+    sequence
+        The sequence to plot.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    linecolor
+        The color of the lines.
+    linewidth
+        The width of the lines.
+    title
+        A title for the plot.
+    x_axis_label
+        The label for the x axis.
+    y_axis_label
+        The label for the y axis.
+    figsize
+        The size of the figure to be created in inches, width x height, e.g. (4, 4).
+    suppress_display
+        If True, the figure will not be displayed.
+    dpi
+        The resolution of the figure in dots per inch.
+    ax
+        An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
+        a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
+        this function returns the original :class:`~matplotlib.axes.Figure` and
+        :class:`~matplotlib.axes.Axes` objects.
+
+    Example
+    -------
+
+    .. figure:: images/phase_space_plot.png
+
+        Example of a phase space plot.
 
     Note
     ----
     Code adapted from :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
+    Examples
+    --------
+    >>> from thebeat import Sequence
+    >>> seq = Sequence.generate_random_normal(100, 100, 10)
+    >>> phase_space_plot(seq)  # doctest: +SKIP
+
     """
 
-    if ax is None:
-        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-        ax_provided = False
-    else:
-        fig = ax.get_figure()
-        ax_provided = True
-
     with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, tight_layout=True)
+            ax_provided = False
+        else:
+            fig = ax.get_figure()
+            ax_provided = True
         iois = sequence.iois
         for i in range(len(iois) - 2):
             ax.plot([iois[i], iois[i + 1]], [iois[i + 1], iois[i + 2]],
                     color=linecolor,
                     linewidth=linewidth)
 
-    ax.set_xlabel(x_axis_label)
-    ax.set_ylabel(y_axis_label)
-    ax.set_title(title)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_title(title)
+        ax.set_aspect('equal')
 
     if not suppress_display and not ax_provided:
         fig.show()

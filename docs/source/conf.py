@@ -18,7 +18,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'nbsphinx',
     'sphinx_autodoc_typehints',
-    'sphinxcontrib.bibtex'
+    'sphinxcontrib.bibtex',
+    'sphinx.ext.autosectionlabel'
     ]
 
 
@@ -65,4 +66,3 @@ bibtext_reference_style = 'author_year'
 
 # autosummary
 autosummary_generate = True
-

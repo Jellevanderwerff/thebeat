@@ -136,7 +136,7 @@ def get_major_scale(tonic: str,
 
 def join(objects: np.typing.ArrayLike,
          name: Optional[str] = None):
-    """Join an array or list of :py:`Sequence` or :py:`StimSequence` objects.
+    """Join an array or list of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` objects.
 
     Note
     ----
