@@ -11,12 +11,16 @@ except ImportError:
 def get_phase_differences(test_sequence: thebeat.core.Sequence,
                           reference_sequence: Union[thebeat.core.Sequence, float],
                           circular_unit="degrees"):
-    """Get the phase differences for ``sequence_1`` compared to ``sequence_2``. If the second argument is a number,
-    ``sequence_1`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of that
-    number and the same length as sequence 1.
+    """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``. If the second argument is a
+    number, ``test_sequence`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of
+    that number and the same length as the test sequence.
 
-    The phase differences are calculated for each onset of ``sequence 1`` compared to the onset with the same
-    index of sequence 2. Note, this means that this function does not handle missing values well.
+    Note
+    ----
+    The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
+    index of ``reference_sequence``. Note, this means that this function does not handle missing values well.
+    If you are dealing with missing data, it is probably best to for each missing data point to remove the onset at the same
+    index from the reference sequence.
 
     Parameters
     ----------
@@ -95,7 +99,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
 
 def get_major_scale(tonic: str,
                     octave: int) -> list[abjad.NamedPitch]:
-    """Get the major scale for a given tonic and octave. Returns a list of abjad NamedPitch objects.
+    """Get the major scale for a given tonic and octave. Returns a list of :class:`abjad.pitch.NamedPitch` objects.
 
     Note
     ----
