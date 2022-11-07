@@ -1,0 +1,9 @@
+BaseSequence
+------------
+
+:py:class:`~thebeat.core.BaseSequence` is the parent class of the :py:class:`~thebeat.core.Sequence`, :py:class:`~thebeat.rhythm.Rhythm`, and :py:class:`~thebeat.core.StimSequence` classes.
+
+.. autoclass:: thebeat.core.BaseSequence
+    :members:
+    :undoc-members:
+
