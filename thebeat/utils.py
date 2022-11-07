@@ -8,31 +8,44 @@ except ImportError:
     abjad = None
 
 
-def get_phase_differences(sequence_1: thebeat.core.Sequence,
-                          sequence_2: Union[thebeat.core.Sequence, float],
+def get_phase_differences(test_sequence: thebeat.core.Sequence,
+                          reference_sequence: Union[thebeat.core.Sequence, float],
                           circular_unit="degrees"):
     """Get the phase differences for ``sequence_1`` compared to ``sequence_2``. If the second argument is a number,
     ``sequence_1`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of that
     number and the same length as sequence 1.
 
-    The phase differences are calculated for each onset of sequence 1 compared to the onset with the same
-    index of sequence 1. Note, this means that this function does not handle missing values well.
+    The phase differences are calculated for each onset of ``sequence 1`` compared to the onset with the same
+    index of sequence 2. Note, this means that this function does not handle missing values well.
+
+    Parameters
+    ----------
+    test_sequence
+        The sequence to be compared with the reference sequence. Can either be a single Sequence or
+        a list or array of Sequences.
+    reference_sequence
+        The reference sequence. Can be a Sequence object, a list or array of Sequence objects, or a number.
+        In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
+        number and the same length as ``sequence_1``.
+    circular_unit
+        The unit of the circular unit. Can be "degrees" or "radians".
+
     """
 
     # Input validation
-    if not isinstance(sequence_1, thebeat.core.Sequence):
+    if not isinstance(test_sequence, thebeat.core.Sequence):
         raise ValueError("Please provide a Sequence object as the left argument.")
-    elif isinstance(sequence_2, (int, float)):
-        sequence_2 = thebeat.core.Sequence.generate_isochronous(n=len(sequence_1.onsets), ioi=sequence_2)
-    elif isinstance(sequence_2, thebeat.core.Sequence):
+    elif isinstance(reference_sequence, (int, float)):
+        reference_sequence = thebeat.core.Sequence.generate_isochronous(n=len(test_sequence.onsets), ioi=reference_sequence)
+    elif isinstance(reference_sequence, thebeat.core.Sequence):
         pass
     else:
         raise ValueError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
                          "number as the right-hand argument.")
 
     # Get onsets once
-    seq_1_onsets = sequence_1.onsets
-    seq_2_onsets = sequence_2.onsets
+    seq_1_onsets = test_sequence.onsets
+    seq_2_onsets = reference_sequence.onsets
 
     # Check length sameness
     if not len(seq_1_onsets) == len(seq_2_onsets):
@@ -46,16 +59,16 @@ def get_phase_differences(sequence_1: thebeat.core.Sequence,
 
         # For the first event, we use the period of the IOI that follows the event
         if i == 0:
-            period_next = sequence_1.iois[0]
+            period_next = test_sequence.iois[0]
             period_prev = period_next
         # For the last event, we use the period of the IOI that precedes the event
         elif i == len(seq_1_onsets) - 1:
-            period_prev = sequence_1.iois[i - 1]
+            period_prev = test_sequence.iois[i - 1]
             period_next = period_prev
         # For all other events, we need both the previous and the next IOI
         else:
-            period_next = sequence_1.iois[i]
-            period_prev = sequence_1.iois[i - 1]
+            period_next = test_sequence.iois[i]
+            period_prev = test_sequence.iois[i - 1]
 
         if seq_1_onset > seq_2_onsets[i]:
             phase_diff = (seq_1_onset - seq_2_onsets[i]) / period_next
@@ -81,7 +94,21 @@ def get_phase_differences(sequence_1: thebeat.core.Sequence,
 
 
 def get_major_scale(tonic: str,
-                    octave: int):
+                    octave: int) -> list[abjad.NamedPitch]:
+    """Get the major scale for a given tonic and octave. Returns a list of abjad NamedPitch objects.
+
+    Note
+    ----
+    This function requires abjad to be installed.
+
+    Parameters
+    ----------
+    tonic
+        The tonic of the scale, e.g. 'G'.
+    octave
+        The octave of the tonic, e.g. 4.
+
+    """
     if abjad is None:
         raise ImportError("This function requires the abjad package. Install, for instance by typing "
                           "'pip install abjad' into your terminal.")

@@ -1,11 +1,13 @@
 from __future__ import annotations
-from typing import Union, Optional
+from typing import Optional
 import scipy.stats
 import scipy.fft
 import numpy as np
 import thebeat.core
+from thebeat.helpers import make_binary_timeseries
 import matplotlib.pyplot as plt
 import scipy.signal
+from scipy.fft import rfft, rfftfreq
 import pandas as pd
 import thebeat.helpers
 
@@ -83,6 +85,8 @@ def acf_plot(sequence: thebeat.core.Sequence,
              title: str = 'Autocorrelation',
              x_axis_label: str = 'Lag',
              figsize: Optional[tuple] = None,
+             dpi: int = 100,
+             ax: Optional[plt.Axes] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
 
@@ -115,6 +119,12 @@ def acf_plot(sequence: thebeat.core.Sequence,
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    dpi
+        The desired output resolution of the plot in dots per inch (DPI). This refers to the ``dpi`` parameter
+        in :func:`matplotlib.pyplot.figure`.
+    ax
+        If desired, one can provide an existing :class:`matplotlib.axes.Axes` object to plot the autocorrelation
+        plot on. This is for instance useful if you want to plot multiple autocorrelation plots on the same figure.
     suppress_display
         If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
@@ -143,18 +153,17 @@ def acf_plot(sequence: thebeat.core.Sequence,
     # Make x axis
     x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
 
-    if isinstance(sequence, thebeat.core.StimSequence):
-        x /= 1000
-        if np.max(x) > 10000:
-            x /= 1000
-
     with plt.style.context(style):
-        fig, ax = plt.subplots(figsize=figsize, tight_layout=True)
-        ax.axes.set_xlabel(x_axis_label)
-        ax.axes.set_title(title)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        else:
+            fig = ax.get_figure()
+
+        ax.set_xlabel(x_axis_label)
+        ax.set_title(title)
         ax.plot(x, y)
 
-    if not suppress_display:
+    if not suppress_display and ax is not None:
         plt.show()
 
     return fig, ax
@@ -216,6 +225,124 @@ def acf_values(sequence: thebeat.core.Sequence,
                          "and smoothing_sd. Try choosing a smaller resolution_ms.") from e
 
     return correlation
+
+
+def fft_plot(sequence: thebeat.core.Sequence,
+             fs: int = 1000,
+             min_freq: Optional[float] = None,
+             max_freq: Optional[float] = None,
+             style: str = 'seaborn',
+             title: str = 'Fourier transform',
+             x_axis_label: str = 'Frequency',
+             y_axis_label: str = 'Absolute power',
+             figsize: Optional[tuple] = None,
+             dpi: int = 100,
+             ax: Optional[plt.Axes] = None,
+             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+
+    # Make a sequence of ones and zeroes
+    timeseries = make_binary_timeseries(sequence.onsets, resolution=1000 / fs)
+    duration = max(sequence.onsets) / 1000
+    n = int(fs * duration) + 1
+
+    # Do the fft
+    yf = rfft(timeseries)
+    xf = rfftfreq(n, d=1 / fs)
+
+    # Plot
+    with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+            ax_provided = False
+        else:
+            fig = ax.get_figure()
+            ax_provided = True
+        ax.plot(xf, np.abs(yf))
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_xlim(min_freq, max_freq)
+        ax.set_title(title)
+
+    if not suppress_display and ax_provided is False:
+        fig.show()
+
+    return fig, ax
+
+
+def fft_plot_ms(sequence: thebeat.core.Sequence,
+                resolution: int = 1,
+                min_ioi: Optional[float] = None,
+                max_ioi: Optional[float] = None,
+                style: str = 'seaborn',
+                title: str = 'Fourier transform',
+                x_axis_label: str = 'IOI (ms)',
+                y_axis_label: str = 'Absolute power',
+                figsize: Optional[tuple] = None,
+                dpi: int = 100,
+                ax: Optional[plt.Axes] = None,
+                suppress_display: bool = False):
+    """
+    Plot a fourier transform of a :py:class:`thebeat.core.Sequence` object with the x axis in milliseconds.
+
+    Caution
+    -------
+    This function requires the original :py:class:`thebeat.core.Sequence` object to be in milliseconds.
+    This is normally not a necessity for :py:class:`thebeat.core.Sequence` objects.
+
+
+    Parameters
+    ----------
+    sequence
+    resolution
+    min_ioi
+    max_ioi
+    style
+    title
+    x_axis_label
+    y_axis_label
+    figsize
+    dpi
+    ax
+    suppress_display
+
+    Returns
+    -------
+
+    """
+    if min_ioi < 0:
+        raise ValueError("The minimum IOI value needs to be above zero.")
+
+    fs = 1000 / resolution
+
+    min_freq = 1000 / max_ioi
+    max_freq = 1000 / min_ioi
+    timeseries = make_binary_timeseries(sequence.onsets, resolution=resolution)
+    duration = max(sequence.onsets) / 1000
+    n = int(fs * duration) + 1
+
+    yf = rfft(timeseries)
+    xf = rfftfreq(n, d=1 / fs)
+
+    with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+            axes_provided = False
+        else:
+            fig = ax.get_figure()
+            axes_provided = True
+
+        ax.plot(xf, np.abs(yf))
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_xlim(min_freq, max_freq)
+        ax.invert_xaxis()
+        ax.xaxis.set_major_formatter(lambda x, pos: str(round(1000 / x if not x == 0 else 0, 1)))
+        ax.set_title(title)
+
+    if not suppress_display and axes_provided is False:
+        fig.show()
+
+    return fig, ax
 
 
 def ks_test(sequence: thebeat.core.Sequence,

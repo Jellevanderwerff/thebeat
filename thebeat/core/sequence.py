@@ -177,9 +177,9 @@ class Sequence(BaseSequence):
     def __add__(self, other):
         if isinstance(other, Sequence) and self.metrical:
             return Sequence(iois=np.concatenate([self.iois, other.iois]), metrical=other.metrical)
-        elif isinstance(other, (int, float)) and not self.metrical:
+        elif isinstance(other, (int, float, np.integer, np.float)) and not self.metrical:
             return Sequence(iois=np.append(self.iois, other), metrical=True, name=self.name)
-        elif isinstance(other, (int, float)) and self.metrical:
+        elif isinstance(other, (int, float, np.integer, np.float)) and self.metrical:
             iois = self.iois
             iois[-1] += other
             return Sequence(iois=iois, metrical=True, name=self.name)
@@ -244,6 +244,7 @@ class Sequence(BaseSequence):
                     **kwargs) -> Sequence:
         """
         Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
+        Here, the onsets do not have to start with zero.
 
         Parameters
         ----------
@@ -630,7 +631,7 @@ class Sequence(BaseSequence):
         # Linewidths
         if linewidth is None:
             linewidths = np.repeat(np.min(self.iois) / 10, len(self.onsets))
-        elif isinstance(linewidth, (int, float)):
+        elif isinstance(linewidth, (int, float, np.integer, np.float)):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
             linewidths = np.array(linewidth)

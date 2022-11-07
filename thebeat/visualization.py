@@ -16,10 +16,10 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
                                                      list[thebeat.core.Sequence],
                                                      np.ndarray[thebeat.core.Sequence]],
                            binwidth: int = 10,
+                           zero_direction: str = 'N',
                            color: str = None,
                            style: str = 'seaborn',
                            title: Optional[str] = None,
-                           radial_ticks: Optional[Union[list, np.ndarray]] = None,
                            figsize: Optional[tuple[int, int]] = None,
                            suppress_display: bool = False,
                            dpi: int = 100,
@@ -43,6 +43,8 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
         If both the test_sequence and reference sequences are lists or arrays, they must be of the same length.
     binwidth
         The width of the bins used to calculate the histogram bars.
+    zero_direction
+        The direction of the zero angle. Can be 'N', 'E', 'S', or 'W'.
     color
         The color of the bars. Can be a single color or a list of colors, one for each bar.
         See :meth:`matplotlib.axes.Axes.bar` for more information.
@@ -51,8 +53,6 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
         `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         A title for the plot.
-    radial_ticks
-        Whether to show radial ticks.
     figsize
         The size of the figure to be created in inches.
     suppress_display
@@ -127,7 +127,7 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
         ax.set_title(title)
 
         # Make the plot face north
-        ax.set_theta_zero_location("N")
+        ax.set_theta_zero_location(zero_direction)
         ax.set_theta_direction(-1)
 
     # Show
@@ -270,7 +270,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
-    # default to 50 milliseconds).
+    # default to 1/10th of the smallest IOI)
     if linewidths is None:
         if isinstance(sequences[0], thebeat.core.StimSequence):
             linewidths = [trial.event_durations for trial in sequences]
