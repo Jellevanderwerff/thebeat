@@ -286,7 +286,6 @@ def plot_lp(lp,
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
-        print('this happened')
         save_format = os.path.splitext(filepath)[1]
         if save_format not in ('.pdf', '.png', '.eps'):
             raise ValueError("Can only export .png, .pdf, and .eps files.")
