@@ -286,6 +286,7 @@ def plot_lp(lp,
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
+        print('this happened')
         save_format = os.path.splitext(filepath)[1]
         if save_format not in ('.pdf', '.png', '.eps'):
             raise ValueError("Can only export .png, .pdf, and .eps files.")
@@ -299,7 +300,7 @@ def plot_lp(lp,
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
-        if save_format == '.png':
+        if save_format == '.png' or save_format is None:
             command = ['lilypond', '-dbackend=eps', '--silent', f'-dresolution={dpi}', '--png', '-o',
                        'rhythm', 'rhythm.ly']
         else:
