@@ -423,7 +423,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         Parameters
         ----------
         filepath
-            Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.eps'.
+            Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.pdf'.
             The desired file format will be selected based on what the filepath ends with.
         staff_type
             Either 'percussion' or 'rhythm'. 'Rhythm' is a single line (like a woodblock score). Percussion
@@ -453,7 +453,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> plt.show()  # doctest: +SKIP
 
         >>> r = Rhythm.from_note_values([4, 4, 4, 4])
-        >>> r.plot_rhythm(filepath='isochronous_rhythm.eps')  # doctest: +SKIP
+        >>> r.plot_rhythm(filepath='isochronous_rhythm.pdf')  # doctest: +SKIP
 
 
         """
