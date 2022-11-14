@@ -384,6 +384,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                     filepath: Union[os.PathLike, str] = None,
                     staff_type: str = "rhythm",
                     print_staff: bool = True,
+                    title: Optional[str] = None,
                     suppress_display: bool = False,
                     dpi: int = 300,
                     ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
@@ -430,6 +431,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         print_staff
             If desired, you can choose to print a musical staff (the default is not to do this). The staff will be a
             `percussion staff <https://en.wikipedia.org/wiki/Percussion_notation>`_.
+        title
+            A title for the plot. Note that this is not considered when saving the plot as an .eps file.
         suppress_display
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
@@ -521,8 +524,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
 
         # Plot!
-        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, dpi=dpi,
-                                          ax=ax)
+        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, title=title,
+                                          dpi=dpi, ax=ax)
 
         return fig, ax
 

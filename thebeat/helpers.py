@@ -261,6 +261,7 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
 def plot_lp(lp,
             filepath: Union[os.PathLike, str] = None,
             suppress_display: bool = False,
+            title: Optional[str] = None,
             dpi: int = 300,
             ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
@@ -274,6 +275,8 @@ def plot_lp(lp,
         If provided, the plot will be saved to this path. Has to end with either .png or .eps.
     suppress_display
         If True, the plot will not be displayed using :func:`matplotlib.Figure.show`.
+    title
+        Title of the plot.
     dpi
         The resolution of the plot in dots per inch.
     ax
@@ -323,10 +326,11 @@ def plot_lp(lp,
         fig, ax = plt.subplots(dpi=dpi)
         ax_provided = False
     else:
-        fig, _ = plt.subplots(dpi=dpi)
+        fig = ax.get_figure()
         ax_provided = True
     ax.imshow(img_cropped)
     ax.set_axis_off()
+    ax.set_title(title)
 
     # show plot if necessary
     if not suppress_display and not ax_provided:

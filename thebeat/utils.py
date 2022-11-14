@@ -11,16 +11,20 @@ except ImportError:
 def get_phase_differences(test_sequence: thebeat.core.Sequence,
                           reference_sequence: Union[thebeat.core.Sequence, float],
                           circular_unit="degrees"):
+
+    # todo Verify this method of calculating phase differences. I'm not quite sure about using the period of the
+    #  test_sequence instead of the reference_sequence
+
     """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``. If the second argument is a
     number, ``test_sequence`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of
     that number and the same length as the test sequence.
 
-    Note
-    ----
+    Caution
+    -------
     The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
-    index of ``reference_sequence``. Note, this means that this function does not handle missing values well.
-    If you are dealing with missing data, it is probably best to for each missing data point to remove the onset at the same
-    index from the reference sequence.
+    index of ``reference_sequence``. Tthis means that this function does not handle missing values well.
+    If you are dealing with missing data, it is probably best to for each missing data point to remove the onset at the
+    same index from the reference sequence.
 
     Parameters
     ----------
@@ -81,7 +85,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
         elif seq_1_onset == seq_2_onsets[i]:
             phase_diff = 0.0
         else:
-            raise ValueError("Something went wrong during the calculation of the phase differences.")
+            raise ValueError("Something went wrong during the calculation of the phase differences."
+                             "Please check your data for missing values.")
 
         phase_diffs = np.append(phase_diffs, phase_diff)
 
