@@ -404,6 +404,25 @@ def ks_test(sequence: thebeat.core.Sequence,
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
+def get_cov(sequence: thebeat.core.Sequence) -> np.float64:
+    """
+    Calculate the coefficient of variantion of the inter-onset intervals (IOIS) in a
+    :py:class:`thebeat.core.Sequence` object.
+
+    Parameters
+    ----------
+    sequence
+        A :py:class:`thebeat.core.Sequence` object.
+
+    Returns
+    -------
+    float
+        The covariance of the sequence.
+
+    """
+    return np.float64(np.std(sequence.iois) / np.mean(sequence.iois))
+
+
 def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     """
 
