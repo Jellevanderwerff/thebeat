@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Union, Optional
 import thebeat.helpers
 import numpy as np
-from matplotlib.colors import ListedColormap
-import scipy.spatial.distance
+import matplotlib.ticker as ticker
 
 
 def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
@@ -487,6 +486,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
             ax_provided = True
 
         pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)

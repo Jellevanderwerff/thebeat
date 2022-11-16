@@ -583,6 +583,9 @@ class Sequence(BaseSequence):
         """Use this function to round off the `Sequence` object's onsets (i.e. *t* values). This can, for instance,
         be useful to get rid of warnings that are the result of frame rounding. See e.g. `StimSequence.__init__`.
 
+        Note that this function does not return anything. The onsets of the sequence object from which
+        this method is called are rounded.
+
         Parameters
         ----------
         decimals
