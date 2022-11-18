@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Union
 import scipy.stats
 import scipy.fft
 import numpy as np
@@ -7,6 +7,7 @@ import thebeat.core
 from thebeat.helpers import make_binary_timeseries
 import matplotlib.pyplot as plt
 import scipy.signal
+import scipy.stats
 from scipy.fft import rfft, rfftfreq
 import pandas as pd
 import thebeat.helpers
@@ -239,7 +240,6 @@ def fft_plot(sequence: thebeat.core.Sequence,
              dpi: int = 100,
              ax: Optional[plt.Axes] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
-
     # Make a sequence of ones and zeroes
     timeseries = make_binary_timeseries(sequence.onsets, resolution=1000 / fs)
     duration = max(sequence.onsets) / 1000
@@ -402,6 +402,43 @@ def ks_test(sequence: thebeat.core.Sequence,
         return scipy.stats.kstest(sequence, dist, alternative=alternative)
     else:
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
+
+
+def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.rhythm.Rhythm],
+                         bin_fraction: float = 0.03125):
+    """
+    Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
+    If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
+    A sequence that is completely isochronous has a Shannon entropy of 0.
+
+    The bin size is determined from the average inter-onset interval in the
+    :py:class:`thebeat.core.Sequence` object (i.e. the tempo) and the ``bin_fraction``.
+    The ``bin_fraction`` corresponds to temporal sensitivity.
+
+    Parameters
+    ----------
+    sequence
+        The :py:class:`thebeat.core.Sequence` object for which Shannon entropy is calculated.
+    bin_fraction
+        The fraction of the average inter-onset interval (IOI) that determines the bin size.
+        It is multiplied by the average IOI to get the bin size.
+
+    Example
+    -------
+    A :py:class:`~thebeat.core.Sequence` has an average IOI of 500 ms. With a bin_fraction of 0.03125
+    (corresponding to 1/32th note value) the bins will have a size of 15.625 ms.
+    The entropy will be calculated from the number of IOIs in each bin.
+
+    References
+    ----------
+    #todo add reference here for this type of entropy calculation.
+
+    """
+    bin_size = np.mean(sequence.iois) * bin_fraction
+    bins = np.arange(0, np.max(sequence.iois) + 2 * bin_size, bin_size) - bin_size / 2  # shift bins to center
+    bin_counts = np.histogram(sequence.iois, bins=bins)[0]
+
+    return scipy.stats.entropy(bin_counts)
 
 
 def get_cov(sequence: thebeat.core.Sequence) -> np.float64:
