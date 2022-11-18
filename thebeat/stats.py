@@ -413,7 +413,8 @@ def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.rhythm.R
 
     The bin size is determined from the average inter-onset interval in the
     :py:class:`thebeat.core.Sequence` object (i.e. the tempo) and the ``bin_fraction``.
-    The ``bin_fraction`` corresponds to temporal sensitivity.
+    The ``bin_fraction`` corresponds to temporal sensitivity. The default is 1/32th of the average IOI.
+    This implies that the smallest note value that can be detected is a 1/32th note.
 
     Parameters
     ----------

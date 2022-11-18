@@ -103,7 +103,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
 
 
 def get_major_scale(tonic: str,
-                    octave: int) -> list[abjad.NamedPitch]:
+                    octave: int) -> list:
     """Get the major scale for a given tonic and octave. Returns a list of :class:`abjad.pitch.NamedPitch` objects.
 
     Note
@@ -116,6 +116,11 @@ def get_major_scale(tonic: str,
         The tonic of the scale, e.g. 'G'.
     octave
         The octave of the tonic, e.g. 4.
+
+    Returns
+    -------
+    pitches
+        A list of :class:`abjad.pitch.NamedPitch` objects.
 
     """
     if abjad is None:
