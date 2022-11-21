@@ -51,3 +51,13 @@ def test_plot_phase_differences():
     thebeat.visualization.plot_phase_differences(seq, 500, ax=ax)
 
     assert fig, ax
+
+
+def test_interval_ratios_plots():
+    seqs = [Sequence.generate_random_normal(n=10, mu=500, sigma=100) for _ in range(100)]
+
+    fig, ax = thebeat.visualization.plot_interval_ratios_density(seqs, suppress_display=True,
+                                                                 title="My first density plot", resolution=0.1)
+    assert fig, ax
+    fig, ax = thebeat.visualization.plot_interval_ratios_hist(seqs, bins=10, suppress_display=True)
+    assert fig, ax

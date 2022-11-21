@@ -5,6 +5,173 @@ from typing import Union, Optional
 import thebeat.helpers
 import numpy as np
 import matplotlib.ticker as ticker
+import scipy.stats
+
+
+def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
+                                                 list[thebeat.core.Sequence],
+                                                 np.ndarray[thebeat.core.Sequence]],
+                                 resolution: float = 0.01,
+                                 style: str = 'seaborn',
+                                 title: Optional[str] = None,
+                                 x_axis_label: str = "Interval ratios from dyads",
+                                 y_axis_label: str = "Probability density",
+                                 figsize: Optional[tuple[int, int]] = None,
+                                 suppress_display: bool = False,
+                                 dpi: int = 100,
+                                 ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    """
+    Plot a density plot of the interval ratios from sequential dyads in a sequence.
+    Input can either be a single sequence, or a list or array of sequences.
+
+    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    the interval ratios.
+
+    Parameters
+    ----------
+    sequence
+        The sequence or list or array of sequences to plot.
+    resolution
+        The resolution of the density plot. At each point, the probability density is calculated.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        A title for the plot.
+    x_axis_label
+        The label for the x axis.
+    y_axis_label
+        The label for the y axis.
+    figsize
+        The size of the figure to be created in inches, width x height, e.g. (4, 4).
+    suppress_display
+        If True, the figure will not be displayed.
+    dpi
+        The resolution of the figure in dots per inch.
+    ax
+        An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
+        a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
+        this function returns the original :class:`~matplotlib.axes.Figure` and
+        :class:`~matplotlib.axes.Axes` objects.
+
+    """
+
+    interval_ratios = np.array([])
+
+    if isinstance(sequence, (list, np.ndarray)):
+        for seq in sequence:
+            interval_ratios = np.append(interval_ratios, seq.interval_ratios_from_dyads)
+    elif isinstance(sequence, thebeat.core.Sequence):
+        interval_ratios = np.append(interval_ratios, sequence.interval_ratios_from_dyads)
+    else:
+        raise TypeError("'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
+                        "Sequence objects.")
+
+    with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+            ax_provided = False
+        else:
+            fig = ax.get_figure()
+            ax_provided = True
+
+        # Get kernel density function
+        kde = scipy.stats.gaussian_kde(interval_ratios)
+
+        # Get x values
+        x = np.arange(0, 1, resolution)
+
+        # Get y values
+        y = kde.evaluate(x)
+
+        # Plot and set texts
+        ax.plot(x, y)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_title(title)
+
+    if not suppress_display and not ax_provided:
+        fig.show()
+
+    return fig, ax
+
+
+def plot_interval_ratios_hist(sequence: Union[thebeat.core.Sequence,
+                                              list[thebeat.core.Sequence], np.ndarray[thebeat.core.Sequence]],
+                              bins: int = 100,
+                              style: str = 'seaborn',
+                              title: Optional[str] = None,
+                              x_axis_label: str = "Interval ratios from dyads",
+                              y_axis_label: str = "Count",
+                              figsize: Optional[tuple[int, int]] = None,
+                              suppress_display: bool = False,
+                              dpi: int = 100,
+                              ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    """
+    Plot a histogram of the interval ratios from sequential dyads in a sequence.
+    Input can either be a single sequence, or a list or array of sequences.
+
+    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    the interval ratios.
+
+    Parameters
+    ----------
+    sequence
+        The sequence or list or array of sequences to plot.
+    bins
+        The number of bins to use in the histogram.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        A title for the plot.
+    x_axis_label
+        The label for the x axis.
+    y_axis_label
+        The label for the y axis.
+    figsize
+        The size of the figure to be created in inches, width x height, e.g. (4, 4).
+    suppress_display
+        If True, the figure will not be displayed.
+    dpi
+        The resolution of the figure in dots per inch.
+    ax
+        An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
+        a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
+        this function returns the original :class:`~matplotlib.axes.Figure` and
+        :class:`~matplotlib.axes.Axes` objects.
+
+    """
+
+    interval_ratios = np.array([])
+
+    if isinstance(sequence, (list, np.ndarray)):
+        for seq in sequence:
+            interval_ratios = np.append(interval_ratios, seq.interval_ratios_from_dyads)
+    elif isinstance(sequence, thebeat.core.Sequence):
+        interval_ratios = np.append(interval_ratios, sequence.interval_ratios_from_dyads)
+    else:
+        raise TypeError("'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
+                        "Sequence objects.")
+
+    with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+            ax_provided = False
+        else:
+            fig = ax.get_figure()
+            ax_provided = True
+
+        ax.hist(interval_ratios, bins=bins)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_xlim(0, 1)
+        ax.set_title(title)
+
+    if not suppress_display and not ax_provided:
+        fig.show()
+
+    return fig, ax
 
 
 def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
