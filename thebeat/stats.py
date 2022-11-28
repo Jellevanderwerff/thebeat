@@ -14,7 +14,7 @@ import thebeat.helpers
 
 
 def acf_df(sequence: thebeat.core.Sequence,
-           resolution_ms: int = 1,
+           resolution,
            smoothing_window: Optional[float] = None,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
     """
@@ -28,10 +28,11 @@ def acf_df(sequence: thebeat.core.Sequence,
     sequence
         Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or a list or an
         array containing event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
-    resolution_ms
-        The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
-        calculated for the autocorrelation function can be calculated as
-        ``n_lags = sequence_duration_in_ms / resolution_ms``.
+    resolution
+        The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
+        If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
+        for the autocorrelation function is calculated as
+        ``n_lags = sequence_duration_in_ms / resolution``.
     smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
@@ -61,10 +62,10 @@ def acf_df(sequence: thebeat.core.Sequence,
 
     """
 
-    correlations = acf_values(sequence=sequence, resolution=resolution_ms, smoothing_window=smoothing_window,
+    correlations = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
     correlations = correlations / max(correlations)
-    times_ms = np.arange(start=0, stop=len(correlations) * resolution_ms, step=resolution_ms)
+    times_ms = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
 
     df = pd.DataFrame(
         {
@@ -79,7 +80,7 @@ def acf_df(sequence: thebeat.core.Sequence,
 
 
 def acf_plot(sequence: thebeat.core.Sequence,
-             resolution: int = 1,
+             resolution,
              smoothing_window: Optional[float] = None,
              smoothing_sd: Optional[float] = None,
              style: str = 'seaborn',
@@ -100,9 +101,10 @@ def acf_plot(sequence: thebeat.core.Sequence,
         Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
         or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
     resolution
-        The temporal resolution in milliseconds (i.e. sampling frequency/step size). The number of lags
-        calculated for the autocorrelation function can be calculated as
-        ``n_lags = sequence_duration_in_ms / resolution_ms``
+        The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
+        If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
+        for the autocorrelation function is calculated as
+        ``n_lags = sequence_duration_in_ms / resolution``.
     smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
@@ -145,11 +147,14 @@ def acf_plot(sequence: thebeat.core.Sequence,
                              smoothing_sd=smoothing_sd)
 
     x_step = resolution
-    max_lag = np.floor(np.max(onsets))
+    max_lag = np.floor(np.max(onsets) / resolution).astype(int)
 
     # plot
-    y = correlation[:int(max_lag)]
-    y = y / max(y)  # normalize
+    try:
+        y = correlation[:max_lag]
+        y = y / np.max(y)  # normalize
+    except ValueError:
+        raise ValueError("We end up with an empty y axis. Try changing the resolution.")
 
     # Make x axis
     x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
@@ -171,7 +176,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
 
 def acf_values(sequence: thebeat.core.Sequence,
-               resolution: int = 1,
+               resolution,
                smoothing_window: Optional[float] = None,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
@@ -186,8 +191,10 @@ def acf_values(sequence: thebeat.core.Sequence,
         Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
         e.g. ``[0, 500, 1000]``.
     resolution
-        The temporal resolution in milliseconds (i.e. sampling frequency). The number of lags calculated for the
-        autocorrelation function can be calculated as ``n_lags = sequence_duration_in_ms / resolution_ms``.
+        The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
+        If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
+        for the autocorrelation function is calculated as
+        ``n_lags = sequence_duration_in_ms / resolution``.
     smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
@@ -204,11 +211,11 @@ def acf_values(sequence: thebeat.core.Sequence,
     """
 
     if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
-        onsets_ms = sequence.onsets
+        onsets = sequence.onsets
     else:
-        onsets_ms = sequence
+        onsets = sequence
 
-    signal = thebeat.helpers.make_binary_timeseries(onsets_ms, resolution)
+    signal = thebeat.helpers.make_binary_timeseries(onsets, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:

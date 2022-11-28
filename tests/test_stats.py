@@ -20,8 +20,13 @@ def test_npvi():
 
 
 def test_acf():
+    # ms
     rng = np.random.default_rng(seed=123)
     seq = Sequence.generate_random_uniform(n=10, a=450, b=550, rng=rng)
     fig, ax = acf_plot(seq, resolution=1, smoothing_window=50, smoothing_sd=10, suppress_display=True)
-    assert fig
-    assert ax
+    assert fig, ax
+
+    # s
+    seq = Sequence.generate_random_uniform(n=10, a=0.45, b=0.55, rng=rng)
+    fig, ax = acf_plot(seq, resolution=0.001, smoothing_window=50, smoothing_sd=10, suppress_display=True)
+    assert fig, ax
