@@ -16,3 +16,9 @@ framerounding_soundsynthesis = Warning("During sound synthesis, the number of fr
 
 normalization = Warning("Sound was normalized to avoid distortion. If undesirable, change amplitude of the "
                         "sounds.")
+
+
+phases_t_at_zero = Warning("The first onset of the test sequence was at t=0. This would result in a phase "
+                           "difference that is always 0, and so that's not very informative. As such, the first onset"
+                           "was discarded. If you want the first onset at a different time than zero,"
+                           "use the Sequence.from_onsets() method to create the Sequence object.")

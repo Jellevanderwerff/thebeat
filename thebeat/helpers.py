@@ -410,7 +410,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
     # Make plot
     with plt.style.context(style):
         # If an existing Axes object was passed, do not create new Figure and Axes.
-        # Else, only create a new Figure object (Then,)
+        # Else, get the current Figure object from the Axes object.
         if ax is None:
             fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
             ax_provided = False

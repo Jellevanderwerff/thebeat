@@ -1,6 +1,8 @@
 import numpy as np
 import thebeat.core
 from typing import Optional, Union
+import warnings
+from thebeat._warnings import phases_t_at_zero
 
 try:
     import abjad
@@ -52,25 +54,35 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
                          "number as the right-hand argument.")
 
     # Get onsets once
-    seq_1_onsets = test_sequence.onsets
-    seq_2_onsets = reference_sequence.onsets
+    test_onsets = test_sequence.onsets
+    ref_onsets = reference_sequence.onsets
 
     # Check length sameness
-    if not len(seq_1_onsets) == len(seq_2_onsets):
+    if not len(test_onsets) == len(ref_onsets):
         raise ValueError("This function only works if the number of events in the two sequences are equal.")
+
+    # If the first onset is at t=0, raise warning and remove it
+    if test_onsets[0] == 0:
+        warnings.warn(phases_t_at_zero)
+        test_onsets = test_onsets[1:]
+        ref_onsets = ref_onsets[1:]
+        start_at_tzero = False
+    else:
+        start_at_tzero = True
 
     # Output array
     phase_diffs = np.array([])
 
     # Calculate phase differences
-    for i, seq_1_onset in enumerate(seq_1_onsets):
+    for i, test_onset in enumerate(test_onsets):
 
-        # For the first event, we use the period of the IOI that follows the event
-        if i == 0:
+        # For the first event, we use the period of the IOI that follows the event, but only if it was the
+        # first onset
+        if i == 0 and start_at_tzero is True:
             period_next = test_sequence.iois[0]
             period_prev = period_next
         # For the last event, we use the period of the IOI that precedes the event
-        elif i == len(seq_1_onsets) - 1:
+        elif i == len(test_onsets) - 1:
             period_prev = test_sequence.iois[i - 1]
             period_next = period_prev
         # For all other events, we need both the previous and the next IOI
@@ -78,11 +90,11 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
             period_next = test_sequence.iois[i]
             period_prev = test_sequence.iois[i - 1]
 
-        if seq_1_onset > seq_2_onsets[i]:
-            phase_diff = (seq_1_onset - seq_2_onsets[i]) / period_next
-        elif seq_1_onset < seq_2_onsets[i]:
-            phase_diff = (seq_1_onset - seq_2_onsets[i]) / period_prev
-        elif seq_1_onset == seq_2_onsets[i]:
+        if test_onset > ref_onsets[i]:
+            phase_diff = (test_onset - ref_onsets[i]) / period_next
+        elif test_onset < ref_onsets[i]:
+            phase_diff = (test_onset - ref_onsets[i]) / period_prev
+        elif test_onset == ref_onsets[i]:
             phase_diff = 0.0
         else:
             raise ValueError("Something went wrong during the calculation of the phase differences."

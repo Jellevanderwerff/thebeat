@@ -137,12 +137,12 @@ class Stimulus:
     def generate(cls,
                  freq: int = 440,
                  fs: int = 48000,
-                 duration_ms: int = 50,
+                 duration_ms: float = 50,
                  n_channels: int = 1,
                  amplitude: float = 1.0,
                  oscillator: str = 'sine',
-                 onramp_ms: int = 0,
-                 offramp_ms: int = 0,
+                 onramp_ms: float = 0,
+                 offramp_ms: float = 0,
                  ramp_type: str = 'linear',
                  name: Optional[str] = None) -> Stimulus:
         """
