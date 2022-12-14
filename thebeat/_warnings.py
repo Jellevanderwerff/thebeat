@@ -19,6 +19,6 @@ normalization = Warning("Sound was normalized to avoid distortion. If undesirabl
 
 
 phases_t_at_zero = Warning("The first onset of the test sequence was at t=0.\nThis would result in a phase "
-                           "difference that is always 0, and so that's not very informative.\nAs such, the first onset "
+                           "difference that is always 0, which is not very informative.\nAs such, the first onset "
                            "was discarded.\nIf you want the first onset at a different time than zero, "
                            "use the Sequence.from_onsets() method to create the Sequence object.")
