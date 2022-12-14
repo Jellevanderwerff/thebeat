@@ -162,7 +162,8 @@ def join(objects: np.typing.ArrayLike,
 
     Note
     ----
-    Only works for Sequence or StimSequence objects where all but the last provided object has a ``metrical=True`` flag.
+    Only works for Sequence or StimSequence objects where all but the last provided object has an
+    ``end_with_interval=True`` flag.
 
     Parameters
     ----------
@@ -189,12 +190,12 @@ def join(objects: np.typing.ArrayLike,
     if not all(obj.onsets[0] == 0.0 for obj in objects):
         raise ValueError("Please only pass sequences that have their first event at onset 0.0")
 
-    # the metricality of the sequence depends only on the final object passed
-    metricality = objects[-1].metrical
+    # Whether the sequence ends with an interval depends only on the final object passed
+    end_with_interval = objects[-1].end_with_interval
 
     # concatenate iois and create new Sequence
     iois = np.concatenate([obj.iois for obj in objects])
-    seq = thebeat.core.Sequence(iois, metrical=metricality)
+    seq = thebeat.core.Sequence(iois, end_with_interval=end_with_interval)
 
     # For Sequence objects we're done:
     if isinstance(objects[0], thebeat.core.Sequence):

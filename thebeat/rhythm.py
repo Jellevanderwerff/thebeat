@@ -74,8 +74,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         # Save attributes
-        self.time_signature = time_signature  # Used for metrical sequences
-        self.beat_ms = beat_ms  # Used for metrical sequences
+        self.time_signature = time_signature
+        self.beat_ms = beat_ms
         self.is_played = [True] * len(iois) if not is_played else list(is_played)
 
         # Calculate n_bars and check whether that makes whole bars
@@ -85,7 +85,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         self.n_bars = n_bars
 
         # Call initializer of super class
-        super().__init__(iois=iois, metrical=True, name=name)
+        super().__init__(iois=iois, end_with_interval=True, name=name)
 
     def __str__(self):
         return (f"Object of type Rhythm.\n"
@@ -553,7 +553,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
         Convert the rhythm to a :class:`~thebeat.core.Sequence` object.
         """
-        return thebeat.core.Sequence(iois=self.iois, first_onset=0.0, metrical=True, name=self.name)
+        return thebeat.core.Sequence(iois=self.iois, first_onset=0.0, end_with_interval=True, name=self.name)
 
     def _get_abjad_note_durations(self):
         """Get abjad note durations from the integer_ratios

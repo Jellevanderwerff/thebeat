@@ -113,7 +113,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self.n_bars = n_bars
 
         # Call BaseSequence constructor
-        super().__init__(iois=rhythm.iois, metrical=True, name=name)
+        super().__init__(iois=rhythm.iois, end_with_interval=True, name=name)
 
     # todo add __str__ __add__ _mul__ etc.
 

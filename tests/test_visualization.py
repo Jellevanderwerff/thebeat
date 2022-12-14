@@ -20,8 +20,8 @@ def test_event_plot_multiple():
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25) for _ in range(10)]
     plot_multiple_sequences(seqs, suppress_display=True)
 
-    seq1 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, metrical=True)
-    seq2 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, metrical=True)
+    seq1 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, end_with_interval=True)
+    seq2 = Sequence.generate_random_normal(n=5, mu=500, sigma=25, end_with_interval=True)
     fig, ax = plot_multiple_sequences([seq1, seq2],
                                       figsize=(10, 5),
                                       colors=['red', 'blue'],
@@ -36,13 +36,13 @@ def test_event_plot_multiple():
 
 
 def test_recurrence_plot():
-    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, metrical=True) * 5
+    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, end_with_interval=True) * 5
     fig, ax = recurrence_plot(seq, 0.03)
     assert fig, ax
 
 
 def test_plot_phase_differences():
-    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, metrical=True) * 5
+    seq = Sequence.generate_random_normal(n=10, mu=500, sigma=20, end_with_interval=True) * 5
     fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
     assert fig, ax
 

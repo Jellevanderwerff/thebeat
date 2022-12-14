@@ -3,6 +3,7 @@ import thebeat.core
 import os
 import numpy as np
 
+
 def test_stimsequence(tmp_path):
     seq = thebeat.core.Sequence.generate_isochronous(10, 500)
     stim = thebeat.core.Stimulus.generate()
@@ -37,7 +38,7 @@ def test_stimsequence(tmp_path):
 
 def test_multiplication():
     trial = thebeat.core.StimSequence(thebeat.core.Stimulus.generate(),
-                                      thebeat.core.Sequence.generate_isochronous(n=5, ioi=100, metrical=True))
+                                      thebeat.core.Sequence.generate_isochronous(n=5, ioi=100, end_with_interval=True))
     trial *= 10
 
     assert len(trial.onsets) == 50

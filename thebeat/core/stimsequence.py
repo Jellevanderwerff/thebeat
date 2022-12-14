@@ -106,11 +106,11 @@ class StimSequence(BaseSequence):
         self.n_channels = stimuli[0].n_channels
         self.name = name
         self.stim_names = [stimulus.name for stimulus in stimuli]
-        self.metrical = sequence.metrical
+        self.end_with_interval = sequence.end_with_interval
         self.stim_objects = stimuli
 
         # Initialize BaseSequence class
-        super().__init__(iois, metrical=sequence.metrical, name=name)
+        super().__init__(iois, end_with_interval=sequence.end_with_interval, name=name)
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
@@ -137,9 +137,9 @@ class StimSequence(BaseSequence):
             for stim_name in self.stim_names:
                 stim_names.append(stim_name if stim_name else "Unknown")
 
-        metricality = "(metrical version)" if self.metrical else "(non-metrical version)"
+        end_with_interval = "(ends with interval)" if self.end_with_interval else "(ends with event)"
 
-        return (f"Object of type StimSequence {metricality}:\n"
+        return (f"Object of type StimSequence {end_with_interval}:\n"
                 f"{len(self.onsets)} events\n"
                 f"IOIs: {self.iois}\n"
                 f"Onsets: {self.onsets}\n"
@@ -246,7 +246,8 @@ class StimSequence(BaseSequence):
             x_axis_label = "Time (ms)"
             final_ioi = self.iois[-1]
 
-        fig, ax = thebeat.helpers.plot_single_sequence(onsets=onsets, metrical=self.metrical,
+        fig, ax = thebeat.helpers.plot_single_sequence(onsets=onsets,
+                                                       end_with_interval=self.end_with_interval,
                                                        final_ioi=final_ioi,
                                                        x_axis_label=x_axis_label,
                                                        linewidths=linewidths, **kwargs)
@@ -326,11 +327,11 @@ class StimSequence(BaseSequence):
         into one array of samples containing the sound of a StimSequence."""
 
         # Generate an array of silence that has the length of all the onsets + one final stimulus.
-        # In the case of a metrical sequence, we add the final ioi
+        # In the case of a sequence that ends with an interval, we add the final ioi.
         # The dtype is important, because that determines the values that the magnitudes can take.
-        if self.metrical:
+        if self.end_with_interval:
             array_length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
-        elif not self.metrical:
+        elif not self.end_with_interval:
             array_length = (onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0]
         else:
             raise ValueError("Error during calculation of array_length")
@@ -381,12 +382,12 @@ class StimSequence(BaseSequence):
         if not isinstance(times, int):
             raise ValueError("Can only multiply the StimSequenec by an integer value")
 
-        if not self.metrical or not self.onsets[0] == 0:
-            raise ValueError("You can only repeat metrical sequences."
-                             "Try adding the metrical=True flag when creating the Sequence object.")
+        if not self.end_with_interval or not self.onsets[0] == 0:
+            raise ValueError("You can only repeat sequences that end with an interval."
+                             "Try adding the end_with_interval=True flag when creating the Sequence object.")
 
         new_iois = np.tile(self.iois, reps=times)
-        new_seq = Sequence(iois=new_iois, first_onset=0, metrical=True)
+        new_seq = Sequence(iois=new_iois, first_onset=0, end_with_interval=True)
         new_stims = np.tile(self.stim_objects, reps=times)
 
         return StimSequence(stimulus=new_stims, sequence=new_seq, name=self.name)

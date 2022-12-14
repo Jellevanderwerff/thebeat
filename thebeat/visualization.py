@@ -610,7 +610,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
 
     >>> from thebeat.core import Sequence
     >>> from thebeat.visualization import recurrence_plot
-    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
+    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, end_with_interval=True) * 10
 
     # No color bar, no threshold
     >>> recurrence_plot(seq)  # doctest: +SKIP
@@ -619,7 +619,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     >>> fig, ax = recurrence_plot(seq, dpi=300, colorbar=True)
     >>> fig.savefig('recurrence_plot.png', bbox_inches='tight')  # doctest: +SKIP
 
-    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, metrical=True) * 10
+    >>> seq = Sequence.generate_random_normal(n=3, mu=5000, sigma=50, end_with_interval=True) * 10
     >>> fig, ax = recurrence_plot(seq, threshold=5, dpi=300, suppress_display=True)
     >>> fig.savefig('recurrence_plot.png')  # doctest: +SKIP
 
