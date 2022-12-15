@@ -24,8 +24,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     Caution
     -------
     The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
-    index of ``reference_sequence``. Tthis means that this function does not handle missing values well.
-    If you are dealing with missing data, it is probably best to for each missing data point to remove the onset at the
+    index of ``reference_sequence``. This means that this function does not handle missing values well.
+    If you are dealing with missing data, it is probably best to for each missing data point remove the onset at the
     same index from the reference sequence.
 
     Parameters
@@ -182,8 +182,8 @@ def join(objects: np.typing.ArrayLike,
             isinstance(obj, thebeat.core.StimSequence) for obj in objects):
         raise ValueError("Please pass only Sequence or only StimSequence objects.")
 
-    if not all(obj.metrical for obj in objects[:-1]):
-        raise ValueError("All passed Sequences or StimSequences need to be metrical, except for the final one. "
+    if not all(obj.end_with_interval for obj in objects[:-1]):
+        raise ValueError("All passed Sequences or StimSequences need to end with an interval, except for the final one."
                          "Otherwise we miss an interval between the onset of the "
                          "final event in a Sequence and the onset of the first event in the next sequence.")
 
