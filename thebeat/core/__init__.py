@@ -1,4 +1,4 @@
 from .sequence import Sequence, BaseSequence
-from .stimsequence import StimSequence
-from .stimulus import Stimulus
+from .soundsequence import SoundSequence
+from .soundstimulus import SoundStimulus
 

@@ -19,14 +19,14 @@ def acf_df(sequence: thebeat.core.Sequence,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
     """
 
-    This function takes a :py:class:`Sequence` or :py:class:`StimSequence` object, or a list of event onsets,
+    This function takes a :py:class:`Sequence` or :py:class:`SoundSequence` object, or a list of event onsets,
     and returns a :class:`pandas.DataFrame` containing timestamps (acf lags), and autocorrelation factors.
 
     Parameters
     ----------
 
     sequence
-        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or a list or an
+        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object, or a list or an
         array containing event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
@@ -93,12 +93,12 @@ def acf_plot(sequence: thebeat.core.Sequence,
     """
 
     This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence` or
-    :class:`~thebeat.core.StimSequence` object, or from a list or an array of event onsets.
+    :class:`~thebeat.core.SoundSequence` object, or from a list or an array of event onsets.
 
     Parameters
     ----------
     sequence
-        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
+        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object,
         or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
@@ -115,7 +115,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` ``name`` attribute as the title of the
+        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` ``name`` attribute as the title of the
         plot (if the object has one).
     x_axis_label
         A label for the x axis.
@@ -138,7 +138,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
         onsets = sequence.onsets
     else:
         onsets = sequence
@@ -181,14 +181,14 @@ def acf_values(sequence: thebeat.core.Sequence,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
 
-    This function takes a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object,
+    This function takes a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object,
     or a list of event onsets, and returns an array with steps of ``resolution_ms`` of unstandardized correlation
     factors.
 
     Parameters
     ----------
     sequence
-        Either a Sequence or StimSequence object, or an iterable containing event onsets in milliseconds,
+        Either a Sequence or SoundSequence object, or an iterable containing event onsets in milliseconds,
         e.g. ``[0, 500, 1000]``.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
@@ -210,7 +210,7 @@ def acf_values(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
         onsets = sequence.onsets
     else:
         onsets = sequence
@@ -365,7 +365,7 @@ def ks_test(sequence: thebeat.core.Sequence,
     Parameters
     ----------
     sequence
-        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` object or an iterable (e.g. list)
+        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object or an iterable (e.g. list)
         containing inter-onset intervals (IOIs), e.g. ``[500, 500, 500]``.
     reference_distribution
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
@@ -393,7 +393,7 @@ def ks_test(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.StimSequence)):
+    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
         sequence = sequence.iois
 
     if reference_distribution == 'normal':
@@ -472,12 +472,12 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     """
 
     This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
-    :py:class:`StimSequence` object, or for an interable of inter-onset intervals (IOIs).
+    :py:class:`SoundSequence` object, or for an interable of inter-onset intervals (IOIs).
 
     Parameters
     ----------
     sequence
-        Either a :py:class:`Sequence` or :py:class:`StimSequence` object, or an iterable containing inter-onset
+        Either a :py:class:`Sequence` or :py:class:`SoundSequence` object, or an iterable containing inter-onset
         intervals (IOIs).
 
     Returns
@@ -504,7 +504,7 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     37.6263174529546
     """
 
-    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.StimSequence)):
+    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
         iois = sequence.iois
     else:
         iois = np.array(sequence)
@@ -533,7 +533,7 @@ def get_ugof(sequence: thebeat.core.Sequence,
     Parameters
     ----------
     sequence
-        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` object, or a list or an
+        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object, or a list or an
         array containing event onsets, e.g. ``[0, 500, 1000]``.
     theoretical_ioi
         The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.
@@ -563,7 +563,7 @@ def get_ugof(sequence: thebeat.core.Sequence,
     """
 
     # Get the onsets
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.stimsequence.StimSequence)):
+    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
         onsets = sequence.onsets  # in ms
     else:
         onsets = np.array(sequence)
