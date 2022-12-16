@@ -159,11 +159,11 @@ def get_major_scale(tonic: str,
 
 def join(objects: np.typing.ArrayLike,
          name: Optional[str] = None):
-    """Join an array or list of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` objects.
+    """Join an array or list of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` objects.
 
     Note
     ----
-    Only works for Sequence or StimSequence objects where all but the last provided object has an
+    Only works for Sequence or SoundSequence objects where all but the last provided object has an
     ``end_with_interval=True`` flag.
 
     Parameters
@@ -171,17 +171,17 @@ def join(objects: np.typing.ArrayLike,
     objects
         The to-be-joined objects.
     name
-        Optionally, you can give the returned Sequence or StimSequence object a name.
+        Optionally, you can give the returned Sequence or SoundSequence object a name.
 
     Returns
     -------
     object
-        The joined Sequence or StimSequence
+        The joined Sequence or SoundSequence
     """
 
     if not all(isinstance(obj, thebeat.core.Sequence) for obj in objects) and not all(
-            isinstance(obj, thebeat.core.StimSequence) for obj in objects):
-        raise ValueError("Please pass only Sequence or only StimSequence objects.")
+            isinstance(obj, thebeat.core.SoundSequence) for obj in objects):
+        raise ValueError("Please pass only Sequence or only SoundSequence objects.")
 
     if not all(obj.end_with_interval for obj in objects[:-1]):
         raise ValueError("All passed Sequences or StimSequences need to end with an interval, except for the final one."
@@ -202,10 +202,10 @@ def join(objects: np.typing.ArrayLike,
     if isinstance(objects[0], thebeat.core.Sequence):
         return seq
 
-    # Otherwise we get the stimuli from the StimSequence object, join them and return a new StimSequence
-    if isinstance(objects[0], thebeat.core.StimSequence):
+    # Otherwise we get the stimuli from the SoundSequence object, join them and return a new SoundSequence
+    if isinstance(objects[0], thebeat.core.SoundSequence):
         all_stimuli = []
         for obj in objects:
             all_stimuli += obj.stim_objects
-        stimseq = thebeat.core.StimSequence(stimulus=all_stimuli, sequence=seq, name=name)
+        stimseq = thebeat.core.SoundSequence(stimulus=all_stimuli, sequence=seq, name=name)
         return stimseq

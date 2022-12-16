@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 
 import thebeat.visualization
-from thebeat.core import Stimulus, StimSequence, Sequence
+from thebeat.core import SoundStimulus, SoundSequence, Sequence
 from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 
 
@@ -10,8 +10,8 @@ def test_event_plot_multiple():
 
     for x in range(10):
         seq = Sequence.generate_random_uniform(n_events=10, a=400, b=600)  # = 10 stimuli, 9 IOIs
-        stims = [Stimulus.generate() for _ in range(10)]  # = 10 stimuli
-        trials.append(StimSequence(stims, seq))
+        stims = [SoundStimulus.generate() for _ in range(10)]  # = 10 stimuli
+        trials.append(SoundSequence(stims, seq))
 
     fig, ax = plot_multiple_sequences(trials, style='ggplot', suppress_display=True)
 

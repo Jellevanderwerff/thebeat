@@ -359,7 +359,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
                          suppress_display: bool = False,
                          ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
-    This function plots the onsets of a Sequence or StimSequence object in an event plot.
+    This function plots the onsets of a Sequence or SoundSequence object in an event plot.
 
     Parameters
     ----------

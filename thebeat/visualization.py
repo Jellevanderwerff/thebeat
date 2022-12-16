@@ -409,12 +409,12 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             colors: Union[list, np.ndarray] = None,
                             ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
-    objects, :py:class:`~thebeat.core.StimSequence` objects, or list or array of event onsets (so e.g. list of lists).
+    objects, :py:class:`~thebeat.core.SoundSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
     Parameters
     ----------
     sequences
-        A list or array of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.StimSequence` objects.
+        A list or array of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` objects.
         Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
         ``[[0, 500, 1000], [0, 600, 800], [0, 400, 550]]``.
     style
@@ -428,11 +428,11 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         numbering the sequences. This is because matplotlib needs a label there.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        Sequence or StimSequence name as the title of the plot (if passed and the object has one).
+        Sequence or SoundSequence name as the title of the plot (if passed and the object has one).
     linewidths
         An array or list of ints (e.g. ``[50, 50, 50]`` ) or nested array or list containing the desired widths of the
         bars (event durations), for instance: ``[[50, 30, 60], [20, 40, 10], [60, 30, 10]]``.
-        By default, if :py:class:`~thebeat.core.StimSequence` objects are passed, the event durations are used.
+        By default, if :py:class:`~thebeat.core.SoundSequence` objects are passed, the event durations are used.
         In other cases, a default of 1/10th of the smallest IOI is used.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
@@ -469,7 +469,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     onsets = []
 
     for seq in sequences:
-        if isinstance(seq, (thebeat.core.Sequence, thebeat.core.StimSequence)):
+        if isinstance(seq, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
             onsets.append(seq.onsets)
         else:
             onsets.append(np.array(seq))
@@ -487,7 +487,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
     # default to 1/10th of the smallest IOI)
     if linewidths is None:
-        if isinstance(sequences[0], thebeat.core.StimSequence):
+        if isinstance(sequences[0], thebeat.core.SoundSequence):
             linewidths = [trial.event_durations for trial in sequences]
         else:
             all_iois = [sequence.iois for sequence in sequences]

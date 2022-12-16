@@ -11,7 +11,7 @@ import thebeat.helpers
 
 class BaseSequence:
     """This is the most basic of classes that the :py:class:`~thebeat.core.Sequence`,
-    :py:class:`~thebeat.rhythm.Rhythm`, and :py:class:`~thebeat.core.StimSequence` classes inherit from.
+    :py:class:`~thebeat.rhythm.Rhythm`, and :py:class:`~thebeat.core.SoundSequence` classes inherit from.
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either end with an interval or not.
@@ -134,8 +134,8 @@ class Sequence(BaseSequence):
     IOIs. However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
 
     For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds or milliseconds.
-    However, it does matter when passing the :py:class:`Sequence` object to a :py:class:`StimSequence` object
-    (see :py:meth:`StimSequence.__init__`).
+    However, it does matter when passing the :py:class:`Sequence` object to a :py:class:`SoundSequence` object
+    (see :py:meth:`SoundSequence.__init__`).
 
     This class additionally contains methods and attributes to, for instance,
     change the tempo, add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
@@ -584,7 +584,7 @@ class Sequence(BaseSequence):
     def round_onsets(self,
                      decimals: int = 0):
         """Use this function to round off the `Sequence` object's onsets (i.e. *t* values). This can, for instance,
-        be useful to get rid of warnings that are the result of frame rounding. See e.g. `StimSequence.__init__`.
+        be useful to get rid of warnings that are the result of frame rounding. See e.g. `SoundSequence.__init__`.
 
         Note that this function does not return anything. The onsets of the sequence object from which
         this method is called are rounded.
