@@ -52,7 +52,7 @@ def acf_df(sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)  # for reproducability
-    >>> seq = thebeat.core.Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_uniform(n_events=10,a=400,b=600,rng=rng)
     >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution=10)
     >>> print(df.head(3))
        timestamps  correlation
@@ -387,7 +387,7 @@ def ks_test(sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = thebeat.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=100,mu=500,sigma=25,rng=rng)
     >>> print(ks_test(seq))
     KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911)
 
@@ -494,12 +494,12 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
 
     Examples
     --------
-    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=500)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500)
     >>> print(get_npvi(seq))
     0.0
 
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = thebeat.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=10,mu=500,sigma=50,rng=rng)
     >>> print(get_npvi(seq))
     37.6263174529546
     """
@@ -555,7 +555,7 @@ def get_ugof(sequence: thebeat.core.Sequence,
 
     Examples
     --------
-    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=1000)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=1000)
     >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
     >>> print(ugof)
     0.59636414

@@ -77,7 +77,7 @@ def test_onsets_property(rng):
 
 
 def test_exception():
-    seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=500)
+    seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500)
     seq.change_tempo(0.5)
     with pytest.raises(ValueError):
         seq.change_tempo(-1)

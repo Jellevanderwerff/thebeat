@@ -66,12 +66,12 @@ class StimSequence(BaseSequence):
         Examples
         --------
         >>> stim = Stimulus.generate(freq=440)
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> trial = StimSequence(stim, seq)
 
         >>> from random import randint
         >>> stims = [Stimulus.generate(freq=randint(100, 1000)) for x in range(5)]
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> trial = StimSequence(stims, seq)
         """
 
@@ -174,7 +174,7 @@ class StimSequence(BaseSequence):
         Examples
         --------
         >>> stim = Stimulus.generate(offramp_ms=10)
-        >>> seq = Sequence.generate_random_normal(n=10, mu=500, sigma=50)
+        >>> seq = Sequence.generate_random_normal(n_events=10,mu=500,sigma=50)
         >>> stimseq = StimSequence(stim, seq)
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
@@ -219,7 +219,7 @@ class StimSequence(BaseSequence):
         Examples
         --------
         >>> stim = Stimulus.generate()
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> trial = StimSequence(stim, seq)
         >>> trial.plot_sequence()  # doctest: +SKIP
 
@@ -265,7 +265,7 @@ class StimSequence(BaseSequence):
 
         Examples
         --------
-        >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=10, ioi=500))
+        >>> trial = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n_events=10,ioi=500))
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
@@ -296,7 +296,7 @@ class StimSequence(BaseSequence):
 
         Examples
         --------
-        >>> stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n=5, ioi=500))
+        >>> stimseq = StimSequence(Stimulus.generate(), Sequence.generate_isochronous(n_events=5,ioi=500))
         >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
         """
 

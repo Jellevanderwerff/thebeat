@@ -270,7 +270,7 @@ class Sequence(BaseSequence):
 
     @classmethod
     def generate_isochronous(cls,
-                             n: int,
+                             n_events: int,
                              ioi: float,
                              end_with_interval: bool = False,
                              **kwargs) -> Sequence:
@@ -293,7 +293,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> print(seq.iois)
         [500. 500. 500. 500.]
         >>> print(len(seq.onsets))
@@ -301,7 +301,7 @@ class Sequence(BaseSequence):
         >>> print(len(seq.iois))
         4
 
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500, end_with_interval=True)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500,end_with_interval=True)
         >>> print(len(seq.onsets))
         5
         >>> print(len(seq.iois))
@@ -310,13 +310,13 @@ class Sequence(BaseSequence):
         """
 
         # Number of IOIs depends on end_with_interval argument
-        n_iois = n if end_with_interval else n - 1
+        n_iois = n_events if end_with_interval else n_events - 1
 
         return cls([ioi] * n_iois, end_with_interval=end_with_interval, **kwargs)
 
     @classmethod
     def generate_random_normal(cls,
-                               n: int,
+                               n_events: int,
                                mu: float,
                                sigma: float,
                                rng: Optional[np.random.Generator] = None,
@@ -328,7 +328,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n_events
             The desired number of events in the sequence.
         mu
             The mean of the normal distribution.
@@ -346,11 +346,11 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, rng=generator)
+        >>> seq = Sequence.generate_random_normal(n_events=5,mu=500,sigma=50,rng=generator)
         >>> print(seq.iois)
         [450.54393248 481.61066743 564.39626306 509.69872096]
 
-        >>> seq = Sequence.generate_random_normal(n=5, mu=500, sigma=50, end_with_interval=True)
+        >>> seq = Sequence.generate_random_normal(n_events=5,mu=500,sigma=50,end_with_interval=True)
         >>> len(seq.onsets) == len(seq.iois)
         True
         """
@@ -358,13 +358,13 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on end_with_intervality
-        n_iois = n if end_with_interval else n - 1
+        n_iois = n_events if end_with_interval else n_events - 1
 
         return cls(rng.normal(loc=mu, scale=sigma, size=n_iois), end_with_interval=end_with_interval, **kwargs)
 
     @classmethod
     def generate_random_uniform(cls,
-                                n: int,
+                                n_events: int,
                                 a: float,
                                 b: float,
                                 rng: Optional[np.random.Generator] = None,
@@ -376,7 +376,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n_events
             The desired number of events in the sequence.
         a
             The left bound of the uniform distribution.
@@ -395,11 +395,11 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, rng=generator)
+        >>> seq = Sequence.generate_random_uniform(n_events=5,a=400,b=600,rng=generator)
         >>> print(seq.iois)
         [536.47037265 410.76420376 444.07197455 436.87436214]
 
-        >>> seq = Sequence.generate_random_uniform(n=5, a=400, b=600, end_with_interval=True)
+        >>> seq = Sequence.generate_random_uniform(n_events=5,a=400,b=600,end_with_interval=True)
         >>> len(seq.onsets) == len(seq.iois)
         True
         """
@@ -408,14 +408,14 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on end_with_interval argument
-        n_iois = n if end_with_interval else n - 1
+        n_iois = n_events if end_with_interval else n_events - 1
 
         iois = rng.uniform(low=a, high=b, size=n_iois)
         return cls(iois, end_with_interval=end_with_interval, **kwargs)
 
     @classmethod
     def generate_random_poisson(cls,
-                                n: int,
+                                n_events: int,
                                 lam: float,
                                 rng: Optional[np.random.Generator] = None,
                                 end_with_interval: bool = False,
@@ -427,7 +427,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n_events
             The desired number of events in the sequence.
         lam
             The desired value for lambda.
@@ -444,7 +444,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(123)
-        >>> seq = Sequence.generate_random_poisson(n=5, lam=500, rng=generator)
+        >>> seq = Sequence.generate_random_poisson(n_events=5,lam=500,rng=generator)
         >>> print(seq.iois)
         [512. 480. 476. 539.]
 
@@ -453,13 +453,13 @@ class Sequence(BaseSequence):
             rng = np.random.default_rng()
 
         # Number of IOIs depends on end_with_interval argument
-        n_iois = n if end_with_interval else n - 1
+        n_iois = n_events if end_with_interval else n_events - 1
 
         return cls(rng.poisson(lam=lam, size=n_iois), end_with_interval=end_with_interval, **kwargs)
 
     @classmethod
     def generate_random_exponential(cls,
-                                    n: int,
+                                    n_events: int,
                                     lam: float,
                                     rng: Optional[np.random.Generator] = None,
                                     end_with_interval: bool = False,
@@ -469,7 +469,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n_events
             The desired number of events in the sequence.
         lam
            The desired value for lambda.
@@ -486,7 +486,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_random_exponential(n=5, lam=500, rng=generator)
+        >>> seq = Sequence.generate_random_exponential(n_events=5,lam=500,rng=generator)
         >>> print(seq.iois)
         [298.48624756  58.51553052 125.89734975 153.98272273]
 
@@ -494,7 +494,7 @@ class Sequence(BaseSequence):
         if rng is None:
             rng = np.random.default_rng()
 
-        n_iois = n if end_with_interval else n - 1
+        n_iois = n_events if end_with_interval else n_events - 1
 
         return cls(rng.exponential(scale=lam, size=n_iois), end_with_interval=end_with_interval, **kwargs)
 
@@ -516,7 +516,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> gen = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> print(seq.iois)
         [500. 500. 500. 500.]
         >>> seq.add_noise_gaussian(noise_sd=50, rng=gen)
@@ -544,7 +544,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> print(seq.onsets)
         [   0.  500. 1000. 1500. 2000.]
         >>> seq.change_tempo(2)
@@ -571,7 +571,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> print(seq.iois)
         [500. 500. 500. 500.]
         >>> seq.change_tempo_linearly(total_change=2)
@@ -617,7 +617,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.generate_isochronous(n=5, ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
         >>> seq.plot_sequence()  # doctest: +SKIP
 
         In this example, we plot onto an existing :class:`~matplotlib.pyplot.Axes` object.

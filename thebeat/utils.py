@@ -46,7 +46,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     if not isinstance(test_sequence, thebeat.core.Sequence):
         raise ValueError("Please provide a Sequence object as the left argument.")
     elif isinstance(reference_sequence, (int, float)):
-        reference_sequence = thebeat.core.Sequence.generate_isochronous(n=len(test_sequence.onsets), ioi=reference_sequence)
+        reference_sequence = thebeat.core.Sequence.generate_isochronous(n_events=len(test_sequence.onsets),
+                                                                        ioi=reference_sequence)
     elif isinstance(reference_sequence, thebeat.core.Sequence):
         pass
     else:
