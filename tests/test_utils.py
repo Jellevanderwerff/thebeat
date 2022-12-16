@@ -6,7 +6,6 @@ import numpy as np
 def test_phasedifferences():
     seq = Sequence([499, 501, 505, 501])
 
-    diffs = thebeat.utils.get_phase_differences(seq, 500)
-    print(list(diffs))
+    diffs = list(thebeat.utils.get_phase_differences(seq, 500))
 
-    assert np.all(diffs == [0.0, 359.2785571142285, 0.0, 3.592814371257485, 4.311377245508982])
+    assert diffs == [359.2814371257485, 0.0, 3.5643564356435644, 4.2772277227722775]

@@ -24,8 +24,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     Caution
     -------
     The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
-    index of ``reference_sequence``. Tthis means that this function does not handle missing values well.
-    If you are dealing with missing data, it is probably best to for each missing data point to remove the onset at the
+    index of ``reference_sequence``. This means that this function does not handle missing values well.
+    If you are dealing with missing data, it is probably best to for each missing data point remove the onset at the
     same index from the reference sequence.
 
     Parameters
@@ -46,7 +46,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     if not isinstance(test_sequence, thebeat.core.Sequence):
         raise ValueError("Please provide a Sequence object as the left argument.")
     elif isinstance(reference_sequence, (int, float)):
-        reference_sequence = thebeat.core.Sequence.generate_isochronous(n=len(test_sequence.onsets), ioi=reference_sequence)
+        reference_sequence = thebeat.core.Sequence.generate_isochronous(n_events=len(test_sequence.onsets),
+                                                                        ioi=reference_sequence)
     elif isinstance(reference_sequence, thebeat.core.Sequence):
         pass
     else:
@@ -162,7 +163,8 @@ def join(objects: np.typing.ArrayLike,
 
     Note
     ----
-    Only works for Sequence or StimSequence objects where all but the last provided object has a ``metrical=True`` flag.
+    Only works for Sequence or StimSequence objects where all but the last provided object has an
+    ``end_with_interval=True`` flag.
 
     Parameters
     ----------
@@ -181,20 +183,20 @@ def join(objects: np.typing.ArrayLike,
             isinstance(obj, thebeat.core.StimSequence) for obj in objects):
         raise ValueError("Please pass only Sequence or only StimSequence objects.")
 
-    if not all(obj.metrical for obj in objects[:-1]):
-        raise ValueError("All passed Sequences or StimSequences need to be metrical, except for the final one. "
+    if not all(obj.end_with_interval for obj in objects[:-1]):
+        raise ValueError("All passed Sequences or StimSequences need to end with an interval, except for the final one."
                          "Otherwise we miss an interval between the onset of the "
                          "final event in a Sequence and the onset of the first event in the next sequence.")
 
     if not all(obj.onsets[0] == 0.0 for obj in objects):
         raise ValueError("Please only pass sequences that have their first event at onset 0.0")
 
-    # the metricality of the sequence depends only on the final object passed
-    metricality = objects[-1].metrical
+    # Whether the sequence ends with an interval depends only on the final object passed
+    end_with_interval = objects[-1].end_with_interval
 
     # concatenate iois and create new Sequence
     iois = np.concatenate([obj.iois for obj in objects])
-    seq = thebeat.core.Sequence(iois, metrical=metricality)
+    seq = thebeat.core.Sequence(iois, end_with_interval=end_with_interval)
 
     # For Sequence objects we're done:
     if isinstance(objects[0], thebeat.core.Sequence):

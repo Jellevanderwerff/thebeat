@@ -348,7 +348,7 @@ def plot_lp(lp,
 
 
 def plot_single_sequence(onsets: Union[list, np.ndarray],
-                         metrical: bool,
+                         end_with_interval: bool,
                          final_ioi: Optional[float] = None,
                          style: str = 'seaborn',
                          title: Optional[str] = None,
@@ -365,11 +365,10 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
     ----------
     onsets
         The onsets (i.e. t values) of the sequence.
-    metrical
-        Indicates whether there is a final inter-onset interval in the sequence.
+    end_with_interval
+        Indicates whether sequence ends with an interval (``True``) or event (``False``).
     final_ioi
-        The final inter-onset interval of the sequence. This is only used if the sequence is
-        metrical.
+        The final inter-onset interval of the sequence. This is only used if the sequence ends with an interval.
     linewidths
         The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
         Can be a single value that will be used for each onset, or a list or array of values
@@ -420,7 +419,7 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
 
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
-        right_x_lim = onsets[-1] + final_ioi if metrical else onsets[-1] + linewidths[-1]
+        right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
         ax.set_xlim(0, right_x_lim)
         ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
         ax.axes.set_title(title)

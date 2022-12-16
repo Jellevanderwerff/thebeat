@@ -16,7 +16,7 @@ def test_iois(rng):
     assert len(seq.iois) == 9
     assert np.all(np.round(seq.iois) == [508., 474., 519., 524., 451., 467., 503., 492., 500.])
     assert len(seq.onsets) == 10
-    assert seq.metrical is False
+    assert seq.end_with_interval is False
 
     # from and to integer ratios
     integer_ratios = [1, 5, 8, 2, 5, 4, 4, 2, 1]
@@ -29,7 +29,7 @@ def test_iois(rng):
     iois[0] = -42
     assert s.iois[0] != -42
 
-    seq = thebeat.core.Sequence.generate_isochronous(4, 500, metrical=True)
+    seq = thebeat.core.Sequence.generate_isochronous(4, 500, end_with_interval=True)
     with pytest.raises(ValueError):
         seq.onsets = [0, 50, 100]
 
@@ -77,7 +77,7 @@ def test_onsets_property(rng):
 
 
 def test_exception():
-    seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=500)
+    seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500)
     seq.change_tempo(0.5)
     with pytest.raises(ValueError):
         seq.change_tempo(-1)
@@ -92,14 +92,14 @@ def test_onset_not_zero():
     assert np.all(seq.iois == [30, 50])
 
     with pytest.raises(ValueError):
-        thebeat.core.Sequence([50, 50, 50], metrical=True, first_onset=50)
+        thebeat.core.Sequence([50, 50, 50], end_with_interval=True, first_onset=50)
 
 
 def test_multiplication():
     seq = thebeat.core.Sequence([500, 500, 500])
     with pytest.raises(ValueError):
         _ = seq * 10
-    seq = thebeat.core.Sequence([500, 500, 500], metrical=True)
+    seq = thebeat.core.Sequence([500, 500, 500], end_with_interval=True)
     seq *= 10
     assert len(seq.iois) == 30
 

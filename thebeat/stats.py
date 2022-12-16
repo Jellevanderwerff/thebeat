@@ -42,7 +42,7 @@ def acf_df(sequence: thebeat.core.Sequence,
     Returns
     -------
     :class:`pandas.DataFrame`
-        DataFrame containing two columns: the timestamps in milliseconds, and the autocorrelation factor.
+        DataFrame containing two columns: the timestamps, and the autocorrelation factor.
 
     Notes
     -----
@@ -52,24 +52,24 @@ def acf_df(sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)  # for reproducability
-    >>> seq = thebeat.core.Sequence.generate_random_uniform(n=10, a=400, b=600, rng=rng)
-    >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution_ms=10)
+    >>> seq = thebeat.core.Sequence.generate_random_uniform(n_events=10,a=400,b=600,rng=rng)
+    >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution=10)
     >>> print(df.head(3))
-       time_ms  correlation
-    0        0     0.851373
-    1       10     1.000000
-    2       20     0.851373
+       timestamps  correlation
+    0           0     0.851373
+    1          10     1.000000
+    2          20     0.851373
 
     """
 
     correlations = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
     correlations = correlations / max(correlations)
-    times_ms = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
+    timestamps = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
 
     df = pd.DataFrame(
         {
-            "time_ms": times_ms,
+            "timestamps": timestamps,
             "correlation": correlations
         }
     )
@@ -115,8 +115,8 @@ def acf_plot(sequence: thebeat.core.Sequence,
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` name as the title of the plot
-        (if passed and the object has one).
+        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.StimSequence` ``name`` attribute as the title of the
+        plot (if the object has one).
     x_axis_label
         A label for the x axis.
     figsize
@@ -387,7 +387,7 @@ def ks_test(sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = thebeat.core.Sequence.generate_random_normal(n=100, mu=500, sigma=25, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=100,mu=500,sigma=25,rng=rng)
     >>> print(ks_test(seq))
     KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911)
 
@@ -494,12 +494,12 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
 
     Examples
     --------
-    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=500)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500)
     >>> print(get_npvi(seq))
     0.0
 
     >>> rng = np.random.default_rng(seed=123)
-    >>> seq = thebeat.core.Sequence.generate_random_normal(n=10, mu=500, sigma=50, rng=rng)
+    >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=10,mu=500,sigma=50,rng=rng)
     >>> print(get_npvi(seq))
     37.6263174529546
     """
@@ -555,7 +555,7 @@ def get_ugof(sequence: thebeat.core.Sequence,
 
     Examples
     --------
-    >>> seq = thebeat.core.Sequence.generate_isochronous(n=10, ioi=1000)
+    >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=1000)
     >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
     >>> print(ugof)
     0.59636414
