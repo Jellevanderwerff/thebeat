@@ -19,22 +19,21 @@ def acf_df(sequence: thebeat.core.Sequence,
            smoothing_sd: Optional[float] = None) -> pd.DataFrame:
     """
 
-    This function takes a :py:class:`Sequence` or :py:class:`SoundSequence` object, or a list of event onsets,
-    and returns a :class:`pandas.DataFrame` containing timestamps (acf lags), and autocorrelation factors.
+    Perform autocorrelation analysis on a :py:class:`Sequence` object,
+    and return a :class:`Pandas.DataFrame` object containing the results.
 
     Parameters
     ----------
 
     sequence
-        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object, or a list or an
-        array containing event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
+        A :py:class:`~thebeat.core.Sequence` object.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
         If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
         for the autocorrelation function is calculated as
-        ``n_lags = sequence_duration_in_ms / resolution``.
+        ``n_lags = sequence_duration / resolution``.
     smoothing_window
-        The window (in milliseconds) within which a normal probability density function is used for
+        The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
@@ -64,17 +63,15 @@ def acf_df(sequence: thebeat.core.Sequence,
 
     correlations = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
                               smoothing_sd=smoothing_sd)
-    correlations = correlations / max(correlations)
+    correlations = correlations / np.max(correlations)
     timestamps = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
 
     df = pd.DataFrame(
         {
-            "timestamps": timestamps,
+            "timestamp": timestamps,
             "correlation": correlations
         }
     )
-
-    # todo Check whether still makes sense after changing the index.
 
     return df
 
@@ -86,20 +83,19 @@ def acf_plot(sequence: thebeat.core.Sequence,
              style: str = 'seaborn',
              title: str = 'Autocorrelation',
              x_axis_label: str = 'Lag',
+             y_axis_label: str = 'Correlation',
              figsize: Optional[tuple] = None,
              dpi: int = 100,
              ax: Optional[plt.Axes] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
 
-    This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence` or
-    :class:`~thebeat.core.SoundSequence` object, or from a list or an array of event onsets.
+    This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
 
     Parameters
     ----------
     sequence
-        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object,
-        or a list or an array of event onsets in milliseconds, e.g. ``[0, 500, 1000]``.
+        A :py:class:`~thebeat.core.Sequence` object.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
         If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
@@ -119,6 +115,8 @@ def acf_plot(sequence: thebeat.core.Sequence,
         plot (if the object has one).
     x_axis_label
         A label for the x axis.
+    y_axis_label
+        A label for the y axis.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
@@ -138,10 +136,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
-        onsets = sequence.onsets
-    else:
-        onsets = sequence
+    onsets = sequence.onsets
 
     correlation = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
                              smoothing_sd=smoothing_sd)
@@ -166,6 +161,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
             fig = ax.get_figure()
 
         ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
         ax.set_title(title)
         ax.plot(x, y)
 
@@ -181,22 +177,20 @@ def acf_values(sequence: thebeat.core.Sequence,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
 
-    This function takes a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object,
-    or a list of event onsets, and returns an array with steps of ``resolution_ms`` of unstandardized correlation
-    factors.
+    Perform autocorrelation. This function takes a :class:`~thebeat.core.Sequence` object, and returns an array with
+    steps of ``resolution`` of unstandardized correlation factors.
 
     Parameters
     ----------
     sequence
-        Either a Sequence or SoundSequence object, or an iterable containing event onsets in milliseconds,
-        e.g. ``[0, 500, 1000]``.
+        A :class:`~thebeat.core.Sequence` object.
     resolution
         The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
         If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
         for the autocorrelation function is calculated as
-        ``n_lags = sequence_duration_in_ms / resolution``.
+        ``n_lags = sequence_duration / resolution``.
     smoothing_window
-        The window (in milliseconds) within which a normal probability density function is used for
+        The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
@@ -210,11 +204,7 @@ def acf_values(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
-        onsets = sequence.onsets
-    else:
-        onsets = sequence
-
+    onsets = sequence.onsets
     signal = thebeat.helpers.make_binary_timeseries(onsets, resolution)
 
     # npdf
@@ -230,7 +220,231 @@ def acf_values(sequence: thebeat.core.Sequence,
         correlation = correlation[round(len(correlation) / 2) - 1:]
     except ValueError as e:
         raise ValueError("Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
-                         "and smoothing_sd. Try choosing a smaller resolution_ms.") from e
+                         "and smoothing_sd. Try choosing a smaller resolution.") from e
+
+    return correlation
+
+
+def ccf_df(test_sequence: thebeat.core.Sequence,
+           reference_sequence: thebeat.core.Sequence,
+           resolution,
+           smoothing_window: Optional[float] = None,
+           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
+    """
+
+    Perform autocorrelation analysis on a :py:class:`Sequence` object,
+    and return a :class:`Pandas.DataFrame` object containing the results.
+
+    Parameters
+    ----------
+
+    test_sequence
+        The test sequence.
+    reference_sequence
+        The reference sequence.
+    resolution
+        The temporal resolution. If the used Sequence is in seconds, you might want to use 0.001.
+        If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
+        for the autocorrelation function is calculated as
+        ``n_lags = sequence_duration / resolution``.
+    smoothing_window
+        The window within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
+
+    Returns
+    -------
+    :class:`pandas.DataFrame`
+        DataFrame containing two columns: the timestamps, and the cross-correlation factor.
+
+    Notes
+    -----
+    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    There, one can also find a more detailed description of the smoothing procedure.
+
+
+    """
+
+    correlations = ccf_values(test_sequence=test_sequence, reference_sequence=reference_sequence, resolution=resolution,
+                              smoothing_window=smoothing_window, smoothing_sd=smoothing_sd)
+    # normalize
+    correlations = correlations / np.max(correlations)
+    timestamps = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
+
+    df = pd.DataFrame(
+        {
+            "timestamp": timestamps,
+            "correlation": correlations
+        }
+    )
+
+    return df
+
+
+def ccf_plot(test_sequence: thebeat.core.Sequence,
+             reference_sequence: thebeat.core.Sequence,
+             resolution,
+             smoothing_window: Optional[float] = None,
+             smoothing_sd: Optional[float] = None,
+             style: str = 'seaborn',
+             title: str = 'Cross-correlation',
+             x_axis_label: str = 'Lag',
+             y_axis_label: str = 'Correlation',
+             figsize: Optional[tuple] = None,
+             dpi: int = 100,
+             ax: Optional[plt.Axes] = None,
+             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+    """
+    Calculate and plot the cross-correlation function (CCF) between two :class:`~thebeat.core.Sequence` objects.
+    The test sequence is compared to the reference sequence.
+
+    Parameters
+    ----------
+    test_sequence
+        The test sequence.
+    reference_sequence
+        The reference sequence.
+    resolution
+        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1. If the Sequence is in
+        seconds, try using 0.001.
+    smoothing_window
+        The window within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        The title of the plot.
+    x_axis_label
+        The label of the x axis.
+    y_axis_label
+        The label of the y axis.
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    dpi
+        The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
+        :func:`matplotlib.pyplot.figure`.
+    ax
+        A :class:`matplotlib.axes.Axes` object. If ``None``, a new Figure and Axes is created.
+    suppress_display
+        If ``True``, the plot is not displayed. This is useful e.g. if you only want to save the plot to a file
+
+    Returns
+    -------
+    fig
+        The :class:`matplotlib.figure.Figure` object.
+    ax
+        The :class:`matplotlib.axes.Axes` object.
+
+    Notes
+    -----
+    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
+    one can also find a more detailed description of the smoothing procedure.
+
+    """
+
+    # Get correlation factors
+    correlation = ccf_values(test_sequence=test_sequence, reference_sequence=reference_sequence,
+                             resolution=resolution, smoothing_window=smoothing_window,
+                             smoothing_sd=smoothing_sd)
+
+    # Make y axis
+    x_step = resolution
+    max_lag = np.floor(np.max(np.concatenate([test_sequence.onsets, reference_sequence.onsets])) / resolution).astype(
+        int)
+    try:
+        y = correlation[:max_lag]
+        y = y / np.max(y)  # normalize
+    except ValueError:
+        raise ValueError("We end up with an empty y axis. Try changing the resolution.")
+
+    # Make x axis
+    x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
+
+    # Plot
+    with plt.style.context(style):
+        if ax is None:
+            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        else:
+            fig = ax.get_figure()
+
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_title(title)
+        ax.plot(x, y)
+
+    if not suppress_display and ax is not None:
+        plt.show()
+
+    return fig, ax
+
+
+def ccf_values(test_sequence: thebeat.core.Sequence,
+               reference_sequence: thebeat.core.Sequence,
+               resolution,
+               smoothing_window: Optional[float] = None,
+               smoothing_sd: Optional[float] = None) -> np.ndarray:
+    """
+    Returns the unstandardized cross-correlation function (CCF) for two :class:`~thebeat.core.Sequence` objects.
+    The test sequence is compared to the reference sequence.
+
+    Parameters
+    ----------
+    test_sequence
+        The test sequence.
+    reference_sequence
+        The reference sequence.
+    resolution
+        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1. If the Sequence is in
+        seconds, try using 0.001.
+    smoothing_window
+        The window within which a normal probability density function is used for
+        smoothing out the analysis.
+    smoothing_sd
+        The standard deviation of the normal probability density function used for smoothing out the analysis.
+
+    Returns
+    -------
+    correlation
+        The unstandardized cross-correlation function.
+
+    """
+    # Get event onsets
+    test_onsets = test_sequence.onsets
+    ref_onsets = reference_sequence.onsets
+
+    # Make into 0's and 1's
+    test_signal = thebeat.helpers.make_binary_timeseries(test_onsets, resolution)
+    ref_signal = thebeat.helpers.make_binary_timeseries(ref_onsets, resolution)
+
+    # npdf
+    if smoothing_window and smoothing_sd:
+        x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution)
+        npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
+        npdf = npdf / np.max(npdf)
+        test_signal_convoluted = np.convolve(test_signal, npdf)
+        ref_signal_convoluted = np.convolve(ref_signal, npdf)
+        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2):]
+        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2):]
+
+    # Make signals of equal length
+    diff = len(ref_signal) - len(test_signal)
+    if diff > 0:  # ref_signal is longer
+        test_signal = np.concatenate((test_signal, np.zeros(diff)))
+    elif diff < 0:  # test_signal is longer
+        ref_signal = np.concatenate((ref_signal, np.zeros(-diff)))
+
+    # Calculate cross-correlation
+    try:
+        correlation = np.correlate(test_signal, ref_signal, 'full')
+        correlation = correlation[round(len(correlation) / 2) - 1:]
+    except ValueError as e:
+        raise ValueError("Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
+                         "and smoothing_sd. Try choosing a smaller resolution.") from e
 
     return correlation
 
