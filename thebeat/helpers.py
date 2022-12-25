@@ -193,13 +193,12 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
         raise ValueError("Offramp is longer than stimulus")
 
     # ONRAMP
-
     if ramp_type == 'linear':
         onramp_amps = np.linspace(0, 1, onramp_samples_len)
 
     elif ramp_type == 'raised-cosine':
-        hanning_complete = np.hanning(onramp_samples_len * 2)
-        onramp_amps = hanning_complete[:(hanning_complete.shape[0] // 2)]  # only first half of Hanning window
+        hann_complete = scipy.signal.windows.hann(onramp_samples_len * 2)
+        onramp_amps = hann_complete[:hann_complete.shape[0] // 2]
 
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
@@ -218,8 +217,8 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     if ramp_type == 'linear':
         offramp_amps = np.linspace(1, 0, int(offramp_ms / 1000 * fs))
     elif ramp_type == 'raised-cosine':
-        hanning_complete = np.hanning(offramp_samples_len * 2)
-        offramp_amps = hanning_complete[hanning_complete.shape[0] // 2:]
+        hann_complete = scipy.signal.windows.hann(offramp_samples_len * 2)
+        offramp_amps = hann_complete[hann_complete.shape[0] // 2:]
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
