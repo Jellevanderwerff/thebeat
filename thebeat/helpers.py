@@ -200,6 +200,12 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
         hann_complete = scipy.signal.windows.hann(onramp_samples_len * 2)
         onramp_amps = hann_complete[:hann_complete.shape[0] // 2]
 
+    elif ramp_type == 'exponential':
+        m = onramp_samples_len
+        tau = -(m - 1) / np.log(0.01)
+        exp_complete = scipy.signal.windows.exponential(onramp_samples_len * 2, tau=tau)
+        onramp_amps = exp_complete[:exp_complete.shape[0] // 2]
+
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
@@ -219,6 +225,11 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     elif ramp_type == 'raised-cosine':
         hann_complete = scipy.signal.windows.hann(offramp_samples_len * 2)
         offramp_amps = hann_complete[hann_complete.shape[0] // 2:]
+    elif ramp_type == 'exponential':
+        m = onramp_samples_len
+        tau = -(m - 1) / np.log(0.01)
+        exp_complete = scipy.signal.windows.exponential(onramp_samples_len * 2, tau=tau)
+        offramp_amps = exp_complete[exp_complete.shape[0] // 2:]
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
