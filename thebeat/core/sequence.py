@@ -598,6 +598,12 @@ class Sequence(BaseSequence):
 
         self.onsets = np.round(self.onsets, decimals=decimals)
 
+    def quantize(self,
+                 bin_size: float):
+        """Quantize the Sequence object's onsets (i.e. *t* values) to a certain bin size."""
+
+        self.iois = np.round(self.iois / bin_size) * bin_size
+
     # Visualization
     def plot_sequence(self,
                       linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
