@@ -54,10 +54,10 @@ def acf_df(sequence: thebeat.core.Sequence,
     >>> seq = thebeat.core.Sequence.generate_random_uniform(n_events=10,a=400,b=600,rng=rng)
     >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution=10)
     >>> print(df.head(3))
-       timestamps  correlation
-    0           0     0.851373
-    1          10     1.000000
-    2          20     0.851373
+       timestamp  correlation
+    0          0     0.851373
+    1         10     1.000000
+    2         20     0.851373
 
     """
 
@@ -385,7 +385,7 @@ def ccf_plot(test_sequence: thebeat.core.Sequence,
 
 def ccf_values(test_sequence: thebeat.core.Sequence,
                reference_sequence: thebeat.core.Sequence,
-               resolution,
+               resolution: float,
                smoothing_window: Optional[float] = None,
                smoothing_sd: Optional[float] = None) -> np.ndarray:
     """
@@ -450,25 +450,89 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
 
 
 def fft_plot(sequence: thebeat.core.Sequence,
-             fs: int = 1000,
-             min_freq: Optional[float] = None,
-             max_freq: Optional[float] = None,
+             unit_size: float,
+             x_min: float = 0,
+             x_max: Optional[float] = None,
              style: str = 'seaborn',
              title: str = 'Fourier transform',
-             x_axis_label: str = 'Frequency',
+             x_axis_label: str = 'Cycles per unit',
              y_axis_label: str = 'Absolute power',
              figsize: Optional[tuple] = None,
              dpi: int = 100,
              ax: Optional[plt.Axes] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+    """
+    Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
+    The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
+    You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
+
+    Parameters
+    ----------
+    sequence
+        The sequence.
+    unit_size
+        The size of the unit in which the sequence is measured. If the sequence is in milliseconds,
+        you probably want 1000. If the sequence is in seconds, you probably want 1.
+    x_min
+        The minimum number of cycles per unit to be plotted.
+    x_max
+        The maximum number of cycles per unit to be plotted.
+    style
+        The matplotlib style to use. See
+        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
+    title
+        The title of the plot.
+    x_axis_label
+        The label of the x axis.
+    y_axis_label
+        The label of the y axis.
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
+    dpi
+        The resolution of the plot in dots per inch.
+    ax
+        A matplotlib Axes object to plot on. If not provided, a new figure and axes will be created.
+    suppress_display
+        If True, the plot will not be displayed.
+
+    Returns
+    -------
+    fig
+        The matplotlib Figure object.
+    ax
+        The matplotlib Axes object.
+
+    Examples
+    --------
+    >>> from thebeat import Sequence
+    >>> from thebeat.stats import fft_plot
+    >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
+    >>> fft_plot(seq, resolution=1, max_freq_hz=5)
+    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Frequency', ylabel='Absolute power'>)
+
+    >>> seq = Sequence.generate_random_normal(n_events=100, mu=0.5, sigma=0.025)  # seconds
+    >>> fft_plot(seq, resolution=0.001)
+    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Frequency', ylabel='Absolute power'>)
+
+    """
+
+    # Calculate step size
+    step_size = unit_size / 1000
+
     # Make a sequence of ones and zeroes
-    timeseries = make_binary_timeseries(sequence.onsets, resolution=1000 / fs)
-    duration = max(sequence.onsets) / 1000
-    n = int(fs * duration) + 1
+    timeseries = make_binary_timeseries(sequence.onsets, resolution=step_size)
+    duration = np.max(sequence.onsets)
+    x_length = np.ceil(duration / step_size).astype(int)
 
     # Do the fft
-    yf = rfft(timeseries)
-    xf = rfftfreq(n, d=1 / fs)
+    yf = rfft(timeseries)[1:]
+    xf = rfftfreq(x_length, d=step_size)[1:] * (step_size / 0.001)
+
+    # Calculate reasonable max_freq
+    max_freq_index = np.min(np.where(xf > x_max)) if x_max else len(xf) / 10
+    yf = yf[:int(max_freq_index)]
+    xf = xf[:int(max_freq_index)]
 
     # Plot
     with plt.style.context(style):
@@ -481,86 +545,10 @@ def fft_plot(sequence: thebeat.core.Sequence,
         ax.plot(xf, np.abs(yf))
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
-        ax.set_xlim(min_freq, max_freq)
+        ax.set_xlim(x_min, None)
         ax.set_title(title)
 
     if not suppress_display and ax_provided is False:
-        fig.show()
-
-    return fig, ax
-
-
-def fft_plot_ms(sequence: thebeat.core.Sequence,
-                resolution: int = 1,
-                min_ioi: Optional[float] = None,
-                max_ioi: Optional[float] = None,
-                style: str = 'seaborn',
-                title: str = 'Fourier transform',
-                x_axis_label: str = 'IOI (ms)',
-                y_axis_label: str = 'Absolute power',
-                figsize: Optional[tuple] = None,
-                dpi: int = 100,
-                ax: Optional[plt.Axes] = None,
-                suppress_display: bool = False):
-    """
-    Plot a fourier transform of a :py:class:`thebeat.core.Sequence` object with the x axis in milliseconds.
-
-    Caution
-    -------
-    This function requires the original :py:class:`thebeat.core.Sequence` object to be in milliseconds.
-    This is normally not a necessity for :py:class:`thebeat.core.Sequence` objects.
-
-
-    Parameters
-    ----------
-    sequence
-    resolution
-    min_ioi
-    max_ioi
-    style
-    title
-    x_axis_label
-    y_axis_label
-    figsize
-    dpi
-    ax
-    suppress_display
-
-    Returns
-    -------
-
-    """
-    if min_ioi < 0:
-        raise ValueError("The minimum IOI value needs to be above zero.")
-
-    fs = 1000 / resolution
-
-    min_freq = 1000 / max_ioi
-    max_freq = 1000 / min_ioi
-    timeseries = make_binary_timeseries(sequence.onsets, resolution=resolution)
-    duration = max(sequence.onsets) / 1000
-    n = int(fs * duration) + 1
-
-    yf = rfft(timeseries)
-    xf = rfftfreq(n, d=1 / fs)
-
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-            axes_provided = False
-        else:
-            fig = ax.get_figure()
-            axes_provided = True
-
-        ax.plot(xf, np.abs(yf))
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_xlim(min_freq, max_freq)
-        ax.invert_xaxis()
-        ax.xaxis.set_major_formatter(lambda x, pos: str(round(1000 / x if not x == 0 else 0, 1)))
-        ax.set_title(title)
-
-    if not suppress_display and axes_provided is False:
         fig.show()
 
     return fig, ax
