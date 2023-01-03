@@ -471,6 +471,7 @@ def fft_plot(sequence: thebeat.core.Sequence,
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
     You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
+    Note that the first frame is discarded since it will always have the highest power, yet is not informative.
 
     Parameters
     ----------
