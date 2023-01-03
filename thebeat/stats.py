@@ -89,7 +89,6 @@ def acf_plot(sequence: thebeat.core.Sequence,
              ax: Optional[plt.Axes] = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
-
     This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
 
     Parameters
@@ -449,6 +448,13 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
     return correlation
 
 
+def edit_distance(test_sequence: thebeat.core.Sequence,
+                  reference_sequence: thebeat.core.Sequence) -> float:
+    dist = np.sum(np.abs(test_sequence.onsets - reference_sequence.onsets))
+
+    return float(dist)
+
+
 def fft_plot(sequence: thebeat.core.Sequence,
              unit_size: float,
              x_min: float = 0,
@@ -508,12 +514,12 @@ def fft_plot(sequence: thebeat.core.Sequence,
     >>> from thebeat import Sequence
     >>> from thebeat.stats import fft_plot
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
-    >>> fft_plot(seq, resolution=1, max_freq_hz=5)
-    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Frequency', ylabel='Absolute power'>)
+    >>> fft_plot(seq, unit_size=1000)
+    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=0.5, sigma=0.025)  # seconds
-    >>> fft_plot(seq, resolution=0.001)
-    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Frequency', ylabel='Absolute power'>)
+    >>> fft_plot(seq, unit_size=1, x_max=5)
+    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     """
 
