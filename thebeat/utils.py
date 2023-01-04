@@ -13,20 +13,18 @@ except ImportError:
 def get_phase_differences(test_sequence: thebeat.core.Sequence,
                           reference_sequence: Union[thebeat.core.Sequence, float],
                           circular_unit="degrees"):
-
     # todo Verify this method of calculating phase differences. I'm not quite sure about using the period of the
     #  test_sequence instead of the reference_sequence
 
     """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``. If the second argument is a
-    number, ``test_sequence`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI) of
-    that number and the same length as the test sequence.
+    number, ``test_sequence`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI)
+    of that number and the same length as the test sequence.
 
     Caution
     -------
     The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
-    index of ``reference_sequence``. This means that this function does not handle missing values well.
-    If you are dealing with missing data, it is probably best to for each missing data point remove the onset at the
-    same index from the reference sequence.
+    index of ``reference_sequence``. Missing values are discarded. In addition, if the first onset of the test sequence
+    is at t = 0, that phase difference is also discarded.
 
     Parameters
     ----------
@@ -52,7 +50,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
         pass
     else:
         raise TypeError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
-                         "number as the right-hand argument.")
+                        "number as the right-hand argument.")
 
     # Get onsets once
     test_onsets = test_sequence.onsets
@@ -60,7 +58,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
 
     # Check length sameness
     if not len(test_onsets) == len(ref_onsets):
-        raise ValueError("This function only works if the number of events in the two sequences are equal.")
+        raise ValueError("This function only works if the number of events in the two sequences are equal. For "
+                         "missing data, insert np.nan values in the sequence for the missing data.")
 
     # If the first onset is at t=0, raise warning and remove it
     if test_onsets[0] == 0:
@@ -88,8 +87,8 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
             period_next = period_prev
         # For all other events, we need both the previous and the next IOI
         else:
-            period_next = test_sequence.iois[i]
             period_prev = test_sequence.iois[i - 1]
+            period_next = test_sequence.iois[i]
 
         if test_onset > ref_onsets[i]:
             phase_diff = (test_onset - ref_onsets[i]) / period_next
@@ -97,9 +96,12 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
             phase_diff = (test_onset - ref_onsets[i]) / period_prev
         elif test_onset == ref_onsets[i]:
             phase_diff = 0.0
+        elif np.isnan(test_onset) or np.isnan(ref_onsets[i]):
+            phase_diff = np.nan
+            warnings.warn(thebeat._warnings.missing_values)
         else:
             raise ValueError("Something went wrong during the calculation of the phase differences."
-                             "Please check your data for missing values.")
+                             "Please check your data.")
 
         phase_diffs = np.append(phase_diffs, phase_diff)
 
@@ -112,7 +114,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     elif circular_unit == "radians":
         return np.deg2rad(phase_diff_degrees)
     else:
-        raise ValueError("Please provide a valid circular unit. Either degrees or radians.")
+        raise ValueError("Please provide a valid circular unit. Either 'degrees' or 'radians'.")
 
 
 def get_major_scale(tonic: str,
