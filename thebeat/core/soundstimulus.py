@@ -69,7 +69,7 @@ class SoundStimulus:
 
     def __add__(self, other: SoundStimulus):
         if not isinstance(other, SoundStimulus):
-            raise ValueError("Can only overlay another SoundStimulus object on this SoundStimulus object.")
+            raise TypeError("Can only overlay another SoundStimulus object on this SoundStimulus object.")
 
         # Check sameness of number of channels etc.
         thebeat.helpers.check_sound_properties_sameness([self, other])
@@ -81,7 +81,7 @@ class SoundStimulus:
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
-            raise ValueError("Can only multiply by an integer.")
+            raise TypeError("Can only multiply by an integer.")
 
         return SoundStimulus(samples=np.tile(self.samples, other), fs=self.fs, name=self.name)
 
@@ -326,7 +326,7 @@ class SoundStimulus:
 
         """
         if not sound_object.__class__.__name__ == "Sound":
-            raise ValueError("Please provide a parselmouth.Sound object.")
+            raise TypeError("Please provide a parselmouth.Sound object.")
 
         fs = sound_object.sampling_frequency
 

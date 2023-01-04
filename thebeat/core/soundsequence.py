@@ -84,11 +84,11 @@ class SoundSequence(BaseSequence):
                 raise ValueError("Please provide an equal number of stimuli as onsets.")
             stimuli = stimulus
         else:
-            raise ValueError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
+            raise TypeError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
 
         # Type checking for sequence
         if not isinstance(sequence, Sequence):
-            raise ValueError("Please provide a Sequence object as the second argument.")
+            raise TypeError("Please provide a Sequence object as the second argument.")
 
         # Get IOIs from sequence
         iois = sequence.iois
@@ -380,7 +380,7 @@ class SoundSequence(BaseSequence):
 
     def _repeat(self, times: int):
         if not isinstance(times, int):
-            raise ValueError("Can only multiply the StimSequenec by an integer value")
+            raise TypeError("Can only multiply the StimSequenec by an integer value")
 
         if not self.end_with_interval or not self.onsets[0] == 0:
             raise ValueError("You can only repeat sequences that end with an interval."

@@ -93,7 +93,8 @@ def check_sound_properties_sameness(objects: np.typing.ArrayLike):
     elif not all(obj.n_channels == objects[0].n_channels for obj in objects):
         raise ValueError("These objects do not have the same number of channels.")
     elif not all(obj.dtype == objects[0].dtype for obj in objects):
-        raise ValueError("These objects do not have the same data type. Check out")
+        raise ValueError("These objects do not have the same Numpy data type. Check out "
+                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html for info.")
     else:
         return True
 
@@ -142,11 +143,11 @@ def join_rhythms(iterator):
 
     # Check whether iterable was passed
     if not hasattr(iterator, '__iter__'):
-        raise ValueError("Please pass this function a list or other iterable object.")
+        raise TypeError("Please pass this function a list or other iterable object.")
 
     # Check whether all the objects are of the same type
     if not all(isinstance(rhythm, thebeat.rhythm.Rhythm) for rhythm in iterator):
-        raise ValueError("You can only join multiple Rhythm objects.")
+        raise TypeError("You can only join multiple Rhythm objects.")
 
     if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
         raise ValueError("Provided rhythms should have the same time signatures.")

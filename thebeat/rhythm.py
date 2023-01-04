@@ -541,7 +541,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         if not isinstance(times, int):
-            raise ValueError("You can only multiply Sequence objects by integers.")
+            raise TypeError("You can only multiply Sequence objects by integers.")
 
         new_iois = np.tile(self.iois, reps=times)
         is_played = self.is_played * times

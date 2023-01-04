@@ -44,14 +44,14 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
 
     # Input validation
     if not isinstance(test_sequence, thebeat.core.Sequence):
-        raise ValueError("Please provide a Sequence object as the left argument.")
+        raise TypeError("Please provide a Sequence object as the left argument.")
     elif isinstance(reference_sequence, (int, float)):
         reference_sequence = thebeat.core.Sequence.generate_isochronous(n_events=len(test_sequence.onsets),
                                                                         ioi=reference_sequence)
     elif isinstance(reference_sequence, thebeat.core.Sequence):
         pass
     else:
-        raise ValueError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
+        raise TypeError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
                          "number as the right-hand argument.")
 
     # Get onsets once
@@ -181,7 +181,7 @@ def join(objects: np.typing.ArrayLike,
 
     if not all(isinstance(obj, thebeat.core.Sequence) for obj in objects) and not all(
             isinstance(obj, thebeat.core.SoundSequence) for obj in objects):
-        raise ValueError("Please pass only Sequence or only SoundSequence objects.")
+        raise TypeError("Please pass only Sequence or only SoundSequence objects.")
 
     if not all(obj.end_with_interval for obj in objects[:-1]):
         raise ValueError("All passed Sequences or StimSequences need to end with an interval, except for the final one."

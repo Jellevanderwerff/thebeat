@@ -726,7 +726,7 @@ class Sequence(BaseSequence):
 
         """
         if not isinstance(times, int):
-            raise ValueError("You can only multiply Sequence objects by integers.")
+            raise TypeError("You can only multiply Sequence objects by integers.")
 
         if not self.end_with_interval or not self.onsets[0] == 0:
             raise ValueError(
