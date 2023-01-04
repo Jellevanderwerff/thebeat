@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 import re
 import textwrap
+from fractions import Fraction
 from typing import Union, Optional
 import matplotlib.pyplot as plt
 import numpy as np
@@ -243,7 +244,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                     filepath: Optional[Union[os.PathLike, str]] = None,
                     key: Optional[str] = None,
                     suppress_display: bool = False,
-                    dpi: int = 300) -> tuple[plt.Figure, plt.Axes]:
+                    dpi: int = 600) -> tuple[plt.Figure, plt.Axes]:
         """
         Use this function to plot the melody in musical notes. It requires lilypond to be installed. See
         :py:meth:`Rhythm.plot_rhythm` for installation instructions.
@@ -611,18 +612,27 @@ class Melody(thebeat.core.sequence.BaseSequence):
              """)
 
         pitch_names = [event.pitch_name for event in self.events]
-        note_values = [event.note_value for event in self.events]
         is_played = [event.is_played for event in self.events]
+
+        # Get note durations
+        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
+        integer_ratios = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
+        total_duration = np.sum(integer_ratios)
+        duration_of_bar = total_duration / self.n_bars
+        ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
+        numerators = ratios * self.time_signature[0]
+
+        note_durations = [abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators]
 
         notes = []
 
-        for pitch_name, note_value, is_played in zip(pitch_names, note_values, is_played):
-            duration = abjad.Duration((1, int(note_value)))
+        for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
             if is_played is True:
                 pitch = abjad.NamedPitch(pitch_name)
-                note = note_maker(pitch, duration)
+                note = note_maker(pitch, note_duration)
             else:
-                note = abjad.Rest(duration)
+                note = abjad.Rest(note_duration)
             notes.append(note)
 
         voice = abjad.Voice(notes)

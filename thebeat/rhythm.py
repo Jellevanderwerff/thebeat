@@ -386,7 +386,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                     print_staff: bool = True,
                     title: Optional[str] = None,
                     suppress_display: bool = False,
-                    dpi: int = 300,
+                    dpi: int = 600,
                     ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
