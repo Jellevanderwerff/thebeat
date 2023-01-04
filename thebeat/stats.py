@@ -448,13 +448,6 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
     return correlation
 
 
-def edit_distance(test_sequence: thebeat.core.Sequence,
-                  reference_sequence: thebeat.core.Sequence) -> float:
-    dist = np.sum(np.abs(test_sequence.onsets - reference_sequence.onsets))
-
-    return float(dist)
-
-
 def fft_plot(sequence: thebeat.core.Sequence,
              unit_size: float,
              x_min: float = 0,
