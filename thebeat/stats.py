@@ -567,8 +567,7 @@ def ks_test(sequence: thebeat.core.Sequence,
     Parameters
     ----------
     sequence
-        Either a :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` object or an iterable (e.g. list)
-        containing inter-onset intervals (IOIs), e.g. ``[500, 500, 500]``.
+        A :class:`~thebeat.core.Sequence` object.
     reference_distribution
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
         is compared.
@@ -595,8 +594,7 @@ def ks_test(sequence: thebeat.core.Sequence,
 
     """
 
-    if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
-        sequence = sequence.iois
+    sequence = sequence.iois
 
     if reference_distribution == 'normal':
         mean = np.mean(sequence)
