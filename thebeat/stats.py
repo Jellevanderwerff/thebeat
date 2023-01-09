@@ -78,6 +78,7 @@ def acf_df(sequence: thebeat.core.Sequence,
 
 def acf_plot(sequence: thebeat.core.Sequence,
              resolution,
+             max_lag: Optional[float] = None,
              smoothing_window: Optional[float] = None,
              smoothing_sd: Optional[float] = None,
              style: str = 'seaborn-v0_8',
@@ -100,6 +101,8 @@ def acf_plot(sequence: thebeat.core.Sequence,
         If the Sequence is in milliseconds, try using 1. Incidentally, the number of lags
         for the autocorrelation function is calculated as
         ``n_lags = sequence_duration_in_ms / resolution``.
+    max_lag
+        The maximum lag to be plotted. Defaults to the sequence duration.
     smoothing_window
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
@@ -141,7 +144,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
                              smoothing_sd=smoothing_sd)
 
     x_step = resolution
-    max_lag = np.floor(np.max(onsets) / resolution).astype(int)
+    max_lag = max_lag // resolution if max_lag else np.floor(np.max(onsets) / resolution).astype(int)
 
     # plot
     try:

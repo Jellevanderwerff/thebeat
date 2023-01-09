@@ -190,8 +190,8 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
                            suppress_display: bool = False,
                            dpi: int = 100,
                            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
-    """Plot the phase differences for ``test_sequence`` compared to ``sequence_2``. ``test_sequence`` can be a single
-    sequence, a list of sequences, or a numpy array of sequences.
+    """Plot the phase differences for ``test_sequence`` compared to ``reference_sequence``. ``test_sequence`` can be a
+    single sequence, or a list or Numpy array of sequences.
 
     The reference sequence can either be a single sequence in which case a comparison will be made between
     each test sequence and the reference sequence, or a float in which case a comparison will be made between
