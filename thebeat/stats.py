@@ -144,7 +144,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
                              smoothing_sd=smoothing_sd)
 
     x_step = resolution
-    max_lag = max_lag // resolution if max_lag else np.floor(np.max(onsets) / resolution).astype(int)
+    max_lag = int(max_lag // resolution) if max_lag else np.floor(np.max(onsets) / resolution).astype(int)
 
     # plot
     try:

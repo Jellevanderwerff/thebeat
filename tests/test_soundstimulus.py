@@ -1,5 +1,12 @@
 import thebeat.core
 import matplotlib.pyplot as plt
+import pytest
+import numpy as np
+
+
+@pytest.fixture
+def rng():
+    return np.random.default_rng(123)
 
 
 def test_soundstimulus():
@@ -19,18 +26,22 @@ def test_ramps():
     assert stim.duration_ms == 100
 
 
-def test_whitenoise():
-    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000)
+def test_whitenoise(rng):
+    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
     assert stim.duration_ms == 1000
 
 
-def test_plot_waveform():
+@pytest.mark.mpl_image_compare
+def test_plot_stimulus_waveform_0(rng):  # Plot new plot
     # regular example
-    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000)
+    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
     fig, ax = stim.plot_waveform(suppress_display=True)
-    assert fig, ax
+    return fig
 
-    # plot onto existing Axes
+
+@pytest.mark.mpl_image_compare
+def test_plot_stimulus_waveform_1(rng):  # Plot onto existing plot
     fig, axs = plt.subplots(1, 2)
+    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
     stim.plot_waveform(ax=axs[0])
-    assert fig, axs[0]
+    return fig

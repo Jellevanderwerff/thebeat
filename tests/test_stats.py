@@ -1,6 +1,8 @@
 from thebeat.stats import *
 from thebeat.core import Sequence
 import numpy as np
+import pytest
+import matplotlib.pyplot as plt
 
 
 def test_ugof():
@@ -11,7 +13,7 @@ def test_ugof():
 def test_ks():
     rng = np.random.default_rng(seed=123)
     seq = Sequence.generate_random_uniform(n_events=10, a=400, b=600, rng=rng)
-    assert ks_test(seq.iois)[0] == 0.2724021511351798
+    assert ks_test(seq)[0] == 0.2724021511351798
 
 
 def test_npvi():
@@ -45,3 +47,17 @@ def test_ccf():
     assert values[250] == 1.0
 
 
+@pytest.mark.mpl_image_compare
+def test_acf_image_seconds():
+    rng = np.random.default_rng(seed=123)
+    seq = Sequence.generate_random_normal(100, 500 / 1000, 25 / 1000, rng=rng)
+    fig, ax = acf_plot(seq, 1 / 1000, max_lag=1000 / 1000, smoothing_window=50 / 1000, smoothing_sd=10 / 1000)
+    return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_acf_image_milliseconds():
+    rng = np.random.default_rng(seed=123)
+    seq = Sequence.generate_random_normal(100, 500, 25, rng=rng)
+    fig, ax = acf_plot(seq, 1, max_lag=1000, smoothing_window=50, smoothing_sd=10)
+    return fig

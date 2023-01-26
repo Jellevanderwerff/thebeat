@@ -104,14 +104,20 @@ def test_multiplication():
     assert len(seq.iois) == 30
 
 
-def test_plot():
+@pytest.mark.mpl_image_compare
+def test_sequence_plot_0():
     # simple case
     seq = thebeat.core.Sequence([500, 1000, 200])
     fig, ax = seq.plot_sequence(suppress_display=True)
-    assert fig, ax
+    return fig
 
+
+@pytest.mark.mpl_image_compare
+def test_sequence_plot_1():
     # plot onto existing Axes
-    fig, axs = plt.subplots(1, 2)
+    seq = thebeat.core.Sequence([500, 1000, 200])
+    fig, axs = plt.subplots(2, 1)
     seq.plot_sequence(ax=axs[0])
-    assert fig, axs
+    return fig
+
 

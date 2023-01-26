@@ -9,8 +9,8 @@ import scipy.stats
 
 
 def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
-                                                 list[thebeat.core.Sequence],
-                                                 np.ndarray[thebeat.core.Sequence]],
+list[thebeat.core.Sequence],
+np.ndarray[thebeat.core.Sequence]],
                                  resolution: float = 0.01,
                                  style: str = 'seaborn-v0_8',
                                  title: Optional[str] = None,
@@ -96,17 +96,17 @@ def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
     return fig, ax
 
 
-def plot_interval_ratios_hist(sequence: Union[thebeat.core.Sequence,
-                                              list[thebeat.core.Sequence], np.ndarray[thebeat.core.Sequence]],
-                              bins: int = 100,
-                              style: str = 'seaborn-v0_8',
-                              title: Optional[str] = None,
-                              x_axis_label: str = "Interval ratios from dyads",
-                              y_axis_label: str = "Count",
-                              figsize: Optional[tuple[int, int]] = None,
-                              suppress_display: bool = False,
-                              dpi: int = 100,
-                              ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def plot_interval_ratios_histogram(sequence: Union[thebeat.core.Sequence,
+list[thebeat.core.Sequence], np.ndarray[thebeat.core.Sequence]],
+                                   bins: int = 100,
+                                   style: str = 'seaborn-v0_8',
+                                   title: Optional[str] = None,
+                                   x_axis_label: str = "Interval ratios from dyads",
+                                   y_axis_label: str = "Count",
+                                   figsize: Optional[tuple[int, int]] = None,
+                                   suppress_display: bool = False,
+                                   dpi: int = 100,
+                                   ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a histogram of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
@@ -175,12 +175,12 @@ def plot_interval_ratios_hist(sequence: Union[thebeat.core.Sequence,
 
 
 def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
-                                                list[thebeat.core.Sequence],
-                                                np.ndarray[thebeat.core.Sequence]],
+list[thebeat.core.Sequence],
+np.ndarray[thebeat.core.Sequence]],
                            reference_sequence: Union[thebeat.core.Sequence,
-                                                     float,
-                                                     list[thebeat.core.Sequence],
-                                                     np.ndarray[thebeat.core.Sequence]],
+                           float,
+                           list[thebeat.core.Sequence],
+                           np.ndarray[thebeat.core.Sequence]],
                            binwidth: int = 10,
                            zero_direction: str = 'N',
                            color: str = None,

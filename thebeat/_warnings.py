@@ -1,10 +1,10 @@
-framerounding_stimseq = Warning("For one ore more of the used sounds, the exact start or end positions in frames (i.e. "
+framerounding_stimseq = Warning("For one or more of the used sounds, the exact start or end positions in frames (i.e. "
                                 "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem."
                                 "To get rid of this warning, try rounding off the onsets in the passed Sequence object "
                                 "by calling Sequence.round_off_onsets() before passing the object to the SoundSequence "
                                 "constructor.\n")
 
-framerounding_melody = Warning("For one ore more of the used sounds, the exact start or end positions in frames (i.e. "
+framerounding_melody = Warning("For one or more of the used sounds, the exact start or end positions in frames (i.e. "
                                "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem."
                                "To get rid of this warning, try using a sampling frequency of 48000 Hz, or a different"
                                "beat_ms.\n")

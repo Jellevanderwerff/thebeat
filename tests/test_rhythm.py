@@ -27,3 +27,10 @@ def test_rhythm():
     rhythm *= 4
     assert rhythm.n_bars == 4
     assert len(rhythm.iois) == 16
+
+
+@pytest.mark.mpl_image_compare
+def test_rhythm_plot():
+    rhythm = thebeat.rhythm.Rhythm([500, 500, 500, 500])
+    fig, ax = rhythm.plot_rhythm(suppress_display=True)
+    return fig

@@ -1,6 +1,5 @@
 import pytest
 import thebeat.core
-import os
 import numpy as np
 
 
@@ -39,7 +38,18 @@ def test_soundsequence(tmp_path):
 def test_multiplication():
     trial = thebeat.core.SoundSequence(thebeat.core.SoundStimulus.generate(),
                                        thebeat.core.Sequence.generate_isochronous(n_events=5, ioi=100,
-                                                                                 end_with_interval=True))
+                                                                                  end_with_interval=True))
     trial *= 10
 
     assert len(trial.onsets) == 50
+
+
+@pytest.mark.mpl_image_compare
+def test_soundsequence_plot():
+    ss = thebeat.core.SoundSequence(thebeat.core.SoundStimulus.generate(),
+                                    thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500))
+
+    fig, ax = ss.plot_waveform(suppress_display=True)
+
+    return fig
+

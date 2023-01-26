@@ -1,10 +1,15 @@
-Welcome to *thebeat*
+Drop *thebeat*
 ====================
 
-Awesome that you're here. Here's a picture of a seal:
+*thebeat* is a Python package for working with temporal sequences and rhythms in the behavioural and cognitive sciences. 
+It provides functionality for creating stimuli, and for visualizing and analyzing temporal data. 
 
-.. image:: images/seal.jpg
-    :width: 400
+*thebeat* will save you time when creating experiments or analyzing data. It is a collection of widely accepted methods for use in timing research. 
+*thebeat* is an open-source, on-going and collaborative project, integrating easily with the existing Python ecosystem, and your own scripts.
+The package was specifically designed to be useful for both skilled and novice programmers. 
+
+If you haven't yet installed *thebeat*, take a look at the :ref:`installation instructions<Installation>`.
+If you have but are just getting started, take a look at the :ref:`Getting started in three steps` page.
 
 .. toctree::
     :maxdepth: 5
