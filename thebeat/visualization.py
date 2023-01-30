@@ -380,7 +380,7 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
 
     Note
     ----
-    Code adapted from :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Code adapted from :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     Examples
     --------
@@ -639,8 +639,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    The binary recurrence plot is based on :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
-    The coloured recurrence plot is based on :footcite:t:`burchardtNovelIdeasFurther2021`.
+    The binary recurrence plot is based on :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    The coloured recurrence plot is based on :cite:t:`burchardtNovelIdeasFurther2021`.
 
     """
     # Make title

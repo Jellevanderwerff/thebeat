@@ -5,7 +5,7 @@ Use case scenarios
    :maxdepth: 1
    :caption: Use case scenarios:
    
-   usecases/oddball
    usecases/bosker
-   usecases/repplondonkeller
    usecases/bianco
+   usecases/oddball
+   usecases/repplondonkeller

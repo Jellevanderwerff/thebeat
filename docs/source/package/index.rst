@@ -7,8 +7,8 @@ This what the package contains. Some more informative info here.
     :maxdepth: 5
 
     Core classes<core.rst>
-    Extras <extras.rst>
+    Extras<extras.rst>
     Linguistics<linguistics.rst>
-    Rhythms and melodies<rhythms_and_melodies.rst>
+    Music<music.rst>
     Stats<stats.rst>
     Visualization<visualization.rst>

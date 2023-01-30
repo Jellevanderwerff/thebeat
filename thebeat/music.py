@@ -22,7 +22,6 @@ import matplotlib.pyplot as plt
 import thebeat.core
 from thebeat._decorators import requires_lilypond
 import thebeat._warnings
-import thebeat.rhythm
 import thebeat.helpers
 import thebeat.utils
 

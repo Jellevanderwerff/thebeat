@@ -55,9 +55,19 @@ class BaseSequence:
         # Additionally save the provided name (may be None)
         self.name = name
 
-    def copy(self):
-        """Returns a shallow copy of itself"""
-        return copy.copy(self)
+    def copy(self, deep: bool = False):
+        """Returns a copy of itself. See :py:func:`copy.copy` for more information.
+
+        Parameters
+        ----------
+        deep
+            If ``True``, a deep copy is returned. If ``False``, a shallow copy is returned.
+
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     @property
     def iois(self) -> np.ndarray:
@@ -125,16 +135,17 @@ class BaseSequence:
 
 class Sequence(BaseSequence):
     """
-    The Sequence class is the most important class in this package. It is used as the basis
-    for many functions as it contains timing information in the form of inter-onset intervals (IOIs; the times between
-    the onset of an event, and the onset of the next event) and event onsets (i.e. *t* values).
-    IOIs are what we use to construct :py:class:`Sequence` objects.
+    Arguably, the :py:class:`~thebeat.core.Sequence` class is the most important class in this package.
+    It is used as the basis for many functions as it contains timing information in the form of inter-onset
+    intervals (IOIs; the times between the onset of an event, and the onset of the next event) and event onsets
+    (i.e. *t* values). IOIs are what we use to construct :py:class:`Sequence` objects.
 
     The most basic way of constructing a :py:class:`Sequence` object is by passing it a list or array of
-    IOIs. However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
+    IOIs (see under :py:meth:`~thebeat.core.Sequence.__init__`).
+    However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may also be used.
 
     For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds or milliseconds.
-    However, it does matter when passing the :py:class:`Sequence` object to a :py:class:`SoundSequence` object
+    However, it does matter when passing the :py:class:`Sequence` object to e,g, a :py:class:`SoundSequence` object
     (see :py:meth:`SoundSequence.__init__`).
 
     This class additionally contains methods and attributes to, for instance,
@@ -150,7 +161,7 @@ class Sequence(BaseSequence):
                  name: Optional[str] = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When ``end_with_interval`` is ``False`` (the default), the sequence contains *n* event onsets, but *n*-1 IOIs.
-        If ``True`` (the default), the sequence contains an equal number of event onsets and IOIs.
+        If ``True``, the sequence contains an equal number of event onsets and IOIs.
 
         Parameters
         ----------
@@ -220,13 +231,14 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         numerators
-            Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``
+            The numerators of the integer ratios. For instance: ``[1, 2, 4]``
         value_of_one
             This represents the duration of the 1, multiples of this value are used.
             For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a :py:class:`Sequence` with
             IOIs: ``[1000 2000]``.
         **kwargs
-            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor (see
+            :py:meth:`thebeat.core.Sequence.__init__`.
 
 
         Examples
@@ -285,8 +297,7 @@ class Sequence(BaseSequence):
         ioi
             The inter-onset interval to be used between all events.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval (``True``)
-            (see :py:attr:`Sequence.end_with_interval`).
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -338,8 +349,7 @@ class Sequence(BaseSequence):
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
         end_with_interval
-            Indicates whether sequences should end with an event (``False``) or an interval (``True``)
-            (see :py:attr:`Sequence.end_with_interval`).
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -386,8 +396,7 @@ class Sequence(BaseSequence):
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
         end_with_interval
-            Indicates whether a sequence should end with an event (``False``) or an interval (``True``)
-            (see :py:attr:`Sequence.end_with_interval`).
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -435,8 +444,7 @@ class Sequence(BaseSequence):
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
         end_with_interval
-            Indicates whether a sequence should end with an event (``False``) or an interval (``True``)
-            (see :py:attr:`Sequence.end_with_interval`).
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -477,8 +485,7 @@ class Sequence(BaseSequence):
             A :class:`numpy.random.Generator` object. If not supplied NumPy's :func:`numpy.random.default_rng` is
             used.
         end_with_interval
-            Indicates whether a sequence should end with an event (``False``) or an interval (``True``)
-            (see :py:attr:`Sequence.end_with_interval`).
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
@@ -533,8 +540,8 @@ class Sequence(BaseSequence):
 
     def change_tempo(self,
                      factor: float) -> None:
-        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the tempo (but results in
-        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (but results in larger
+        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the tempo (resulting in
+        smaller inter-onset intervals). A factor between 0 and 1 decreases the tempo (resulting in larger
         inter-onset intervals).
 
         Parameters
@@ -544,7 +551,7 @@ class Sequence(BaseSequence):
 
         Examples
         --------
-        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
         >>> print(seq.onsets)
         [   0.  500. 1000. 1500. 2000.]
         >>> seq.change_tempo(2)
@@ -565,7 +572,7 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         total_change
-            Total tempo change at the end of the `Sequence` compared to the beginning.
+            Total tempo change at the end of the :py:class:`Sequence` compared to the beginning.
             So, a total change of 2 (accelerando) results in a final IOI that is twice as short as the first IOI.
             A total change of 0.5 (ritardando) results in a final IOI that is twice as long as the first IOI.
 
@@ -583,8 +590,9 @@ class Sequence(BaseSequence):
 
     def round_onsets(self,
                      decimals: int = 0):
-        """Use this function to round off the `Sequence` object's onsets (i.e. *t* values). This can, for instance,
-        be useful to get rid of warnings that are the result of frame rounding. See e.g. `SoundSequence.__init__`.
+        """Use this function to round off the :py:class:`Sequence` object's onsets (i.e. *t* values). This can,
+        for instance, be useful to get rid of warnings that are the result of frame rounding. See e.g.
+        :py:class:`SoundSequence`.
 
         Note that this function does not return anything. The onsets of the sequence object from which
         this method is called are rounded.
@@ -599,10 +607,31 @@ class Sequence(BaseSequence):
         self.onsets = np.round(self.onsets, decimals=decimals)
 
     def quantize(self,
-                 bin_size: float):
-        """Quantize the Sequence object's onsets (i.e. *t* values) to a certain bin size."""
+                 to: float):
+        """Quantize the Sequence object's onsets (i.e. *t* values) to a certain bin size.
 
-        self.iois = np.round(self.iois / bin_size) * bin_size
+        Note
+        ----
+        This function does not return anything. Instead, the onsets of the sequence object itself are changed.
+
+        Parameters
+        ----------
+        to
+            The value to be quantized to. E.g. a value of ``100`` means that the onsets will be quantized to the nearest
+            multiple of 100.
+
+        Examples
+        --------
+        >>> seq = Sequence(iois=[235, 510, 420, 99])
+        >>> print(seq.onsets)
+        [   0.  235.  745. 1165. 1264.]
+        >>> seq.quantize(to=100)
+        >>> print(seq.onsets)
+        [   0.  200.  700. 1200. 1300.]
+
+        """
+
+        self.onsets = np.round(self.onsets / to) * to
 
     # Visualization
     def plot_sequence(self,

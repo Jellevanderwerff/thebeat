@@ -186,7 +186,7 @@ def join(objects: np.typing.ArrayLike,
         raise TypeError("Please pass only Sequence or only SoundSequence objects.")
 
     if not all(obj.end_with_interval for obj in objects[:-1]):
-        raise ValueError("All passed Sequences or StimSequences need to end with an interval, except for the final one."
+        raise ValueError("All passed Sequences or SoundSequence need to end with an interval, except for the final one."
                          "Otherwise we miss an interval between the onset of the "
                          "final event in a Sequence and the onset of the first event in the next sequence.")
 
@@ -209,5 +209,5 @@ def join(objects: np.typing.ArrayLike,
         all_stimuli = []
         for obj in objects:
             all_stimuli += obj.stim_objects
-        stimseq = thebeat.core.SoundSequence(stimulus=all_stimuli, sequence=seq, name=name)
+        stimseq = thebeat.core.SoundSequence(sound_stimulus=all_stimuli, sequence=seq, name=name)
         return stimseq

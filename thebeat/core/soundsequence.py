@@ -13,19 +13,22 @@ import sounddevice as sd
 
 class SoundSequence(BaseSequence):
     """
-    The :py:class:`SoundSequence` class can be thought of as a combination of the :py:class:`SoundStimulus` class and the
-    :py:class:`Sequence` class; hence *SoundSequence*. It combines the timing information of a :py:class:`Sequence`
+    The :py:class:`SoundSequence` class can be thought of as a combination of the :py:class:`SoundStimulus` class and
+    the :py:class:`Sequence` class; hence *SoundSequence*. It combines the timing information of a :py:class:`Sequence`
     object with the auditory information (sound) of a :py:class:`SoundStimulus` object.
     In most research one would refer to a :py:class:`SoundSequence` as a trial (which is also the
-    variable name used in some of the examples here).
+    variable name used in some of the examples here). Remember that a :py:class:`Sequence` object is agnostic
+    about the used time unit, so when constructing a :py:class:`SoundSequence` object, you can specify the
+    time unit of the :py:class:`Sequence` object using the ``sequence_time_unit`` parameter (see
+    under :py:meth:`Sequence.__init__`.
 
-    One can construct a :py:class:`SoundSequence` object either by passing it a single :py:class:`SoundStimulus` object (and
-    a :py:class:`Sequence` object), or by passing it an array or list of :py:class:`SoundStimulus` objects
+    One can construct a :py:class:`SoundSequence` object either by passing it a single :py:class:`SoundStimulus` object
+    (and a :py:class:`Sequence` object), or by passing it an array or list of :py:class:`SoundStimulus` objects
     (and a :py:class:`Sequence` object).
 
-    If a single :py:class:`SoundStimulus` object is passed, this SoundStimulus sound is used for each event onset. Otherwise,
-    each :py:class:`SoundStimulus` sound is used for its respective event onsets. Of course, then the number of
-    :py:class:`SoundStimulus` objects in the iterable must be the same as the number of event onsets.
+    If a single :py:class:`SoundStimulus` object is passed, this SoundStimulus sound is used for each event onset.
+    Otherwise, each :py:class:`SoundStimulus` sound is used for its respective event onsets. Of course,
+    then the number of :py:class:`SoundStimulus` objects in the iterable must be the same as the number of event onsets.
 
     :py:class:`SoundSequence` objects can be plotted, played, written to disk, statistically analyzed, and more...
     During construction, checks are done to ensure you dit not accidentally use stimuli that are longer
@@ -35,54 +38,55 @@ class SoundSequence(BaseSequence):
     """
 
     def __init__(self,
-                 stimulus: Union[SoundStimulus, list[SoundStimulus], np.typing.NDArray[SoundStimulus]],
+                 sound_stimulus: Union[SoundStimulus, list[SoundStimulus], np.typing.NDArray[SoundStimulus]],
                  sequence: Sequence,
                  sequence_time_unit: str = "ms",
                  name: Optional[str] = None):
         """
-        Initialize a `StimSequence` object using a `Stimulus` object, or list or array of
-        :py:class:`Stimulus` objects, and a :py:class:`Sequence` object.
+        Initialize a :py:class:`SoundSequence` object using a :py:class:`SoundStimulus` object, or list or array of
+        :py:class:`SoundStimulus` objects, and a :py:class:`Sequence` object.
 
-        During the construction of a `StimSequence` object, sound is generated on the basis of the passed
-        `Stimulus` objects and the passed `Sequence` object. A warning is issued if the frame number, where
-        one of the sounds would be placed, had to be rounded off. To get rid of this warning, you can use
-        the `Sequence.round_onsets` method before passing it to the `StimSequence` constructor,
-        or try a different sampling frequency for the `Stimulus` sound.
+        During the construction of a :py:class:`SoundSequence` object, sound is generated on the basis of the passed
+        :py:class:`SoundStimulus` objects and the passed :py:class:`Sequence` object. A warning is issued if the frame
+        number, where one of the sounds would be placed, had to be rounded off. To get rid of this warning, you can use
+        the :py:meth:`Sequence.round_onsets` method before passing it to the :py:class`SoundSequence` constructor,
+        or try a different sampling frequency for the :py:class`SoundStimulus` sound.
 
         Parameters
         ----------
-        stimulus
-            Either a single Stimulus object (in which case the same sound is used for each event onset), or a
-            list or array of Stimulus objects (in which case different sounds are used for each event onset).
+        sound_stimulus
+            Either a single :py:class:`SoundStimulus` object (in which case the same sound is used for each event
+            onset), or a list or array of :py:class:`SoundStimulus` objects (in which case different sounds are used
+            for each event onset).
         sequence
-            A Sequence object. This contains the timing information for the played events.
+            A :py:class:`Sequence` object. This contains the timing information for the played events.
         sequence_time_unit
-            If the Sequence object was created using seconds, use "s". The default is milliseconds ("ms").
+            If the :py:class:`Sequence` object was created using seconds, use "s". The default is milliseconds ("ms").
         name
-            You can provide a name for the :py:class:`StimSequence` which is sometimes used
+            You can provide a name for the :py:class:`SoundSequence` which is sometimes used
             (e.g. when printing the object, or when plotting one). You can always retrieve this attribute from
-            :py:attr:`StimSequence.name`.
+            :py:attr:`SoundSequence.name`.
 
         Examples
         --------
         >>> stim = SoundStimulus.generate(freq=440)
-        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
+        >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
         >>> trial = SoundSequence(stim, seq)
 
         >>> from random import randint
         >>> stims = [SoundStimulus.generate(freq=randint(100, 1000)) for x in range(5)]
         >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
-        >>> trial = SoundSequence(stims, seq)
+        >>> trial = SoundSequence(stims,seq)
         """
 
         # If a single SoundStimulus object is passed, repeat that stimulus for each onset
         # Otherwise use the array/list of Stimlus objects.
-        if isinstance(stimulus, SoundStimulus):
-            stimuli = [stimulus] * len(sequence.onsets)
-        elif isinstance(stimulus, list) or isinstance(stimulus, np.ndarray):
-            if len(stimulus) != len(sequence.onsets):
+        if isinstance(sound_stimulus, SoundStimulus):
+            stimuli = [sound_stimulus] * len(sequence.onsets)
+        elif isinstance(sound_stimulus, list) or isinstance(sound_stimulus, np.ndarray):
+            if len(sound_stimulus) != len(sequence.onsets):
                 raise ValueError("Please provide an equal number of stimuli as onsets.")
-            stimuli = stimulus
+            stimuli = sound_stimulus
         else:
             raise TypeError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
 
@@ -162,7 +166,7 @@ class SoundSequence(BaseSequence):
         Parameters
         ----------
         loop
-            If ``True``, the :py:class:`StimSequence` will continue playing until the :py:meth:`StimSequence.stop`
+            If ``True``, the :py:class:`SoundSequence` will continue playing until the :py:meth:`SoundSequence.stop`
             method is called.
         metronome
             If ``True``, a metronome sound is added for playback.
@@ -175,7 +179,7 @@ class SoundSequence(BaseSequence):
         --------
         >>> stim = SoundStimulus.generate(offramp_ms=10)
         >>> seq = Sequence.generate_random_normal(n_events=10,mu=500,sigma=50)
-        >>> stimseq = SoundSequence(stim, seq)
+        >>> stimseq = SoundSequence(stim,seq)
         >>> stimseq.play(metronome=True)  # doctest: +SKIP
 
         """
@@ -184,14 +188,14 @@ class SoundSequence(BaseSequence):
 
     def stop(self) -> None:
         """
-        Stop playing the :py:class:`StimSequence` sound. Calls :func:`sounddevice.stop`.
+        Stop playing the :py:class:`SoundSequence` sound. Calls :func:`sounddevice.stop`.
 
         Examples
         --------
         >>> import time  # doctest: +SKIP
         >>> stim = SoundStimulus.generate()  # doctest: +SKIP
         >>> seq = Sequence([500, 300, 800])  # doctest: +SKIP
-        >>> stimseq = SoundSequence(stim, seq)  # doctest: +SKIP
+        >>> stimseq = SoundSequence(stim,seq)  # doctest: +SKIP
         >>> stimseq.play()  # doctest: +SKIP
         >>> time.sleep(secs=1)  # doctest: +SKIP
         >>> stimseq.stop()  # doctest: +SKIP
@@ -203,7 +207,7 @@ class SoundSequence(BaseSequence):
                       linewidth: Optional[Union[float, list[float], np.typing.NDArray[float]]] = None,
                       **kwargs):
         """
-        Plot the StimSequence object as an event plot on the basis of the event onsets and their durations.
+        Plot the :py:class:`SoundSequence` object as an event plot on the basis of the event onsets and their durations.
         See :py:func:`thebeat.visualization.plot_single_sequence`.
 
         Parameters
@@ -220,7 +224,7 @@ class SoundSequence(BaseSequence):
         --------
         >>> stim = SoundStimulus.generate()
         >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
-        >>> trial = SoundSequence(stim, seq)
+        >>> trial = SoundSequence(stim,seq)
         >>> trial.plot_sequence()  # doctest: +SKIP
 
         """
@@ -256,7 +260,7 @@ class SoundSequence(BaseSequence):
 
     def plot_waveform(self, **kwargs):
         """
-        Plot the StimSequence as a waveform. Equivalent to :py:meth:`Stimulus.plot`.
+        Plot the :py:class:`SoundSequence` object as a waveform.
 
         Parameters
         ----------
@@ -265,7 +269,7 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> trial = SoundSequence(SoundStimulus.generate(), Sequence.generate_isochronous(n_events=10,ioi=500))
+        >>> trial = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=10,ioi=500))
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
@@ -296,7 +300,7 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> stimseq = SoundSequence(SoundStimulus.generate(), Sequence.generate_isochronous(n_events=5,ioi=500))
+        >>> stimseq = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=5,ioi=500))
         >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
         """
 
@@ -387,4 +391,4 @@ class SoundSequence(BaseSequence):
         new_seq = Sequence(iois=new_iois, first_onset=0, end_with_interval=True)
         new_stims = np.tile(self.stim_objects, reps=times)
 
-        return SoundSequence(stimulus=new_stims, sequence=new_seq, name=self.name)
+        return SoundSequence(sound_stimulus=new_stims, sequence=new_seq, name=self.name)

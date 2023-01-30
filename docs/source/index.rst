@@ -23,3 +23,4 @@ where each function is described in more detail.
     gettingstarted
     Examples<examples/index.rst>
     Package contents<package/index.rst>
+    References<references.rst>

@@ -45,7 +45,7 @@ def acf_df(sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
     There, one can also find a more detailed description of the smoothing procedure.
 
     Examples
@@ -133,7 +133,7 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
     There, one can also find a more detailed description of the smoothing procedure.
 
     """
@@ -199,7 +199,7 @@ def acf_values(sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
+    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
     one can also find a more detailed description of the smoothing procedure.
 
     This function uses the :func:`numpy.correlate` to calculate the correlations.
@@ -262,7 +262,7 @@ def ccf_df(test_sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
     There, one can also find a more detailed description of the smoothing procedure.
 
 
@@ -344,7 +344,7 @@ def ccf_plot(test_sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This function is based on the procedure described in :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
+    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
     one can also find a more detailed description of the smoothing procedure.
 
     """
@@ -585,8 +585,8 @@ def ks_test(sequence: thebeat.core.Sequence,
     Notes
     -----
     This function uses :func:`scipy.stats.kstest`. For more information about the use of the
-    Kolmogorov-Smirnov test in rhythm research, see :footcite:t:`jadoulSeekingTemporalPredictability2016` and
-    :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Kolmogorov-Smirnov test in rhythm research, see :cite:t:`jadoulSeekingTemporalPredictability2016` and
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     Examples
     --------
@@ -692,7 +692,7 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     -----
     The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent temporal intervals.
     The nPVI is zero for sequences that are perfectly isochronous.
-    See :footcite:t:`jadoulSeekingTemporalPredictability2016` and :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`
+    See :cite:t:`jadoulSeekingTemporalPredictability2016` and :cite:t:`ravignaniMeasuringRhythmicComplexity2017`
     for more information on its use in rhythm research.
 
     Examples
@@ -751,7 +751,7 @@ def get_ugof(sequence: thebeat.core.Sequence,
 
     Notes
     -----
-    This measure is described in :footcite:t:`burchardtNovelIdeasFurther2021`.
+    This measure is described in :cite:t:`burchardtNovelIdeasFurther2021`.
     Please also refer to `this Github page <https://github.com/LSBurchardt/R_app_rhythm>`_ for an R implementation of
     the *ugof* measure.
 

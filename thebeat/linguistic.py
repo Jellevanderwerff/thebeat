@@ -33,7 +33,7 @@ def generate_moraic_sequence(n_feet: int,
 
     Notes
     -----
-    Both the methodology and the code are based on/taken from :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Both the methodology and the code are based on/taken from :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     """
     if rng is None:
@@ -103,7 +103,7 @@ def generate_stress_timed_sequence(n_events_per_phrase: int,
 
     Notes
     -----
-    Both the methodology and the code are based on/taken from :footcite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Both the methodology and the code are based on/taken from :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     """
     if rng is None:

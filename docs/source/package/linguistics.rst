@@ -6,9 +6,4 @@ This module contains functions that are useful when doing (rhythmic) linguistic 
 .. automodule:: thebeat.linguistic
     :members:
     :undoc-members:
-
-
-References
-----------
-
- .. footbibliography::
+    :inherited-members:

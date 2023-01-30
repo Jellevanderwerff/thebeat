@@ -537,7 +537,7 @@ def play_samples(samples: np.ndarray,
     sd.wait()
 
 
-def synthesize_sound(duration_ms: int,
+def synthesize_sound(duration_ms: float,
                      fs: int,
                      freq: float,
                      n_channels: int,

@@ -98,9 +98,19 @@ class SoundStimulus:
                 f"Number of channels: {self.n_channels}\n"
                 f"Sampling frequency {self.fs}")
 
-    def copy(self):
-        """Returns a shallow copy of itself"""
-        return copy.copy(self)
+    def copy(self, deep: bool = False):
+        """Returns a copy of itself. See :py:func:`copy.copy` for more information.
+
+        Parameters
+        ----------
+        deep
+            If ``True``, a deep copy is returned. If ``False``, a shallow copy is returned.
+
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     @classmethod
     def from_wav(cls,
@@ -117,14 +127,21 @@ class SoundStimulus:
         Parameters
         ----------
         filepath
-            The location of the .wav file. Either pass it e.g. a Path object, or a string.
+            The location of the .wav file. Either pass it e.g. a :class:`pathlib.Path` object, or a string.
             Of course be aware of OS-specific filepath conventions.
         name
-            If desired, one can give a SoundStimulus object a name. This is used, for instance,
+            If desired, one can give a :py:class:`SoundStimulus` object a name. This is used, for instance,
             when plotting or printing. It can always be retrieved from the SoundStimulus.name atrribute.
         new_fs
             If resampling is required, you can provide the target sampling frequency here, for instance ``48000``.
 
+        Examples
+        --------
+
+        >>> from thebeat import SoundStimulus
+        >>> sound = SoundStimulus.from_wav(filepath="path/to/sound.wav")  # doctest: +SKIP
+
+        >>> sound_newfs = SoundStimulus.from_wav(filepath="path/to/sound.wav", new_fs=48000)  # doctest: +SKIP
         """
 
         # Read in the sampling frequency and all the samples from the wav file
@@ -349,6 +366,13 @@ class SoundStimulus:
         ----------
         factor
             The factor by which the sound should be amplified.
+
+
+        Examples
+        --------
+        >>> sound = SoundStimulus.generate()
+        >>> sound.change_amplitude(factor=0.5)  # half as loud
+        >>> sound.change_amplitude(factor=2)  # twice as loud
         """
 
         if not factor > 0:
@@ -396,14 +420,12 @@ class SoundStimulus:
     def plot_waveform(self,
                       **kwargs) -> tuple[plt.Figure, plt.Axes]:
         """
-        Parameters
-        ----------
-        Plot the SoundSequence as a waveform. Equivalent to :py:meth:`SoundStimulus.plot`.
+        This method plots the waveform of the :py:class:`SoundStimulus` sound.
 
         Parameters
         ----------
         **kwargs
-            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat.helpers.plot_waveform`).
+            Additional parameters (e.g. 'title', 'dpi' are passed to :py:func:`thebeat.helpers.plot_waveform`).
 
         Examples
         --------
@@ -444,7 +466,7 @@ class SoundStimulus:
     def write_wav(self,
                   filepath: Union[str, os.PathLike]) -> None:
         """
-        Save the SoundStimulus sound to disk as a wave file.
+        Save the :py:class:`SoundStimulus` sound to disk as a wave file.
 
         Parameters
         ----------

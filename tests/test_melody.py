@@ -1,5 +1,4 @@
-import thebeat.melody
-import thebeat.rhythm
+import thebeat.music
 import numpy as np
 import pytest
 
