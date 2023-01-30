@@ -11,7 +11,7 @@ import thebeat.helpers
 
 class BaseSequence:
     """This is the most basic of classes that the :py:class:`~thebeat.core.Sequence`,
-    :py:class:`~thebeat.rhythm.Rhythm`, and :py:class:`~thebeat.core.SoundSequence` classes inherit from.
+    :py:class:`~thebeat.music.Rhythm`, and :py:class:`~thebeat.core.SoundSequence` classes inherit from.
     It cannot do many things, apart from holding a number of inter-onset intervals (IOIs).
 
     The BaseSequence class dictates that a sequence can either end with an interval or not.

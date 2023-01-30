@@ -146,7 +146,7 @@ def join_rhythms(iterator):
         raise TypeError("Please pass this function a list or other iterable object.")
 
     # Check whether all the objects are of the same type
-    if not all(isinstance(rhythm, thebeat.rhythm.Rhythm) for rhythm in iterator):
+    if not all(isinstance(rhythm, thebeat.music.Rhythm) for rhythm in iterator):
         raise TypeError("You can only join multiple Rhythm objects.")
 
     if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
@@ -158,7 +158,7 @@ def join_rhythms(iterator):
     iois = [rhythm.iois for rhythm in iterator]
     iois = np.concatenate(iois)
 
-    return thebeat.rhythm.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
+    return thebeat.music.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
 def make_binary_timeseries(onsets, resolution):
