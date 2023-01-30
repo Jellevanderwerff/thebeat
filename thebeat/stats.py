@@ -614,7 +614,7 @@ def ks_test(sequence: thebeat.core.Sequence,
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.rhythm.Rhythm],
+def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.music.Rhythm],
                          bin_fraction: float = 0.03125):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
