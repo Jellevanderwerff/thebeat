@@ -9,8 +9,8 @@ import scipy.stats
 
 
 def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
+                                                 list[thebeat.core.Sequence],
+                                                 np.ndarray[thebeat.core.Sequence]],
                                  resolution: float = 0.01,
                                  style: str = 'seaborn-v0_8',
                                  title: Optional[str] = None,
@@ -26,6 +26,15 @@ np.ndarray[thebeat.core.Sequence]],
 
     This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
     the interval ratios.
+
+    Example
+    -------
+
+    .. figure:: images/interval_ratios_density.png
+        :width: 100 %
+
+        Example interval ratios density plot.
+
 
     Parameters
     ----------
@@ -97,7 +106,8 @@ np.ndarray[thebeat.core.Sequence]],
 
 
 def plot_interval_ratios_histogram(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence], np.ndarray[thebeat.core.Sequence]],
+                                                   list[thebeat.core.Sequence],
+                                                   np.ndarray[thebeat.core.Sequence]],
                                    bins: int = 100,
                                    style: str = 'seaborn-v0_8',
                                    title: Optional[str] = None,
@@ -113,6 +123,14 @@ list[thebeat.core.Sequence], np.ndarray[thebeat.core.Sequence]],
 
     This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
     the interval ratios.
+
+    Example
+    -------
+
+    .. figure:: images/interval_ratios_hist.png
+        :width: 100 %
+
+        Example interval ratios histogram.
 
     Parameters
     ----------
@@ -190,8 +208,7 @@ np.ndarray[thebeat.core.Sequence]],
                            suppress_display: bool = False,
                            dpi: int = 100,
                            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
-    """Plot the phase differences for ``test_sequence`` compared to ``reference_sequence``. ``test_sequence`` can be a
-    single sequence, or a list or Numpy array of sequences.
+    """Plot the phase differences for ``test_sequence`` compared to ``reference_sequence``.
 
     The reference sequence can either be a single sequence in which case a comparison will be made between
     each test sequence and the reference sequence, or a float in which case a comparison will be made between
@@ -236,7 +253,7 @@ np.ndarray[thebeat.core.Sequence]],
     ax
         An optional :py:class:`matplotlib.axes.Axes` object to plot on. If not provided, a new Axes object will be
         created. If an :py:class:`matplotlib.axes.Axes` object is provided, the function returns the original
-        :py:class:`matplotlib.axes.Figure` and :py:class:`matplotlib.axes.Axes` objects.
+        :py:class:`matplotlib.figure.Figure` and :py:class:`matplotlib.axes.Axes` objects.
 
     """
 
@@ -611,11 +628,8 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     >>> from thebeat.core import Sequence
     >>> from thebeat.visualization import recurrence_plot
     >>> seq = Sequence.generate_random_normal(n_events=3,mu=5000,sigma=50,end_with_interval=True) * 10
-
-    # No color bar, no threshold
     >>> recurrence_plot(seq)  # doctest: +SKIP
 
-    # Color bar, no threshold
     >>> fig, ax = recurrence_plot(seq, dpi=300, colorbar=True)
     >>> fig.savefig('recurrence_plot.png', bbox_inches='tight')  # doctest: +SKIP
 

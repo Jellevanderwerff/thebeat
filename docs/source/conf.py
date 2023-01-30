@@ -1,6 +1,6 @@
 project = 'thebeat'
-copyright = '2022, Jelle van der Werff & Yannick Jadoul'
-author = 'Jelle van der Werff & Yannick Jadoul'
+copyright = '2022, Jelle van der Werff, Andrea Ravignani, & Yannick Jadoul'
+author = 'Jelle van der Werff, Andrea Ravignani, & Yannick Jadoul'
 
 import os
 import sys
@@ -44,9 +44,12 @@ html_theme = 'sphinx_book_theme'
 html_theme_options = {
     "extra_navbar": "<p>Package developed by the <a href='https://www.mpi.nl/department/comparative-bioacoustics/20'>Comparative Bioacoustics</a> group.</p>",
     "show_toc_level": 2,
-    "collapse_navigation": True
+    "collapse_navigation": True,
+    'logo_only': True
 }
 html_static_path = ['_static']
+html_logo = "thebeat_logo.png"
+
 
 # default role for easy lookup using `whatever`
 # not using it now; bit confusing I think.

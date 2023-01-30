@@ -336,9 +336,6 @@ class SoundSequence(BaseSequence):
         else:
             raise ValueError("Error during calculation of array_length")
 
-        if not array_length.is_integer():  # let's avoid rounding issues
-            warnings.warn(thebeat._warnings.framerounding_stimseq)
-
         # Round off array length to ceiling if necessary
         array_length = int(np.ceil(array_length))
 
@@ -356,7 +353,7 @@ class SoundSequence(BaseSequence):
 
             # Check whether there was frame rounding
             if not start_pos.is_integer() or not end_pos.is_integer():
-                warnings.warn(thebeat._warnings.framerounding_stimseq)
+                warnings.warn(thebeat._warnings.framerounding_soundseq)
 
             # Now we can safely round
             start_pos = int(start_pos)
