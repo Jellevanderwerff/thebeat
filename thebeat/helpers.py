@@ -26,7 +26,7 @@ except ImportError:
     abjad = None
 
 
-def all_possibilities(numbers: list, target: float) -> np.typing.NDArray[np.object]:
+def all_possibilities(numbers: list, target: float) -> np.ndarray:
     """
     Use a deep-first search to find all possible combinations of 'numbers' that sum to 'target'.
     Returns a NumPy array of NumPy arrays (with dtype=object to allow nested array).

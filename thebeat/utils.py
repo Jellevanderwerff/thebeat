@@ -12,8 +12,8 @@ except ImportError:
 
 
 def get_ioi_df(sequences: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
+                                list[thebeat.core.Sequence],
+                                np.ndarray[thebeat.core.Sequence]],
                additional_functions: Optional[list[callable]] = None):
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided
@@ -101,7 +101,7 @@ np.ndarray[thebeat.core.Sequence]],
         if output_df is None:
             output_df = pd.DataFrame(sequence_dict)
         else:
-            output_df = pd.concat([output_df, pd.DataFrame(sequence_dict)])
+            output_df = pd.concat([output_df, pd.DataFrame(sequence_dict)], ignore_index=True)
 
     # Check if all names are None, if so, drop the column
     if output_df['sequence_name'].isnull().all():
