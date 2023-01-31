@@ -52,6 +52,7 @@ html_theme_options = {
 html_static_path = ['_static']
 html_css_files = ["custom.css"]
 html_logo = "thebeat_logo.png"
+html_favicon = 'favicon.ico'
 
 
 # default role for easy lookup using `whatever`

@@ -163,7 +163,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Notes
         -----
-        The method for calculating the integer ratios is based on :footcite:t:`jacobyIntegerRatioPriors2017`.
+        The method for calculating the integer ratios is based on :cite:t:`jacobyIntegerRatioPriors2017`.
 
         Examples
         --------

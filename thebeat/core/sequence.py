@@ -701,7 +701,7 @@ class Sequence(BaseSequence):
 
         Notes
         -----
-        The method for calculating the integer ratios is based on :footcite:t:`jacobyIntegerRatioPriors2017`.
+        The method for calculating the integer ratios is based on :cite:t:`jacobyIntegerRatioPriors2017`.
 
         Examples
         --------
@@ -727,7 +727,7 @@ class Sequence(BaseSequence):
 
         Notes
         -----
-        The used method is based on the methodology from :footcite:t:`roeskeCategoricalRhythmsAre2020`.
+        The used method is based on the methodology from :cite:t:`roeskeCategoricalRhythmsAre2020`.
 
         Examples
         --------
@@ -740,7 +740,7 @@ class Sequence(BaseSequence):
         """
 
         iois = self.iois
-        return iois[:-1] / (iois[1:] + iois[:-1])
+        return thebeat.utils.get_interval_ratios_from_dyads(iois)
 
     def _repeat(self, times: int) -> Sequence:
         """
