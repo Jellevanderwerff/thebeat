@@ -1,4 +1,4 @@
-image: python:3.9.16
+image: python:3.9.16-alpine
 
 test:
   stage: test
