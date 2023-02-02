@@ -199,7 +199,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     ref_onsets = reference_sequence.onsets
 
     # If the first onset is at t=0, raise warning and remove it
-    if test_sequence._first_onset == 0 and reference_sequence._first_onset == 0:
+    if test_sequence._first_onset == 0:
         warnings.warn(phases_t_at_zero)
         test_onsets = test_onsets[1:]
         ref_onsets = ref_onsets[1:]

@@ -16,7 +16,7 @@ Examples of how to use *thebeat* can be found both under :ref:`Examples`, but al
 where each function is described in more detail.
 
 .. toctree::
-    :maxdepth: 5
+    :maxdepth: 3
     :caption: Contents:
 
     Installation<installation.rst>

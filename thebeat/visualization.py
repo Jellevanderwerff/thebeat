@@ -9,8 +9,8 @@ import scipy.stats
 
 
 def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
-                                                 list[thebeat.core.Sequence],
-                                                 np.ndarray[thebeat.core.Sequence]],
+list[thebeat.core.Sequence],
+np.ndarray[thebeat.core.Sequence]],
                                  resolution: float = 0.01,
                                  style: str = 'seaborn-v0_8',
                                  title: Optional[str] = None,
@@ -106,8 +106,8 @@ def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
 
 
 def plot_interval_ratios_histogram(sequence: Union[thebeat.core.Sequence,
-                                                   list[thebeat.core.Sequence],
-                                                   np.ndarray[thebeat.core.Sequence]],
+list[thebeat.core.Sequence],
+np.ndarray[thebeat.core.Sequence]],
                                    bins: int = 100,
                                    style: str = 'seaborn-v0_8',
                                    title: Optional[str] = None,
@@ -199,8 +199,9 @@ np.ndarray[thebeat.core.Sequence]],
                            float,
                            list[thebeat.core.Sequence],
                            np.ndarray[thebeat.core.Sequence]],
+                           circular_unit: str = 'degrees',
                            binwidth: int = 10,
-                           zero_direction: str = 'N',
+                           zero_direction: str = 'E',
                            color: str = None,
                            style: str = 'seaborn-v0_8',
                            title: Optional[str] = None,
@@ -232,6 +233,8 @@ np.ndarray[thebeat.core.Sequence]],
         The reference sequence or sequences to be compared to ``test_sequence``. Can be a single
         :py:class:`thebeat.core.Sequence` object, or a list or array of :py:class:`thebeat.core.Sequence` objects.
         If both the test_sequence and reference sequences are lists or arrays, they must be of the same length.
+    circular_unit
+        The unit of the circular data. Can be 'degrees' or 'radians'.
     binwidth
         The width of the bins used to calculate the histogram bars.
     zero_direction
@@ -287,7 +290,8 @@ np.ndarray[thebeat.core.Sequence]],
                 # we have list of test sequences and single ref sequence
                 ref_seq = reference_sequence
 
-            phase_diffs = np.append(phase_diffs, thebeat.utils.get_phase_differences(test_seq, ref_seq))
+            phase_diffs = np.append(phase_diffs,
+                                    thebeat.utils.get_phase_differences(test_seq, ref_seq))
 
     else:
         if ref_iterable_passed:
@@ -320,6 +324,12 @@ np.ndarray[thebeat.core.Sequence]],
         # Make the plot face north
         ax.set_theta_zero_location(zero_direction)
         ax.set_theta_direction(-1)
+
+        if circular_unit == "radians":
+            ax.set_xticks(ax.get_xticks())
+            ax.set_xticklabels(
+                [r"$0$", r"$\pi/4$", r"$\pi/2$", r"$3\pi/4$", r"$\pi$", r"$5\pi/4$", r"$3\pi/2$", r"$7\pi/4$"])
+            ax.set_theta_direction(1)
 
     # Show
     if not suppress_display and axes_provided is False:
