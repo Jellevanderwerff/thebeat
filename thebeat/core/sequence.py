@@ -640,6 +640,8 @@ class Sequence(BaseSequence):
         """
         Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.
 
+        The lines' left boundaries are placed at the event onsets.
+
         Parameters
         ----------
         linewidth
