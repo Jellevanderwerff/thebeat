@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import thebeat.core
 from typing import Optional, Union
@@ -284,55 +286,212 @@ def get_interval_ratios_from_dyads(sequence: Union[np.array, thebeat.core.Sequen
     return sequence[:-1] / (sequence[1:] + sequence[:-1])
 
 
-def join(objects: np.typing.ArrayLike,
-         name: Optional[str] = None):
-    """Join an array or list of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` objects.
+def concatenate_sequences(sequences: np.typing.ArrayLike,
+                          name: Optional[str] = None):
+    """Concatenate an array or list of :py:class:`~thebeat.core.Sequence` objects.
 
     Note
     ----
-    Only works for Sequence or SoundSequence objects where all but the last provided object has an
+    Only works for Sequence objects where all but the last provided object has an
     ``end_with_interval=True`` flag.
 
     Parameters
     ----------
-    objects
-        The to-be-joined objects.
+    sequences
+        The to-be-concatenated objects.
     name
-        Optionally, you can give the returned Sequence or SoundSequence object a name.
+        Optionally, you can give the returned Sequence object a name.
 
     Returns
     -------
     object
-        The joined Sequence or SoundSequence
+        The concatenated Sequence
     """
 
-    if not all(isinstance(obj, thebeat.core.Sequence) for obj in objects) and not all(
-            isinstance(obj, thebeat.core.SoundSequence) for obj in objects):
-        raise TypeError("Please pass only Sequence or only SoundSequence objects.")
+    if not all(isinstance(obj, thebeat.core.Sequence) for obj in sequences):
+        raise TypeError("Please pass only Sequence objects.")
 
-    if not all(obj.end_with_interval for obj in objects[:-1]):
-        raise ValueError("All passed Sequences or SoundSequence need to end with an interval, except for the final one."
+    if not all(obj.end_with_interval for obj in sequences[:-1]):
+        raise ValueError("All passed Sequence objects except for the final one need to end with an interval."
                          "Otherwise we miss an interval between the onset of the "
                          "final event in a Sequence and the onset of the first event in the next sequence.")
 
-    if not all(obj.onsets[0] == 0.0 for obj in objects):
+    if not all(obj.onsets[0] == 0.0 for obj in sequences):
         raise ValueError("Please only pass sequences that have their first event at onset 0.0")
 
     # Whether the sequence ends with an interval depends only on the final object passed
-    end_with_interval = objects[-1].end_with_interval
+    end_with_interval = sequences[-1].end_with_interval
 
     # concatenate iois and create new Sequence
-    iois = np.concatenate([obj.iois for obj in objects])
+    iois = np.concatenate([obj.iois for obj in sequences])
+    return thebeat.core.Sequence(iois, end_with_interval=end_with_interval, name=name)
+
+
+def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
+                               name: Optional[str] = None):
+    """Concatenate an array or list of :py:class:`~thebeat.core.SoundSequence` objects.
+
+    Note
+    ----
+    Only works for SoundSequence objects where all but the last provided object has an
+    ``end_with_interval=True`` flag.
+
+    Parameters
+    ----------
+    sound_sequences
+        The to-be-concatenated objects.
+    name
+        Optionally, you can give the returned SoundSequence object a name.
+
+    Returns
+    -------
+    object
+        The concatenated SoundSequence
+    """
+    if not all(isinstance(obj, thebeat.core.SoundSequence) for obj in sound_sequences):
+        raise TypeError("Please pass only SoundSequence objects.")
+
+    if not all(obj.end_with_interval for obj in sound_sequences[:-1]):
+        raise ValueError("All passed SoundSequence objects except for the final one need to end with an interval."
+                         "Otherwise we miss an interval between the onset of the "
+                         "final event in a Sequence and the onset of the first event in the next sequence.")
+
+    # Whether the sequence ends with an interval depends only on the final object passed
+    end_with_interval = sound_sequences[-1].end_with_interval
+
+    # concatenate iois and create new Sequence
+    iois = np.concatenate([obj.iois for obj in sound_sequences])
     seq = thebeat.core.Sequence(iois, end_with_interval=end_with_interval)
 
-    # For Sequence objects we're done:
-    if isinstance(objects[0], thebeat.core.Sequence):
-        return seq
+    # concatenate stimuli
+    all_stimuli = [stim_obj for obj in sound_sequences for stim_obj in obj.stim_objects]
 
-    # Otherwise we get the stimuli from the SoundSequence object, join them and return a new SoundSequence
-    if isinstance(objects[0], thebeat.core.SoundSequence):
-        all_stimuli = []
-        for obj in objects:
-            all_stimuli += obj.stim_objects
-        stimseq = thebeat.core.SoundSequence(sound_stimulus=all_stimuli, sequence=seq, name=name)
-        return stimseq
+    return thebeat.core.SoundSequence(sound_stimulus=all_stimuli, sequence=seq, name=name)
+
+
+def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
+                             name: Optional[str] = None):
+    """Concatenate an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
+
+    Parameters
+    ----------
+    sound_stimuli
+        The to-be-concatenated objects.
+    name
+        Optionally, you can give the returned SoundStimulus object a name.
+
+    Returns
+    -------
+    object
+        The concatenated SoundStimulus
+    """
+
+    if not all(isinstance(obj, thebeat.core.SoundStimulus) for obj in sound_stimuli):
+        raise TypeError("Please pass only SoundStimulus objects.")
+
+    thebeat.helpers.check_sound_properties_sameness(sound_stimuli)
+
+    samples = np.concatenate([obj.samples for obj in sound_stimuli])
+    fs = sound_stimuli[0].fs
+
+    return thebeat.core.SoundStimulus(samples, fs, name=name)
+
+
+def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus],
+                       name: Optional[str] = None):
+    """Merge an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
+    The sound samples for each of the objects will be overlaid on top of each other.
+
+    Parameters
+    ----------
+
+    sound_stimuli
+        The to-be-merged objects.
+    name
+        Optionally, you can give the returned SoundStimulus object a name.
+
+    Returns
+    -------
+    object
+        The merged SoundStimulus
+    """
+
+    if not all(isinstance(obj, thebeat.core.SoundStimulus) for obj in sound_stimuli):
+        raise TypeError("Can only overlay another SoundStimulus object on this SoundStimulus object.")
+
+    # Check sameness of number of channels etc.
+    thebeat.helpers.check_sound_properties_sameness(sound_stimuli)
+
+    # Overlay sounds
+    samples = thebeat.helpers.overlay_samples([obj.samples for obj in sound_stimuli])
+
+    return thebeat.core.SoundStimulus(samples=samples, fs=sound_stimuli[0].fs, name=name)
+
+
+def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence],
+                    name: Optional[str] = None):
+    """Merge an array or list of :py:class:`~thebeat.core.Sequence` objects.
+    The the event onsets in each of the objects will be overlaid on top of each other.
+
+    Parameters
+    ----------
+    sequences
+        The to-be-merged objects.
+    name
+        Optionally, you can give the returned Sequence object a name.
+
+    Returns
+    -------
+    object
+        The merged Sequence
+    """
+
+    # check if only Sequence objects were passed
+    if not all(isinstance(obj, thebeat.core.Sequence) for obj in sequences):
+        raise TypeError("Please pass only Sequence objects.")
+
+    # concatenate onsets and sort
+    onsets = np.concatenate([obj.onsets for obj in sequences])
+    onsets.sort()
+
+    # Check for duplicates
+    if np.any(onsets[1:] == onsets[:-1]):
+        raise ValueError("The merged Sequence object would contain duplicate onsets.")
+
+    return thebeat.core.Sequence.from_onsets(onsets, name=name)
+
+
+def merge_soundsequences(sound_sequences:
+                         list[thebeat.core.SoundSequence],
+                         name: Optional[str] = None):
+    """Merge a list or array of :py:class:`~thebeat.core.SoundSequence` objects.
+    The event onsets in each of the objects will be overlaid on top of each other, after which the sounds
+
+    Parameters
+    ----------
+    sound_sequences
+        The to-be-merged objects.
+    name
+        Optionally, you can give the returned SoundSequence object a name.
+
+    Returns
+    -------
+    object
+        The merged SoundSequence
+    """
+    # check if only SoundSequence objects were passed
+    if not all(isinstance(obj, thebeat.core.SoundSequence) for obj in sound_sequences):
+        raise TypeError("Please pass only SoundSequence objects.")
+
+    # Get all onsets and stimuli
+    all_onsets = np.concatenate([obj.onsets for obj in sound_sequences])
+    all_stimuli = [stim_obj for obj in sound_sequences for stim_obj in obj.stim_objects]
+
+    # Sort stimuli in same order as onsets
+    stimuli_sorted = [all_stimuli[i] for i in np.argsort(all_onsets)]
+
+    # Sort onsets onsets and create new Sequence
+    onsets_sorted = np.sort(all_onsets)
+    seq = thebeat.Sequence.from_onsets(onsets_sorted)
+
+    return thebeat.core.SoundSequence(sound_stimulus=stimuli_sorted, sequence=seq, name=name)

@@ -419,8 +419,9 @@ def plot_single_sequence(onsets: Union[list, np.ndarray],
 
         ax.axes.set_xlabel(x_axis_label)
         ax.set_ylim(0, 1)
+        left_x_lim = min(onsets[0], 0)
         right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
-        ax.set_xlim(0, right_x_lim)
+        ax.set_xlim(left_x_lim, right_x_lim)
         ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)

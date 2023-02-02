@@ -121,3 +121,19 @@ def test_sequence_plot_1():
     return fig
 
 
+def test_concat():
+    seq1 = thebeat.Sequence.generate_isochronous(5, 500, True)
+    seq2 = thebeat.Sequence.generate_isochronous(5, 1000)
+    s1 = seq1 + seq2
+    s2 = thebeat.utils.concatenate_sequences([seq1, seq2])
+    assert s1, s2
+
+
+def test_merge():
+    seq1 = thebeat.Sequence.from_onsets([0, 500, 1000])
+    seq2 = thebeat.Sequence.from_onsets([250, 750, 1250])
+    seq_merged = seq1.merge(seq2)
+    seq_merged2 = thebeat.utils.merge_sequences([seq1, seq2])
+
+    assert len(seq1.onsets) + len(seq2.onsets) == len(seq_merged.onsets)
+    assert len(seq_merged2.onsets) == len(seq_merged.onsets)

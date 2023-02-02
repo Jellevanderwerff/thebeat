@@ -505,6 +505,28 @@ class Sequence(BaseSequence):
 
         return cls(rng.exponential(scale=lam, size=n_iois), end_with_interval=end_with_interval, **kwargs)
 
+    def merge(self,
+              other: Union[thebeat.core.Sequence, list[thebeat.core.Sequence]]):
+        """
+        Merge this :py:class:`Sequence` object with one or multiple other :py:class:`Sequence` objects.
+
+
+        Parameters
+        ----------
+        other
+            A :py:class:`Sequence` object, or a list of :py:class:`Sequence` objects.
+
+        Returns
+        -------
+        object
+            A :py:class:`Sequence` object.
+
+        """
+        if isinstance(other, thebeat.Sequence):
+            return thebeat.utils.merge_sequences([self, other])
+
+        return thebeat.utils.merge_sequences([self, *other])
+
     # Manipulation methods
     def add_noise_gaussian(self,
                            noise_sd: float,

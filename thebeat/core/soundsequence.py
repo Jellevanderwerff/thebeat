@@ -96,6 +96,9 @@ class SoundSequence(BaseSequence):
 
         # Get IOIs from sequence
         iois = sequence.iois
+        if sequence._first_onset < 0:
+            raise ValueError("The first onset of the sequence is negative. This is not allowed "
+                             "when creating SoundSequence stimuli.")
 
         # If we're dealing with seconds, internally change to milliseconds
         if sequence_time_unit == "s":
@@ -114,7 +117,10 @@ class SoundSequence(BaseSequence):
         self.stim_objects = stimuli
 
         # Initialize BaseSequence class
-        super().__init__(iois, end_with_interval=sequence.end_with_interval, name=name)
+        super().__init__(iois,
+                         end_with_interval=sequence.end_with_interval,
+                         name=name,
+                         first_onset=sequence._first_onset)
 
         # Check whether there's overlap between the stimuli with these IOIs
         stimulus_durations = [stim.duration_ms for stim in stimuli]
@@ -124,7 +130,7 @@ class SoundSequence(BaseSequence):
         self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
 
     def __add__(self, other):
-        return thebeat.utils.join([self, other])
+        return thebeat.utils.concatenate_soundsequences([self, other])
 
     def __mul__(self, other: int):
         return self._repeat(times=other)
@@ -155,6 +161,28 @@ class SoundSequence(BaseSequence):
             return f"SoundSequence(name={self.name}, n_events={len(self.onsets)})"
 
         return f"SoundSequence(n_events={len(self.onsets)})"
+
+    def merge(self,
+              other: Union[thebeat.core.SoundSequence, list[thebeat.core.SoundSequence]]):
+        """
+        Merge this :py:class:`SoundSequence` object with one or multiple other :py:class:`SoundSequence` objects.
+
+
+        Parameters
+        ----------
+        other
+            A :py:class:`SoundSequence` object, or a list of :py:class:`SoundSequence` objects.
+
+        Returns
+        -------
+        object
+            A :py:class:`SoundSequence` object.
+
+        """
+        if isinstance(other, thebeat.SoundSequence):
+            return thebeat.utils.merge_soundsequences([self, other])
+
+        return thebeat.utils.merge_soundsequences([self, *other])
 
     def play(self,
              loop: bool = False,

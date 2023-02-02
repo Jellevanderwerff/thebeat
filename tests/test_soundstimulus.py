@@ -45,3 +45,20 @@ def test_plot_stimulus_waveform_1(rng):  # Plot onto existing plot
     stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
     stim.plot_waveform(ax=axs[0])
     return fig
+
+
+def test_concat():
+    stim1 = thebeat.SoundStimulus.generate(freq=440)
+    stim2 = thebeat.SoundStimulus.generate(freq=880)
+    st1 = stim1 + stim2
+    st2 = thebeat.utils.concatenate_soundstimuli([stim1, stim2])
+    assert st1.duration_ms == st2.duration_ms
+
+
+def test_merge():
+    sound = thebeat.SoundStimulus.generate()
+    sound2 = thebeat.SoundStimulus.generate(freq=880)
+    new_sound = sound.merge(sound2)
+    assert new_sound
+    new_sound = sound.merge([sound2, sound2])
+    assert new_sound

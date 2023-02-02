@@ -53,3 +53,25 @@ def test_soundsequence_plot():
 
     return fig
 
+
+def test_concat():
+    # SoundStimulus
+    sndseq = thebeat.SoundSequence(thebeat.SoundStimulus.generate(),
+                                    thebeat.Sequence.generate_isochronous(5, 500, True))
+
+    ss1 = sndseq + sndseq
+    ss2 = thebeat.utils.concatenate_soundsequences([sndseq, sndseq])
+
+    assert ss1, ss2
+
+
+def test_merge():
+    sndseq = thebeat.SoundSequence(thebeat.SoundStimulus.generate(),
+                                   thebeat.Sequence.generate_isochronous(5, 500, True))
+    sndseq2 = thebeat.SoundSequence(thebeat.SoundStimulus.generate(freq=880),
+                                    thebeat.Sequence.from_onsets([250, 750, 1250]))
+
+    ss1 = sndseq + sndseq2
+    ss2 = thebeat.utils.merge_soundsequences([sndseq, sndseq2])
+
+    assert ss1, ss2

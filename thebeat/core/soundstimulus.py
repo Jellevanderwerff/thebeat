@@ -68,16 +68,7 @@ class SoundStimulus:
         self.name = name
 
     def __add__(self, other: SoundStimulus):
-        if not isinstance(other, SoundStimulus):
-            raise TypeError("Can only overlay another SoundStimulus object on this SoundStimulus object.")
-
-        # Check sameness of number of channels etc.
-        thebeat.helpers.check_sound_properties_sameness([self, other])
-
-        # Overlay sounds
-        samples = thebeat.helpers.overlay_samples([self.samples, other.samples])
-
-        return SoundStimulus(samples=samples, fs=self.fs, name=self.name)
+        return thebeat.utils.concatenate_soundstimuli([self, other])
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
@@ -381,7 +372,28 @@ class SoundStimulus:
         # set samples to new amplitude
         self.samples = self.samples * factor
 
-    # Visualization
+    def merge(self,
+              other: Union[thebeat.core.SoundStimulus, list[thebeat.core.SoundStimulus]]):
+        """
+        Merge this :py:class:`SoundStimulus` object with one or multiple other :py:class:`SoundStimulus` objects.
+
+
+        Parameters
+        ----------
+        other
+            A :py:class:`SoundStimulus` object, or a list of :py:class:`SoundStimulus` objects.
+
+        Returns
+        -------
+        object
+            A :py:class:`SoundStimulus` object.
+
+        """
+        if isinstance(other, thebeat.SoundStimulus):
+            return thebeat.utils.merge_soundstimuli([self, other])
+
+        return thebeat.utils.merge_soundstimuli([self, *other])
+
     def play(self,
              loop: bool = False) -> None:
         """
