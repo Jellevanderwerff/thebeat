@@ -123,7 +123,7 @@ def get_major_scale(tonic: str,
     tonic
         The tonic of the scale, e.g. 'G'.
     octave
-        The octave of the tonic, e.g. 4.
+        The octave of the scale, e.g. 4.
 
     Returns
     -------
