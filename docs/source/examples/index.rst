@@ -9,6 +9,6 @@ stimuli or analyzing the data.
 .. toctree::
     :maxdepth: 2
 
-    Basics<basics.rst>
+    Tips and tricks<tipstricks.rst>
     Snippets<snippets.rst>
     Use case scenarios<usecases.rst>

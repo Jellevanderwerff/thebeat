@@ -12,8 +12,8 @@ except ImportError:
 
 
 def get_ioi_df(sequences: Union[thebeat.core.Sequence,
-                                list[thebeat.core.Sequence],
-                                np.ndarray[thebeat.core.Sequence]],
+list[thebeat.core.Sequence],
+np.ndarray[thebeat.core.Sequence]],
                additional_functions: Optional[list[callable]] = None):
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided
@@ -198,19 +198,19 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     test_onsets = test_sequence.onsets
     ref_onsets = reference_sequence.onsets
 
-    # Check length sameness
-    if not len(test_onsets) == len(ref_onsets):
-        raise ValueError("This function only works if the number of events in the two sequences are equal. For "
-                         "missing data, insert np.nan values in the sequence for the missing data.")
-
     # If the first onset is at t=0, raise warning and remove it
-    if test_onsets[0] == 0:
+    if test_sequence._first_onset == 0 and reference_sequence._first_onset == 0:
         warnings.warn(phases_t_at_zero)
         test_onsets = test_onsets[1:]
         ref_onsets = ref_onsets[1:]
         start_at_tzero = False
     else:
         start_at_tzero = True
+
+    # Check length sameness
+    if not len(test_onsets) == len(ref_onsets):
+        raise ValueError("This function only works if the number of events in the two sequences are equal. For "
+                         "missing data, insert np.nan values in the sequence for the missing data.")
 
     # Output array
     phase_diffs = np.array([])
@@ -336,4 +336,3 @@ def join(objects: np.typing.ArrayLike,
             all_stimuli += obj.stim_objects
         stimseq = thebeat.core.SoundSequence(sound_stimulus=all_stimuli, sequence=seq, name=name)
         return stimseq
-
