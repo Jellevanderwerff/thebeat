@@ -167,6 +167,8 @@ class SoundSequence(BaseSequence):
         """
         Merge this :py:class:`SoundSequence` object with one or multiple other :py:class:`SoundSequence` objects.
 
+        Returns a new :py:class:`SoundSequence` object.
+
 
         Parameters
         ----------

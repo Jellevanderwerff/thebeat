@@ -510,6 +510,8 @@ class Sequence(BaseSequence):
         """
         Merge this :py:class:`Sequence` object with one or multiple other :py:class:`Sequence` objects.
 
+        Returns a new :py:class:`Sequence` object.
+
 
         Parameters
         ----------

@@ -377,6 +377,8 @@ class SoundStimulus:
         """
         Merge this :py:class:`SoundStimulus` object with one or multiple other :py:class:`SoundStimulus` objects.
 
+        Returns a new :py:class:`SoundStimulus` object.
+
 
         Parameters
         ----------
@@ -527,14 +529,9 @@ def _read_wavfile(filepath: Union[str, os.PathLike],
 def _resample(samples, input_fs, output_fs):
     """Internal function used to resample sounds. Uses scipy.signal.resample"""
     if output_fs == input_fs:
-        fs = input_fs
-        samples = samples
-    elif output_fs != input_fs:
-        resample_factor = float(output_fs) / float(input_fs)
-        resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
-        samples = resampled
-        fs = output_fs
-    else:
-        raise ValueError("Error while comparing old and new sampling frequencies.")
+        return samples, input_fs
 
-    return samples, fs
+    resample_factor = float(output_fs) / float(input_fs)
+    resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
+
+    return resampled, output_fs
