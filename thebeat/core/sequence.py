@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import copy
+import pathlib
 from fractions import Fraction
 from typing import Optional, Union
 import matplotlib.pyplot as plt
@@ -298,6 +299,39 @@ class Sequence(BaseSequence):
         return cls(iois, first_onset=onsets[0], end_with_interval=False, **kwargs)
 
     @classmethod
+    def from_txt(cls,
+                 filepath: Union[str, pathlib.Path],
+                 type: str = "iois",
+                 end_with_interval: bool = False,
+                 **kwargs) -> Sequence:
+        """
+        Class method that can be used to generate a new :py:class:`Sequence` object from a text file.
+
+        The text file is assumed to contain one IOI/onset per line.
+
+        Parameters
+        ----------
+        filepath
+            The path to the text file.
+        type
+            The type of the sequence. Can be either ``iois`` or ``onsets``.
+        end_with_interval
+            Indicates whether the sequence should end with an event (``False``) or an interval (``True``).
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
+
+        """
+        with open(filepath, "r") as f:
+            data = f.readlines()
+
+        if type == "iois":
+            return cls(iois=np.array(data, dtype=np.float64), end_with_interval=end_with_interval, **kwargs)
+        elif type == "onsets":
+            return cls.from_onsets(onsets=np.array(data, dtype=np.float64), **kwargs)
+        else:
+            raise ValueError("type can only be 'iois' or 'onsets'.")
+
+    @classmethod
     def generate_isochronous(cls,
                              n_events: int,
                              ioi: float,
@@ -309,7 +343,7 @@ class Sequence(BaseSequence):
 
         Parameters
         ----------
-        n
+        n_events
             The desired number of events in the sequence.
         ioi
             The inter-onset interval to be used between all events.

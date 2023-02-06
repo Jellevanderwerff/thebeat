@@ -210,8 +210,8 @@ np.ndarray[thebeat.core.Sequence]],
 
 
 def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
+                                                list[thebeat.core.Sequence],
+                                                np.ndarray[thebeat.core.Sequence]],
                            reference_sequence: Union[thebeat.core.Sequence,
                            float,
                            list[thebeat.core.Sequence],
