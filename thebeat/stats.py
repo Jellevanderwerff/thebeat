@@ -741,22 +741,26 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     return np.float64(npvi)
 
 
-def get_ugof(sequence: thebeat.core.Sequence,
-             theoretical_ioi: float,
-             output_statistic: str = 'mean') -> np.float64:
-    """
+def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
+                         reference_ioi: float,
+                         output_statistic: str = 'mean') -> np.float64:
+    r"""
 
-    This function calculates the universal goodness of fit (`ugof`) measure for a sequence compared to a
-    theoretical/underlying inter-onset interval (IOI). The `ugof` statistic quantifies how well a theoretical IOI
-    describes a sequence.
+    This function calculates the universal goodness of fit (``ugof``) measure.
+    The ``ugof`` statistic quantifies how well a theoretical interval sequence (the ``reference_sequence``)
+    describes the sequence at hand (the ``test_sequence``).
+
+    The ``reference_sequence`` i a number (float or int), in which case the ``test_sequence`` is compared
+    to an isochronous sequence with the provided IOI. However, it can also be a :py:class:`~thebeat.core.Sequence`
+    object, in which case the ``test_sequence`` is compared to the provided sequence.
 
     Parameters
     ----------
-    sequence
-        Either a :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object, or a list or an
-        array containing event onsets, e.g. ``[0, 500, 1000]``.
-    theoretical_ioi
-        The theoretical/underlying inter-onset interval (IOI) to which the sequence is compared.
+    test_sequence
+        A :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object that will be compared
+        to ``reference_sequence``.
+    reference_ioi
+        A number (float or int) representing the IOI of an isochronous sequence.
     output_statistic
         Either 'mean' (the default) or 'median'. This determines whether for the individual ugof values we take the mean
         or the median as the output statistic.
@@ -776,25 +780,30 @@ def get_ugof(sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=1000)
-    >>> ugof = get_ugof(seq, theoretical_ioi=68.21)
+    >>> ugof = get_ugof(seq, reference_sequence=68.21)
     >>> print(ugof)
     0.59636414
 
     """
 
-    # Get the onsets
-    if isinstance(sequence, (thebeat.core.sequence.Sequence, thebeat.core.soundsequence.SoundSequence)):
-        onsets = sequence.onsets  # in ms
-    else:
-        onsets = np.array(sequence)
+    # Input validation and getting onsets for test sequence
+    if not isinstance(test_sequence, thebeat.core.sequence.Sequence):
+        raise TypeError('test_sequence must be a Sequence object')
+    test_onsets = test_sequence.onsets
 
-    # Make a theoretical sequence that's multiples of the theoretical_ioi (the + one is because arange doesn't include
-    # the stop)
-    theo_seq = np.arange(start=0, stop=np.max(onsets) + 1, step=theoretical_ioi)
+    # Input validation and getting onsets for reference sequence
+    if isinstance(reference_sequence, thebeat.core.sequence.Sequence):
+        reference_onsets = reference_sequence.onsets
+    elif isinstance(reference_sequence, (int, float)):
+        reference_onsets = np.arange(start=0,
+                                     stop=np.max(test_onsets) + reference_sequence + 1,
+                                     step=reference_sequence)
+    else:
+        raise TypeError('reference_sequence must be a Sequence object or a number (int or float)')
 
     # For each onset, get the closest theoretical beat and get the absolute difference
-    minimal_deviations = np.array([min(abs(onsets[n] - theo_seq)) for n in range(len(onsets))])
-    maximal_deviation = theoretical_ioi / 2  # in ms
+    minimal_deviations = np.min(np.abs(test_onsets[:, None] - reference_onsets), axis=1)
+    maximal_deviation = reference_sequence / 2
 
     # calculate ugofs
     ugof_values = minimal_deviations / maximal_deviation
@@ -804,4 +813,4 @@ def get_ugof(sequence: thebeat.core.Sequence,
     elif output_statistic == 'median':
         return np.float32(np.median(ugof_values))
     else:
-        raise ValueError("Output can only be 'median' or 'mean'.")
+        raise ValueError("The output statistic can only be 'median' or 'mean'.")

@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@300&display=swap');
+
+
+div.navbar-brand-box a.navbar-brand img {
+    max-height: 100% !important;
+    max-width: 100% !important
+}
+
+h1 {
+    font-family: 'Unbounded', cursive !important;
+}

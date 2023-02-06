@@ -445,7 +445,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
                             style: str = 'seaborn-v0_8',
                             title: Optional[str] = None,
                             x_axis_label: str = "Time",
-                            sequence_labels: Optional[list[str], np.ndarray[str]] = None,
+                            y_axis_labels: Optional[list[str], np.ndarray[str]] = None,
                             linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
                             figsize: Optional[tuple] = None,
                             suppress_display: bool = False,
@@ -466,7 +466,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     x_axis_label
         A label for the x axis.
-    sequence_labels
+    y_axis_labels
         A list or array containing names for the sequences as strings. For instance ``['Sequence 1', 'Sequence 2']``
         etc. Must be of the same length as the number of sequences passed. If no names are provided, defaults to
         numbering the sequences. This is because matplotlib needs a label there.
@@ -505,7 +505,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     >>> seq1 = Sequence([500, 100, 200])
     >>> seq2 = Sequence([100, 200, 500])
-    >>> fig, ax = plot_multiple_sequences([seq1, seq2], colors=['red', 'blue'])  # doctest: +SKIP
+    >>> fig, ax = plot_multiple_sequences([seq1, seq2],colors=['red', 'blue'])  # doctest: +SKIP
     >>> fig.savefig('test.png')  # doctest: +SKIP
 
     """
@@ -520,12 +520,12 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
     # Make names for the bars
     n_seqs = len(sequences)
-    if sequence_labels is None:
+    if y_axis_labels is None:
         if all(sequence.name for sequence in sequences):
-            sequence_labels = [sequence.name for sequence in sequences]
+            y_axis_labels = [sequence.name for sequence in sequences]
         else:
-            sequence_labels = ([str(i) for i in range(1, n_seqs + 1)])
-    elif len(sequence_labels) != len(sequences):
+            y_axis_labels = ([str(i) for i in range(1, n_seqs + 1)])
+    elif len(y_axis_labels) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
@@ -563,7 +563,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
             colors = [None] * len(sequences)
 
         for onsets, label, linewidths, color in zip(reversed(onsets),
-                                                    reversed(sequence_labels),
+                                                    reversed(y_axis_labels),
                                                     reversed(linewidths),
                                                     reversed(colors)):
             ax.barh(y=label, width=linewidths, left=onsets, color=color)

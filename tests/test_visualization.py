@@ -49,10 +49,7 @@ def test_plot_multiple_sequences_1(rng):
 
     seq1 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng)
     seq2 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng)
-    fig, ax = plot_multiple_sequences([seq1, seq2],
-                                      figsize=(10, 5),
-                                      colors=['red', 'blue'],
-                                      suppress_display=True)
+    fig, ax = plot_multiple_sequences([seq1, seq2], figsize=(10, 5), suppress_display=True, colors=['red', 'blue'])
 
     return fig
 
@@ -61,10 +58,8 @@ def test_plot_multiple_sequences_1(rng):
 def test_plot_multiple_sequences_2(rng):
     seq1 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng)
     seq2 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng)
-    fig, ax = plot_multiple_sequences([seq1, seq2],
-                                      figsize=(10, 5),
-                                      colors=[(1, 0, 0), (0, 0, 1)],
-                                      suppress_display=True)
+    fig, ax = plot_multiple_sequences([seq1, seq2], figsize=(10, 5), suppress_display=True,
+                                      colors=[(1, 0, 0), (0, 0, 1)])
     return fig
 
 
