@@ -1,4 +1,4 @@
-![thebeat](docs/build/html/_static/thebeat_logo.png)
+![thebeat](docs/source/thebeat_logo.png)
 
 # *thebeat*: Rhythms in Python for Science
 
