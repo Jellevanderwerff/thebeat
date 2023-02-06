@@ -747,12 +747,10 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
     r"""
 
     This function calculates the universal goodness of fit (``ugof``) measure.
-    The ``ugof`` statistic quantifies how well a theoretical interval sequence (the ``reference_sequence``)
-    describes the sequence at hand (the ``test_sequence``).
+    The ``ugof`` statistic quantifies how well a theoretical sequence describes a sequence at hand
+    (the ``test_sequence``). This function can only calculate ``ugof`` using a theoretical sequence that is isochronous.
 
-    The ``reference_sequence`` i a number (float or int), in which case the ``test_sequence`` is compared
-    to an isochronous sequence with the provided IOI. However, it can also be a :py:class:`~thebeat.core.Sequence`
-    object, in which case the ``test_sequence`` is compared to the provided sequence.
+    The ``reference_ioi`` is the IOI of an isochronous theoretical sequence.
 
     Parameters
     ----------
@@ -792,18 +790,16 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
     test_onsets = test_sequence.onsets
 
     # Input validation and getting onsets for reference sequence
-    if isinstance(reference_sequence, thebeat.core.sequence.Sequence):
-        reference_onsets = reference_sequence.onsets
-    elif isinstance(reference_sequence, (int, float)):
-        reference_onsets = np.arange(start=0,
-                                     stop=np.max(test_onsets) + reference_sequence + 1,
-                                     step=reference_sequence)
-    else:
-        raise TypeError('reference_sequence must be a Sequence object or a number (int or float)')
+    if not isinstance(reference_ioi, (int, float)):
+        raise TypeError('reference_sequence must be a number (int or float)')
+
+    reference_onsets = np.arange(start=0,
+                                 stop=np.max(test_onsets) + reference_ioi + 1,
+                                 step=reference_ioi)
 
     # For each onset, get the closest theoretical beat and get the absolute difference
     minimal_deviations = np.min(np.abs(test_onsets[:, None] - reference_onsets), axis=1)
-    maximal_deviation = reference_sequence / 2
+    maximal_deviation = reference_ioi / 2
 
     # calculate ugofs
     ugof_values = minimal_deviations / maximal_deviation
