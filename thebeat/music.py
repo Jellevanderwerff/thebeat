@@ -545,7 +545,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
         if print_staff is False:
-            lpf_str = lpf_str.replace(r'\clef "percussion"', r'\clef "percussion" \stopStaff')
+            lpf_str = lpf_str.replace(r'\time', r'\stopStaff \time')
 
         # Plot!
         fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, title=title,
