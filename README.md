@@ -36,6 +36,12 @@ trial.plot_waveform()  # plot as sound waveform
 trial.plot_sequence()  # plot as an event plot
 trial.write_wav('example_trial.wav')  # save file to disk
 ```
+
+# License
+*thebeat* is distributed under the GPL-3 license. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
+
 # Collaborators
-Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
+The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for Psycholinguistics.
+
+The collaborators were: Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
 
