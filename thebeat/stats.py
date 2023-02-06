@@ -778,9 +778,9 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
     Examples
     --------
     >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=1000)
-    >>> ugof = get_ugof(seq, reference_sequence=68.21)
+    >>> ugof = get_ugof_isochronous(seq, reference_ioi=68.21)
     >>> print(ugof)
-    0.59636414
+    0.41817915
 
     """
 

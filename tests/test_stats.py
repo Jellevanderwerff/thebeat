@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 def test_ugof():
     seq = Sequence.generate_isochronous(n_events=10, ioi=500)
-    assert get_ugof(seq, 500, 'median') == 0.0
+    assert get_ugof_isochronous(seq, 500, 'median') == 0.0
 
 
 def test_ks():

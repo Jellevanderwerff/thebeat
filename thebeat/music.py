@@ -197,6 +197,68 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         return np.array(vals)
 
+
+    @classmethod
+    def from_fractions(cls,
+                       fractions: Union[list, np.ndarray],
+                       time_signature: tuple[int, int] = (4, 4),
+                       beat_ms: int = 500,
+                       is_played: np.typing.ArrayLike[bool] = None,
+                       name: Optional[str] = None) -> Rhythm:
+        r"""
+
+        This class method can be used for creating a Rhythm on the basis of fractions. The fractions
+        can be input either as floats (e.g. 0.25) or as :class:`fractions.Fraction` objects.
+
+        Parameters
+        ----------
+        fractions
+            Contains the fractions of the rhythm. For instance: ``[1, 2, 4]``.
+        time_signature
+            The time signature of the rhythm. For instance: ``(4, 4)``.
+        beat_ms
+            The duration of a beat in milliseconds. This refers to the duration of the denominator of the time
+            signature.
+        is_played
+            A list of booleans indicating which notes are played. If None, all notes are played.
+        name
+            A name for the rhythm.
+
+        Example
+        -------
+        The fractions represent for each note the proportion of the bar that the note takes up,
+        taking into account the time signature. A few examples:
+
+        In 4/4 time, a quarter note would be 1/4, an eighth note 1/8, etc.
+        In 4/8 time, a quarter note would be 1/2, an eighth note 1/4, etc.
+
+        In 5/4 time, we would input a quarter note as 1/5, an eighth note as 1/10, etc.
+        In 5/8 time, we would input a dotted quarter note as 3/5, an eighth  note as 1/5, etc.
+
+        Examples
+        --------
+        >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
+
+        >>> import fractions
+        >>> dotted_halfnote = fractions.Fraction(3, 5)
+        >>> halfnote = fractions.Fraction(2, 5)
+        >>> r = Rhythm.from_fractions([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
+
+        >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 8), beat_ms=500)
+
+        """
+
+        fractions = np.array(fractions)
+
+        iois_as_fractions = fractions * beat_ms * time_signature[0]
+
+        iois = np.array([float(frac) for frac in iois_as_fractions])
+
+        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+
+
+
+
     @classmethod
     def from_integer_ratios(cls,
                             numerators: npt.ArrayLike[float],
