@@ -41,7 +41,7 @@ You can now import *thebeat* in your preferred editor using:
 .. Hint::
     For Windows, take a look at `this <https://www.digitalcitizen.life/command-prompt-how-use-basic-commands/>`_ tutorial if you do not know how to navigate to a directory using the command line.
     For Mac OS, take a look at `this <https://www.macworld.com/article/221277/command-line-navigating-files-folders-mac-terminal.html>`_ tutorial.
-    For Linux, take a look at `this one <https://www.cyberciti.biz/faq/how-to-change-directory-in-linux-terminal/>`_
+    For Linux, take a look at `this one <https://www.cyberciti.biz/faq/how-to-change-directory-in-linux-terminal/>`_.
 
 
 
