@@ -55,7 +55,7 @@ class SoundSequence(BaseSequence):
     """
 
     def __init__(self,
-                 sound_stimulus: Union[SoundStimulus, list[SoundStimulus], np.typing.NDArray[SoundStimulus]],
+                 sound: Union[SoundStimulus, list[SoundStimulus], np.typing.NDArray[SoundStimulus]],
                  sequence: Sequence,
                  sequence_time_unit: str = "ms",
                  name: Optional[str] = None):
@@ -71,7 +71,7 @@ class SoundSequence(BaseSequence):
 
         Parameters
         ----------
-        sound_stimulus
+        sound
             Either a single :py:class:`SoundStimulus` object (in which case the same sound is used for each event
             onset), or a list or array of :py:class:`SoundStimulus` objects (in which case different sounds are used
             for each event onset).
@@ -88,7 +88,7 @@ class SoundSequence(BaseSequence):
         --------
         >>> stim = SoundStimulus.generate(freq=440)
         >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
-        >>> trial = SoundSequence(stim, seq)
+        >>> trial = SoundSequence(stim,seq)
 
         >>> from random import randint
         >>> stims = [SoundStimulus.generate(freq=randint(100, 1000)) for x in range(5)]
@@ -98,12 +98,12 @@ class SoundSequence(BaseSequence):
 
         # If a single SoundStimulus object is passed, repeat that stimulus for each onset
         # Otherwise use the array/list of Stimlus objects.
-        if isinstance(sound_stimulus, SoundStimulus):
-            stimuli = [sound_stimulus] * len(sequence.onsets)
-        elif isinstance(sound_stimulus, list) or isinstance(sound_stimulus, np.ndarray):
-            if len(sound_stimulus) != len(sequence.onsets):
+        if isinstance(sound, SoundStimulus):
+            stimuli = [sound] * len(sequence.onsets)
+        elif isinstance(sound, list) or isinstance(sound, np.ndarray):
+            if len(sound) != len(sequence.onsets):
                 raise ValueError("Please provide an equal number of stimuli as onsets.")
-            stimuli = sound_stimulus
+            stimuli = sound
         else:
             raise TypeError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
 
@@ -438,4 +438,4 @@ class SoundSequence(BaseSequence):
         new_seq = Sequence(iois=new_iois, first_onset=0, end_with_interval=True)
         new_stims = np.tile(self.stim_objects, reps=times)
 
-        return SoundSequence(sound_stimulus=new_stims, sequence=new_seq, name=self.name)
+        return SoundSequence(sound=new_stims, sequence=new_seq, name=self.name)

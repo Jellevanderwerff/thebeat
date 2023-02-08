@@ -74,7 +74,7 @@ def test_soundsequence_plot():
 def test_concat():
     # SoundStimulus
     sndseq = thebeat.SoundSequence(thebeat.SoundStimulus.generate(),
-                                    thebeat.Sequence.generate_isochronous(5, 500, True))
+                                   thebeat.Sequence.generate_isochronous(5, 500, True))
 
     ss1 = sndseq + sndseq
     ss2 = thebeat.utils.concatenate_soundsequences([sndseq, sndseq])

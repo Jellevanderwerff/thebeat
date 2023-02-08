@@ -383,7 +383,7 @@ def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
     # concatenate stimuli
     all_stimuli = [stim_obj for obj in sound_sequences for stim_obj in obj.stim_objects]
 
-    return thebeat.core.SoundSequence(sound_stimulus=all_stimuli, sequence=seq, name=name)
+    return thebeat.core.SoundSequence(sound=all_stimuli, sequence=seq, name=name)
 
 
 def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
@@ -511,4 +511,4 @@ def merge_soundsequences(sound_sequences:
     onsets_sorted = np.sort(all_onsets)
     seq = thebeat.Sequence.from_onsets(onsets_sorted)
 
-    return thebeat.core.SoundSequence(sound_stimulus=stimuli_sorted, sequence=seq, name=name)
+    return thebeat.core.SoundSequence(sound=stimuli_sorted, sequence=seq, name=name)
