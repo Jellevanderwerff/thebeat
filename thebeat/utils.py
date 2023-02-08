@@ -380,10 +380,10 @@ def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
     iois = np.concatenate([obj.iois for obj in sound_sequences])
     seq = thebeat.core.Sequence(iois, end_with_interval=end_with_interval)
 
-    # concatenate stimuli
-    all_stimuli = [stim_obj for obj in sound_sequences for stim_obj in obj.stim_objects]
+    # concatenate sounds
+    all_sounds = [sound_obj for obj in sound_sequences for sound_obj in obj.sound_objects]
 
-    return thebeat.core.SoundSequence(sound=all_stimuli, sequence=seq, name=name)
+    return thebeat.core.SoundSequence(sound=all_sounds, sequence=seq, name=name)
 
 
 def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
@@ -500,15 +500,15 @@ def merge_soundsequences(sound_sequences:
     if not all(isinstance(obj, thebeat.core.SoundSequence) for obj in sound_sequences):
         raise TypeError("Please pass only SoundSequence objects.")
 
-    # Get all onsets and stimuli
+    # Get all onsets and sounds
     all_onsets = np.concatenate([obj.onsets for obj in sound_sequences])
-    all_stimuli = [stim_obj for obj in sound_sequences for stim_obj in obj.stim_objects]
+    all_sounds = [sound_obj for obj in sound_sequences for sound_obj in obj.sound_objects]
 
-    # Sort stimuli in same order as onsets
-    stimuli_sorted = [all_stimuli[i] for i in np.argsort(all_onsets)]
+    # Sort sounds in same order as onsets
+    sounds_sorted = [all_sounds[i] for i in np.argsort(all_onsets)]
 
     # Sort onsets onsets and create new Sequence
     onsets_sorted = np.sort(all_onsets)
     seq = thebeat.Sequence.from_onsets(onsets_sorted)
 
-    return thebeat.core.SoundSequence(sound=stimuli_sorted, sequence=seq, name=name)
+    return thebeat.core.SoundSequence(sound=sounds_sorted, sequence=seq, name=name)

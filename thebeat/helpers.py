@@ -90,11 +90,12 @@ def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
     return out_array
 
 
-def check_for_overlap(stimulus_durations, onsets):
+def check_for_overlap(sounds_durations, onsets):
+    # todo rewrite this function to something more sensible
     for i in range(len(onsets)):
         try:
             ioi_after_onset = onsets[i + 1] - onsets[i]
-            if ioi_after_onset < stimulus_durations[i]:
+            if ioi_after_onset < sounds_durations[i]:
                 raise ValueError(
                     "The duration of one or more stimuli is longer than its respective IOI. "
                     "The events will overlap: either use different IOIs, or use a shorter stimulus sound.")

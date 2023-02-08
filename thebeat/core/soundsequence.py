@@ -48,7 +48,7 @@ class SoundSequence(BaseSequence):
     then the number of :py:class:`SoundStimulus` objects in the iterable must be the same as the number of event onsets.
 
     :py:class:`SoundSequence` objects can be plotted, played, written to disk, statistically analyzed, and more...
-    During construction, checks are done to ensure you dit not accidentally use stimuli that are longer
+    During construction, checks are done to ensure you dit not accidentally use sounds that are longer
     than the IOIs (impossible), that the sampling frequencies of all the :py:class:`SoundStimulus` objects are the same
     (undesirable), and that the :py:class:`SoundStimulus` objects' number of channels are the same (probable).
 
@@ -86,24 +86,24 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> stim = SoundStimulus.generate(freq=440)
+        >>> sound = SoundStimulus.generate(freq=440)
         >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
-        >>> trial = SoundSequence(stim, seq)
+        >>> trial = SoundSequence(sound, seq)
 
         >>> from random import randint
-        >>> stims = [SoundStimulus.generate(freq=randint(100, 1000)) for x in range(5)]
+        >>> sounds = [SoundStimulus.generate(freq=randint(100, 1000)) for x in range(5)]
         >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
-        >>> trial = SoundSequence(stims, seq)
+        >>> trial = SoundSequence(sounds, seq)
         """
 
-        # If a single SoundStimulus object is passed, repeat that stimulus for each onset
+        # If a single SoundStimulus object is passed, repeat that sound for each onset
         # Otherwise use the array/list of Stimlus objects.
         if isinstance(sound, SoundStimulus):
-            stimuli = [sound] * len(sequence.onsets)
+            sounds = [sound] * len(sequence.onsets)
         elif isinstance(sound, list) or isinstance(sound, np.ndarray):
             if len(sound) != len(sequence.onsets):
-                raise ValueError("Please provide an equal number of stimuli as onsets.")
-            stimuli = sound
+                raise ValueError("Please provide an equal number of sounds as onsets.")
+            sounds = sound
         else:
             raise TypeError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
 
@@ -115,7 +115,7 @@ class SoundSequence(BaseSequence):
         iois = sequence.iois
         if sequence._first_onset < 0:
             raise ValueError("The first onset of the sequence is negative. This is not allowed "
-                             "when creating SoundSequence stimuli.")
+                             "when creating SoundSequence objects.")
 
         # If we're dealing with seconds, internally change to milliseconds
         if sequence_time_unit == "s":
@@ -123,15 +123,15 @@ class SoundSequence(BaseSequence):
 
         # Check whether dtype, number of channels etc. is the same. This function raises errors if that's
         # not the case
-        thebeat.helpers.check_sound_properties_sameness(stimuli)
+        thebeat.helpers.check_sound_properties_sameness(sounds)
 
         # Save attributes
-        self.fs = stimuli[0].fs
-        self.n_channels = stimuli[0].n_channels
+        self.fs = sounds[0].fs
+        self.n_channels = sounds[0].n_channels
         self.name = name
-        self.stim_names = [stimulus.name for stimulus in stimuli]
+        self.sound_names = [sound.name for sound in sounds]
         self.end_with_interval = sequence.end_with_interval
-        self.stim_objects = stimuli
+        self.sound_objects = sounds
 
         # Initialize BaseSequence class
         super().__init__(iois,
@@ -139,12 +139,12 @@ class SoundSequence(BaseSequence):
                          name=name,
                          first_onset=sequence._first_onset)
 
-        # Check whether there's overlap between the stimuli with these IOIs
-        stimulus_durations = [stim.duration_ms for stim in stimuli]
-        thebeat.helpers.check_for_overlap(stimulus_durations=stimulus_durations, onsets=self.onsets)
+        # Check whether there's overlap between the sounds with these IOIs
+        sounds_durations = [sound.duration_ms for sound in sounds]
+        thebeat.helpers.check_for_overlap(sounds_durations=sounds_durations, onsets=self.onsets)
 
         # Make sound which saves the samples to self.samples
-        self.samples = self._make_stimseq_sound(stimuli=stimuli, onsets=self.onsets)
+        self.samples = self._make_soundseq_sound(sounds=sounds, onsets=self.onsets)
 
     def __add__(self, other):
         return thebeat.utils.concatenate_soundsequences([self, other])
@@ -156,13 +156,13 @@ class SoundSequence(BaseSequence):
         # Name of the SoundSequence
         name = self.name if self.name else "Not provided"
 
-        # Names of the stimuli
-        if all(stim_name is None for stim_name in self.stim_names):
-            stim_names = "None provided"
+        # Names of the sounds
+        if all(sound_name is None for sound_name in self.sound_names):
+            sound_names = "None provided"
         else:
-            stim_names = []
-            for stim_name in self.stim_names:
-                stim_names.append(stim_name if stim_name else "Unknown")
+            sound_names = []
+            for sound_name in self.sound_names:
+                sound_names.append(sound_name if sound_name else "Unknown")
 
         end_with_interval = "(ends with interval)" if self.end_with_interval else "(ends with event)"
 
@@ -170,7 +170,7 @@ class SoundSequence(BaseSequence):
                 f"{len(self.onsets)} events\n"
                 f"IOIs: {self.iois}\n"
                 f"Onsets: {self.onsets}\n"
-                f"SoundStimulus names: {stim_names}\n"
+                f"SoundStimulus names: {sound_names}\n"
                 f"SoundSequence name: {name}")
 
     def __repr__(self):
@@ -224,10 +224,10 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> stim = SoundStimulus.generate(offramp_ms=10)
-        >>> seq = Sequence.generate_random_normal(n_events=10,mu=500,sigma=50)
-        >>> stimseq = SoundSequence(stim,seq)
-        >>> stimseq.play(metronome=True)  # doctest: +SKIP
+        >>> sound = SoundStimulus.generate(offramp_ms=10)
+        >>> seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=50)
+        >>> soundseq = SoundSequence(sound, seq)
+        >>> soundseq.play(metronome=True)  # doctest: +SKIP
 
         """
         thebeat.helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
@@ -240,12 +240,12 @@ class SoundSequence(BaseSequence):
         Examples
         --------
         >>> import time  # doctest: +SKIP
-        >>> stim = SoundStimulus.generate()  # doctest: +SKIP
+        >>> sound = SoundStimulus.generate()  # doctest: +SKIP
         >>> seq = Sequence([500, 300, 800])  # doctest: +SKIP
-        >>> stimseq = SoundSequence(stim,seq)  # doctest: +SKIP
-        >>> stimseq.play()  # doctest: +SKIP
+        >>> soundseq = SoundSequence(sound, seq)  # doctest: +SKIP
+        >>> soundseq.play()  # doctest: +SKIP
         >>> time.sleep(secs=1)  # doctest: +SKIP
-        >>> stimseq.stop()  # doctest: +SKIP
+        >>> soundseq.stop()  # doctest: +SKIP
         """
 
         sd.stop()
@@ -269,9 +269,9 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> stim = SoundStimulus.generate()
+        >>> sound = SoundStimulus.generate()
         >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
-        >>> trial = SoundSequence(stim,seq)
+        >>> trial = SoundSequence(sound, seq)
         >>> trial.plot_sequence()  # doctest: +SKIP
 
         """
@@ -316,7 +316,7 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> trial = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=10,ioi=500))
+        >>> trial = SoundSequence(SoundStimulus.generate(), Sequence.generate_isochronous(n_events=10, ioi=500))
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
@@ -347,8 +347,8 @@ class SoundSequence(BaseSequence):
 
         Examples
         --------
-        >>> stimseq = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=5,ioi=500))
-        >>> stimseq.write_wav('my_stimseq.wav')  # doctest: +SKIP
+        >>> soundseq = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=5,ioi=500))
+        >>> soundseq.write_wav('my_soundseq.wav')  # doctest: +SKIP
         """
 
         if metronome is True:
@@ -373,17 +373,17 @@ class SoundSequence(BaseSequence):
         # Write the wav
         wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=samples)
 
-    def _make_stimseq_sound(self, stimuli, onsets):
+    def _make_soundseq_sound(self, sounds, onsets):
         """Internal function used for combining different SoundStimulus samples and a passed Sequence object
         into one array of samples containing the sound of a SoundSequence."""
 
-        # Generate an array of silence that has the length of all the onsets + one final stimulus.
+        # Generate an array of silence that has the length of all the onsets + one final sound.
         # In the case of a sequence that ends with an interval, we add the final ioi.
         # The dtype is important, because that determines the values that the magnitudes can take.
         if self.end_with_interval:
             array_length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
         elif not self.end_with_interval:
-            array_length = (onsets[-1] / 1000 * self.fs) + stimuli[-1].samples.shape[0]
+            array_length = (onsets[-1] / 1000 * self.fs) + sounds[-1].samples.shape[0]
         else:
             raise ValueError("Error during calculation of array_length")
 
@@ -395,12 +395,12 @@ class SoundSequence(BaseSequence):
         else:
             samples = np.zeros((array_length, 2), dtype=np.float64)
 
-        samples_with_onsets = zip([stimulus.samples for stimulus in stimuli], onsets)
+        samples_with_onsets = zip([sound.samples for sound in sounds], onsets)
 
-        for stimulus, onset in samples_with_onsets:
+        for sound, onset in samples_with_onsets:
             # Calculate start and end point in frames
             start_pos = onset * self.fs / 1000
-            end_pos = start_pos + stimulus.shape[0]
+            end_pos = start_pos + sound.shape[0]
 
             # Check whether there was frame rounding
             if not start_pos.is_integer() or not end_pos.is_integer():
@@ -410,14 +410,14 @@ class SoundSequence(BaseSequence):
             start_pos = int(start_pos)
             end_pos = int(end_pos)
 
-            # Add the stimulus to the samples array. For stereo, do this for both channels.
+            # Add the sound to the samples array. For stereo, do this for both channels.
             if self.n_channels == 1:
-                samples[start_pos:end_pos] = stimulus
+                samples[start_pos:end_pos] = sound
             elif self.n_channels == 2:
-                samples[start_pos:end_pos, :2] = stimulus
+                samples[start_pos:end_pos, :2] = sound
 
         # set self.event_durations
-        self.event_durations = np.array([stim.duration_ms for stim in stimuli])
+        self.event_durations = np.array([sound.duration_ms for sound in sounds])
 
         # return sound
         if np.max(np.abs(samples)) > 1:
@@ -436,6 +436,6 @@ class SoundSequence(BaseSequence):
 
         new_iois = np.tile(self.iois, reps=times)
         new_seq = Sequence(iois=new_iois, first_onset=0, end_with_interval=True)
-        new_stims = np.tile(self.stim_objects, reps=times)
+        new_sounds = np.tile(self.sound_objects, reps=times)
 
-        return SoundSequence(sound=new_stims, sequence=new_seq, name=self.name)
+        return SoundSequence(sound=new_sounds, sequence=new_seq, name=self.name)
