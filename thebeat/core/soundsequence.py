@@ -88,12 +88,12 @@ class SoundSequence(BaseSequence):
         --------
         >>> stim = SoundStimulus.generate(freq=440)
         >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
-        >>> trial = SoundSequence(stim,seq)
+        >>> trial = SoundSequence(stim, seq)
 
         >>> from random import randint
         >>> stims = [SoundStimulus.generate(freq=randint(100, 1000)) for x in range(5)]
-        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
-        >>> trial = SoundSequence(stims,seq)
+        >>> seq = Sequence.generate_isochronous(n_events=5, ioi=500)
+        >>> trial = SoundSequence(stims, seq)
         """
 
         # If a single SoundStimulus object is passed, repeat that stimulus for each onset
