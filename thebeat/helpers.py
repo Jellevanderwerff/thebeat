@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 import os
 import importlib.resources as pkg_resources
 import warnings
@@ -179,20 +180,25 @@ def join_rhythms(iterator):
     return thebeat.music.Rhythm(iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms)
 
 
-def make_binary_timeseries(onsets, resolution):
+def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
     """
     Converts a sequence of millisecond onsets to a series of zeros and ones.
     Ones for the onsets.
     """
-    duration = np.max(onsets)
-    zeros_n = np.ceil(duration / resolution).astype(int)
+    duration = np.max(sequence.onsets)
+    zeros_n = int(duration / resolution)
     signal = np.zeros(zeros_n)
 
-    for onset in onsets:
+    for onset in sequence.onsets:
         index = 0 if onset == 0 else int(onset / resolution) - 1
         signal[index] = 1
 
+    if sequence.end_with_interval is True:
+        signal = np.append(signal, np.zeros(int(sequence.iois[-1] / resolution - 1)))
+
     return np.array(signal)
+
+
 
 
 def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
@@ -554,6 +560,45 @@ def play_samples(samples: np.ndarray,
 
     sd.play(samples, fs, loop=loop)
     sd.wait()
+
+
+def rhythm_to_binary(rhythm: thebeat.music.Rhythm,
+                     smallest_note_value: int = 16):
+    """This helper function converts a rhythm to a binary representation."""
+
+    n_positions = smallest_note_value / rhythm.time_signature[1] * rhythm.time_signature[0]
+    if not n_positions.is_integer():
+        raise ValueError("Something went wrong while making the rhythmic grid. Try supplying a different "
+                         "'smallest_note_value'.")
+
+    # Create empty zeros array
+    signal = np.zeros(int(n_positions))
+
+    # We multiply each fraction by the total length of the zeros array to get the respective positions
+    # and add zero for the first onset
+    indices = np.append(0, np.cumsum(rhythm.fractions) * n_positions)
+
+    # Check if any of the indices are not integers
+    if np.any(indices % 1 != 0):
+        raise ValueError("The smallest_note_value that you provided is longer than the shortest note in the "
+                         "rhythm. Please provide a shorter note value as the smallest_note_value (i.e. a larger "
+                         "number).")
+
+    for index, is_played in zip(indices, rhythm.is_played):
+        if is_played:
+            signal[int(index)] = 1
+
+    return signal
+
+
+    """
+    for onset in sequence.onsets:
+        index = 0 if onset == 0 else int(onset / resolution) - 1
+        signal[index] = 1
+    """
+
+
+    print(n_positions)
 
 
 def synthesize_sound(duration_ms: float,
