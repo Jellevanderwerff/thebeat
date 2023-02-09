@@ -134,6 +134,65 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         return self._repeat(times=other)
 
     @property
+    def fractions(self) -> np.ndarray:
+        r"""Calculate how to describe the rhythm in fractions from the total duration of the sequence.
+
+        Example
+        -------
+
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
+        This can be described using the fractions :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
+        so this method returns the fractions ``[1/8, 2/8, 4/8, 1/8]``.
+
+        Examples
+        --------
+        >>> r = Rhythm([250, 500, 1000, 250])
+        >>> print(r.fractions)
+        [Fraction(1, 8) Fraction(2, 8) Fraction(4, 8) Fraction(1, 8)]
+
+        """
+
+        floats = self.iois / np.sum(self.iois)
+
+        fractions = [Fraction.from_float(f) for f in floats]
+        return np.array(fractions)
+
+    @property
+    def integer_ratios(self) -> np.ndarray:
+        r"""Calculate how to describe the rhythm in integer ratio numerators from
+        the total duration of the sequence by finding the least common multiplier.
+
+        Example
+        -------
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
+        This can be described using the least common multiplier as
+        :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
+        so this method returns the numerators ``[1, 2, 4, 1]``.
+
+        Notes
+        -----
+        The method for calculating the integer ratios is based on :cite:t:`jacobyIntegerRatioPriors2017`.
+
+        Caution
+        -------
+        This function uses rounding to find the nearest integer ratio.
+
+        Examples
+        --------
+        >>> r = Rhythm([250, 500, 1000, 250])
+        >>> print(r.integer_ratios)
+        [1 2 4 1]
+
+        """
+
+        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
+
+        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
+
+        return np.array(vals)
+
+    @property
     def note_values(self):
         """
         This property returns the denominators of the note values in this sequence, calculated from the
@@ -164,38 +223,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         note_values = np.array([int(1 // ratio) for ratio in ratios])
 
         return note_values
-
-    @property
-    def integer_ratios(self) -> np.ndarray:
-        r"""Calculate how to describe the rhythm in integer ratio numerators from
-        the total duration of the sequence by finding the least common multiplier.
-
-        Example
-        -------
-
-        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
-        This can be described using the least common multiplier as
-        :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
-        so this method returns the numerators ``[1, 2, 4, 1]``.
-
-        Notes
-        -----
-        The method for calculating the integer ratios is based on :cite:t:`jacobyIntegerRatioPriors2017`.
-
-        Examples
-        --------
-        >>> r = Rhythm([250, 500, 1000, 250])
-        >>> print(r.integer_ratios)
-        [1 2 4 1]
-
-        """
-
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
-        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-
-        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-
-        return np.array(vals)
 
 
     @classmethod

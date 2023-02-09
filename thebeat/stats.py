@@ -21,13 +21,15 @@ import scipy.stats
 import scipy.fft
 import numpy as np
 import thebeat.core
-from thebeat.helpers import make_binary_timeseries
+from thebeat.helpers import sequence_to_binary
 import matplotlib.pyplot as plt
 import scipy.signal
 import scipy.stats
 from scipy.fft import rfft, rfftfreq
 import pandas as pd
 import thebeat.helpers
+import Levenshtein
+import warnings
 
 
 def acf_df(sequence: thebeat.core.Sequence,
@@ -467,6 +469,89 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
 
     return correlation
 
+
+def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
+                         reference_rhythm: thebeat.music.Rhythm,
+                         smallest_note_value: int = 16):
+    """
+    Caculates edit/Levenshtein distance between two rhythms. The ``smallest_note_value`` determines
+    the underlying grid that is used. If e.g. 16, the underlying grid is composed of 1/16th notes.
+
+    Note
+    ----
+    Based on the procedure described in :cite:t:`postEditDistanceMeasure2011`.
+
+    Parameters
+    ----------
+    test_rhythm
+        The rhythm to be tested.
+    reference_rhythm
+        The rhythm to which ``test_rhythm`` will be compared.
+    smallest_note_value
+        The smallest note value that is used in the underlying grid. 16 means 1/16th notes, 4 means 1/4th notes, etc.
+
+    Examples
+    --------
+    >>> from thebeat.music import Rhythm
+    >>> test_rhythm = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4])
+    >>> reference_rhythm = Rhythm.from_fractions([1/4, 1/8, 1/8, 1/4, 1/4])
+    >>> print(edit_distance_rhythm(test_rhythm, reference_rhythm))
+
+    """
+
+    test_string = thebeat.helpers.rhythm_to_binary(rhythm=test_rhythm,
+                                                   smallest_note_value=smallest_note_value)
+    reference_string = thebeat.helpers.rhythm_to_binary(rhythm=reference_rhythm,
+                                                        smallest_note_value=smallest_note_value)
+
+    return Levenshtein.distance(test_string, reference_string)
+
+
+def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
+                           reference_sequence: thebeat.core.Sequence,
+                           resolution: int):
+    """
+    Calculates the edit/Levenshtein distance between two sequences.
+
+    If Sequences are not quantized to ``resolution``, they will be quantized to that resolution first.
+
+    Note
+    ----
+    The resolution also represents the underlying grid. If, for example, the resolution is 50, that means that
+    a grid will be created with steps of 50. The onsets of the sequence are then placed on the grid for both
+    sequences. The resulting sequences consist of ones and zeros, where ones represent the event onsets. This string
+    for ``test_sequence`` is compared to the string of the ``reference_sequence``. Note that ``test_sequence`` and
+    ``reference_sequence`` can be interchanged without an effect on the results.
+
+    Parameters
+    ----------
+    test_sequence
+        The sequence to be tested.
+    reference_sequence
+        The sequence to which ``test_sequence`` will be compared.
+    resolution
+        The resolution to which the sequences will be quantized.
+        If the sequences are already quantized to this resolution,
+        they will not be quantized again.
+
+    """
+
+    # Check whether we need to quantize the sequences
+    if np.any(test_sequence.onsets % resolution != 0):
+        warnings.warn(f"Test sequence has been quantized to onsets that are multiples of {resolution}.")
+        test_sequence.quantize(to=resolution)
+
+    if np.any(reference_sequence.onsets % resolution != 0):
+        warnings.warn(f"Reference sequence has been quantized to onsets that are multiples of {resolution}.")
+        reference_sequence.quantize(to=resolution)
+
+
+    test_string = thebeat.helpers.sequence_to_binary(sequence=test_sequence,
+                                                     resolution=resolution)
+    reference_string = thebeat.helpers.sequence_to_binary(sequence=reference_sequence,
+                                                          resolution=resolution)
+
+    return Levenshtein.distance(test_string, reference_string)
 
 def fft_plot(sequence: thebeat.core.Sequence,
              unit_size: float,
