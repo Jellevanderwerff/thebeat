@@ -74,10 +74,9 @@ def acf_df(sequence: thebeat.core.Sequence,
     >>> df = acf_df(seq, smoothing_window=50, smoothing_sd=20, resolution=10)
     >>> print(df.head(3))
        timestamp  correlation
-    0          0     0.851373
-    1         10     1.000000
-    2         20     0.851373
-
+    0          0     1.000000
+    1         10     0.851373
+    2         20     0.590761
     """
 
     correlations = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
@@ -225,8 +224,7 @@ def acf_values(sequence: thebeat.core.Sequence,
 
     """
 
-    onsets = sequence.onsets
-    signal = thebeat.helpers.make_binary_timeseries(onsets, resolution)
+    signal = thebeat.helpers.sequence_to_binary(sequence, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:
@@ -434,13 +432,10 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
         The unstandardized cross-correlation function.
 
     """
-    # Get event onsets
-    test_onsets = test_sequence.onsets
-    ref_onsets = reference_sequence.onsets
 
     # Make into 0's and 1's
-    test_signal = thebeat.helpers.make_binary_timeseries(test_onsets, resolution)
-    ref_signal = thebeat.helpers.make_binary_timeseries(ref_onsets, resolution)
+    test_signal = thebeat.helpers.sequence_to_binary(test_sequence, resolution)
+    ref_signal = thebeat.helpers.sequence_to_binary(reference_sequence, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:
@@ -472,8 +467,7 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
 
 def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
                          reference_rhythm: thebeat.music.Rhythm,
-                         smallest_note_value: int = 16,
-                         normalize: bool = False) -> float:
+                         smallest_note_value: int = 16) -> float:
     """
     Caculates edit/Levenshtein distance between two rhythms. The ``smallest_note_value`` determines
     the underlying grid that is used. If e.g. 16, the underlying grid is composed of 1/16th notes.
@@ -490,9 +484,6 @@ def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
         The rhythm to which ``test_rhythm`` will be compared.
     smallest_note_value
         The smallest note value that is used in the underlying grid. 16 means 1/16th notes, 4 means 1/4th notes, etc.
-    normalize
-        Whether to normalize the edit distance to a value between 0 and 1. To do this, we divide the edit distance
-        by the maximal possible amount of difference.
 
     Examples
     --------
@@ -500,6 +491,7 @@ def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
     >>> test_rhythm = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4])
     >>> reference_rhythm = Rhythm.from_fractions([1/4, 1/8, 1/8, 1/4, 1/4])
     >>> print(edit_distance_rhythm(test_rhythm, reference_rhythm))
+    1
 
     """
     if not isinstance(test_rhythm, thebeat.music.Rhythm) or not isinstance(reference_rhythm, thebeat.music.Rhythm):
@@ -513,33 +505,12 @@ def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
     # calculate edit distance
     edit_distance = Levenshtein.distance(test_string, reference_string)
 
-    if normalize is True:
-        # todo There must be an easier way of switching zeros and ones...
-        # switch zeros and ones
-        test_string_inv = test_string.copy()
-        test_string_inv[test_string_inv == 1] = 9
-        test_string_inv[test_string_inv == 0] = 1
-        test_string_inv[test_string_inv == 9] = 0
-        reference_string_inv = reference_string.copy()
-        reference_string_inv[reference_string_inv == 1] = 9
-        reference_string_inv[reference_string_inv == 0] = 1
-        reference_string_inv[reference_string_inv == 9] = 0
-
-        # Calculate edit distances
-        max_edit_distance_test = Levenshtein.distance(test_string, test_string_inv)
-        max_edit_distance_ref = Levenshtein.distance(reference_string, reference_string_inv)
-
-        # Calculate normalized edit distance
-        max_dist = np.max([max_edit_distance_test, max_edit_distance_ref])
-        edit_distance = edit_distance / max_dist
-
     return edit_distance
 
 
 def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
                            reference_sequence: thebeat.core.Sequence,
-                           resolution: int,
-                           normalize: bool = False) -> float:
+                           resolution: int) -> float:
     """
     Calculates the edit/Levenshtein distance between two sequences.
 
@@ -563,9 +534,6 @@ def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
         The resolution to which the sequences will be quantized.
         If the sequences are already quantized to this resolution,
         they will not be quantized again.
-    normalize
-        Whether to normalize the edit distance to a value between 0 and 1. To do this, we divide the edit distance
-        by the maximal possible amount of difference.
 
     """
     if not isinstance(test_sequence, thebeat.core.Sequence) or not isinstance(reference_sequence, thebeat.core.Sequence):
@@ -588,27 +556,6 @@ def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
 
     # calculate edit distance
     edit_distance = Levenshtein.distance(test_string, reference_string)
-
-    if normalize is True:
-        # todo There must be an easier way of switching zeros and ones...
-        # switch zeros and ones
-        test_string_inv = test_string.copy()
-        test_string_inv[test_string_inv == 1] = 9
-        test_string_inv[test_string_inv == 0] = 1
-        test_string_inv[test_string_inv == 9] = 0
-        reference_string_inv = reference_string.copy()
-        reference_string_inv[reference_string_inv == 1] = 9
-        reference_string_inv[reference_string_inv == 0] = 1
-        reference_string_inv[reference_string_inv == 9] = 0
-
-        # Calculate edit distances
-        max_edit_distance_test = Levenshtein.distance(test_string, test_string_inv)
-        max_edit_distance_ref = Levenshtein.distance(reference_string, reference_string_inv)
-
-        # Calculate normalized edit distance
-        max_dist = np.max([max_edit_distance_test, max_edit_distance_ref])
-        edit_distance = edit_distance / max_dist
-
 
     return edit_distance
 
@@ -685,7 +632,7 @@ def fft_plot(sequence: thebeat.core.Sequence,
     step_size = unit_size / 1000
 
     # Make a sequence of ones and zeroes
-    timeseries = make_binary_timeseries(sequence.onsets, resolution=step_size)
+    timeseries = sequence_to_binary(sequence, resolution=step_size)
     duration = np.max(sequence.onsets)
     x_length = np.ceil(duration / step_size).astype(int)
 

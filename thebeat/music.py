@@ -148,7 +148,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         --------
         >>> r = Rhythm([250, 500, 1000, 250])
         >>> print(r.fractions)
-        [Fraction(1, 8) Fraction(2, 8) Fraction(4, 8) Fraction(1, 8)]
+        [Fraction(1, 8) Fraction(1, 4) Fraction(1, 2) Fraction(1, 8)]
 
         """
 
