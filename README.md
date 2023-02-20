@@ -16,12 +16,16 @@ The package was specifically designed to be useful for both skilled and novice p
 The package documentation is available from [https://docs.the-beat.info](https://docs.the-beat.info).
 
 # Installation
-
 A development version of *thebeat* can be installed by downloading this repository as a ``.zip`` file (click the green 'Code' button > 'Download ZIP'), and installing via pip, by typing the following in a terminal where you've navigated to the folder containing the downloaded ``.zip`` file:
 
 ```bash
 pip install thebeat-main.zip
 ```
+
+# Try directly via Binder
+We have made available a Binder instantiation which already has *thebeat* installed. It can be accessed simply by following [this link](https://mybinder.org/v2/git/https%3A%2F%2Fgitlab.gwdg.de%2Fcomparative-bioacoustics%2Fthebeat-demo.git/HEAD?labpath=docs%2Fsource%2Fexamples%2FREADME.md). 
+
+Note that it may take a few moments for the Binder environment to load. Once it has, you are free to experiment with *thebeat*. You can do this either by following one of the linked-to examples, or by creating new notebooks. New or cahnged notebooks will not be saved when Binder is closed!
 
 # Getting started
 The code below illustrates how we might create a simple trial for use in an experiment:
