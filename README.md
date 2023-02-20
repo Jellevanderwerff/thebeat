@@ -1,5 +1,7 @@
 <img src=docs/source/thebeat_logo.png height="350" width="350">
 
+**Note that *thebeat* is still under development. Please report any issues by clicking the 'Issues' tab in the respository.**
+
 # *thebeat*: Rhythms in Python for Science
 
 *thebeat* is a Python package for working with temporal sequences and rhythms in the behavioural and cognitive sciences. It provides functionality for creating stimuli, and for visualizing and analyzing temporal data.
