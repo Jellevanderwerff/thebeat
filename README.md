@@ -17,10 +17,10 @@ The package documentation is available from [https://docs.the-beat.info](https:/
 
 # Installation
 
-*thebeat* can be installed from PyPI using pip:
+A development version of *thebeat* can be installed by downloading this repository as a ``.zip`` file (click the green 'Code' button > 'Download ZIP'), and installing via pip, by typing the following in a terminal where you've navigated to the folder containing the downloaded ``.zip`` file:
 
 ```bash
-pip install thebeat
+pip install thebeat-main.zip
 ```
 
 # Getting started
@@ -30,8 +30,8 @@ The code below illustrates how we might create a simple trial for use in an expe
 from thebeat import Sequence, SoundStimulus, SoundSequence
 
 seq = Sequence.generate_isochronous(n_events=10, ioi=500)
-stim = SoundStimulus.generate(freq=440, duration_ms=50, onramp_ms=10, offramp_ms=10)
-trial = SoundSequence(stim, seq)
+sound = SoundStimulus.generate(freq=440, duration_ms=50, onramp_ms=10, offramp_ms=10)
+trial = SoundSequence(sound, seq)
 
 trial.play()  # play sound over loudspeakers
 trial.plot_waveform()  # plot as sound waveform
