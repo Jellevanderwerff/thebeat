@@ -168,6 +168,36 @@ def test_concat_silence():
     assert len(s2.iois) == 5
     assert s2.end_with_interval
 
+    s3 = s2 + 1000
+    assert s3.onsets[0] == 1000
+    assert s3.onsets[-1] == 3000
+    assert s3.iois[-1] == 1500
+    assert len(s3.iois) == 5
+    assert s3.end_with_interval
+
+
+def test_concat_exceptions():
+    seq = thebeat.Sequence.generate_isochronous(5, 500, True)
+
+    with pytest.raises(TypeError):
+        _ = seq + '1000'
+
+    class Dummy:
+        def __add__(self, other):
+            return '__add__'
+
+        def __radd__(self, other):
+            return '__radd__'
+
+    assert Dummy() + seq == '__add__'
+    assert seq + Dummy() == '__radd__'
+
+    with pytest.raises(ValueError):
+        _ = seq + 0
+
+    with pytest.raises(ValueError):
+        _ = seq + -1
+
 
 def test_merge():
     seq1 = thebeat.Sequence.from_onsets([0, 500, 1000])
