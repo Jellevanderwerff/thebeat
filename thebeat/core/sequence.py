@@ -216,6 +216,11 @@ class Sequence(BaseSequence):
             return Sequence(iois=iois, end_with_interval=True, name=self.name)
         return NotImplemented
 
+    def __radd__(self, other):
+        if isinstance(other, (int, float, np.integer, np.floating)):
+            return Sequence(iois=self.iois, first_onset=self._first_onset + other, end_with_interval=True, name=self.name)
+        return NotImplemented
+
     def __mul__(self, other: int):
         return self._repeat(times=other)
 
