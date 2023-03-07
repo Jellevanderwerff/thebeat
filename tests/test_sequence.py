@@ -146,6 +146,29 @@ def test_concat():
     assert s1, s2
 
 
+def test_concat_silence():
+    seq = thebeat.Sequence.generate_isochronous(5, 500, True)
+    assert seq.onsets[0] == 0
+    assert seq.onsets[-1] == 2000
+    assert seq.iois[-1] == 500
+    assert len(seq.iois) == 5
+    assert seq.end_with_interval
+
+    s1 = seq + 1000
+    assert s1.onsets[0] == 0
+    assert s1.onsets[-1] == 2000
+    assert s1.iois[-1] == 1500
+    assert len(s1.iois) == 5
+    assert s1.end_with_interval
+
+    s2 = 1000 + seq
+    assert s2.onsets[0] == 1000
+    assert s2.onsets[-1] == 3000
+    assert s2.iois[-1] == 500
+    assert len(s2.iois) == 5
+    assert s2.end_with_interval
+
+
 def test_merge():
     seq1 = thebeat.Sequence.from_onsets([0, 500, 1000])
     seq2 = thebeat.Sequence.from_onsets([250, 750, 1250])
