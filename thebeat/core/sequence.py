@@ -209,13 +209,13 @@ class Sequence(BaseSequence):
         if isinstance(other, Sequence):
             if not self.end_with_interval:
                 raise ValueError("Can only concatenate a sequence that ends with an interval to another one.")
-            return Sequence(iois=np.concatenate([self.iois, other.iois]), end_with_interval=other.end_with_interval)
+            return Sequence(iois=np.concatenate([self.iois, other.iois]), first_onset=self._first_onset, end_with_interval=other.end_with_interval)
         elif isinstance(other, (int, float, np.integer, np.floating)) and not self.end_with_interval:
-            return Sequence(iois=np.append(self.iois, other), end_with_interval=True, name=self.name)
+            return Sequence(iois=np.append(self.iois, other), first_onset=self._first_onset, end_with_interval=True, name=self.name)
         elif isinstance(other, (int, float, np.integer, np.floating)) and self.end_with_interval:
             iois = self.iois
             iois[-1] += other
-            return Sequence(iois=iois, end_with_interval=True, name=self.name)
+            return Sequence(iois=iois, first_onset=self._first_onset, end_with_interval=True, name=self.name)
         return NotImplemented
 
     def __radd__(self, other):
