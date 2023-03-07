@@ -214,9 +214,7 @@ class Sequence(BaseSequence):
             iois = self.iois
             iois[-1] += other
             return Sequence(iois=iois, end_with_interval=True, name=self.name)
-        else:
-            raise ValueError("Can only concatenate sequences that end with an interval, or a sequence and a number."
-                             "For instance: 'seq1 + seq2' or 'seq1 + 100'.")
+        return NotImplemented
 
     def __mul__(self, other: int):
         return self._repeat(times=other)
