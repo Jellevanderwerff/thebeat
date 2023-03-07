@@ -206,7 +206,9 @@ class Sequence(BaseSequence):
 
     def __add__(self, other):
         # todo This needs to change. Especially note being able to have a number on the left-hand side is frustrating.
-        if isinstance(other, Sequence) and self.end_with_interval:
+        if isinstance(other, Sequence):
+            if not self.end_with_interval:
+                raise ValueError("Can only concatenate a sequence that ends with an interval to another one.")
             return Sequence(iois=np.concatenate([self.iois, other.iois]), end_with_interval=other.end_with_interval)
         elif isinstance(other, (int, float, np.integer, np.floating)) and not self.end_with_interval:
             return Sequence(iois=np.append(self.iois, other), end_with_interval=True, name=self.name)

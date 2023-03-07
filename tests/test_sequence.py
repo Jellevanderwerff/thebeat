@@ -192,6 +192,9 @@ def test_concat_exceptions():
     assert Dummy() + seq == '__add__'
     assert seq + Dummy() == '__radd__'
 
+    with pytest.raises(ValueError, match="Can only concatenate a sequence that ends with an interval to another one"):
+        _ = thebeat.Sequence.generate_isochronous(5, 500, False) + seq
+
     with pytest.raises(ValueError):
         _ = seq + 0
 
