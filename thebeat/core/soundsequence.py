@@ -330,16 +330,24 @@ class SoundSequence(BaseSequence):
 
     def write_wav(self,
                   filepath: Union[str, os.PathLike],
+                  dtype: Union[str, np.dtype] = np.int16,
                   metronome: bool = False,
-                  metronome_amplitude: float = 1.0):
+                  metronome_ioi: Optional[float] = None,
+                  metronome_amplitude: Optional[float] = None):
         """
         Parameters
         ----------
         filepath
             The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be
             aware of OS-specific filepath conventions.
+        dtype
+            The data type of the samples. Defaults to ``np.int16``, meaning that the
+            samples are saved as 16-bit integers.
         metronome
             If ``True``, a metronome sound is added for playback.
+        metronome_ioi
+            If desired, when playing the StimSequence with a metronome sound you can adjust the
+            metronome inter-onset interval (IOI). Defaults to the mean IOI of the sequence.
         metronome_amplitude
             If desired, when playing the StimSequence with a metronome sound you can adjust the
             metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
@@ -351,27 +359,12 @@ class SoundSequence(BaseSequence):
         >>> soundseq.write_wav('my_soundseq.wav')  # doctest: +SKIP
         """
 
-        if metronome is True:
-            samples = thebeat.helpers.get_sound_with_metronome(samples=self.samples, fs=self.fs,
-                                                               metronome_ioi=self.mean_ioi,
-                                                               metronome_amplitude=metronome_amplitude)
-        else:
-            samples = self.samples
+        if metronome is True and metronome_ioi is None:
+            metronome_ioi = self.mean_ioi
 
-        # Make filepath string if it is a Path object
-        filepath = str(filepath)
-
-        # Process filepath
-        if filepath.endswith('.wav'):
-            path, filename = os.path.split(filepath)
-        elif os.path.isdir(filepath):
-            path = filepath
-            filename = f"{self.name}.wav" if self.name else "out.wav"
-        else:
-            raise ValueError("Wrong filepath specified. Please provide a directory or a complete filepath.")
-
-        # Write the wav
-        wavfile.write(filename=os.path.join(path, filename), rate=self.fs, data=samples)
+        thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, dtype=dtype,
+                                  metronome=metronome, metronome_ioi=metronome_ioi,
+                                  metronome_amplitude=metronome_amplitude)
 
     def _make_soundseq_sound(self, sounds, onsets):
         """Internal function used for combining different SoundStimulus samples and a passed Sequence object

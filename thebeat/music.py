@@ -1144,6 +1144,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                              fs: int = 48000,
                              n_channels: int = 1,
                              amplitude: float = 1.0,
+                             dtype: Union[str, np.dtype] = np.int16,
                              oscillator: str = 'sine',
                              onramp_ms: int = 0,
                              offramp_ms: int = 0,
@@ -1176,6 +1177,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         amplitude
             Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
             values higher than 1 in louder sounds. Defaults to 1.0.
+        dtype
+            The desired data type for the output file. Defaults to ``np.int16``.
+            This means that the output file will be 16-bit PCM.
         oscillator
             The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
         onramp_ms
@@ -1204,11 +1208,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                                                 offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
                                                 metronome_amplitude=metronome_amplitude)
 
-        if metronome is True:
-            samples = thebeat.helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                               metronome_amplitude=metronome_amplitude)
-
-        thebeat.helpers.write_wav(samples=samples, fs=fs, filepath=filepath, metronome=metronome,
+        thebeat.helpers.write_wav(samples=samples, fs=fs, filepath=filepath, dtype=dtype, metronome=metronome,
                                   metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
 
     def _make_namedtuples(self,

@@ -16,6 +16,8 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import scipy
+
 import thebeat.core
 import numpy as np
 
@@ -40,6 +42,11 @@ def test_soundsequence(tmp_path):
     trial = thebeat.core.SoundSequence(stim, seq)
 
     trial.write_wav(tmp_path / 'test.wav', metronome=True)
+
+    # test datatype
+
+    _, samples = scipy.io.wavfile.read(tmp_path / 'test.wav')
+    assert samples.dtype == np.int16
 
     # compare seconds and milliseconds
     trial_s = thebeat.core.SoundSequence(thebeat.core.SoundStimulus.generate(),

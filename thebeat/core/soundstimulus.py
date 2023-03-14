@@ -153,7 +153,7 @@ class SoundStimulus:
         """
 
         # Read in the sampling frequency and all the samples from the wav file
-        samples, fs = _read_wavfile(filepath=filepath, new_fs=new_fs)
+        samples, fs = thebeat.helpers.read_wav(filepath=filepath, new_fs=new_fs)
 
         # Return SoundStimulus object
         return cls(samples, fs, name)
@@ -495,7 +495,8 @@ class SoundStimulus:
         return np.float64(self.samples.shape[0] / self.fs * 1000)
 
     def write_wav(self,
-                  filepath: Union[str, os.PathLike]) -> None:
+                  filepath: Union[str, os.PathLike],
+                  dtype: Union[str, np.dtype] = np.int16) -> None:
         """
         Save the :py:class:`SoundStimulus` sound to disk as a wave file.
 
@@ -504,6 +505,9 @@ class SoundStimulus:
         filepath
             The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
             Of course be aware of OS-specific filepath conventions.
+        dtype
+            The data type of the samples. Defaults to ``np.int16``, meaning that the
+            samples are saved as 16-bit integers.
 
         Examples
         --------
@@ -512,43 +516,6 @@ class SoundStimulus:
 
         """
 
-        thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, metronome=False)
+        thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, dtype=dtype, metronome=False)
 
 
-def _read_wavfile(filepath: Union[str, os.PathLike],
-                  new_fs: Optional[int]):
-    """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
-    If dtype is different than np.float64, it converts the samples to that."""
-    file_fs, samples = scipy.io.wavfile.read(filepath)
-
-    # Change dtype so we always have float64
-    if samples.dtype == 'int16':
-        samples = samples.astype(np.float64, order='C') / 32768.0
-    elif samples.dtype == 'int32':
-        samples = samples.astype(np.float64, order='C') / 2147483648.0
-    elif samples.dtype == 'float32':
-        samples = samples.astype(np.float64, order='C')
-    elif samples.dtype == 'float64':
-        pass
-    else:
-        raise ValueError("Unknown dtype for wav file. 'int16', 'int32', 'float32' and 'float64' are supported:'"
-                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
-
-    # Resample if necessary
-    if new_fs is None:
-        fs = file_fs
-    else:
-        samples, fs = _resample(samples, file_fs, new_fs)
-
-    return samples, fs
-
-
-def _resample(samples, input_fs, output_fs):
-    """Internal function used to resample sounds. Uses scipy.signal.resample"""
-    if output_fs == input_fs:
-        return samples, input_fs
-
-    resample_factor = float(output_fs) / float(input_fs)
-    resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
-
-    return resampled, output_fs

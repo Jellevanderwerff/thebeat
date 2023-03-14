@@ -143,7 +143,8 @@ def get_sound_with_metronome(samples: np.ndarray,
         metronome_samples = resampled
 
     # change amplitude if necessary
-    metronome_samples = metronome_samples * metronome_amplitude
+    if metronome_amplitude:
+        metronome_samples = metronome_samples * metronome_amplitude
 
     for onset in onsets:
         start_pos = int(onset * fs / 1000)
@@ -197,8 +198,6 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
         signal = np.append(signal, np.zeros(int(sequence.iois[-1] / resolution - 1)))
 
     return np.array(signal)
-
-
 
 
 def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
@@ -562,6 +561,45 @@ def play_samples(samples: np.ndarray,
     sd.wait()
 
 
+def read_wav(filepath: Union[str, os.PathLike],
+             new_fs: Optional[int]):
+    """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
+    If dtype is different from np.float64, it converts the samples to that."""
+    file_fs, samples = scipy.io.wavfile.read(filepath)
+
+    # Change dtype so we always have float64
+    if samples.dtype == 'int16':
+        samples = samples.astype(np.float64, order='C') / 2 ** 15
+    elif samples.dtype == 'int32':
+        samples = samples.astype(np.float64, order='C') / 2 ** 31
+    elif samples.dtype == 'float32':
+        samples = samples.astype(np.float64, order='C')
+    elif samples.dtype == 'float64':
+        pass
+    else:
+        raise ValueError("Unknown dtype for wav file. 'int16', 'int32', 'float32' and 'float64' are supported:'"
+                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
+
+    # Resample if necessary
+    if new_fs is None:
+        fs = file_fs
+    else:
+        samples, fs = thebeat.helpers.resample(samples, file_fs, new_fs)
+
+    return samples, fs
+
+
+def resample(samples, input_fs, output_fs):
+    """Internal function used to resample sounds. Uses scipy.signal.resample"""
+    if output_fs == input_fs:
+        return samples, input_fs
+
+    resample_factor = float(output_fs) / float(input_fs)
+    resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
+
+    return resampled, output_fs
+
+
 def rhythm_to_binary(rhythm: thebeat.music.Rhythm,
                      smallest_note_value: int = 16):
     """This helper function converts a rhythm to a binary representation."""
@@ -589,16 +627,6 @@ def rhythm_to_binary(rhythm: thebeat.music.Rhythm,
             signal[int(index)] = 1
 
     return signal
-
-
-    """
-    for onset in sequence.onsets:
-        index = 0 if onset == 0 else int(onset / resolution) - 1
-        signal[index] = 1
-    """
-
-
-    print(n_positions)
 
 
 def synthesize_sound(duration_ms: float,
@@ -639,7 +667,8 @@ def synthesize_sound(duration_ms: float,
 def write_wav(samples: np.ndarray,
               fs: int,
               filepath: Union[str, os.PathLike],
-              metronome: bool,
+              dtype: Union[str, np.dtype] = np.int16,
+              metronome: bool = False,
               metronome_ioi: Optional[float] = None,
               metronome_amplitude: Optional[float] = None) -> None:
     """
@@ -648,6 +677,22 @@ def write_wav(samples: np.ndarray,
     """
     if metronome is True:
         samples = get_sound_with_metronome(samples, fs, metronome_ioi, metronome_amplitude)
+
+    # Construct dtype object
+    dtype = np.dtype(dtype)
+
+    # Change dtypes if necessary (we default to int16)
+    if dtype == np.int16:
+        samples = np.clip(samples * (2 ** 15), -2**15, 2**15-1).astype(np.int16, order='C')
+    elif dtype == np.int32:
+        samples = np.clip(samples * (2 ** 31), -2**31, 2**31-1).astype(np.int32, order='C')
+    elif dtype == np.float32:
+        samples = samples.astype(np.float64, order='C')
+    elif dtype == np.float64:
+        pass
+    else:
+        raise ValueError("Unknown dtype for wav file. 'int16', 'int32', 'float32' and 'float64' are supported:'"
+                         "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html")
 
     filepath = str(filepath)
 
