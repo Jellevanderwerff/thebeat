@@ -620,11 +620,11 @@ def fft_plot(sequence: thebeat.core.Sequence,
     >>> from thebeat.stats import fft_plot
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
     >>> fft_plot(seq, unit_size=1000)
-    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
+    (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=0.5, sigma=0.025)  # seconds
     >>> fft_plot(seq, unit_size=1, x_max=5)
-    (<Figure size 800x550 with 1 Axes>, <AxesSubplot: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
+    (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     """
 
@@ -701,7 +701,7 @@ def ks_test(sequence: thebeat.core.Sequence,
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=100,mu=500,sigma=25,rng=rng)
     >>> print(ks_test(seq))
-    KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911)
+    KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911, statistic_location=496.3505526721194, statistic_sign=1)
 
     """
 

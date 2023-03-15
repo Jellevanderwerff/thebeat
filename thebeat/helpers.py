@@ -683,11 +683,11 @@ def write_wav(samples: np.ndarray,
 
     # Change dtypes if necessary (we default to int16)
     if dtype == np.int16:
-        samples = np.clip(samples * (2 ** 15), -2**15, 2**15-1).astype(np.int16, order='C')
+        samples = np.clip(samples * (2 ** 15), -2**15, 2**15-1).astype(np.int16)
     elif dtype == np.int32:
-        samples = np.clip(samples * (2 ** 31), -2**31, 2**31-1).astype(np.int32, order='C')
+        samples = np.clip(samples * (2 ** 31), -2**31, 2**31-1).astype(np.int32)
     elif dtype == np.float32:
-        samples = samples.astype(np.float64, order='C')
+        samples = samples.astype(np.float64)
     elif dtype == np.float64:
         pass
     else:
