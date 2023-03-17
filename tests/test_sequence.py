@@ -146,7 +146,7 @@ def test_concat():
     assert s1, s2
 
 
-def test_concat_silence():
+def test_concat_silence_endswithinterval():
     seq = thebeat.Sequence.generate_isochronous(5, 500, True)
     assert seq.onsets[0] == 0
     assert seq.onsets[-1] == 2000
@@ -163,6 +163,7 @@ def test_concat_silence():
 
     s2 = 1000 + seq
     assert s2.onsets[0] == 1000
+    assert s2._first_onset == 1000
     assert s2.onsets[-1] == 3000
     assert s2.iois[-1] == 500
     assert len(s2.iois) == 5
@@ -176,11 +177,58 @@ def test_concat_silence():
     assert s3.end_with_interval
 
 
+def test_concat_silence_endswithevent():
+    seq = thebeat.Sequence.generate_isochronous(5, 500, False)
+    assert seq.onsets[0] == 0
+    assert seq.onsets[-1] == 2000
+    assert seq.iois[-1] == 500
+    assert len(seq.iois) == 4
+    assert not seq.end_with_interval
+
+    s1 = seq + 1000
+    assert s1.onsets[0] == 0
+    assert s1.onsets[-1] == 2000
+    assert s1.iois[-2] == 500
+    assert s1.iois[-1] == 1000
+    assert len(s1.iois) == 5
+    assert s1.end_with_interval
+
+    s2 = 1000 + seq
+    assert s2.onsets[0] == 1000
+    assert s2._first_onset == 1000
+    assert s2.onsets[-1] == 3000
+    assert s2.iois[-1] == 500
+    assert len(s2.iois) == 4
+    assert not s2.end_with_interval
+
+    s3 = s2 + 1000
+    assert s3.onsets[0] == 1000
+    assert s3.onsets[-1] == 3000
+    assert s1.iois[-2] == 500
+    assert s3.iois[-1] == 1000
+    assert len(s3.iois) == 5
+    assert s3.end_with_interval
+
+    chained = seq + 1000 + s1 + 2000
+    assert len(chained.onsets) == 10
+
+
 def test_concat_exceptions():
-    seq = thebeat.Sequence.generate_isochronous(5, 500, True)
+    seq_endswithinterval = thebeat.Sequence.generate_isochronous(5, 500, True)
+    seq_endswithevent = thebeat.Sequence.generate_isochronous(5, 500, False)
+
+    # E.g. a string is not allowed
+    with pytest.raises(TypeError):
+        _ = seq_endswithinterval + '1000'
 
     with pytest.raises(TypeError):
-        _ = seq + '1000'
+        _ = '1000' + seq_endswithinterval
+
+    with pytest.raises(TypeError):
+        _ = seq_endswithevent + '1000'
+
+    with pytest.raises(TypeError):
+        _ = '1000' + seq_endswithevent
 
     class Dummy:
         def __add__(self, other):
@@ -189,17 +237,22 @@ def test_concat_exceptions():
         def __radd__(self, other):
             return '__radd__'
 
-    assert Dummy() + seq == '__add__'
-    assert seq + Dummy() == '__radd__'
+    assert Dummy() + seq_endswithevent == '__add__'
+    assert seq_endswithevent + Dummy() == '__radd__'
 
-    with pytest.raises(ValueError, match="Can only concatenate a sequence that ends with an interval to another one"):
-        _ = thebeat.Sequence.generate_isochronous(5, 500, False) + seq
+    with pytest.raises(ValueError,
+                       match="When concatenating sequences the sequence on the left-hand side must end with an interval."):
+        _ = thebeat.Sequence.generate_isochronous(5, 500, False) + seq_endswithevent
+
+    with pytest.raises(ValueError,
+                       match="When concatenating sequences the sequence on the left-hand side must end with an interval."):
+        _ = thebeat.Sequence.generate_isochronous(5, 500, False) + seq_endswithinterval
 
     with pytest.raises(ValueError):
-        _ = seq + 0
+        _ = seq_endswithinterval + 0
 
     with pytest.raises(ValueError):
-        _ = seq + -1
+        _ = seq_endswithinterval + -1
 
 
 def test_merge():

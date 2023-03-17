@@ -205,14 +205,18 @@ class Sequence(BaseSequence):
         super().__init__(iois=iois, first_onset=first_onset, end_with_interval=end_with_interval, name=name)
 
     def __add__(self, other):
-        # todo This needs to change. Especially note being able to have a number on the left-hand side is frustrating.
         if isinstance(other, Sequence):
             if not self.end_with_interval:
-                raise ValueError("Can only concatenate a sequence that ends with an interval to another one.")
-            return Sequence(iois=np.concatenate([self.iois, other.iois]), first_onset=self._first_onset, end_with_interval=other.end_with_interval)
+                raise ValueError(
+                    "When concatenating sequences the sequence on the left-hand side must end with an interval.")
+            return Sequence(iois=np.concatenate([self.iois, other.iois]), first_onset=self._first_onset,
+                            end_with_interval=other.end_with_interval)
         elif isinstance(other, (int, float, np.integer, np.floating)) and not self.end_with_interval:
-            return Sequence(iois=np.append(self.iois, other), first_onset=self._first_onset, end_with_interval=True, name=self.name)
+            return Sequence(iois=np.append(self.iois, other), first_onset=self._first_onset, end_with_interval=True,
+                            name=self.name)
         elif isinstance(other, (int, float, np.integer, np.floating)) and self.end_with_interval:
+            if not other > 0:
+                raise ValueError("Cannot add a negative- or zero-length silence to a sequence.")
             iois = self.iois
             iois[-1] += other
             return Sequence(iois=iois, first_onset=self._first_onset, end_with_interval=True, name=self.name)
@@ -220,7 +224,8 @@ class Sequence(BaseSequence):
 
     def __radd__(self, other):
         if isinstance(other, (int, float, np.integer, np.floating)):
-            return Sequence(iois=self.iois, first_onset=self._first_onset + other, end_with_interval=True, name=self.name)
+            return Sequence(iois=self.iois, first_onset=self._first_onset + other,
+                            end_with_interval=self.end_with_interval, name=self.name)
         return NotImplemented
 
     def __mul__(self, other: int):
