@@ -63,14 +63,11 @@ class BaseSequence:
                  name: Optional[str] = None):
         """Initialization of BaseSequence class."""
 
-        if end_with_interval is True and first_onset != 0:
-            raise ValueError("First onset must be 0 for sequences that end with an interval.")
-
         # Save attributes
         self.iois = iois
         self._first_onset = first_onset
         self.end_with_interval = end_with_interval
-        # Additionally save the provided name (may be None)
+        # Additionally save the provided name (can be None)
         self.name = name
 
     def copy(self, deep: bool = True):

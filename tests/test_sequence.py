@@ -108,9 +108,6 @@ def test_onset_not_zero():
     assert np.all(seq.onsets == [20, 50, 100])
     assert np.all(seq.iois == [30, 50])
 
-    with pytest.raises(ValueError):
-        thebeat.core.Sequence([50, 50, 50], end_with_interval=True, first_onset=50)
-
 
 def test_multiplication():
     seq = thebeat.core.Sequence([500, 500, 500])
