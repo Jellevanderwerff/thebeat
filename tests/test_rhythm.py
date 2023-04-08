@@ -51,3 +51,11 @@ def test_rhythm_plot():
     rhythm = thebeat.music.Rhythm([500, 500, 500, 500])
     fig, ax = rhythm.plot_rhythm(suppress_display=True)
     return fig
+
+
+def test_copy():
+    r = thebeat.music.Rhythm([500, 500, 500, 500], name="test")
+    r2 = r.copy()
+    r.name = "test2"
+    assert r2.name == 'test'
+    assert r.name == 'test2'

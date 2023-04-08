@@ -79,3 +79,11 @@ def test_merge():
     assert new_sound
     new_sound = sound.merge([sound2, sound2])
     assert new_sound
+
+
+def test_copy():
+    s = thebeat.SoundStimulus.generate(name='test')
+    s2 = s.copy()
+    s.name = "test2"
+    assert s.name == 'test2'
+    assert s2.name == 'test'

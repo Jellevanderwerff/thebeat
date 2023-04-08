@@ -99,3 +99,11 @@ def test_merge():
     ss2 = thebeat.utils.merge_soundsequences([sndseq, sndseq2])
 
     assert ss1, ss2
+
+
+def test_copy():
+    ss = thebeat.SoundSequence(thebeat.SoundStimulus.generate(), thebeat.Sequence([500, 500]), name='test')
+    ss2 = ss.copy()
+    ss.name = "test2"
+    assert ss2.name == 'test'
+    assert ss.name == 'test2'

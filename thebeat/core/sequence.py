@@ -73,7 +73,7 @@ class BaseSequence:
         # Additionally save the provided name (may be None)
         self.name = name
 
-    def copy(self, deep: bool = False):
+    def copy(self, deep: bool = True):
         """Returns a copy of itself. See :py:func:`copy.copy` for more information.
 
         Parameters

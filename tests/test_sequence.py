@@ -263,3 +263,11 @@ def test_merge():
 
     assert len(seq1.onsets) + len(seq2.onsets) == len(seq_merged.onsets)
     assert len(seq_merged2.onsets) == len(seq_merged.onsets)
+
+
+def test_copy():
+    seq = thebeat.Sequence([500, 500], name='test')
+    seq2 = seq.copy()
+    seq.name = "test2"
+    assert seq2.name == 'test'
+    assert seq.name == 'test2'

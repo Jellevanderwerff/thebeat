@@ -106,7 +106,7 @@ class SoundStimulus:
                 f"Number of channels: {self.n_channels}\n"
                 f"Sampling frequency {self.fs}")
 
-    def copy(self, deep: bool = False):
+    def copy(self, deep: bool = True):
         """Returns a copy of itself. See :py:func:`copy.copy` for more information.
 
         Parameters

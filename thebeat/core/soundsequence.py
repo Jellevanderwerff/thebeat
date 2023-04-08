@@ -24,6 +24,7 @@ import thebeat.helpers
 import thebeat._warnings
 import warnings
 import os
+import copy
 from typing import Union, Optional
 import sounddevice as sd
 
@@ -178,6 +179,20 @@ class SoundSequence(BaseSequence):
             return f"SoundSequence(name={self.name}, n_events={len(self.onsets)})"
 
         return f"SoundSequence(n_events={len(self.onsets)})"
+
+    def copy(self, deep: bool = True):
+        """Returns a copy of itself. See :py:func:`copy.copy` for more information.
+
+        Parameters
+        ----------
+        deep
+            If ``True``, a deep copy is returned. If ``False``, a shallow copy is returned.
+
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     def merge(self,
               other: Union[thebeat.core.SoundSequence, list[thebeat.core.SoundSequence]]):

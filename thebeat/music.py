@@ -16,6 +16,8 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
+import copy
 import re
 import textwrap
 from collections import namedtuple
@@ -224,7 +226,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         return note_values
 
-
     @classmethod
     def from_fractions(cls,
                        fractions: Union[list, np.ndarray],
@@ -282,9 +283,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         iois = np.array([float(frac) for frac in iois_as_fractions])
 
         return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
-
-
-
 
     @classmethod
     def from_integer_ratios(cls,
@@ -642,6 +640,20 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         return fig, ax
 
+    def copy(self, deep: bool = True):
+        """Returns a copy of itself. See :py:func:`copy.copy` for more information.
+
+        Parameters
+        ----------
+        deep
+            If ``True``, a deep copy is returned. If ``False``, a shallow copy is returned.
+
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
+
     def _repeat(self, times: int) -> Rhythm:
         """
         Repeat the Rhythm ``times`` times. Returns a new Rhythm object. The old one remains unchanged.
@@ -940,6 +952,20 @@ class Melody(thebeat.core.sequence.BaseSequence):
         note_values = np.array([int(1 // ratio) for ratio in ratios])
 
         return note_values
+
+    def copy(self, deep: bool = True):
+        """Returns a copy of itself. See :py:func:`copy.copy` for more information.
+
+        Parameters
+        ----------
+        deep
+            If ``True``, a deep copy is returned. If ``False``, a shallow copy is returned.
+
+        """
+        if deep is True:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     @requires_lilypond
     def plot_melody(self,

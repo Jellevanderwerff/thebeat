@@ -40,3 +40,13 @@ def test_melody_plot():
     mel = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
     fig, ax = mel.plot_melody(suppress_display=True)
     return fig
+
+
+def test_melody_copy():
+    m = thebeat.music.Melody(thebeat.music.Rhythm([500, 500, 500, 500]), 'CEGC', name="test")
+    m2 = m.copy()
+    m.name = "test2"
+    assert m2.name == 'test'
+    assert m.name == 'test2'
+
+
