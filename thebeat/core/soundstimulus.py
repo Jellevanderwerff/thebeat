@@ -326,7 +326,7 @@ class SoundStimulus:
         if len(note_strings) == 1:
             freq = abjad.NamedPitch(note_strings[0], octave=4).hertz
         elif len(note_strings) == 2:
-            freq = abjad.NamedPitch(note_strings[0], octave=note_strings[1]).hertz
+            freq = abjad.NamedPitch(note_strings[0], octave=int(note_strings[1])).hertz
         else:
             raise ValueError("Please provide a string of format 'G' or 'G4'.")
 
