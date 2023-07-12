@@ -5,15 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "thebeat"
 description = "Python package for working with rhythms and other temporal sequences in science"
+license = { text = " GPL-3.0-or-later" }
 authors = [
     {name = "Jelle van der Werff", email="jellevanderwerff@gmail.com"},
     {name = "Yannick Jadoul", email="yannick.jadoul@gmail.com"},
 ]
-readme = ""  # TODO
+readme = "README.md"
 #homepage = ""  # TODO: GitHub or Docs?
-#repository = ""  # TODO: GitHub?
+repository = "https://github.com/Jellevanderwerff/thebeat"
 #documentation = ""  # TODO: RTD
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 keywords = []  # TODO
 #license = {text = "BSD 3-Clause License"}  # TODO
 classifiers = [
