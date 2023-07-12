@@ -56,3 +56,42 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install abjad
+
+      - name: Install PortAudio and LilyPond
+        run: |
+          sudo apt update
+          sudo apt install libportaudio2 lilypond
+
+      - name: Install documentation requirements
+        run: |
+          sudo apt install pandoc
+          pip install -r docs/requirements.txt
+          pip install nbconvert
+
+      - name: Clear example outputs
+        run: |
+          find docs/source -type f -name "*.ipynb" | xargs jupyter nbconvert --clear-output --inplace
+
+      - name: Build documentation
+        run: |
+          cd docs
+          make html
