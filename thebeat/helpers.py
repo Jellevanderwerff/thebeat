@@ -310,6 +310,7 @@ def plot_lp(lp,
     # eventually show.
     if filepath:
         save_format = os.path.splitext(filepath)[1]
+        print(save_format)
         if save_format not in ('.pdf', '.png', '.eps'):
             raise ValueError("Can only export .png, .pdf, and .eps files.")
     else:
@@ -346,7 +347,7 @@ def plot_lp(lp,
         # the eps we cannot crop that easily unfortunately, so we use the one created
         # by lilypond if an .eps is desired.
         if filepath and save_format in ('.eps', '.pdf'):
-            path_to_file_for_saving = os.path.join(tmp_dir, f'rhythm{save_format}')
+            path_to_file_for_saving = os.path.join(tmp_dir, f'rhythm.cropped{save_format}')
             shutil.copy(path_to_file_for_saving, filepath)
 
     if ax is None:

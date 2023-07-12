@@ -584,9 +584,20 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
-        remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-                oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
-
+        preamble = textwrap.dedent(r"""
+             #(ly:set-option 'crop #t)
+             \version "2.22.1"
+             \language "english"
+             \paper {
+             indent = 0\mm
+             line-width = 110\mm
+             oddHeaderMarkup = ""
+             evenHeaderMarkup = ""
+             oddFooterMarkup = ""
+             evenFooterMarkup = ""
+             }
+             """)
+        
         # Make the notes
         durations = self._get_abjad_note_durations()
         durations, ties_at = self._get_abjad_ties(durations)
@@ -635,8 +646,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         score_lp = abjad.lilypond(score)
 
         # Make lilypond string, adding the remove footers string (removes all unnecessary stuff, changes page size etc.)
-        lpf = abjad.LilyPondFile([remove_footers, score_lp])
+        lpf = abjad.LilyPondFile([preamble, score_lp])
         lpf_str = abjad.lilypond(lpf)
+
+        print(lpf_str)
 
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
         if print_staff is False:
@@ -1342,6 +1355,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         pitch = abjad.NamedPitchClass(key)
         key = abjad.KeySignature(pitch)
         preamble = textwrap.dedent(r"""
+             #(ly:set-option 'crop #t)
              \version "2.22.1"
              \language "english"
              \paper {
