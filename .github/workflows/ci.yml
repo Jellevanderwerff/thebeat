@@ -27,13 +27,10 @@ jobs:
           pip install .
           pip install abjad
 
-      - name: Install PortAudio
+      - name: Install PortAudio and LilyPond
         run: |
-          sudo apt install libportaudio2
-
-      - name: Install LilyPond
-        run: |
-          sudo apt install lilypond
+          sudo apt update
+          sudo apt install libportaudio2 lilypond
 
       - name: Install test requirements
         run: |
