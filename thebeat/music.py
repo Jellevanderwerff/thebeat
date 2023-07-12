@@ -1337,7 +1337,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         time_signature = abjad.TimeSignature(time_signature)
         key = abjad.KeySignature(key)
         preamble = textwrap.dedent(r"""
-             \version "2.22.2"
+             \version "2.22.1"
              \language "english"
              \paper {
              indent = 0\mm
