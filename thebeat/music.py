@@ -578,7 +578,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         try:
             make_notes = abjad.makers.make_notes
         except AttributeError:
-            make_notes = abjad.makers.NoteMaker()
+            note_maker = abjad.makers.NoteMaker()
+            def make_notes(*args):
+                return list(note_maker(*args))
 
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
@@ -605,7 +607,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
         for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = make_notes(pitch, duration) if is_plyd else abjad.Rest(duration)
+            note = make_notes(pitch, duration)[0] if is_plyd else abjad.Rest(duration)
             notes.append(note)
 
         # plot the notes
@@ -1333,7 +1335,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         try:
             make_notes = abjad.makers.make_notes
         except AttributeError:
-            make_notes = abjad.makers.NoteMaker()
+            note_maker = abjad.makers.NoteMaker()
+            def make_notes(*args):
+                return list(note_maker(*args))
         time_signature = abjad.TimeSignature(time_signature)
         pitch = abjad.NamedPitchClass(key)
         key = abjad.KeySignature(pitch)
@@ -1369,7 +1373,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
             if is_played is True:
                 pitch = abjad.NamedPitch(pitch_name)
-                note = make_notes(pitch, note_duration)
+                note = make_notes(pitch, note_duration)[0]
             else:
                 note = abjad.Rest(note_duration)
             notes.append(note)
