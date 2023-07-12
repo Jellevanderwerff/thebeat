@@ -36,7 +36,7 @@ jobs:
 
       - name: Install test requirements
         run: |
-          pip install pytest
+          pip install -r tests/requirements.txt
           pip install pytest-github-actions-annotate-failures
 
       - name: Test with pytest
