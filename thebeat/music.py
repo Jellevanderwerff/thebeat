@@ -573,6 +573,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             raise ImportError("This method requires the 'abjad' Python package."
                               "Install it, for instance by typing 'pip install abjad' into your terminal.")
 
+        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
+        # This because abjad 3.13 etc require Python 3.10.
+        try:
+            make_notes = abjad.makers.make_notes
+        except AttributeError:
+            make_notes = abjad.makers.NoteMaker()
+
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
         remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
@@ -582,7 +589,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         durations = self._get_abjad_note_durations()
         durations, ties_at = self._get_abjad_ties(durations)
         pitches = [abjad.NamedPitch('A3')] * len(durations)
-        note_maker = abjad.makers.NoteMaker()
 
         notes = []
 
@@ -599,7 +605,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
         for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = note_maker(pitch, duration) if is_plyd else abjad.Rest(duration)
+            note = make_notes(pitch, duration) if is_plyd else abjad.Rest(duration)
             notes.append(note)
 
         # plot the notes
@@ -1322,8 +1328,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
                             key: str,
                             time_signature: tuple):
 
-        # Set up what we need
-        note_maker = abjad.makers.NoteMaker()
+        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
+        # This because abjad 3.13 etc require Python 3.10.
+        try:
+            make_notes = abjad.makers.make_notes
+        except AttributeError:
+            make_notes = abjad.makers.NoteMaker()
         time_signature = abjad.TimeSignature(time_signature)
         key = abjad.KeySignature(key)
         preamble = textwrap.dedent(r"""
@@ -1358,7 +1368,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
             if is_played is True:
                 pitch = abjad.NamedPitch(pitch_name)
-                note = note_maker(pitch, note_duration)
+                note = make_notes(pitch, note_duration)
             else:
                 note = abjad.Rest(note_duration)
             notes.append(note)
