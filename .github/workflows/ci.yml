@@ -46,6 +46,7 @@ jobs:
         if: contains(matrix.os, 'windows')
         run: |
           choco install lilypond
+          Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
 
       - name: Install test requirements
         run: |
