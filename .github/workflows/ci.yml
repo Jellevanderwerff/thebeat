@@ -11,9 +11,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
-    name: Test • Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    name: Test • Python ${{ matrix.python-version }} • ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -30,7 +31,8 @@ jobs:
           pip install .
           pip install ${{ (matrix.python-version == '3.8' || matrix.python-version == '3.9') && '"abjad<=3.4"' || 'abjad' }}
 
-      - name: Install PortAudio and LilyPond
+      - name: Install PortAudio and LilyPond (Linux)
+        if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt update
           sudo apt install libportaudio2 lilypond
