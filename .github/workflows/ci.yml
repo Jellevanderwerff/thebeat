@@ -53,9 +53,13 @@ jobs:
           pip install -r tests/requirements.txt
           pip install pytest-github-actions-annotate-failures
 
-      - name: Test with pytest
+      - name: Run tests with pytest
         run: |
           pytest
+
+      - name: Run doctests with pytest
+        run: |
+          pytest --doctest-modules thebeat/
 
   docs:
     name: Documentation
