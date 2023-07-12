@@ -11,9 +11,6 @@ authors = [
     {name = "Yannick Jadoul", email="yannick.jadoul@gmail.com"},
 ]
 readme = "README.md"
-#homepage = ""  # TODO: GitHub or Docs?
-repository = "https://github.com/Jellevanderwerff/thebeat"
-#documentation = ""  # TODO: RTD
 requires-python = ">=3.8"
 keywords = []  # TODO
 #license = {text = "BSD 3-Clause License"}  # TODO
@@ -30,6 +27,12 @@ dependencies = [
     "levenshtein"
 ]
 dynamic = ["version"]
+
+[project.urls]
+#homepage = ""  # TODO: GitHub or Docs?
+repository = "https://github.com/Jellevanderwerff/thebeat"
+#documentation = ""  # TODO: RTD
+#changelog = ""  # TODO
 
 [tool.setuptools]
 packages = [
