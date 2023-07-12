@@ -13,7 +13,7 @@ integrating easily with the existing Python ecosystem, and with your own scripts
 The package was specifically designed to be useful for both skilled and novice programmers.
 
 # Documentation
-The package documentation is available from [https://docs.the-beat.info](https://docs.the-beat.info).
+The package documentation is available from [https://thebeat.readthedocs.io](https://thebeat.readthedocs.io).
 
 # Installation
 A development version of *thebeat* can be installed by downloading this repository as a ``.zip`` file (click the green 'Code' button > 'Download ZIP'), and installing via pip, by typing the following in a terminal where you've navigated to the folder containing the downloaded ``.zip`` file:
