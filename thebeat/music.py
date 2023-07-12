@@ -1335,7 +1335,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         except AttributeError:
             make_notes = abjad.makers.NoteMaker()
         time_signature = abjad.TimeSignature(time_signature)
-        key = abjad.KeySignature(key)
+        pitch = abjad.NamedPitchClass(key)
+        key = abjad.KeySignature(pitch)
         preamble = textwrap.dedent(r"""
              \version "2.22.1"
              \language "english"
