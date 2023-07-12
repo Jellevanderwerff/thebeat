@@ -27,7 +27,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .
-          pip install abjad
+          pip install ${{ (matrix.python-version == '3.8' || matrix.python-version == '3.9') && 'abjad<=3.4' || 'abjad' }}
 
       - name: Install PortAudio and LilyPond
         run: |
