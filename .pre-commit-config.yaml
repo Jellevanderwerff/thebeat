@@ -27,3 +27,8 @@ repos:
       - id: name-tests-test
         args: ['--pytest-test-first']
       - id: trailing-whitespace
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.9.0
+    hooks:
+    - id: pyupgrade
