@@ -57,5 +57,11 @@ per-file-ignores = [
     "tests/*:D100,D103",
 ]
 
+[tool.isort]
+skip = ["docs/source/conf.py"]
+line_length = 160
+multi_line_output = 3
+
+
 [tool.mypy]
 ignore_missing_imports = true
