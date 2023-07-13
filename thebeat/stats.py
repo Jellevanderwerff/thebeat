@@ -16,19 +16,21 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import scipy.stats
-import scipy.fft
-import numpy as np
-import thebeat.core
-from thebeat.helpers import sequence_to_binary
+
+import warnings
+
+import Levenshtein
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.fft
 import scipy.signal
 import scipy.stats
 from scipy.fft import rfft, rfftfreq
-import pandas as pd
+
+import thebeat.core
 import thebeat.helpers
-import Levenshtein
-import warnings
+from thebeat.helpers import sequence_to_binary
 
 
 def acf_df(sequence: thebeat.core.Sequence,

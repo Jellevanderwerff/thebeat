@@ -18,30 +18,29 @@
 from __future__ import annotations
 
 import copy
+import os
 import re
 import textwrap
-from collections import namedtuple
 import warnings
+from collections import namedtuple
+from fractions import Fraction
+
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+import sounddevice
+
+import thebeat._warnings
+import thebeat.core
+import thebeat.helpers
+import thebeat.utils
+from thebeat._decorators import requires_lilypond
 
 # Optional imports
 try:
     import abjad
 except ImportError:
     abjad = None
-
-import sounddevice
-import os
-from fractions import Fraction
-import numpy as np
-import numpy.typing as npt
-import matplotlib.pyplot as plt
-
-# Local imports
-import thebeat.core
-from thebeat._decorators import requires_lilypond
-import thebeat._warnings
-import thebeat.helpers
-import thebeat.utils
 
 
 class Rhythm(thebeat.core.sequence.BaseSequence):

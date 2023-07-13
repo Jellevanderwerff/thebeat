@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-import thebeat
-import pytest
 import numpy as np
+import pytest
+
+import thebeat
 
 
 def test_rhythm_to_binary():

@@ -16,23 +16,24 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import os
+
 import importlib.resources as pkg_resources
-import warnings
-
-import scipy.signal
-
-import thebeat.resources
-import numpy as np
-import numpy.typing as npt
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-import sounddevice as sd
-from thebeat._decorators import requires_lilypond
-import tempfile
+import os
 import shutil
 import subprocess
+import tempfile
+import warnings
+
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+import scipy.signal
+import sounddevice as sd
+from scipy.io import wavfile
+
+import thebeat.resources
+from thebeat._decorators import requires_lilypond
 
 try:
     import abjad

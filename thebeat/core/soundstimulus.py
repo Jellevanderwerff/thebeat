@@ -16,13 +16,16 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
+import copy
 import os
 import re
+
 import numpy as np
 import sounddevice as sd
 from matplotlib import pyplot as plt
+
 import thebeat.helpers
-import copy
 
 try:
     import abjad

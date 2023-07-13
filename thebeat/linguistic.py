@@ -16,7 +16,9 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
 import numpy as np
+
 import thebeat.core
 
 

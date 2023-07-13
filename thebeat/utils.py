@@ -17,11 +17,13 @@
 
 from __future__ import annotations
 
-import numpy as np
-import thebeat.core
 import warnings
-from thebeat._warnings import phases_t_at_zero
+
+import numpy as np
 import pandas as pd
+
+import thebeat.core
+from thebeat._warnings import phases_t_at_zero
 
 try:
     import abjad

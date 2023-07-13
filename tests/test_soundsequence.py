@@ -15,11 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import pytest
 import scipy
 
 import thebeat.core
-import numpy as np
 
 
 def test_soundsequence(tmp_path):

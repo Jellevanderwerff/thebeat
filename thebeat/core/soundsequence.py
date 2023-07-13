@@ -16,15 +16,18 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+
+import copy
+import os
+import warnings
+
+import numpy as np
+import sounddevice as sd
+
+import thebeat._warnings
+import thebeat.helpers
 from thebeat.core.sequence import BaseSequence, Sequence
 from thebeat.core.soundstimulus import SoundStimulus
-import numpy as np
-import thebeat.helpers
-import thebeat._warnings
-import warnings
-import os
-import copy
-import sounddevice as sd
 
 
 class SoundSequence(BaseSequence):

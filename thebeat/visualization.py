@@ -16,12 +16,14 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import thebeat.core
+
 import matplotlib.pyplot as plt
-import thebeat.helpers
-import numpy as np
 import matplotlib.ticker as ticker
+import numpy as np
 import scipy.stats
+
+import thebeat.core
+import thebeat.helpers
 
 
 def plot_interval_ratios_density(sequence: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),

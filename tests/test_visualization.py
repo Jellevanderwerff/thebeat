@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-from matplotlib import pyplot as plt
 import numpy as np
-import thebeat.visualization
-from thebeat.core import SoundStimulus, SoundSequence, Sequence
-from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 import pytest
+from matplotlib import pyplot as plt
+
+import thebeat.visualization
+from thebeat.core import Sequence, SoundSequence, SoundStimulus
+from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 
 
 @pytest.fixture
