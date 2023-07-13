@@ -44,5 +44,18 @@ packages = [
 [tool.setuptools.dynamic]
 version = {attr = "thebeat.__version__"}
 
+[tool.flake8]
+max-line-length = 160
+max-doc-length = 100
+extend-ignore = [
+    'W505',
+]
+per-file-ignores = [
+    "__init__.py:F401",
+    "docs/source/conf.py:E402,E265",
+    "scripts/*:D100,D103",
+    "tests/*:D100,D103",
+]
+
 [tool.mypy]
 ignore_missing_imports = true
