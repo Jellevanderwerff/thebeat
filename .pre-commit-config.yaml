@@ -43,3 +43,9 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
+
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: '0.49'
+    hooks:
+    - id: check-manifest
+      stages: [manual]
