@@ -59,8 +59,8 @@ class BaseSequence:
     def __init__(self,
                  iois: npt.ArrayLike[float],
                  first_onset: float = 0.0,
-                 end_with_interval: Optional[bool] = False,
-                 name: Optional[str] = None):
+                 end_with_interval: bool | None = False,
+                 name: str | None = None):
         """Initialization of BaseSequence class."""
 
         # Save attributes
@@ -173,7 +173,7 @@ class Sequence(BaseSequence):
                  iois: npt.ArrayLike[float],
                  first_onset: float = 0.0,
                  end_with_interval: bool = False,
-                 name: Optional[str] = None):
+                 name: str | None = None):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
         When ``end_with_interval`` is ``False`` (the default), the sequence contains *n* event onsets, but *n*-1 IOIs.
         If ``True``, the sequence contains an equal number of event onsets and IOIs.
@@ -279,7 +279,7 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_onsets(cls,
-                    onsets: Union[np.ndarray[float], list[float]],
+                    onsets: np.ndarray[float] | list[float],
                     **kwargs) -> Sequence:
         """
         Class method that can be used to generate a new :py:class:`Sequence` object on the basis of event onsets.
@@ -308,7 +308,7 @@ class Sequence(BaseSequence):
 
     @classmethod
     def from_txt(cls,
-                 filepath: Union[str, pathlib.Path],
+                 filepath: str | pathlib.Path,
                  type: str = "iois",
                  end_with_interval: bool = False,
                  **kwargs) -> Sequence:
@@ -329,7 +329,7 @@ class Sequence(BaseSequence):
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
 
         """
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             data = f.readlines()
 
         if type == "iois":
@@ -389,7 +389,7 @@ class Sequence(BaseSequence):
                                n_events: int,
                                mu: float,
                                sigma: float,
-                               rng: Optional[np.random.Generator] = None,
+                               rng: np.random.Generator | None = None,
                                end_with_interval: bool = False,
                                **kwargs) -> Sequence:
         """
@@ -436,7 +436,7 @@ class Sequence(BaseSequence):
                                 n_events: int,
                                 a: float,
                                 b: float,
-                                rng: Optional[np.random.Generator] = None,
+                                rng: np.random.Generator | None = None,
                                 end_with_interval: bool = False,
                                 **kwargs) -> Sequence:
         """
@@ -485,7 +485,7 @@ class Sequence(BaseSequence):
     def generate_random_poisson(cls,
                                 n_events: int,
                                 lam: float,
-                                rng: Optional[np.random.Generator] = None,
+                                rng: np.random.Generator | None = None,
                                 end_with_interval: bool = False,
                                 **kwargs) -> Sequence:
 
@@ -528,7 +528,7 @@ class Sequence(BaseSequence):
     def generate_random_exponential(cls,
                                     n_events: int,
                                     lam: float,
-                                    rng: Optional[np.random.Generator] = None,
+                                    rng: np.random.Generator | None = None,
                                     end_with_interval: bool = False,
                                     **kwargs) -> Sequence:
         """Class method that generates a :py:class:`Sequence` object with random inter-onset intervals (IOIs) based on
@@ -565,7 +565,7 @@ class Sequence(BaseSequence):
         return cls(rng.exponential(scale=lam, size=n_iois), end_with_interval=end_with_interval, **kwargs)
 
     def merge(self,
-              other: Union[thebeat.core.Sequence, list[thebeat.core.Sequence]]):
+              other: thebeat.core.Sequence | list[thebeat.core.Sequence]):
         """
         Merge this :py:class:`Sequence` object with one or multiple other :py:class:`Sequence` objects.
 
@@ -591,7 +591,7 @@ class Sequence(BaseSequence):
     # Manipulation methods
     def add_noise_gaussian(self,
                            noise_sd: float,
-                           rng: Optional[np.random.Generator] = None):
+                           rng: np.random.Generator | None = None):
         """This method can be used to add some Gaussian noise to the inter-onset intervals (IOIs)
         of the Sequence object. It uses a normal distribution with mean 0, and a standard deviation
         of ``noise_sd``.
@@ -718,7 +718,7 @@ class Sequence(BaseSequence):
 
     # Visualization
     def plot_sequence(self,
-                      linewidth: Optional[Union[npt.ArrayLike[float], float]] = None,
+                      linewidth: npt.ArrayLike[float] | float | None = None,
                       **kwargs) -> tuple[plt.Figure, plt.Axes]:
         """
         Plot the :py:class:`Sequence` object as an event plot on the basis of the event onsets.

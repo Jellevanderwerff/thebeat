@@ -58,11 +58,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     """
 
     def __init__(self,
-                 iois: Union[np.ndarray, list],
+                 iois: np.ndarray | list,
                  time_signature: tuple[int, int] = (4, 4),
                  beat_ms: float = 500,
-                 is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                 name: Optional[str] = None):
+                 is_played: np.typing.ArrayLike[bool] | None = None,
+                 name: str | None = None):
         r"""
         Constructs a :py:class:`Rhythm` object.
 
@@ -228,11 +228,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     @classmethod
     def from_fractions(cls,
-                       fractions: Union[list, np.ndarray],
+                       fractions: list | np.ndarray,
                        time_signature: tuple[int, int] = (4, 4),
                        beat_ms: int = 500,
                        is_played: np.typing.ArrayLike[bool] = None,
-                       name: Optional[str] = None) -> Rhythm:
+                       name: str | None = None) -> Rhythm:
         r"""
 
         This class method can be used for creating a Rhythm on the basis of fractions. The fractions
@@ -290,7 +290,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                             time_signature: tuple[int, int] = (4, 4),
                             beat_ms: int = 500,
                             is_played: np.typing.ArrayLike[bool] = None,
-                            name: Optional[str] = None) -> Rhythm:
+                            name: str | None = None) -> Rhythm:
         r"""
 
         Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
@@ -330,8 +330,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                          note_values: np.typing.ArrayLike[int],
                          time_signature: tuple[int, int] = (4, 4),
                          beat_ms: int = 500,
-                         is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                         name: Optional[str] = None) -> Rhythm:
+                         is_played: np.typing.ArrayLike[bool] | None = None,
+                         name: str | None = None) -> Rhythm:
         r"""Create a Rhythm object on the basis of note values (i.e. note durations).
 
         Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
@@ -374,10 +374,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                                n_bars: int = 1,
                                beat_ms: int = 500,
                                time_signature: tuple[int, int] = (4, 4),
-                               allowed_note_values: Optional[np.typing.ArrayLike[int]] = None,
+                               allowed_note_values: np.typing.ArrayLike[int] | None = None,
                                n_rests: int = 0,
-                               rng: Optional[np.random.Generator] = None,
-                               name: Optional[str] = None) -> Rhythm:
+                               rng: np.random.Generator | None = None,
+                               name: str | None = None) -> Rhythm:
         r"""
         This function generates a random rhythmic sequence on the basis of the provided parameters.
 
@@ -456,8 +456,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                              n_bars: int = 1,
                              time_signature: tuple[int, int] = (4, 4),
                              beat_ms: int = 500,
-                             is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                             name: Optional[str] = None) -> Rhythm:
+                             is_played: np.typing.ArrayLike[bool] | None = None,
+                             name: str | None = None) -> Rhythm:
         r"""
 
         Simply generates an isochronous (i.e. with equidistant inter-onset intervals) rhythm. Will have
@@ -492,13 +492,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     @requires_lilypond
     def plot_rhythm(self,
-                    filepath: Union[os.PathLike, str] = None,
+                    filepath: os.PathLike | str = None,
                     staff_type: str = "rhythm",
                     print_staff: bool = True,
-                    title: Optional[str] = None,
+                    title: str | None = None,
                     suppress_display: bool = False,
                     dpi: int = 600,
-                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                    ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
 
@@ -584,7 +584,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
-        remove_footers = """\n\paper {\nindent = 0\mm\nline-width = 110\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
+        remove_footers = """\n\\paper {\nindent = 0\\mm\nline-width = 110\\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
@@ -761,11 +761,11 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
     def __init__(self,
                  rhythm: thebeat.music.Rhythm,
-                 pitch_names: Union[npt.NDArray[str], list[str], str],
-                 octave: Optional[int] = None,
-                 key: Optional[str] = None,
-                 is_played: Optional[list] = None,
-                 name: Optional[str] = None):
+                 pitch_names: npt.NDArray[str] | list[str] | str,
+                 octave: int | None = None,
+                 key: str | None = None,
+                 is_played: list | None = None,
+                 name: str | None = None):
         """
 
         Parameters
@@ -856,7 +856,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                                n_rests: int = 0,
                                allowed_note_values: list = None,
                                rng: np.random.Generator = None,
-                               name: Optional[str] = None) -> Melody:
+                               name: str | None = None) -> Melody:
         r"""
 
         Generate a random rhythm as well as a melody, based on the given parameters. Internally, for the
@@ -977,8 +977,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
     @requires_lilypond
     def plot_melody(self,
-                    filepath: Optional[Union[os.PathLike, str]] = None,
-                    key: Optional[str] = None,
+                    filepath: os.PathLike | str | None = None,
+                    key: str | None = None,
                     suppress_display: bool = False,
                     dpi: int = 600) -> tuple[plt.Figure, plt.Axes]:
         """
@@ -1035,7 +1035,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return fig, ax
 
     def synthesize_and_return(self,
-                              event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                              event_durations_ms: list[int] | npt.NDArray[int] | int | None = None,
                               fs: int = 48000,
                               n_channels: int = 1,
                               amplitude: float = 1.0,
@@ -1104,7 +1104,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return samples, fs
 
     def synthesize_and_play(self,
-                            event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                            event_durations_ms: list[int] | npt.NDArray[int] | int | None = None,
                             fs: int = 48000,
                             n_channels: int = 1,
                             amplitude: float = 1.0,
@@ -1173,12 +1173,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
         sounddevice.wait()
 
     def synthesize_and_write(self,
-                             filepath: Union[str, os.PathLike],
-                             event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+                             filepath: str | os.PathLike,
+                             event_durations_ms: list[int] | npt.NDArray[int] | int | None = None,
                              fs: int = 48000,
                              n_channels: int = 1,
                              amplitude: float = 1.0,
-                             dtype: Union[str, np.dtype] = np.int16,
+                             dtype: str | np.dtype = np.int16,
                              oscillator: str = 'sine',
                              onramp_ms: int = 0,
                              offramp_ms: int = 0,
@@ -1267,7 +1267,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                            onramp_ms: int,
                            offramp_ms: int,
                            ramp_type: str,
-                           event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None):
+                           event_durations_ms: list[int] | npt.NDArray[int] | int | None = None):
 
         # Calculate required number of frames
         total_duration_ms = np.sum(self.iois)

@@ -25,18 +25,18 @@ import matplotlib.ticker as ticker
 import scipy.stats
 
 
-def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
+def plot_interval_ratios_density(sequence: (thebeat.core.Sequence |
+list[thebeat.core.Sequence] |
+np.ndarray[thebeat.core.Sequence]),
                                  resolution: float = 0.01,
                                  style: str = 'seaborn-v0_8',
-                                 title: Optional[str] = None,
+                                 title: str | None = None,
                                  x_axis_label: str = "Interval ratios from dyads",
                                  y_axis_label: str = "Probability density",
-                                 figsize: Optional[tuple[int, int]] = None,
+                                 figsize: tuple[int, int] | None = None,
                                  suppress_display: bool = False,
                                  dpi: int = 100,
-                                 ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                                 ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a density plot of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
@@ -122,18 +122,18 @@ np.ndarray[thebeat.core.Sequence]],
     return fig, ax
 
 
-def plot_interval_ratios_histogram(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
+def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence |
+list[thebeat.core.Sequence] |
+np.ndarray[thebeat.core.Sequence]),
                                    bins: int = 100,
                                    style: str = 'seaborn-v0_8',
-                                   title: Optional[str] = None,
+                                   title: str | None = None,
                                    x_axis_label: str = "Interval ratios from dyads",
                                    y_axis_label: str = "Count",
-                                   figsize: Optional[tuple[int, int]] = None,
+                                   figsize: tuple[int, int] | None = None,
                                    suppress_display: bool = False,
                                    dpi: int = 100,
-                                   ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                                   ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a histogram of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
@@ -209,23 +209,23 @@ np.ndarray[thebeat.core.Sequence]],
     return fig, ax
 
 
-def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
-                                                list[thebeat.core.Sequence],
-                                                np.ndarray[thebeat.core.Sequence]],
-                           reference_sequence: Union[thebeat.core.Sequence,
-                           float,
-                           list[thebeat.core.Sequence],
-                           np.ndarray[thebeat.core.Sequence]],
+def plot_phase_differences(test_sequence: (thebeat.core.Sequence |
+                                                list[thebeat.core.Sequence] |
+                                                np.ndarray[thebeat.core.Sequence]),
+                           reference_sequence: (thebeat.core.Sequence |
+                           float |
+                           list[thebeat.core.Sequence] |
+                           np.ndarray[thebeat.core.Sequence]),
                            circular_unit: str = 'degrees',
                            binwidth: int = 10,
                            zero_direction: str = 'E',
                            color: str = None,
                            style: str = 'seaborn-v0_8',
-                           title: Optional[str] = None,
-                           figsize: Optional[tuple[int, int]] = None,
+                           title: str | None = None,
+                           figsize: tuple[int, int] | None = None,
                            suppress_display: bool = False,
                            dpi: int = 100,
-                           ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                           ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot the phase differences for ``test_sequence`` compared to ``reference_sequence``.
 
     The reference sequence can either be a single sequence in which case a comparison will be made between
@@ -359,13 +359,13 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
                      style: str = 'seaborn-v0_8',
                      linecolor: str = 'black',
                      linewidth: float = 0.5,
-                     title: Optional[str] = None,
+                     title: str | None = None,
                      x_axis_label: str = r"$\mathregular{IOI_i}$",
                      y_axis_label: str = r"$\mathregular{IOI_{i+1}}$",
-                     figsize: Optional[tuple[int, int]] = None,
+                     figsize: tuple[int, int] | None = None,
                      suppress_display: bool = False,
                      dpi: int = 100,
-                     ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                     ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot the phase space of a sequence. In such a plot we loop over each IOI, and plot a line
     between it on the x axis and the IOI that follows it on the y axis.
 
@@ -441,17 +441,17 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
     return fig, ax
 
 
-def plot_multiple_sequences(sequences: Union[list, np.ndarray],
+def plot_multiple_sequences(sequences: list | np.ndarray,
                             style: str = 'seaborn-v0_8',
-                            title: Optional[str] = None,
+                            title: str | None = None,
                             x_axis_label: str = "Time",
-                            y_axis_labels: Optional[list[str], np.ndarray[str]] = None,
-                            linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
-                            figsize: Optional[tuple] = None,
+                            y_axis_labels: list[str] | np.ndarray[str] | None = None,
+                            linewidths: list[float] | np.typing.NDArray[float] | float | None = None,
+                            figsize: tuple | None = None,
                             suppress_display: bool = False,
                             dpi: int = 100,
-                            colors: Union[list, np.ndarray] = None,
-                            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                            colors: list | np.ndarray = None,
+                            ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.SoundSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
@@ -580,18 +580,18 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
 
 
 def recurrence_plot(sequence: thebeat.core.Sequence,
-                    threshold: Optional[float] = None,
+                    threshold: float | None = None,
                     colorbar: bool = False,
-                    colorbar_label: Optional[str] = "Distance",
-                    cmap: Optional[str] = None,
+                    colorbar_label: str | None = "Distance",
+                    cmap: str | None = None,
                     style: str = 'seaborn-v0_8',
-                    title: Optional[str] = None,
-                    x_axis_label: str = "$\mathregular{N_i}$",
-                    y_axis_label: str = "$\mathregular{N_i}$",
+                    title: str | None = None,
+                    x_axis_label: str = r"$\mathregular{N_i}$",
+                    y_axis_label: str = r"$\mathregular{N_i}$",
                     figsize: tuple = (5, 4),
                     suppress_display: bool = False,
                     dpi: int = 100,
-                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                    ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a recurrence plot of a sequence. A recurrence plot is a plot with the IOI numbers (i.e. their indices) on the
     x and y axis, and the distance between the IOIs on the color scale. For each combination of two IOIs,

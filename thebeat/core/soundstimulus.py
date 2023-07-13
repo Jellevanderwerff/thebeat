@@ -45,7 +45,7 @@ class SoundStimulus:
     def __init__(self,
                  samples: np.ndarray,
                  fs: int,
-                 name: Optional[str] = None):
+                 name: str | None = None):
         """
         The constructor for the :py:class:`SoundStimulus` class. Except for special cases, this is only used internally.
         You'll most likely want to use one of the different class methods to construct a :py:class:`SoundStimulus` object,
@@ -122,9 +122,9 @@ class SoundStimulus:
 
     @classmethod
     def from_wav(cls,
-                 filepath: Union[os.PathLike, str],
-                 new_fs: Optional[int] = None,
-                 name: Optional[str] = None) -> SoundStimulus:
+                 filepath: os.PathLike | str,
+                 new_fs: int | None = None,
+                 name: str | None = None) -> SoundStimulus:
         """
         This method loads a stimulus from a PCM ``.wav`` file, and reads in the samples.
         If necessary, it additionally converts the ``dtype`` to :class:`numpy.float64`.
@@ -169,7 +169,7 @@ class SoundStimulus:
                  onramp_ms: float = 0,
                  offramp_ms: float = 0,
                  ramp_type: str = 'linear',
-                 name: Optional[str] = None) -> SoundStimulus:
+                 name: str | None = None) -> SoundStimulus:
         """
         This class method returns a SoundStimulus object with a generated sound, based on the given parameters.
         It is recommended to use the on- and offramp parameters for the best results.
@@ -223,8 +223,8 @@ class SoundStimulus:
                              fs: int = 48000,
                              n_channels: int = 1,
                              amplitude: float = 1.0,
-                             rng: Optional[np.random.Generator] = None,
-                             name: Optional[str] = None) -> SoundStimulus:
+                             rng: np.random.Generator | None = None,
+                             name: str | None = None) -> SoundStimulus:
         """
         This class method returns a SoundStimulus object with white noise. They are simply random samples from a normal
         distribution with mean 0 and standard deviation ``sd``.
@@ -280,7 +280,7 @@ class SoundStimulus:
                   onramp_ms: int = 0,
                   offramp_ms: int = 0,
                   ramp: str = 'linear',
-                  name: Optional[str] = None) -> SoundStimulus:
+                  name: str | None = None) -> SoundStimulus:
         """
         Generate a :py:class:`SoundStimulus` object on the basis of a note as a string.
         For instance, a ``note_str`` of ``'G4'`` results in a generated SoundStimulus with a pitch frequency of 392 hertz.
@@ -336,7 +336,7 @@ class SoundStimulus:
     @classmethod
     def from_parselmouth(cls,
                          sound_object,
-                         name: Optional[str] = None) -> SoundStimulus:
+                         name: str | None = None) -> SoundStimulus:
 
         """
         This class method generates a :py:class:`SoundStimulus` object from a :class:`parselmouth.Sound` object.
@@ -390,7 +390,7 @@ class SoundStimulus:
         self.samples = self.samples * factor
 
     def merge(self,
-              other: Union[thebeat.core.SoundStimulus, list[thebeat.core.SoundStimulus]]):
+              other: thebeat.core.SoundStimulus | list[thebeat.core.SoundStimulus]):
         """
         Merge this :py:class:`SoundStimulus` object with one or multiple other :py:class:`SoundStimulus` objects.
 
@@ -495,8 +495,8 @@ class SoundStimulus:
         return np.float64(self.samples.shape[0] / self.fs * 1000)
 
     def write_wav(self,
-                  filepath: Union[str, os.PathLike],
-                  dtype: Union[str, np.dtype] = np.int16) -> None:
+                  filepath: str | os.PathLike,
+                  dtype: str | np.dtype = np.int16) -> None:
         """
         Save the :py:class:`SoundStimulus` sound to disk as a wave file.
 

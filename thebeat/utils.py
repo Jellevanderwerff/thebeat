@@ -30,10 +30,10 @@ except ImportError:
     abjad = None
 
 
-def get_ioi_df(sequences: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
-               additional_functions: Optional[list[callable]] = None):
+def get_ioi_df(sequences: (thebeat.core.Sequence |
+list[thebeat.core.Sequence] |
+np.ndarray[thebeat.core.Sequence]),
+               additional_functions: list[callable] | None = None):
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided
     :py:class:`thebeat.core.Sequence` objects in
@@ -172,7 +172,7 @@ def get_major_scale(tonic: str,
 
 
 def get_phase_differences(test_sequence: thebeat.core.Sequence,
-                          reference_sequence: Union[thebeat.core.Sequence, float],
+                          reference_sequence: thebeat.core.Sequence | float,
                           circular_unit="degrees"):
     # todo Verify this method of calculating phase differences. I'm not quite sure about using the period of the
     #  test_sequence instead of the reference_sequence
@@ -278,7 +278,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
         raise ValueError("Please provide a valid circular unit. Either 'degrees' or 'radians'.")
 
 
-def get_interval_ratios_from_dyads(sequence: Union[np.array, thebeat.core.Sequence, list]):
+def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
     r"""
     Return sequential interval ratios, calculated as:
 
@@ -304,7 +304,7 @@ def get_interval_ratios_from_dyads(sequence: Union[np.array, thebeat.core.Sequen
 
 
 def concatenate_sequences(sequences: np.typing.ArrayLike,
-                          name: Optional[str] = None):
+                          name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.Sequence` objects.
 
     Note
@@ -345,7 +345,7 @@ def concatenate_sequences(sequences: np.typing.ArrayLike,
 
 
 def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
-                               name: Optional[str] = None):
+                               name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.SoundSequence` objects.
 
     Note
@@ -386,8 +386,8 @@ def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
     return thebeat.core.SoundSequence(sound=all_sounds, sequence=seq, name=name)
 
 
-def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
-                             name: Optional[str] = None):
+def concatenate_soundstimuli(sound_stimuli: np.ndarray | list,
+                             name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
 
     Parameters
@@ -415,7 +415,7 @@ def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
 
 
 def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus],
-                       name: Optional[str] = None):
+                       name: str | None = None):
     """Merge an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
     The sound samples for each of the objects will be overlaid on top of each other.
 
@@ -446,7 +446,7 @@ def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus]
 
 
 def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence],
-                    name: Optional[str] = None):
+                    name: str | None = None):
     """Merge an array or list of :py:class:`~thebeat.core.Sequence` objects.
     The the event onsets in each of the objects will be overlaid on top of each other.
 
@@ -480,7 +480,7 @@ def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence],
 
 def merge_soundsequences(sound_sequences:
                          list[thebeat.core.SoundSequence],
-                         name: Optional[str] = None):
+                         name: str | None = None):
     """Merge a list or array of :py:class:`~thebeat.core.SoundSequence` objects.
     The event onsets in each of the objects will be overlaid on top of each other, after which the sounds
 

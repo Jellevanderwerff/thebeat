@@ -56,10 +56,10 @@ class SoundSequence(BaseSequence):
     """
 
     def __init__(self,
-                 sound: Union[SoundStimulus, list[SoundStimulus], np.typing.NDArray[SoundStimulus]],
+                 sound: SoundStimulus | list[SoundStimulus] | np.typing.NDArray[SoundStimulus],
                  sequence: Sequence,
                  sequence_time_unit: str = "ms",
-                 name: Optional[str] = None):
+                 name: str | None = None):
         """
         Initialize a :py:class:`SoundSequence` object using a :py:class:`SoundStimulus` object, or list or array of
         :py:class:`SoundStimulus` objects, and a :py:class:`Sequence` object.
@@ -195,7 +195,7 @@ class SoundSequence(BaseSequence):
             return copy.copy(self)
 
     def merge(self,
-              other: Union[thebeat.core.SoundSequence, list[thebeat.core.SoundSequence]]):
+              other: thebeat.core.SoundSequence | list[thebeat.core.SoundSequence]):
         """
         Merge this :py:class:`SoundSequence` object with one or multiple other :py:class:`SoundSequence` objects.
 
@@ -266,7 +266,7 @@ class SoundSequence(BaseSequence):
         sd.stop()
 
     def plot_sequence(self,
-                      linewidth: Optional[Union[float, list[float], np.typing.NDArray[float]]] = None,
+                      linewidth: float | list[float] | np.typing.NDArray[float] | None = None,
                       **kwargs):
         """
         Plot the :py:class:`SoundSequence` object as an event plot on the basis of the event onsets and their durations.
@@ -344,11 +344,11 @@ class SoundSequence(BaseSequence):
         return fig, ax
 
     def write_wav(self,
-                  filepath: Union[str, os.PathLike],
-                  dtype: Union[str, np.dtype] = np.int16,
+                  filepath: str | os.PathLike,
+                  dtype: str | np.dtype = np.int16,
                   metronome: bool = False,
-                  metronome_ioi: Optional[float] = None,
-                  metronome_amplitude: Optional[float] = None):
+                  metronome_ioi: float | None = None,
+                  metronome_amplitude: float | None = None):
         """
         Parameters
         ----------

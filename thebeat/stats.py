@@ -34,8 +34,8 @@ import warnings
 
 def acf_df(sequence: thebeat.core.Sequence,
            resolution,
-           smoothing_window: Optional[float] = None,
-           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
+           smoothing_window: float | None = None,
+           smoothing_sd: float | None = None) -> pd.DataFrame:
     """
 
     Perform autocorrelation analysis on a :py:class:`Sequence` object,
@@ -96,17 +96,17 @@ def acf_df(sequence: thebeat.core.Sequence,
 
 def acf_plot(sequence: thebeat.core.Sequence,
              resolution,
-             min_lag: Optional[float] = None,
-             max_lag: Optional[float] = None,
-             smoothing_window: Optional[float] = None,
-             smoothing_sd: Optional[float] = None,
+             min_lag: float | None = None,
+             max_lag: float | None = None,
+             smoothing_window: float | None = None,
+             smoothing_sd: float | None = None,
              style: str = 'seaborn-v0_8',
              title: str = 'Autocorrelation',
              x_axis_label: str = 'Lag',
              y_axis_label: str = 'Correlation',
-             figsize: Optional[tuple] = None,
+             figsize: tuple | None = None,
              dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
+             ax: plt.Axes | None = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
@@ -197,8 +197,8 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
 def acf_values(sequence: thebeat.core.Sequence,
                resolution,
-               smoothing_window: Optional[float] = None,
-               smoothing_sd: Optional[float] = None) -> np.ndarray:
+               smoothing_window: float | None = None,
+               smoothing_sd: float | None = None) -> np.ndarray:
     """
 
     Perform autocorrelation. This function takes a :class:`~thebeat.core.Sequence` object, and returns an array with
@@ -251,8 +251,8 @@ def acf_values(sequence: thebeat.core.Sequence,
 def ccf_df(test_sequence: thebeat.core.Sequence,
            reference_sequence: thebeat.core.Sequence,
            resolution,
-           smoothing_window: Optional[float] = None,
-           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
+           smoothing_window: float | None = None,
+           smoothing_sd: float | None = None) -> pd.DataFrame:
     """
 
     Perform autocorrelation analysis on a :py:class:`Sequence` object,
@@ -308,15 +308,15 @@ def ccf_df(test_sequence: thebeat.core.Sequence,
 def ccf_plot(test_sequence: thebeat.core.Sequence,
              reference_sequence: thebeat.core.Sequence,
              resolution,
-             smoothing_window: Optional[float] = None,
-             smoothing_sd: Optional[float] = None,
+             smoothing_window: float | None = None,
+             smoothing_sd: float | None = None,
              style: str = 'seaborn-v0_8',
              title: str = 'Cross-correlation',
              x_axis_label: str = 'Lag',
              y_axis_label: str = 'Correlation',
-             figsize: Optional[tuple] = None,
+             figsize: tuple | None = None,
              dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
+             ax: plt.Axes | None = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     Calculate and plot the cross-correlation function (CCF) between two :class:`~thebeat.core.Sequence` objects.
@@ -409,8 +409,8 @@ def ccf_plot(test_sequence: thebeat.core.Sequence,
 def ccf_values(test_sequence: thebeat.core.Sequence,
                reference_sequence: thebeat.core.Sequence,
                resolution: float,
-               smoothing_window: Optional[float] = None,
-               smoothing_sd: Optional[float] = None) -> np.ndarray:
+               smoothing_window: float | None = None,
+               smoothing_sd: float | None = None) -> np.ndarray:
     """
     Returns the unstandardized cross-correlation function (CCF) for two :class:`~thebeat.core.Sequence` objects.
     The test sequence is compared to the reference sequence.
@@ -567,14 +567,14 @@ def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
 def fft_plot(sequence: thebeat.core.Sequence,
              unit_size: float,
              x_min: float = 0,
-             x_max: Optional[float] = None,
+             x_max: float | None = None,
              style: str = 'seaborn-v0_8',
              title: str = 'Fourier transform',
              x_axis_label: str = 'Cycles per unit',
              y_axis_label: str = 'Absolute power',
-             figsize: Optional[tuple] = None,
+             figsize: tuple | None = None,
              dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
+             ax: plt.Axes | None = None,
              suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
     """
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
@@ -727,7 +727,7 @@ def ks_test(sequence: thebeat.core.Sequence,
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.music.Rhythm],
+def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm,
                          bin_fraction: float = 0.03125):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
