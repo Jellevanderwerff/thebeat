@@ -23,7 +23,8 @@ from . import helpers
 from . import _decorators
 from . import resources
 from . import utils
-from .core import *
 from . import music
+
+from .core import Sequence, SoundSequence, SoundStimulus
 
 __version__ = '0.0.1.dev0'

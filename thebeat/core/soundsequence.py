@@ -16,7 +16,6 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from scipy.io import wavfile
 from thebeat.core.sequence import BaseSequence, Sequence
 from thebeat.core.soundstimulus import SoundStimulus
 import numpy as np
@@ -25,7 +24,6 @@ import thebeat._warnings
 import warnings
 import os
 import copy
-from typing import Union, Optional
 import sounddevice as sd
 
 

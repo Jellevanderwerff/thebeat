@@ -16,7 +16,6 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from typing import Optional, Union
 import scipy.stats
 import scipy.fft
 import numpy as np

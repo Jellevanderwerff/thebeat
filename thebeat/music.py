@@ -32,7 +32,6 @@ except ImportError:
 import sounddevice
 import os
 from fractions import Fraction
-from typing import Union, Optional
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
@@ -579,7 +578,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             make_notes = abjad.makers.make_notes
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
-            def make_notes(*args):
+            def make_notes(*args):  # noqa: E306
                 return list(note_maker(*args))
 
         # Preliminaries
@@ -1336,8 +1335,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             make_notes = abjad.makers.make_notes
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
-            def make_notes(*args):
+            def make_notes(*args):  # noqa: E306
                 return list(note_maker(*args))
+
         time_signature = abjad.TimeSignature(time_signature)
         pitch = abjad.NamedPitchClass(key)
         key = abjad.KeySignature(pitch)

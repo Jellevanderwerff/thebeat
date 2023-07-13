@@ -20,7 +20,6 @@ from __future__ import annotations
 import copy
 import pathlib
 from fractions import Fraction
-from typing import Optional, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt

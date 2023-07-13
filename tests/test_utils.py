@@ -17,7 +17,6 @@
 
 from thebeat import Sequence
 import thebeat.utils
-import numpy as np
 
 
 def test_phasedifferences():

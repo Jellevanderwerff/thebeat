@@ -18,7 +18,6 @@
 from __future__ import annotations
 import numpy as np
 import thebeat.core
-from typing import Optional
 
 
 def generate_moraic_sequence(n_feet: int,

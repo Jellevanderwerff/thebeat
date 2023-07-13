@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import numpy as np
 import thebeat.core
-from typing import Optional, Union
 import warnings
 from thebeat._warnings import phases_t_at_zero
 import pandas as pd
@@ -30,9 +29,7 @@ except ImportError:
     abjad = None
 
 
-def get_ioi_df(sequences: (thebeat.core.Sequence |
-list[thebeat.core.Sequence] |
-np.ndarray[thebeat.core.Sequence]),
+def get_ioi_df(sequences: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
                additional_functions: list[callable] | None = None):
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided

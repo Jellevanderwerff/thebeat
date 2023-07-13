@@ -15,11 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-from thebeat.stats import *
+from thebeat.stats import get_ugof_isochronous, ks_test, get_npvi, ccf_values, ccf_plot, acf_plot
 from thebeat.core import Sequence
 import numpy as np
 import pytest
-import matplotlib.pyplot as plt
 
 
 def test_ugof():

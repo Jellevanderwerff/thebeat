@@ -20,8 +20,6 @@ import os
 import importlib.resources as pkg_resources
 import warnings
 
-from thebeat._warnings import framerounding_soundsynthesis
-
 import scipy.signal
 
 import thebeat.resources
@@ -29,9 +27,7 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
-from scipy.signal import resample
 import sounddevice as sd
-from typing import Union, Optional
 from thebeat._decorators import requires_lilypond
 import tempfile
 import shutil

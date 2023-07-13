@@ -18,12 +18,9 @@
 from __future__ import annotations
 import os
 import re
-from typing import Optional, Union
 import numpy as np
 import sounddevice as sd
 from matplotlib import pyplot as plt
-import scipy.io
-import scipy.signal
 import thebeat.helpers
 import copy
 

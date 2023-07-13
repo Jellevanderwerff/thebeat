@@ -18,16 +18,13 @@
 from __future__ import annotations
 import thebeat.core
 import matplotlib.pyplot as plt
-from typing import Union, Optional
 import thebeat.helpers
 import numpy as np
 import matplotlib.ticker as ticker
 import scipy.stats
 
 
-def plot_interval_ratios_density(sequence: (thebeat.core.Sequence |
-list[thebeat.core.Sequence] |
-np.ndarray[thebeat.core.Sequence]),
+def plot_interval_ratios_density(sequence: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
                                  resolution: float = 0.01,
                                  style: str = 'seaborn-v0_8',
                                  title: str | None = None,
@@ -122,9 +119,7 @@ np.ndarray[thebeat.core.Sequence]),
     return fig, ax
 
 
-def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence |
-list[thebeat.core.Sequence] |
-np.ndarray[thebeat.core.Sequence]),
+def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
                                    bins: int = 100,
                                    style: str = 'seaborn-v0_8',
                                    title: str | None = None,
@@ -209,9 +204,7 @@ np.ndarray[thebeat.core.Sequence]),
     return fig, ax
 
 
-def plot_phase_differences(test_sequence: (thebeat.core.Sequence |
-                                                list[thebeat.core.Sequence] |
-                                                np.ndarray[thebeat.core.Sequence]),
+def plot_phase_differences(test_sequence: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
                            reference_sequence: (thebeat.core.Sequence |
                            float |
                            list[thebeat.core.Sequence] |
