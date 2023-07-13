@@ -517,5 +517,3 @@ class SoundStimulus:
         """
 
         thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, dtype=dtype, metronome=False)
-
-

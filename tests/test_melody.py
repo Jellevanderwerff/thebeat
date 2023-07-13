@@ -48,5 +48,3 @@ def test_melody_copy():
     m.name = "test2"
     assert m2.name == 'test'
     assert m.name == 'test2'
-
-

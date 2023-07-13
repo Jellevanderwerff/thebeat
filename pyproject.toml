@@ -46,4 +46,3 @@ version = {attr = "thebeat.__version__"}
 
 [tool.mypy]
 ignore_missing_imports = true
-

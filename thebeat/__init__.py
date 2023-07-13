@@ -27,4 +27,3 @@ from .core import *
 from . import music
 
 __version__ = '0.0.1.dev0'
-

@@ -32,11 +32,11 @@ exclude_patterns = ['_build', '_templates']
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'numpy': ('https://numpy.org/doc/stable/', None),
-                       'matplotlib': ('https://matplotlib.org/stable/', None), 
-                       'parselmouth': ('https://parselmouth.readthedocs.io/en/stable/', None), 
-                       'sounddevice': ('https://python-sounddevice.readthedocs.io/en/latest/', None), 
-                       'pandas': ('https://pandas.pydata.org/docs/', None), 
-                       'scipy': ('https://docs.scipy.org/doc/scipy/', None), 
+                       'matplotlib': ('https://matplotlib.org/stable/', None),
+                       'parselmouth': ('https://parselmouth.readthedocs.io/en/stable/', None),
+                       'sounddevice': ('https://python-sounddevice.readthedocs.io/en/latest/', None),
+                       'pandas': ('https://pandas.pydata.org/docs/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/', None),
                        'abjad': ('https://abjad.github.io/', None)}
 
 # -- Options for HTML output -------------------------------------------------

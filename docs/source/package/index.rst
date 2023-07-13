@@ -3,7 +3,7 @@ Package contents
 
 This what the package contains. Some more informative info here.
 
-.. toctree:: 
+.. toctree::
     :maxdepth: 5
 
     Core classes<core.rst>
