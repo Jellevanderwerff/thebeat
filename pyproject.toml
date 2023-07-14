@@ -44,6 +44,12 @@ packages = [
 [tool.setuptools.dynamic]
 version = {attr = "thebeat.__version__"}
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+filterwarnings = [
+    "error",
+]
+
 [tool.flake8]
 max-line-length = 160
 max-doc-length = 100
