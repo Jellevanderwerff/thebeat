@@ -40,7 +40,7 @@ def plot_interval_ratios_density(sequence: (thebeat.core.Sequence | list[thebeat
     Plot a density plot of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
 
-    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    This function internally uses :func:`thebeat.utils.get_interval_ratios_from_dyads` to calculate
     the interval ratios.
 
     Example
@@ -76,7 +76,7 @@ def plot_interval_ratios_density(sequence: (thebeat.core.Sequence | list[thebeat
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     """
@@ -135,7 +135,7 @@ def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence | list[thebe
     Plot a histogram of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
 
-    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    This function internally uses :func:`thebeat.utils.get_interval_ratios_from_dyads` to calculate
     the interval ratios.
 
     Example
@@ -170,7 +170,7 @@ def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence | list[thebe
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     """
@@ -386,7 +386,7 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     Example
@@ -481,11 +481,11 @@ def plot_multiple_sequences(sequences: list | np.ndarray,
         A list or array of colors to use for the plot. If not provided, the default matplotlib colors are used.
         Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
 
     Examples
     --------
@@ -634,11 +634,11 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     dpi
         The resolution of the plot in dots per inch.
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
 
     Examples
     --------

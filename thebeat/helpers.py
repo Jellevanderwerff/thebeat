@@ -300,7 +300,7 @@ def plot_lp(lp,
     filepath
         If provided, the plot will be saved to this path. Has to end with either .png or .pdf.
     suppress_display
-        If True, the plot will not be displayed using :func:`matplotlib.Figure.show`.
+        If True, the plot will not be displayed using :func:`matplotlib.figure.Figure.show`.
     title
         Title of the plot.
     dpi
@@ -416,11 +416,11 @@ def plot_single_sequence(onsets: list | np.ndarray,
     suppress_display
         If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
 
     """
 
@@ -493,11 +493,11 @@ def plot_waveform(samples: np.ndarray,
     suppress_display
         If ``True``, :meth:`matplotlib.pyplot.Figure.show` is not run.
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
     """
 
     # if we have two channels, we want the waveform to be opaque
