@@ -84,12 +84,14 @@ def test_recurrence_plot_nothreshold(rng):
 @pytest.mark.mpl_image_compare
 def test_plot_phase_differences(rng):
     seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=20, end_with_interval=True, rng=rng) * 5
-    fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
+    with pytest.warns(UserWarning, match="The first onset of the test sequence was at t=0"):
+        fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
     assert fig, ax
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
-    thebeat.visualization.plot_phase_differences(seq, 500, ax=ax, suppress_display=True)
+    with pytest.warns(UserWarning, match="The first onset of the test sequence was at t=0"):
+        thebeat.visualization.plot_phase_differences(seq, 500, ax=ax, suppress_display=True)
 
     return fig
 
