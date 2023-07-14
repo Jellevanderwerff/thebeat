@@ -10,3 +10,5 @@ __pycache__/
 .DS_Store
 
 /thebeat/scratch.py
+
+thebeat.egg-info/
