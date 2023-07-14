@@ -6,6 +6,7 @@ sphinx_book_theme==0.3.3
 ipykernel
 nbsphinx
 
+Levenshtein
 matplotlib
 numpy
 pandas
