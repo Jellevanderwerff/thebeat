@@ -48,6 +48,7 @@ version = {attr = "thebeat.__version__"}
 minversion = "6.0"
 filterwarnings = [
     "error",
+    "ignore:imghdr:DeprecationWarning"
 ]
 
 [tool.flake8]
