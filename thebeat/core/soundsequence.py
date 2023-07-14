@@ -242,6 +242,7 @@ class SoundSequence(BaseSequence):
         --------
         >>> sound = SoundStimulus.generate(offramp_ms=10)
         >>> seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=50)
+        >>> seq.round_onsets()
         >>> soundseq = SoundSequence(sound, seq)
         >>> soundseq.play(metronome=True)  # doctest: +SKIP
 
