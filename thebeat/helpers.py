@@ -21,6 +21,7 @@ import importlib.resources as pkg_resources
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import warnings
 
@@ -130,7 +131,12 @@ def get_sound_with_metronome(samples: np.ndarray,
 
     metronome_file = 'metronome_mono.wav' if samples.ndim == 1 else 'metronome_stereo.wav'
 
-    with pkg_resources.path(thebeat.resources, metronome_file) as metronome_path:
+    if sys.version_info < (3, 9):
+        metronome_path_ctxmgr = pkg_resources.path(thebeat.resources, metronome_file)
+    else:
+        metronome_path_ctxmgr = pkg_resources.as_file(pkg_resources.files(thebeat.resources) / metronome_file)
+
+    with metronome_path_ctxmgr as metronome_path:
         metronome_fs, metronome_samples = wavfile.read(metronome_path)
 
     # resample metronome sound if provided sound has different sampling frequency
