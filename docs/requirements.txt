@@ -5,3 +5,5 @@ sphinx_book_theme==0.3.3
 
 ipykernel
 nbsphinx
+
+praat-parselmouth

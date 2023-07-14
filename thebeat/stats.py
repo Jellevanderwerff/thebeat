@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import numbers
 import warnings
 
 import Levenshtein
@@ -887,8 +888,8 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
     test_onsets = test_sequence.onsets
 
     # Input validation and getting onsets for reference sequence
-    if not isinstance(reference_ioi, (int, float)):
-        raise TypeError('reference_sequence must be a number (int or float)')
+    if not isinstance(reference_ioi, numbers.Real):
+        raise TypeError('reference_ioi must be a number (int or float)')
 
     reference_onsets = np.arange(start=0,
                                  stop=np.max(test_onsets) + reference_ioi + 1,

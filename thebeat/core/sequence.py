@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import copy
+import numbers
 import pathlib
 from fractions import Fraction
 
@@ -758,7 +759,7 @@ class Sequence(BaseSequence):
         # Linewidths
         if linewidth is None:
             linewidths = np.repeat(np.min(self.iois) / 10, len(self.onsets))
-        elif isinstance(linewidth, (int, float, np.integer, np.float)):
+        elif isinstance(linewidth, numbers.Real):
             linewidths = np.repeat(linewidth, len(self.onsets))
         else:
             linewidths = np.array(linewidth)
