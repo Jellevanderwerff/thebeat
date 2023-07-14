@@ -80,10 +80,10 @@ jobs:
           pip install .
           pip install abjad
 
-      - name: Install PortAudio and LilyPond
+      - name: Install PortAudio, PulseAudio, D-Bus, and LilyPond
         run: |
           sudo apt update
-          sudo apt install libportaudio2 lilypond
+          sudo apt install libportaudio2 pulseaudio dbus-x11 lilypond
 
       - name: Install documentation requirements
         run: |
@@ -97,5 +97,7 @@ jobs:
 
       - name: Build documentation
         run: |
+          dbus-launch pulseaudio --start  # See LABSN/sound-ci-helpers
+          export PYDEVD_DISABLE_FILE_VALIDATION=1
           cd docs
           make html
