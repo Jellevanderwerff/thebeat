@@ -1,7 +1,7 @@
 Sphinx>=4
 sphinxcontrib-bibtex
 sphinx_autodoc_typehints
-sphinx_book_theme==0.3.3
+sphinx_book_theme==1.0.1
 
 ipykernel
 nbsphinx
