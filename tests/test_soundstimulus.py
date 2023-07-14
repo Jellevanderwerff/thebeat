@@ -74,12 +74,15 @@ def test_concat():
 
 
 def test_merge():
-    sound = thebeat.SoundStimulus.generate()
-    sound2 = thebeat.SoundStimulus.generate(freq=880)
+    sound = thebeat.SoundStimulus.generate(amplitude=0.5, freq=440)
+    sound2 = thebeat.SoundStimulus.generate(amplitude=0.25, freq=880)
     new_sound = sound.merge(sound2)
-    assert new_sound
+    assert new_sound.duration_ms == sound.duration_ms
     new_sound = sound.merge([sound2, sound2])
-    assert new_sound
+    assert new_sound.duration_ms == sound.duration_ms
+    with pytest.warns(UserWarning, match='Sound was normalized to avoid distortion'):
+        new_sound = sound.merge([sound2, sound2, sound2])
+    assert new_sound.duration_ms == sound.duration_ms
 
 
 def test_copy():
