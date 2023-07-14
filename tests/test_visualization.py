@@ -35,6 +35,7 @@ def test_plot_multiple_sequences_0(rng):
 
     for x in range(10):
         seq = Sequence.generate_random_uniform(n_events=10, a=400, b=600, rng=rng)  # = 10 stimuli, 9 IOIs
+        seq.round_onsets()
         stims = [SoundStimulus.generate() for _ in range(10)]  # = 10 stimuli
         trials.append(SoundSequence(stims, seq))
 

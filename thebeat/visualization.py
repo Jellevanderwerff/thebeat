@@ -207,10 +207,7 @@ def plot_interval_ratios_histogram(sequence: (thebeat.core.Sequence | list[thebe
 
 
 def plot_phase_differences(test_sequence: (thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
-                           reference_sequence: (thebeat.core.Sequence |
-                           float |
-                           list[thebeat.core.Sequence] |
-                           np.ndarray[thebeat.core.Sequence]),
+                           reference_sequence: (thebeat.core.Sequence | float | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]),
                            circular_unit: str = 'degrees',
                            binwidth: int = 10,
                            zero_direction: str = 'E',
@@ -302,8 +299,7 @@ def plot_phase_differences(test_sequence: (thebeat.core.Sequence | list[thebeat.
                 # we have list of test sequences and single ref sequence
                 ref_seq = reference_sequence
 
-            phase_diffs = np.append(phase_diffs,
-                                    thebeat.utils.get_phase_differences(test_seq, ref_seq))
+            phase_diffs = np.append(phase_diffs, thebeat.utils.get_phase_differences(test_seq, ref_seq))
 
     else:
         if ref_iterable_passed:
