@@ -1,3 +1,5 @@
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
+
 <img src=docs/source/thebeat_logo.png height="350" width="350">
 
 **Note that *thebeat* is still under development. Please report any issues by clicking the 'Issues' tab in the respository.**
