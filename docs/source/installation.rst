@@ -16,20 +16,22 @@ Installation
 
 
 
-***************************
-Installing from a .zip file
-***************************
+*************************************
+Installing through PyPI (recommended)
+*************************************
 
-Save the ``.zip`` file to a directory that you can access easily from a terminal.
-
-Open up a terminal, and navigate to the directory of the saved ``.zip`` file.
-
-Install *thebeat* using:
+*thebeat* is available through PyPI, and can be installed using:
 
 .. code-block:: console
 
-    pip install thebeat-main.zip
+    pip install thebeat
 
+Note that if you want use thebeat's functionality for plotting musical notation, 
+you have to install it using:
+
+.. code-block:: console
+
+    pip install thebeat[musical_notation]
 
 You can now import *thebeat* in your preferred editor using:
 
@@ -45,30 +47,12 @@ You can now import *thebeat* in your preferred editor using:
 
 
 
-
-**********************
-Easy install from PyPI
-**********************
-
-Open up a terminal, and type:
-
-.. code-block:: console
-
-    pip install thebeat
-
-Now, you can import *thebeat* in your code using e.g.:
-
-.. code-block:: python
-
-    import thebeat
-
-
 ******************************************
-Installing development version from Github
+Installing development version from GitHub
 ******************************************
 
 Open up a terminal and run:
 
 .. code-block:: console
 
-    pip install https://github.com/jellevanderwerff/thebeat/thebeat/zipball/dev
+    pip install git+https://github.com/jellevanderwerff/thebeat.git#egg=thebeat

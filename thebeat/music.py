@@ -219,9 +219,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [12 12 12  4  4  4]
 
         """
-        # todo possibly just return tuples (so we can e.g. have a duration of 3 quarter notes)
-        #  Simply use the abjad note durations function!
-
         ratios = self.iois / self.beat_ms / 4
 
         note_values = np.array([int(1 // ratio) for ratio in ratios])
