@@ -537,14 +537,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ax: plt.Axes | None = None,
     ) -> tuple[plt.Figure, plt.Axes]:
         """
-        Make a plot containing the musical notation of the rhythm. This function requires you to install:
-
-        * `abjad <https://abjad.github.io/>`_ (install via ``pip install abjad``).
-        * `lilypond <https://lilypond.org/download.en.html>`_
-
-        For lilypond on Windows, make sure to follow the website's instructions on how to make lilypond available to
-        be run through the command line. Linux and Mac OS users are advised to either ``apt install lilypond`` or
-        ``brew install lilypond``. On Mac that requires you to install `Homebrew <https://brew.sh/>`_.
+        Make a plot containing the musical notation of the rhythm. This function requires install 'abjad' and
+        'lilypond'. You can install both through ``pip install thebeat[music_notation]``.
+        For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
 
         The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
         which you can manipulate.
@@ -608,8 +603,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         # Check whether abjad is installed
         if abjad is None:
             raise ImportError(
-                "This method requires the 'abjad' Python package."
-                "Install it, for instance by typing 'pip install abjad' into your terminal."
+                "This function requires the abjad package. Install, for instance by typing "
+                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
         # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
@@ -811,9 +807,10 @@ class Melody(thebeat.core.sequence.BaseSequence):
     :py:meth:`~Melody.generate_random_melody` method.
 
     Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
-    current version of `abjad` requires Python 3.10. The last version that supported Python 3.6-3.9 is
-    `this one <https://pypi.org/project/abjad/3.4/>`_.
-
+    current version of `abjad` requires Python 3.10. The last version that supported Python 3.8-3.9 is
+    `this one <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
+    when you install `thebeat` with ``pip install thebeat[music_notation]``.
+    For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
     """
 
     def __init__(
@@ -968,8 +965,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         """
         if abjad is None:
             raise ImportError(
-                "This method requires the 'abjad' Python package."
-                "Install it, for instance by typing 'pip install abjad' into your terminal."
+                "This function requires the abjad package. Install, for instance by typing "
+                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
         if rng is None:
@@ -1099,8 +1097,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         """
         if abjad is None:
             raise ImportError(
-                "This method requires the installation of abjad. Please install, for instance "
-                "using 'pip install abjad'."
+                "This function requires the abjad package. Install, for instance by typing "
+                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
         key = self.key if key is None else key

@@ -138,7 +138,7 @@ class SoundStimulus:
         name
             If desired, one can give a :py:class:`SoundStimulus` object a name. This is used, for
             instance, when plotting or printing. It can always be retrieved from the
-            SoundStimulus.name atrribute.
+            :attr:`SoundStimulus.name` atrribute.
         new_fs
             If resampling is required, you can provide the target sampling frequency here,
             for instance ``48000``.
@@ -329,8 +329,9 @@ class SoundStimulus:
 
         if abjad is None:
             raise ImportError(
-                "This method requires the abjad package. Please install, for instance by typing "
-                "'pip install abjad' in your terminal."
+                "This function requires the abjad package. Install, for instance by typing "
+                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)

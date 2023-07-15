@@ -34,6 +34,13 @@ repository = "https://github.com/Jellevanderwerff/thebeat"
 documentation = "https://thebeat.readthedocs.io"
 changelog = "https://github.com/Jellevanderwerff/thebeat/releases"
 
+[project.optional-dependencies]
+music_notation = [
+    "abjad ; python_version > '3.9'",
+    "abjad<=3.4 ; python_version <= '3.9'",
+    "lilypond"
+]
+
 [tool.setuptools]
 packages = [
     "thebeat",
@@ -58,7 +65,7 @@ filterwarnings = [
 max-line-length = 160
 max-doc-length = 100
 extend-ignore = [
-    'W505',
+    "W505",
 ]
 per-file-ignores = [
     "__init__.py:F401",
