@@ -331,12 +331,6 @@ def plot_lp(
     else:
         save_format = None
 
-    try:
-        import lilypond
-        lilypond_executable = lilypond.executable()
-    except ImportError:
-        lilypond_executable = shutil.which("lilypond")
-
     # lilypond needs to write some temporary files to disk. These include a .eps and .png file.
     # if we want to keep that file, we copy it from the temporary files.
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -344,7 +338,7 @@ def plot_lp(
             file.write(lp)
 
         command = [
-                lilypond_executable,
+                "lilypond",
                 "-dbackend=eps",
                 "-dcrop",
                 "--silent",
