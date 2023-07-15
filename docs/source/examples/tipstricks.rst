@@ -7,5 +7,5 @@ These examples describe common situations that you might encounter when working 
     :maxdepth: 2
 
     tipstricks/combining_repeating
-    tipstricks/manipulate_plots    
+    tipstricks/manipulate_plots
     tipstricks/warnings

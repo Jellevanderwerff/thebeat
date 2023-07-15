@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-import thebeat.music
 import numpy as np
 import pytest
+
+import thebeat.music
 
 
 def test_melody(tmp_path):
@@ -31,7 +32,7 @@ def test_melody(tmp_path):
     assert isinstance(samples, np.ndarray)
     assert fs
 
-    mel.synthesize_and_write(tmp_path / 'test_melody', n_channels=2, metronome=True)
+    mel.synthesize_and_write(tmp_path / 'test_melody.wav', n_channels=2, metronome=True)
 
 
 @pytest.mark.mpl_image_compare
@@ -48,5 +49,3 @@ def test_melody_copy():
     m.name = "test2"
     assert m2.name == 'test'
     assert m.name == 'test2'
-
-

@@ -15,32 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-framerounding_soundseq = Warning(
+framerounding_soundseq = (
     "thebeat: For one or more of the used sounds, the exact start or end positions in frames (i.e. "
-    "samples) were rounded off to the neirest integer ceiling. This shouldn't be a "
-    "problem. "
+    "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem. "
     "To get rid of this warning, try rounding off the onsets in the passed Sequence object "
     "by calling Sequence.round_onsets() before passing the object to the SoundSequence "
-    "constructor.\n")
+    "constructor."
+)
 
-framerounding_melody = Warning(
+framerounding_melody = (
     "thebeat: For one or more of the used sounds, the exact start or end positions in frames (i.e. "
     "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem."
     "To get rid of this warning, try using a sampling frequency of 48000 Hz, or a different"
-    "beat_ms.\n")
+    "beat_ms."
+)
 
-framerounding_soundsynthesis = Warning("thebeat: During sound synthesis, the number of frames was rounded off."
-                                       "This shouldn't be a problem."
-                                       "To get rid of this warning, try using a combination of sound duration "
-                                       "(in seconds) and sampling frequency that results in integer values.\n")
+framerounding_soundsynthesis = (
+    "thebeat: During sound synthesis, the number of frames was rounded off. This shouldn't be a problem. "
+    "To get rid of this warning, try using a combination of sound duration (in seconds) and sampling "
+    "frequency that results in integer values."
+)
 
-missing_values = Warning("thebeat: There were missing values in the passed data.\n")
+missing_values = "thebeat: There were missing values in the passed data."
 
-normalization = Warning(
-    "thebeat: Sound was normalized to avoid distortion. If undesirable, change the amplitude of the "
-    "sounds.")
+normalization = "thebeat: Sound was normalized to avoid distortion. If undesirable, change the amplitude of the sounds."
 
-phases_t_at_zero = Warning("thebeat: The first onset of the test sequence was at t=0.\nThis would result in a phase "
-                           "difference that is always 0, which is not very informative.\nTherefore, the first phase "
-                           "difference was discarded.\nIf you want the first onset at a different time than zero, "
-                           "use the Sequence.from_onsets() method to create the Sequence object.\n")
+phases_t_at_zero = (
+    "thebeat: The first onset of the test sequence was at t=0.\nThis would result in a phase difference "
+    "that is always 0, which is not very informative.\nTherefore, the first phase difference was discarded.\n"
+    "If you want the first onset at a different time than zero, use the Sequence.from_onsets() method to "
+    "create the Sequence object."
+)

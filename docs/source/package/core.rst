@@ -7,12 +7,12 @@ There are three classes that make up the core of this package:
 * The :py:class:`SoundStimulus<thebeat.core.SoundStimulus>` class, which only contains a **sound**.
 * The :py:class:`SoundSequence<thebeat.core.SoundSequence>` class, which contains **both timing information and sounds**.
 
-In addition, there is the :py:class:`BaseSequence<thebeat.core.BaseSequence>` class, 
-which is the parent class of the :py:class:`Sequence<thebeat.core.Sequence>`, :py:class:`Rhythm<thebeat.music.Rhythm>`, 
-and :py:class:`SoundSequence<thebeat.core.SoundSequence>` classes. 
+In addition, there is the :py:class:`BaseSequence<thebeat.core.BaseSequence>` class,
+which is the parent class of the :py:class:`Sequence<thebeat.core.Sequence>`, :py:class:`Rhythm<thebeat.music.Rhythm>`,
+and :py:class:`SoundSequence<thebeat.core.SoundSequence>` classes.
 In principle it is irrelevant, except for understanding the internal workings of this package.
 
-.. toctree:: 
+.. toctree::
     :hidden:
     :maxdepth: 3
 

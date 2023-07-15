@@ -1,1 +1,13 @@
-include thebeat/resources/*.wav
+include *.md *.yml *.yaml
+
+global-include requirements.txt
+
+recursive-include thebeat/resources *.wav
+recursive-include tests *.py
+recursive-include tests/baseline *.png
+
+recursive-include docs *.rst *.ipynb *.py *.ico *.png *.wav *.csv *.bib
+graft docs/source/_static
+include docs/Makefile docs/make.bat
+
+global-exclude *.py[cod]

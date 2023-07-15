@@ -17,12 +17,13 @@
 
 from __future__ import annotations
 
-import numpy as np
-import thebeat.core
-from typing import Optional, Union
 import warnings
-from thebeat._warnings import phases_t_at_zero
+
+import numpy as np
 import pandas as pd
+
+import thebeat.core
+from thebeat._warnings import phases_t_at_zero
 
 try:
     import abjad
@@ -30,10 +31,12 @@ except ImportError:
     abjad = None
 
 
-def get_ioi_df(sequences: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
-               additional_functions: Optional[list[callable]] = None):
+def get_ioi_df(
+    sequences: (
+        thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
+    ),
+    additional_functions: list[callable] | None = None,
+):
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided
     :py:class:`thebeat.core.Sequence` objects in
@@ -102,8 +105,10 @@ np.ndarray[thebeat.core.Sequence]],
     # Loop over sequences to fill output_dict with the columns that we always have
     for i, sequence in enumerate(sequences):
         # Start with the sequence index and the sequence name if it exists
-        sequence_dict = {'sequence_i': i,
-                         'sequence_name': sequence.name if sequence.name else np.nan}
+        sequence_dict = {
+            "sequence_i": i,
+            "sequence_name": sequence.name if sequence.name else np.nan,
+        }
 
         # If functions were provided, add those columns
         if additional_functions is not None:
@@ -112,8 +117,8 @@ np.ndarray[thebeat.core.Sequence]],
                 sequence_dict[f.__name__] = f(sequence.iois)
 
         # Add the IOI index and the IOI itself
-        sequence_dict['ioi_i'] = np.arange(len(sequence.iois))
-        sequence_dict['ioi'] = sequence.iois
+        sequence_dict["ioi_i"] = np.arange(len(sequence.iois))
+        sequence_dict["ioi"] = sequence.iois
 
         # Concatenate the new DataFrame to the output DataFrame
         # If this is the first iteration, we need to create the output DataFrame first
@@ -123,14 +128,13 @@ np.ndarray[thebeat.core.Sequence]],
             output_df = pd.concat([output_df, pd.DataFrame(sequence_dict)], ignore_index=True)
 
     # Check if all names are None, if so, drop the column
-    if output_df['sequence_name'].isnull().all():
-        output_df.drop('sequence_name', axis=1, inplace=True)
+    if output_df["sequence_name"].isnull().all():
+        output_df.drop("sequence_name", axis=1, inplace=True)
 
     return output_df
 
 
-def get_major_scale(tonic: str,
-                    octave: int) -> list:
+def get_major_scale(tonic: str, octave: int) -> list:
     """Get the major scale for a given tonic and octave. Returns a list of :class:`abjad.pitch.NamedPitch` objects.
 
     Note
@@ -151,8 +155,10 @@ def get_major_scale(tonic: str,
 
     """
     if abjad is None:
-        raise ImportError("This function requires the abjad package. Install, for instance by typing "
-                          "'pip install abjad' into your terminal.")
+        raise ImportError(
+            "This function requires the abjad package. Install, for instance by typing "
+            "'pip install abjad' into your terminal."
+        )
 
     intervals = "M2 M2 m2 M2 M2 M2 m2".split()
     intervals = [abjad.NamedInterval(interval) for interval in intervals]
@@ -171,9 +177,11 @@ def get_major_scale(tonic: str,
     return pitches
 
 
-def get_phase_differences(test_sequence: thebeat.core.Sequence,
-                          reference_sequence: Union[thebeat.core.Sequence, float],
-                          circular_unit="degrees"):
+def get_phase_differences(
+    test_sequence: thebeat.core.Sequence,
+    reference_sequence: thebeat.core.Sequence | float,
+    circular_unit="degrees",
+):
     # todo Verify this method of calculating phase differences. I'm not quite sure about using the period of the
     #  test_sequence instead of the reference_sequence
 
@@ -205,13 +213,16 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
     if not isinstance(test_sequence, thebeat.core.Sequence):
         raise TypeError("Please provide a Sequence object as the left argument.")
     elif isinstance(reference_sequence, (int, float)):
-        reference_sequence = thebeat.core.Sequence.generate_isochronous(n_events=len(test_sequence.onsets),
-                                                                        ioi=reference_sequence)
+        reference_sequence = thebeat.core.Sequence.generate_isochronous(
+            n_events=len(test_sequence.onsets), ioi=reference_sequence
+        )
     elif isinstance(reference_sequence, thebeat.core.Sequence):
         pass
     else:
-        raise TypeError("Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
-                        "number as the right-hand argument.")
+        raise TypeError(
+            "Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
+            "number as the right-hand argument."
+        )
 
     # Get onsets once
     test_onsets = test_sequence.onsets
@@ -228,15 +239,16 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
 
     # Check length sameness
     if not len(test_onsets) == len(ref_onsets):
-        raise ValueError("This function only works if the number of events in the two sequences are equal. For "
-                         "missing data, insert np.nan values in the sequence for the missing data.")
+        raise ValueError(
+            "This function only works if the number of events in the two sequences are equal. For "
+            "missing data, insert np.nan values in the sequence for the missing data."
+        )
 
     # Output array
     phase_diffs = np.array([])
 
     # Calculate phase differences
     for i, test_onset in enumerate(test_onsets):
-
         # For the first event, we use the period of the IOI that follows the event, but only if it was the
         # first onset
         if i == 0 and start_at_tzero is True:
@@ -261,8 +273,10 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
             phase_diff = np.nan
             warnings.warn(thebeat._warnings.missing_values)
         else:
-            raise ValueError("Something went wrong during the calculation of the phase differences."
-                             "Please check your data.")
+            raise ValueError(
+                "Something went wrong during the calculation of the phase differences."
+                "Please check your data."
+            )
 
         phase_diffs = np.append(phase_diffs, phase_diff)
 
@@ -278,7 +292,7 @@ def get_phase_differences(test_sequence: thebeat.core.Sequence,
         raise ValueError("Please provide a valid circular unit. Either 'degrees' or 'radians'.")
 
 
-def get_interval_ratios_from_dyads(sequence: Union[np.array, thebeat.core.Sequence, list]):
+def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
     r"""
     Return sequential interval ratios, calculated as:
 
@@ -303,8 +317,7 @@ def get_interval_ratios_from_dyads(sequence: Union[np.array, thebeat.core.Sequen
     return sequence[:-1] / (sequence[1:] + sequence[:-1])
 
 
-def concatenate_sequences(sequences: np.typing.ArrayLike,
-                          name: Optional[str] = None):
+def concatenate_sequences(sequences: np.typing.ArrayLike, name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.Sequence` objects.
 
     Note
@@ -329,9 +342,11 @@ def concatenate_sequences(sequences: np.typing.ArrayLike,
         raise TypeError("Please pass only Sequence objects.")
 
     if not all(obj.end_with_interval for obj in sequences[:-1]):
-        raise ValueError("All passed Sequence objects except for the final one need to end with an interval."
-                         "Otherwise we miss an interval between the onset of the "
-                         "final event in a Sequence and the onset of the first event in the next sequence.")
+        raise ValueError(
+            "All passed Sequence objects except for the final one need to end with an interval."
+            "Otherwise we miss an interval between the onset of the "
+            "final event in a Sequence and the onset of the first event in the next sequence."
+        )
 
     if not all(obj.onsets[0] == 0.0 for obj in sequences):
         raise ValueError("Please only pass sequences that have their first event at onset 0.0")
@@ -344,8 +359,7 @@ def concatenate_sequences(sequences: np.typing.ArrayLike,
     return thebeat.core.Sequence(iois, end_with_interval=end_with_interval, name=name)
 
 
-def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
-                               name: Optional[str] = None):
+def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike, name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.SoundSequence` objects.
 
     Note
@@ -369,9 +383,11 @@ def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
         raise TypeError("Please pass only SoundSequence objects.")
 
     if not all(obj.end_with_interval for obj in sound_sequences[:-1]):
-        raise ValueError("All passed SoundSequence objects except for the final one need to end with an interval."
-                         "Otherwise we miss an interval between the onset of the "
-                         "final event in a Sequence and the onset of the first event in the next sequence.")
+        raise ValueError(
+            "All passed SoundSequence objects except for the final one need to end with an interval."
+            "Otherwise we miss an interval between the onset of the "
+            "final event in a Sequence and the onset of the first event in the next sequence."
+        )
 
     # Whether the sequence ends with an interval depends only on the final object passed
     end_with_interval = sound_sequences[-1].end_with_interval
@@ -386,8 +402,7 @@ def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike,
     return thebeat.core.SoundSequence(sound=all_sounds, sequence=seq, name=name)
 
 
-def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
-                             name: Optional[str] = None):
+def concatenate_soundstimuli(sound_stimuli: np.ndarray | list, name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
 
     Parameters
@@ -414,8 +429,9 @@ def concatenate_soundstimuli(sound_stimuli: Union[np.ndarray, list],
     return thebeat.core.SoundStimulus(samples, fs, name=name)
 
 
-def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus],
-                       name: Optional[str] = None):
+def merge_soundstimuli(
+    sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus], name: str | None = None
+):
     """Merge an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
     The sound samples for each of the objects will be overlaid on top of each other.
 
@@ -434,7 +450,9 @@ def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus]
     """
 
     if not all(isinstance(obj, thebeat.core.SoundStimulus) for obj in sound_stimuli):
-        raise TypeError("Can only overlay another SoundStimulus object on this SoundStimulus object.")
+        raise TypeError(
+            "Can only overlay another SoundStimulus object on this SoundStimulus object."
+        )
 
     # Check sameness of number of channels etc.
     thebeat.helpers.check_sound_properties_sameness(sound_stimuli)
@@ -445,8 +463,7 @@ def merge_soundstimuli(sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus]
     return thebeat.core.SoundStimulus(samples=samples, fs=sound_stimuli[0].fs, name=name)
 
 
-def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence],
-                    name: Optional[str] = None):
+def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence], name: str | None = None):
     """Merge an array or list of :py:class:`~thebeat.core.Sequence` objects.
     The the event onsets in each of the objects will be overlaid on top of each other.
 
@@ -478,9 +495,9 @@ def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence],
     return thebeat.core.Sequence.from_onsets(onsets, name=name)
 
 
-def merge_soundsequences(sound_sequences:
-                         list[thebeat.core.SoundSequence],
-                         name: Optional[str] = None):
+def merge_soundsequences(
+    sound_sequences: list[thebeat.core.SoundSequence], name: str | None = None
+):
     """Merge a list or array of :py:class:`~thebeat.core.SoundSequence` objects.
     The event onsets in each of the objects will be overlaid on top of each other, after which the sounds
 

@@ -16,32 +16,35 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import thebeat.core
+
 import matplotlib.pyplot as plt
-from typing import Union, Optional
-import thebeat.helpers
-import numpy as np
 import matplotlib.ticker as ticker
+import numpy as np
 import scipy.stats
 
+import thebeat.core
+import thebeat.helpers
 
-def plot_interval_ratios_density(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
-                                 resolution: float = 0.01,
-                                 style: str = 'seaborn-v0_8',
-                                 title: Optional[str] = None,
-                                 x_axis_label: str = "Interval ratios from dyads",
-                                 y_axis_label: str = "Probability density",
-                                 figsize: Optional[tuple[int, int]] = None,
-                                 suppress_display: bool = False,
-                                 dpi: int = 100,
-                                 ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+
+def plot_interval_ratios_density(
+    sequence: (
+        thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
+    ),
+    resolution: float = 0.01,
+    style: str = "seaborn-v0_8",
+    title: str | None = None,
+    x_axis_label: str = "Interval ratios from dyads",
+    y_axis_label: str = "Probability density",
+    figsize: tuple[int, int] | None = None,
+    suppress_display: bool = False,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a density plot of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
 
-    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    This function internally uses :func:`thebeat.utils.get_interval_ratios_from_dyads` to calculate
     the interval ratios.
 
     Example
@@ -77,7 +80,7 @@ np.ndarray[thebeat.core.Sequence]],
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     """
@@ -90,8 +93,10 @@ np.ndarray[thebeat.core.Sequence]],
     elif isinstance(sequence, thebeat.core.Sequence):
         interval_ratios = np.append(interval_ratios, sequence.interval_ratios_from_dyads)
     else:
-        raise TypeError("'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
-                        "Sequence objects.")
+        raise TypeError(
+            "'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
+            "Sequence objects."
+        )
 
     with plt.style.context(style):
         if ax is None:
@@ -122,23 +127,25 @@ np.ndarray[thebeat.core.Sequence]],
     return fig, ax
 
 
-def plot_interval_ratios_histogram(sequence: Union[thebeat.core.Sequence,
-list[thebeat.core.Sequence],
-np.ndarray[thebeat.core.Sequence]],
-                                   bins: int = 100,
-                                   style: str = 'seaborn-v0_8',
-                                   title: Optional[str] = None,
-                                   x_axis_label: str = "Interval ratios from dyads",
-                                   y_axis_label: str = "Count",
-                                   figsize: Optional[tuple[int, int]] = None,
-                                   suppress_display: bool = False,
-                                   dpi: int = 100,
-                                   ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def plot_interval_ratios_histogram(
+    sequence: (
+        thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
+    ),
+    bins: int = 100,
+    style: str = "seaborn-v0_8",
+    title: str | None = None,
+    x_axis_label: str = "Interval ratios from dyads",
+    y_axis_label: str = "Count",
+    figsize: tuple[int, int] | None = None,
+    suppress_display: bool = False,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a histogram of the interval ratios from sequential dyads in a sequence.
     Input can either be a single sequence, or a list or array of sequences.
 
-    This function internally uses :func:`thebeat.helpers.interval_ratios_from_dyads` to calculate
+    This function internally uses :func:`thebeat.utils.get_interval_ratios_from_dyads` to calculate
     the interval ratios.
 
     Example
@@ -173,7 +180,7 @@ np.ndarray[thebeat.core.Sequence]],
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     """
@@ -186,8 +193,10 @@ np.ndarray[thebeat.core.Sequence]],
     elif isinstance(sequence, thebeat.core.Sequence):
         interval_ratios = np.append(interval_ratios, sequence.interval_ratios_from_dyads)
     else:
-        raise TypeError("'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
-                        "Sequence objects.")
+        raise TypeError(
+            "'sequence' argument must be a Sequence object, list of Sequence objects, or a numpy array of "
+            "Sequence objects."
+        )
 
     with plt.style.context(style):
         if ax is None:
@@ -209,23 +218,27 @@ np.ndarray[thebeat.core.Sequence]],
     return fig, ax
 
 
-def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
-                                                list[thebeat.core.Sequence],
-                                                np.ndarray[thebeat.core.Sequence]],
-                           reference_sequence: Union[thebeat.core.Sequence,
-                           float,
-                           list[thebeat.core.Sequence],
-                           np.ndarray[thebeat.core.Sequence]],
-                           circular_unit: str = 'degrees',
-                           binwidth: int = 10,
-                           zero_direction: str = 'E',
-                           color: str = None,
-                           style: str = 'seaborn-v0_8',
-                           title: Optional[str] = None,
-                           figsize: Optional[tuple[int, int]] = None,
-                           suppress_display: bool = False,
-                           dpi: int = 100,
-                           ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def plot_phase_differences(
+    test_sequence: (
+        thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
+    ),
+    reference_sequence: (
+        thebeat.core.Sequence
+        | float
+        | list[thebeat.core.Sequence]
+        | np.ndarray[thebeat.core.Sequence]
+    ),
+    circular_unit: str = "degrees",
+    binwidth: int = 10,
+    zero_direction: str = "E",
+    color: str = None,
+    style: str = "seaborn-v0_8",
+    title: str | None = None,
+    figsize: tuple[int, int] | None = None,
+    suppress_display: bool = False,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """Plot the phase differences for ``test_sequence`` compared to ``reference_sequence``.
 
     The reference sequence can either be a single sequence in which case a comparison will be made between
@@ -290,7 +303,9 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
         ref_iterable_passed = False
 
     # If we have lists on both sides, they must be of equal length
-    if isinstance(test_sequence, (list, np.ndarray)) and isinstance(reference_sequence, (list, np.ndarray)):
+    if isinstance(test_sequence, (list, np.ndarray)) and isinstance(
+        reference_sequence, (list, np.ndarray)
+    ):
         if len(test_sequence) != len(reference_sequence):
             raise ValueError("The test and reference sequences must be the same length.")
 
@@ -307,17 +322,21 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
                 # we have list of test sequences and single ref sequence
                 ref_seq = reference_sequence
 
-            phase_diffs = np.append(phase_diffs,
-                                    thebeat.utils.get_phase_differences(test_seq, ref_seq))
+            phase_diffs = np.append(
+                phase_diffs, thebeat.utils.get_phase_differences(test_seq, ref_seq)
+            )
 
     else:
         if ref_iterable_passed:
             for ref_seq in reference_sequence:
-                phase_diffs = np.append(phase_diffs, thebeat.utils.get_phase_differences(test_sequence, ref_seq))
+                phase_diffs = np.append(
+                    phase_diffs, thebeat.utils.get_phase_differences(test_sequence, ref_seq)
+                )
         else:
             # we have a single test sequence and a single ref sequences
-            phase_diffs = np.append(phase_diffs,
-                                    thebeat.utils.get_phase_differences(test_sequence, reference_sequence))
+            phase_diffs = np.append(
+                phase_diffs, thebeat.utils.get_phase_differences(test_sequence, reference_sequence)
+            )
 
     # Calculate the bins
     a, b = np.histogram(phase_diffs, bins=np.arange(0, 360 + binwidth, binwidth))
@@ -327,13 +346,15 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
     with plt.style.context(style):
         # If no Axes was provided, create one
         if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={'projection': 'polar'})
+            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={"projection": "polar"})
             axes_provided = False
         # If an Axes object was provided, use that one but check if it is a polar one
         else:
             fig = ax.get_figure()
-            if not ax.name == 'polar':
-                raise ValueError("Please provide a polar Axes object. Use projection='polar' when creating it.")
+            if not ax.name == "polar":
+                raise ValueError(
+                    "Please provide a polar Axes object. Use projection='polar' when creating it."
+                )
             axes_provided = True
         ax.bar(centers, a, width=np.deg2rad(binwidth), bottom=0.0, color=color, alpha=0.5)
         ax.set_title(title)
@@ -345,7 +366,17 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
         if circular_unit == "radians":
             ax.set_xticks(ax.get_xticks())
             ax.set_xticklabels(
-                [r"$0$", r"$\pi/4$", r"$\pi/2$", r"$3\pi/4$", r"$\pi$", r"$5\pi/4$", r"$3\pi/2$", r"$7\pi/4$"])
+                [
+                    r"$0$",
+                    r"$\pi/4$",
+                    r"$\pi/2$",
+                    r"$3\pi/4$",
+                    r"$\pi$",
+                    r"$5\pi/4$",
+                    r"$3\pi/2$",
+                    r"$7\pi/4$",
+                ]
+            )
             ax.set_theta_direction(1)
 
     # Show
@@ -355,17 +386,19 @@ def plot_phase_differences(test_sequence: Union[thebeat.core.Sequence,
     return fig, ax
 
 
-def phase_space_plot(sequence: thebeat.core.Sequence,
-                     style: str = 'seaborn-v0_8',
-                     linecolor: str = 'black',
-                     linewidth: float = 0.5,
-                     title: Optional[str] = None,
-                     x_axis_label: str = r"$\mathregular{IOI_i}$",
-                     y_axis_label: str = r"$\mathregular{IOI_{i+1}}$",
-                     figsize: Optional[tuple[int, int]] = None,
-                     suppress_display: bool = False,
-                     dpi: int = 100,
-                     ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def phase_space_plot(
+    sequence: thebeat.core.Sequence,
+    style: str = "seaborn-v0_8",
+    linecolor: str = "black",
+    linewidth: float = 0.5,
+    title: str | None = None,
+    x_axis_label: str = r"$\mathregular{IOI_i}$",
+    y_axis_label: str = r"$\mathregular{IOI_{i+1}}$",
+    figsize: tuple[int, int] | None = None,
+    suppress_display: bool = False,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """Plot the phase space of a sequence. In such a plot we loop over each IOI, and plot a line
     between it on the x axis and the IOI that follows it on the y axis.
 
@@ -395,7 +428,7 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
     ax
         An optional *matplotlib* :class:`~matplotlib.axes.Axes` object to plot on. If not provided,
         a new Axes object will be created. If an :class:`~matplotlib.axes.Axes` object is provided,
-        this function returns the original :class:`~matplotlib.axes.Figure` and
+        this function returns the original :class:`~matplotlib.figure.Figure` and
         :class:`~matplotlib.axes.Axes` objects.
 
     Example
@@ -426,14 +459,17 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
             ax_provided = True
         iois = sequence.iois
         for i in range(len(iois) - 2):
-            ax.plot([iois[i], iois[i + 1]], [iois[i + 1], iois[i + 2]],
-                    color=linecolor,
-                    linewidth=linewidth)
+            ax.plot(
+                [iois[i], iois[i + 1]],
+                [iois[i + 1], iois[i + 2]],
+                color=linecolor,
+                linewidth=linewidth,
+            )
 
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
 
     if not suppress_display and not ax_provided:
         fig.show()
@@ -441,17 +477,19 @@ def phase_space_plot(sequence: thebeat.core.Sequence,
     return fig, ax
 
 
-def plot_multiple_sequences(sequences: Union[list, np.ndarray],
-                            style: str = 'seaborn-v0_8',
-                            title: Optional[str] = None,
-                            x_axis_label: str = "Time",
-                            y_axis_labels: Optional[list[str], np.ndarray[str]] = None,
-                            linewidths: Optional[list[float], np.typing.NDArray[float], float] = None,
-                            figsize: Optional[tuple] = None,
-                            suppress_display: bool = False,
-                            dpi: int = 100,
-                            colors: Union[list, np.ndarray] = None,
-                            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def plot_multiple_sequences(
+    sequences: list | np.ndarray,
+    style: str = "seaborn-v0_8",
+    title: str | None = None,
+    x_axis_label: str = "Time",
+    y_axis_labels: list[str] | np.ndarray[str] | None = None,
+    linewidths: list[float] | np.typing.NDArray[float] | float | None = None,
+    figsize: tuple | None = None,
+    suppress_display: bool = False,
+    dpi: int = 100,
+    colors: list | np.ndarray = None,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """Plot multiple sequences in one plot. Either pass it a list or array of :py:class:`~thebeat.core.Sequence`
     objects, :py:class:`~thebeat.core.SoundSequence` objects, or list or array of event onsets (so e.g. list of lists).
 
@@ -490,11 +528,11 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         A list or array of colors to use for the plot. If not provided, the default matplotlib colors are used.
         Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
 
     Examples
     --------
@@ -524,7 +562,7 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         if all(sequence.name for sequence in sequences):
             y_axis_labels = [sequence.name for sequence in sequences]
         else:
-            y_axis_labels = ([str(i) for i in range(1, n_seqs + 1)])
+            y_axis_labels = [str(i) for i in range(1, n_seqs + 1)]
     elif len(y_axis_labels) != len(sequences):
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
@@ -562,10 +600,9 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
         else:
             colors = [None] * len(sequences)
 
-        for onsets, label, linewidths, color in zip(reversed(onsets),
-                                                    reversed(y_axis_labels),
-                                                    reversed(linewidths),
-                                                    reversed(colors)):
+        for onsets, label, linewidths, color in zip(
+            reversed(onsets), reversed(y_axis_labels), reversed(linewidths), reversed(colors)
+        ):
             ax.barh(y=label, width=linewidths, left=onsets, color=color)
 
         # Make sure we always have 0 on the left side of the x axis
@@ -579,19 +616,21 @@ def plot_multiple_sequences(sequences: Union[list, np.ndarray],
     return fig, ax
 
 
-def recurrence_plot(sequence: thebeat.core.Sequence,
-                    threshold: Optional[float] = None,
-                    colorbar: bool = False,
-                    colorbar_label: Optional[str] = "Distance",
-                    cmap: Optional[str] = None,
-                    style: str = 'seaborn-v0_8',
-                    title: Optional[str] = None,
-                    x_axis_label: str = "$\mathregular{N_i}$",
-                    y_axis_label: str = "$\mathregular{N_i}$",
-                    figsize: tuple = (5, 4),
-                    suppress_display: bool = False,
-                    dpi: int = 100,
-                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+def recurrence_plot(
+    sequence: thebeat.core.Sequence,
+    threshold: float | None = None,
+    colorbar: bool = False,
+    colorbar_label: str | None = "Distance",
+    cmap: str | None = None,
+    style: str = "seaborn-v0_8",
+    title: str | None = None,
+    x_axis_label: str = r"$\mathregular{N_i}$",
+    y_axis_label: str = r"$\mathregular{N_i}$",
+    figsize: tuple = (5, 4),
+    suppress_display: bool = False,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Plot a recurrence plot of a sequence. A recurrence plot is a plot with the IOI numbers (i.e. their indices) on the
     x and y axis, and the distance between the IOIs on the color scale. For each combination of two IOIs,
@@ -643,11 +682,11 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     dpi
         The resolution of the plot in dots per inch.
     ax
-        If desired, you can provide an existing :class:`matplotlib.Axes` object onto which to plot.
+        If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
         (e.g. :py:meth:`~thebeat.core.Sequence.plot_sequence` ).
-        If an existing :class:`matplotlib.Axes` object is supplied, this function returns the original
-        :class:`matplotlib.Figure` and :class:`matplotlib.Axes` objects.
+        If an existing :class:`matplotlib.axes.Axes` object is supplied, this function returns the original
+        :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
 
     Examples
     --------
@@ -680,9 +719,9 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
     # Make either 0's or 1's (if threshold) and set default cmaps
     if threshold:
         distance_matrix = (distance_matrix < threshold).astype(int)
-        cmap = cmap if cmap else 'Greys'
+        cmap = cmap if cmap else "Greys"
     else:
-        cmap = cmap if cmap else 'viridis'
+        cmap = cmap if cmap else "viridis"
 
     # Plot
     with plt.style.context(style):
@@ -699,7 +738,7 @@ def recurrence_plot(sequence: thebeat.core.Sequence,
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
-        ax.set_aspect('equal')
+        ax.set_aspect("equal")
 
         if colorbar is True:
             fig.colorbar(pcm, ax=ax, label=colorbar_label)

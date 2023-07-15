@@ -10,8 +10,8 @@ Installation
     .. code-block:: console
 
         pip --version
-    
-    
+
+
     If you do not see a version number, please follow `these <https://pip.pypa.io/en/stable/installation/>`_ instructions to install pip.
 
 

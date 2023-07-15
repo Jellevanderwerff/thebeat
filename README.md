@@ -1,3 +1,7 @@
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
+[![GitHub CI status](https://github.com/jellevanderwerff/thebeat/actions/workflows/ci.yml/badge.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
+
+
 <img src=docs/source/thebeat_logo.png height="350" width="350">
 
 **Note that *thebeat* is still under development. Please report any issues by clicking the 'Issues' tab in the respository.**
@@ -6,10 +10,10 @@
 
 *thebeat* is a Python package for working with temporal sequences and rhythms in the behavioural and cognitive sciences. It provides functionality for creating stimuli, and for visualizing and analyzing temporal data.
 
-*thebeat* will save you time when creating experiments or analyzing data. 
-It is a collection of widely accepted methods for use in timing research. 
-*thebeat* is an open-source, on-going, and collaborative project, 
-integrating easily with the existing Python ecosystem, and with your own scripts. 
+*thebeat* will save you time when creating experiments or analyzing data.
+It is a collection of widely accepted methods for use in timing research.
+*thebeat* is an open-source, on-going, and collaborative project,
+integrating easily with the existing Python ecosystem, and with your own scripts.
 The package was specifically designed to be useful for both skilled and novice programmers.
 
 # Documentation
@@ -23,7 +27,7 @@ pip install thebeat-main.zip
 ```
 
 # Try directly via Binder
-We have made available a Binder instantiation which already has *thebeat* installed. It can be accessed simply by following [this link](https://mybinder.org/v2/git/https%3A%2F%2Fgitlab.gwdg.de%2Fcomparative-bioacoustics%2Fthebeat-demo.git/HEAD?labpath=docs%2Fsource%2Fexamples%2FREADME.md). 
+We have made available a Binder instantiation which already has *thebeat* installed. It can be accessed simply by following [this link](https://mybinder.org/v2/git/https%3A%2F%2Fgitlab.gwdg.de%2Fcomparative-bioacoustics%2Fthebeat-demo.git/HEAD?labpath=docs%2Fsource%2Fexamples%2FREADME.md).
 
 Note that it may take a few moments for the Binder environment to load. Once it has, you are free to experiment with *thebeat*. You can do this either by following one of the linked-to examples, or by creating new notebooks. New or changed notebooks will not be saved when Binder is closed!
 
@@ -50,4 +54,3 @@ trial.write_wav('example_trial.wav')  # save file to disk
 The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for Psycholinguistics.
 
 The collaborators were: Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
-

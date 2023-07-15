@@ -1,0 +1,51 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-byte-order-marker
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: pretty-format-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: fix-encoding-pragma
+        args: ['--remove']
+      - id: mixed-line-ending
+        exclude: 'docs/make.bat'
+        args: ['--fix=lf']
+      - id: name-tests-test
+        args: ['--pytest-test-first']
+      - id: trailing-whitespace
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.9.0
+    hooks:
+    - id: pyupgrade
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies: [flake8-pyproject]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: '0.49'
+    hooks:
+    - id: check-manifest
+      stages: [manual]

@@ -15,16 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-from . import core
-from . import linguistic
-from . import stats
-from . import visualization
-from . import helpers
-from . import _decorators
-from . import resources
-from . import utils
-from .core import *
-from . import music
+from . import _decorators, core, helpers, linguistic, music, resources, stats, utils, visualization
+from .core import Sequence, SoundSequence, SoundStimulus
 
 __version__ = '0.0.1.dev0'
-

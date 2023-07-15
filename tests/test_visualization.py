@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-from matplotlib import pyplot as plt
 import numpy as np
-import thebeat.visualization
-from thebeat.core import SoundStimulus, SoundSequence, Sequence
-from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 import pytest
+from matplotlib import pyplot as plt
+
+import thebeat.visualization
+from thebeat.core import Sequence, SoundSequence, SoundStimulus
+from thebeat.visualization import plot_multiple_sequences, recurrence_plot
 
 
 @pytest.fixture
@@ -34,6 +35,7 @@ def test_plot_multiple_sequences_0(rng):
 
     for x in range(10):
         seq = Sequence.generate_random_uniform(n_events=10, a=400, b=600, rng=rng)  # = 10 stimuli, 9 IOIs
+        seq.round_onsets()
         stims = [SoundStimulus.generate() for _ in range(10)]  # = 10 stimuli
         trials.append(SoundSequence(stims, seq))
 
@@ -82,12 +84,14 @@ def test_recurrence_plot_nothreshold(rng):
 @pytest.mark.mpl_image_compare
 def test_plot_phase_differences(rng):
     seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=20, end_with_interval=True, rng=rng) * 5
-    fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
+    with pytest.warns(UserWarning, match="The first onset of the test sequence was at t=0"):
+        fig, ax = thebeat.visualization.plot_phase_differences(seq, 500, binwidth=10, title="My first circular plot")
     assert fig, ax
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
-    thebeat.visualization.plot_phase_differences(seq, 500, ax=ax, suppress_display=True)
+    with pytest.warns(UserWarning, match="The first onset of the test sequence was at t=0"):
+        thebeat.visualization.plot_phase_differences(seq, 500, ax=ax, suppress_display=True)
 
     return fig
 

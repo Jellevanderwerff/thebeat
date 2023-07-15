@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
 import thebeat.core
-import matplotlib.pyplot as plt
 
 
 @pytest.fixture

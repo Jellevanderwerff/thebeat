@@ -6,4 +6,3 @@ BaseSequence
 .. autoclass:: thebeat.core.BaseSequence
     :members:
     :undoc-members:
-

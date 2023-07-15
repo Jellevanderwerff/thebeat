@@ -2,6 +2,9 @@ name: CI
 
 on:
   push:
+    branches-ignore:
+      - 'dependabot/**'
+      - 'pre-commit-ci-update-config'
   pull_request:
   workflow_dispatch:
 
@@ -46,13 +49,58 @@ jobs:
         if: contains(matrix.os, 'windows')
         run: |
           choco install lilypond
-          Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+          echo "C:\Program Files (x86)\LilyPond\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install test requirements
         run: |
           pip install -r tests/requirements.txt
           pip install pytest-github-actions-annotate-failures
 
-      - name: Test with pytest
+      - name: Run tests with pytest
         run: |
           pytest
+
+      - name: Run doctests with pytest
+        run: |
+          pytest --doctest-modules thebeat/
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          pip install abjad
+
+      - name: Install PortAudio, PulseAudio, D-Bus, and LilyPond
+        run: |
+          sudo apt update
+          sudo apt install libportaudio2 pulseaudio dbus-x11 lilypond
+
+      - name: Install documentation requirements
+        run: |
+          sudo apt install pandoc
+          pip install -r docs/requirements.txt
+          pip install nbconvert
+
+      - name: Clear example outputs
+        run: |
+          find docs/source -type f -name "*.ipynb" | xargs jupyter nbconvert --clear-output --inplace
+
+      - name: Build documentation
+        run: |
+          dbus-launch pulseaudio --start  # See LABSN/sound-ci-helpers
+          export PYDEVD_DISABLE_FILE_VALIDATION=1
+          cd docs
+          make html

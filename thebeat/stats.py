@@ -16,26 +16,30 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from typing import Optional, Union
-import scipy.stats
-import scipy.fft
-import numpy as np
-import thebeat.core
-from thebeat.helpers import sequence_to_binary
+
+import numbers
+import warnings
+
+import Levenshtein
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.fft
 import scipy.signal
 import scipy.stats
 from scipy.fft import rfft, rfftfreq
-import pandas as pd
+
+import thebeat.core
 import thebeat.helpers
-import Levenshtein
-import warnings
+from thebeat.helpers import sequence_to_binary
 
 
-def acf_df(sequence: thebeat.core.Sequence,
-           resolution,
-           smoothing_window: Optional[float] = None,
-           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
+def acf_df(
+    sequence: thebeat.core.Sequence,
+    resolution,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+) -> pd.DataFrame:
     """
 
     Perform autocorrelation analysis on a :py:class:`Sequence` object,
@@ -79,35 +83,36 @@ def acf_df(sequence: thebeat.core.Sequence,
     2         20     0.590761
     """
 
-    correlations = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
-                              smoothing_sd=smoothing_sd)
+    correlations = acf_values(
+        sequence=sequence,
+        resolution=resolution,
+        smoothing_window=smoothing_window,
+        smoothing_sd=smoothing_sd,
+    )
     correlations = correlations / np.max(correlations)
     timestamps = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
 
-    df = pd.DataFrame(
-        {
-            "timestamp": timestamps,
-            "correlation": correlations
-        }
-    )
+    df = pd.DataFrame({"timestamp": timestamps, "correlation": correlations})
 
     return df
 
 
-def acf_plot(sequence: thebeat.core.Sequence,
-             resolution,
-             min_lag: Optional[float] = None,
-             max_lag: Optional[float] = None,
-             smoothing_window: Optional[float] = None,
-             smoothing_sd: Optional[float] = None,
-             style: str = 'seaborn-v0_8',
-             title: str = 'Autocorrelation',
-             x_axis_label: str = 'Lag',
-             y_axis_label: str = 'Correlation',
-             figsize: Optional[tuple] = None,
-             dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
-             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+def acf_plot(
+    sequence: thebeat.core.Sequence,
+    resolution,
+    min_lag: float | None = None,
+    max_lag: float | None = None,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+    style: str = "seaborn-v0_8",
+    title: str = "Autocorrelation",
+    x_axis_label: str = "Lag",
+    y_axis_label: str = "Correlation",
+    figsize: tuple | None = None,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+    suppress_display: bool = False,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
 
@@ -161,12 +166,18 @@ def acf_plot(sequence: thebeat.core.Sequence,
 
     onsets = sequence.onsets
 
-    correlation = acf_values(sequence=sequence, resolution=resolution, smoothing_window=smoothing_window,
-                             smoothing_sd=smoothing_sd)
+    correlation = acf_values(
+        sequence=sequence,
+        resolution=resolution,
+        smoothing_window=smoothing_window,
+        smoothing_sd=smoothing_sd,
+    )
 
     x_step = resolution
     min_lag = int(min_lag // resolution) if min_lag else 0
-    max_lag = int(max_lag // resolution) if max_lag else np.floor(np.max(onsets) / resolution).astype(int)
+    max_lag = (
+        int(max_lag // resolution) if max_lag else np.floor(np.max(onsets) / resolution).astype(int)
+    )
 
     # plot
     try:
@@ -195,10 +206,12 @@ def acf_plot(sequence: thebeat.core.Sequence,
     return fig, ax
 
 
-def acf_values(sequence: thebeat.core.Sequence,
-               resolution,
-               smoothing_window: Optional[float] = None,
-               smoothing_sd: Optional[float] = None) -> np.ndarray:
+def acf_values(
+    sequence: thebeat.core.Sequence,
+    resolution,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+) -> np.ndarray:
     """
 
     Perform autocorrelation. This function takes a :class:`~thebeat.core.Sequence` object, and returns an array with
@@ -236,23 +249,27 @@ def acf_values(sequence: thebeat.core.Sequence,
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
         signal_convoluted = np.convolve(signal, npdf)
-        signal = signal_convoluted[round(resolution * smoothing_window / 2):]
+        signal = signal_convoluted[round(resolution * smoothing_window / 2) :]
 
     try:
-        correlation = np.correlate(signal, signal, 'full')
-        correlation = correlation[round(len(correlation) / 2) - 1:]
+        correlation = np.correlate(signal, signal, "full")
+        correlation = correlation[round(len(correlation) / 2) - 1 :]
     except ValueError as e:
-        raise ValueError("Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
-                         "and smoothing_sd. Try choosing a smaller resolution.") from e
+        raise ValueError(
+            "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
+            "and smoothing_sd. Try choosing a smaller resolution."
+        ) from e
 
     return correlation
 
 
-def ccf_df(test_sequence: thebeat.core.Sequence,
-           reference_sequence: thebeat.core.Sequence,
-           resolution,
-           smoothing_window: Optional[float] = None,
-           smoothing_sd: Optional[float] = None) -> pd.DataFrame:
+def ccf_df(
+    test_sequence: thebeat.core.Sequence,
+    reference_sequence: thebeat.core.Sequence,
+    resolution,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+) -> pd.DataFrame:
     """
 
     Perform autocorrelation analysis on a :py:class:`Sequence` object,
@@ -289,35 +306,37 @@ def ccf_df(test_sequence: thebeat.core.Sequence,
 
     """
 
-    correlations = ccf_values(test_sequence=test_sequence, reference_sequence=reference_sequence, resolution=resolution,
-                              smoothing_window=smoothing_window, smoothing_sd=smoothing_sd)
+    correlations = ccf_values(
+        test_sequence=test_sequence,
+        reference_sequence=reference_sequence,
+        resolution=resolution,
+        smoothing_window=smoothing_window,
+        smoothing_sd=smoothing_sd,
+    )
     # normalize
     correlations = correlations / np.max(correlations)
     timestamps = np.arange(start=0, stop=len(correlations) * resolution, step=resolution)
 
-    df = pd.DataFrame(
-        {
-            "timestamp": timestamps,
-            "correlation": correlations
-        }
-    )
+    df = pd.DataFrame({"timestamp": timestamps, "correlation": correlations})
 
     return df
 
 
-def ccf_plot(test_sequence: thebeat.core.Sequence,
-             reference_sequence: thebeat.core.Sequence,
-             resolution,
-             smoothing_window: Optional[float] = None,
-             smoothing_sd: Optional[float] = None,
-             style: str = 'seaborn-v0_8',
-             title: str = 'Cross-correlation',
-             x_axis_label: str = 'Lag',
-             y_axis_label: str = 'Correlation',
-             figsize: Optional[tuple] = None,
-             dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
-             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+def ccf_plot(
+    test_sequence: thebeat.core.Sequence,
+    reference_sequence: thebeat.core.Sequence,
+    resolution,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+    style: str = "seaborn-v0_8",
+    title: str = "Cross-correlation",
+    x_axis_label: str = "Lag",
+    y_axis_label: str = "Correlation",
+    figsize: tuple | None = None,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+    suppress_display: bool = False,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Calculate and plot the cross-correlation function (CCF) between two :class:`~thebeat.core.Sequence` objects.
     The test sequence is compared to the reference sequence.
@@ -371,14 +390,19 @@ def ccf_plot(test_sequence: thebeat.core.Sequence,
     """
 
     # Get correlation factors
-    correlation = ccf_values(test_sequence=test_sequence, reference_sequence=reference_sequence,
-                             resolution=resolution, smoothing_window=smoothing_window,
-                             smoothing_sd=smoothing_sd)
+    correlation = ccf_values(
+        test_sequence=test_sequence,
+        reference_sequence=reference_sequence,
+        resolution=resolution,
+        smoothing_window=smoothing_window,
+        smoothing_sd=smoothing_sd,
+    )
 
     # Make y axis
     x_step = resolution
-    max_lag = np.floor(np.max(np.concatenate([test_sequence.onsets, reference_sequence.onsets])) / resolution).astype(
-        int)
+    max_lag = np.floor(
+        np.max(np.concatenate([test_sequence.onsets, reference_sequence.onsets])) / resolution
+    ).astype(int)
     try:
         y = correlation[:max_lag]
         y = y / np.max(y)  # normalize
@@ -406,11 +430,13 @@ def ccf_plot(test_sequence: thebeat.core.Sequence,
     return fig, ax
 
 
-def ccf_values(test_sequence: thebeat.core.Sequence,
-               reference_sequence: thebeat.core.Sequence,
-               resolution: float,
-               smoothing_window: Optional[float] = None,
-               smoothing_sd: Optional[float] = None) -> np.ndarray:
+def ccf_values(
+    test_sequence: thebeat.core.Sequence,
+    reference_sequence: thebeat.core.Sequence,
+    resolution: float,
+    smoothing_window: float | None = None,
+    smoothing_sd: float | None = None,
+) -> np.ndarray:
     """
     Returns the unstandardized cross-correlation function (CCF) for two :class:`~thebeat.core.Sequence` objects.
     The test sequence is compared to the reference sequence.
@@ -448,8 +474,8 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
         npdf = npdf / np.max(npdf)
         test_signal_convoluted = np.convolve(test_signal, npdf)
         ref_signal_convoluted = np.convolve(ref_signal, npdf)
-        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2):]
-        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2):]
+        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2) :]
+        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2) :]
 
     # Make signals of equal length
     diff = len(ref_signal) - len(test_signal)
@@ -460,18 +486,22 @@ def ccf_values(test_sequence: thebeat.core.Sequence,
 
     # Calculate cross-correlation
     try:
-        correlation = np.correlate(test_signal, ref_signal, 'full')
-        correlation = correlation[round(len(correlation) / 2) - 1:]
+        correlation = np.correlate(test_signal, ref_signal, "full")
+        correlation = correlation[round(len(correlation) / 2) - 1 :]
     except ValueError as e:
-        raise ValueError("Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
-                         "and smoothing_sd. Try choosing a smaller resolution.") from e
+        raise ValueError(
+            "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
+            "and smoothing_sd. Try choosing a smaller resolution."
+        ) from e
 
     return correlation
 
 
-def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
-                         reference_rhythm: thebeat.music.Rhythm,
-                         smallest_note_value: int = 16) -> float:
+def edit_distance_rhythm(
+    test_rhythm: thebeat.music.Rhythm,
+    reference_rhythm: thebeat.music.Rhythm,
+    smallest_note_value: int = 16,
+) -> float:
     """
     Caculates edit/Levenshtein distance between two rhythms. The ``smallest_note_value`` determines
     the underlying grid that is used. If e.g. 16, the underlying grid is composed of 1/16th notes.
@@ -498,13 +528,17 @@ def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
     1
 
     """
-    if not isinstance(test_rhythm, thebeat.music.Rhythm) or not isinstance(reference_rhythm, thebeat.music.Rhythm):
+    if not isinstance(test_rhythm, thebeat.music.Rhythm) or not isinstance(
+        reference_rhythm, thebeat.music.Rhythm
+    ):
         raise TypeError("test_rhythm and reference_rhythm must be of type Rhythm")
 
-    test_string = thebeat.helpers.rhythm_to_binary(rhythm=test_rhythm,
-                                                   smallest_note_value=smallest_note_value)
-    reference_string = thebeat.helpers.rhythm_to_binary(rhythm=reference_rhythm,
-                                                        smallest_note_value=smallest_note_value)
+    test_string = thebeat.helpers.rhythm_to_binary(
+        rhythm=test_rhythm, smallest_note_value=smallest_note_value
+    )
+    reference_string = thebeat.helpers.rhythm_to_binary(
+        rhythm=reference_rhythm, smallest_note_value=smallest_note_value
+    )
 
     # calculate edit distance
     edit_distance = Levenshtein.distance(test_string, reference_string)
@@ -512,9 +546,9 @@ def edit_distance_rhythm(test_rhythm: thebeat.music.Rhythm,
     return edit_distance
 
 
-def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
-                           reference_sequence: thebeat.core.Sequence,
-                           resolution: int) -> float:
+def edit_distance_sequence(
+    test_sequence: thebeat.core.Sequence, reference_sequence: thebeat.core.Sequence, resolution: int
+) -> float:
     """
     Calculates the edit/Levenshtein distance between two sequences.
 
@@ -540,23 +574,28 @@ def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
         they will not be quantized again.
 
     """
-    if not isinstance(test_sequence, thebeat.core.Sequence) or not isinstance(reference_sequence,
-                                                                              thebeat.core.Sequence):
+    if not isinstance(test_sequence, thebeat.core.Sequence) or not isinstance(
+        reference_sequence, thebeat.core.Sequence
+    ):
         raise TypeError("test_sequence and reference_sequence must be of type Sequence")
 
     # Check whether we need to quantize the sequences
     if np.any(test_sequence.onsets % resolution != 0):
-        warnings.warn(f"Test sequence has been quantized to onsets that are multiples of {resolution}.")
+        warnings.warn(
+            f"Test sequence has been quantized to onsets that are multiples of {resolution}."
+        )
         test_sequence.quantize(to=resolution)
 
     if np.any(reference_sequence.onsets % resolution != 0):
-        warnings.warn(f"Reference sequence has been quantized to onsets that are multiples of {resolution}.")
+        warnings.warn(
+            f"Reference sequence has been quantized to onsets that are multiples of {resolution}."
+        )
         reference_sequence.quantize(to=resolution)
 
-    test_string = thebeat.helpers.sequence_to_binary(sequence=test_sequence,
-                                                     resolution=resolution)
-    reference_string = thebeat.helpers.sequence_to_binary(sequence=reference_sequence,
-                                                          resolution=resolution)
+    test_string = thebeat.helpers.sequence_to_binary(sequence=test_sequence, resolution=resolution)
+    reference_string = thebeat.helpers.sequence_to_binary(
+        sequence=reference_sequence, resolution=resolution
+    )
 
     # calculate edit distance
     edit_distance = Levenshtein.distance(test_string, reference_string)
@@ -564,18 +603,20 @@ def edit_distance_sequence(test_sequence: thebeat.core.Sequence,
     return edit_distance
 
 
-def fft_plot(sequence: thebeat.core.Sequence,
-             unit_size: float,
-             x_min: float = 0,
-             x_max: Optional[float] = None,
-             style: str = 'seaborn-v0_8',
-             title: str = 'Fourier transform',
-             x_axis_label: str = 'Cycles per unit',
-             y_axis_label: str = 'Absolute power',
-             figsize: Optional[tuple] = None,
-             dpi: int = 100,
-             ax: Optional[plt.Axes] = None,
-             suppress_display: bool = False) -> tuple[plt.Figure, plt.Axes]:
+def fft_plot(
+    sequence: thebeat.core.Sequence,
+    unit_size: float,
+    x_min: float = 0,
+    x_max: float | None = None,
+    style: str = "seaborn-v0_8",
+    title: str = "Fourier transform",
+    x_axis_label: str = "Cycles per unit",
+    y_axis_label: str = "Absolute power",
+    figsize: tuple | None = None,
+    dpi: int = 100,
+    ax: plt.Axes | None = None,
+    suppress_display: bool = False,
+) -> tuple[plt.Figure, plt.Axes]:
     """
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
@@ -647,8 +688,8 @@ def fft_plot(sequence: thebeat.core.Sequence,
 
     # Calculate reasonable max_freq
     max_freq_index = np.min(np.where(xf > x_max)) if x_max else len(xf) / 10
-    yf = yf[:int(max_freq_index)]
-    xf = xf[:int(max_freq_index)]
+    yf = yf[: int(max_freq_index)]
+    xf = xf[: int(max_freq_index)]
 
     # Plot
     with plt.style.context(style):
@@ -670,9 +711,11 @@ def fft_plot(sequence: thebeat.core.Sequence,
     return fig, ax
 
 
-def ks_test(sequence: thebeat.core.Sequence,
-            reference_distribution: str = 'normal',
-            alternative: str = 'two-sided'):
+def ks_test(
+    sequence: thebeat.core.Sequence,
+    reference_distribution: str = "normal",
+    alternative: str = "two-sided",
+):
     """
     This function returns the `D` statistic and `p` value of a one-sample Kolmogorov-Smirnov test.
     It calculates how different the distribution of inter-onset intervals (IOIs) is compared to the provided reference
@@ -712,12 +755,12 @@ def ks_test(sequence: thebeat.core.Sequence,
 
     sequence = sequence.iois
 
-    if reference_distribution == 'normal':
+    if reference_distribution == "normal":
         mean = np.mean(sequence)
         sd = np.std(sequence)
         dist = scipy.stats.norm(loc=mean, scale=sd).cdf
         return scipy.stats.kstest(sequence, dist, alternative=alternative)
-    elif reference_distribution == 'uniform':
+    elif reference_distribution == "uniform":
         a = min(sequence)
         b = max(sequence)
         scale = b - a
@@ -727,8 +770,9 @@ def ks_test(sequence: thebeat.core.Sequence,
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.music.Rhythm],
-                         bin_fraction: float = 0.03125):
+def get_rhythmic_entropy(
+    sequence: thebeat.core.Sequence | thebeat.music.Rhythm, bin_fraction: float = 0.03125
+):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
     If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
@@ -759,7 +803,9 @@ def get_rhythmic_entropy(sequence: Union[thebeat.core.Sequence, thebeat.music.Rh
 
     """
     bin_size = np.mean(sequence.iois) * bin_fraction
-    bins = np.arange(0, np.max(sequence.iois) + 2 * bin_size, bin_size) - bin_size / 2  # shift bins to center
+    bins = (
+        np.arange(0, np.max(sequence.iois) + 2 * bin_size, bin_size) - bin_size / 2
+    )  # shift bins to center
     bin_counts = np.histogram(sequence.iois, bins=bins)[0]
 
     return scipy.stats.entropy(bin_counts)
@@ -837,9 +883,9 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     return np.float64(npvi)
 
 
-def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
-                         reference_ioi: float,
-                         output_statistic: str = 'mean') -> np.float64:
+def get_ugof_isochronous(
+    test_sequence: thebeat.core.Sequence, reference_ioi: float, output_statistic: str = "mean"
+) -> np.float64:
     r"""
 
     This function calculates the universal goodness of fit (``ugof``) measure.
@@ -882,16 +928,16 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
 
     # Input validation and getting onsets for test sequence
     if not isinstance(test_sequence, thebeat.core.sequence.Sequence):
-        raise TypeError('test_sequence must be a Sequence object')
+        raise TypeError("test_sequence must be a Sequence object")
     test_onsets = test_sequence.onsets
 
     # Input validation and getting onsets for reference sequence
-    if not isinstance(reference_ioi, (int, float)):
-        raise TypeError('reference_sequence must be a number (int or float)')
+    if not isinstance(reference_ioi, numbers.Real):
+        raise TypeError("reference_ioi must be a number (int or float)")
 
-    reference_onsets = np.arange(start=0,
-                                 stop=np.max(test_onsets) + reference_ioi + 1,
-                                 step=reference_ioi)
+    reference_onsets = np.arange(
+        start=0, stop=np.max(test_onsets) + reference_ioi + 1, step=reference_ioi
+    )
 
     # For each onset, get the closest theoretical beat and get the absolute difference
     minimal_deviations = np.min(np.abs(test_onsets[:, None] - reference_onsets), axis=1)
@@ -900,9 +946,9 @@ def get_ugof_isochronous(test_sequence: thebeat.core.Sequence,
     # calculate ugofs
     ugof_values = minimal_deviations / maximal_deviation
 
-    if output_statistic == 'mean':
+    if output_statistic == "mean":
         return np.float32(np.mean(ugof_values))
-    elif output_statistic == 'median':
+    elif output_statistic == "median":
         return np.float32(np.median(ugof_values))
     else:
         raise ValueError("The output statistic can only be 'median' or 'mean'.")
