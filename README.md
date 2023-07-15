@@ -1,5 +1,8 @@
+[![PyPI version](https://img.shields.io/pypi/v/thebeat.svg)](https://pypi.python.org/pypi/thebeat)
+[![PyPI Python versions](https://img.shields.io/pypi/pyversions/thebeat.svg)](https://pypi.python.org/pypi/thebeat)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
 [![GitHub CI status](https://github.com/jellevanderwerff/thebeat/actions/workflows/ci.yml/badge.svg)](https://github.com/Jellevanderwerff/thebeat/main)
+[![License](https://img.shields.io/pypi/l/praat-parselmouth.svg)](https://github.com/YannickJadoul/Parselmouth/blob/master/LICENSE)
 
 
 <img src=docs/source/thebeat_logo.png height="350" width="350">
