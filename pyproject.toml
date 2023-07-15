@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -41,8 +41,11 @@ packages = [
     "thebeat.resources"
 ]
 
-[tool.setuptools.dynamic]
-version = {attr = "thebeat.__version__"}
+[tool.setuptools_scm]
+write_to = "thebeat/_version.py"
+
+[tool.check-manifest]
+ignore = ["thebeat/_version.py"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
