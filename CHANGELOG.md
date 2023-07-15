@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 _Nothing yet_
 
-## [0.1.0] - Soon
+## [0.1.0] - 2023-07-15
 ### Added
 - Initial release with core classes Sequence, SoundStimulus, SoundSequence, Rhythm, and Melody
 - Several utility modules: linguistic, stats, visualization
