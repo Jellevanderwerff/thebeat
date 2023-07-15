@@ -303,16 +303,15 @@ def plot_lp(lp,
     dpi
         The resolution of the plot in dots per inch.
     ax
-        If provided, the plot will be drawn on this axis.
+        If provided, the plot will be drawn on this axes.
 
     """
     # If a filepath is given, we'll use its format. If none is given, we'll use .png as the format to
     # eventually show.
     if filepath:
         save_format = os.path.splitext(filepath)[1]
-        print(save_format)
-        if save_format not in ('.pdf', '.png', '.eps'):
-            raise ValueError("Can only export .png, .pdf, and .eps files.")
+        if save_format not in ('.pdf', '.png'):
+            raise ValueError("Can only export .png and .pdf files.")
     else:
         save_format = None
 
@@ -323,30 +322,15 @@ def plot_lp(lp,
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
-        if save_format == '.png' or save_format is None:
-            command = ['lilypond', '-dbackend=eps', '--silent', f'-dresolution={dpi}', '--png', '-o',
-                       'rhythm', 'rhythm.ly']
-        else:
-            command = ['lilypond', '-dbackend=eps', '--silent', f'-dresolution={dpi}', '--png', f'--{save_format[1:]}',
-                       '-o', 'rhythm', 'rhythm.ly']
-
+        command = ['lilypond', '-dcrop', '-dbackend=eps', '--silent', f'-dresolution={dpi}', 
+                   '--eps', '-o', 'rhythm', 'rhythm.ly']
         subprocess.run(command, cwd=tmp_dir, check=True)
 
         # read the png as image
-        result_path_png = os.path.join(tmp_dir, 'rhythm.png')
+        result_path_png = os.path.join(tmp_dir, 'rhythm.cropped.png')
         image = mpimg.imread(result_path_png)
-
-        # crop the png
-        white = np.array([1, 1, 1])
-        mask = np.abs(image - white).sum(axis=2) < 0.05
-        coords = np.array(np.nonzero(~mask))
-        top_left = np.min(coords, axis=1) + 1
-        bottom_right = np.max(coords, axis=1) + 1
-        img_cropped = image[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
-
-        # the eps we cannot crop that easily unfortunately, so we use the one created
-        # by lilypond if an .eps is desired.
-        if filepath and save_format in ('.eps', '.pdf'):
+        
+        if filepath:
             path_to_file_for_saving = os.path.join(tmp_dir, f'rhythm.cropped{save_format}')
             shutil.copy(path_to_file_for_saving, filepath)
 
@@ -356,17 +340,14 @@ def plot_lp(lp,
     else:
         fig = ax.get_figure()
         ax_provided = True
-    ax.imshow(img_cropped)
+
+    ax.imshow(image)
     ax.set_axis_off()
     ax.set_title(title)
 
     # show plot if necessary
     if not suppress_display and not ax_provided:
         fig.show()
-
-    # Save cropped .png if necessary
-    if filepath and save_format == '.png':
-        plt.imsave(filepath, img_cropped)
 
     return fig, ax
 

@@ -57,12 +57,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     For more info on these properties, please refer to the class's :py:meth:`~thebeat.music.Rhythm.__init__`.
     """
 
-    def __init__(self,
-                 iois: Union[np.ndarray, list],
-                 time_signature: tuple[int, int] = (4, 4),
-                 beat_ms: float = 500,
-                 is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                 name: Optional[str] = None):
+    def __init__(
+        self,
+        iois: Union[np.ndarray, list],
+        time_signature: tuple[int, int] = (4, 4),
+        beat_ms: float = 500,
+        is_played: Optional[np.typing.ArrayLike[bool]] = None,
+        name: Optional[str] = None,
+    ):
         r"""
         Constructs a :py:class:`Rhythm` object.
 
@@ -114,14 +116,16 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         super().__init__(iois=iois, end_with_interval=True, name=name)
 
     def __str__(self):
-        return (f"Object of type Rhythm.\n"
-                f"Time signature: {self.time_signature}\n"
-                f"Number of bars: {self.n_bars}\n"
-                f"Beat (ms): {self.beat_ms}\n"
-                f"Number of events: {len(self.onsets)}\n"
-                f"IOIs: {self.iois}\n"
-                f"Onsets:{self.onsets}\n"
-                f"Name: {self.name}\n")
+        return (
+            f"Object of type Rhythm.\n"
+            f"Time signature: {self.time_signature}\n"
+            f"Number of bars: {self.n_bars}\n"
+            f"Beat (ms): {self.beat_ms}\n"
+            f"Number of events: {len(self.onsets)}\n"
+            f"IOIs: {self.iois}\n"
+            f"Onsets:{self.onsets}\n"
+            f"Name: {self.name}\n"
+        )
 
     def __repr__(self):
         if self.name:
@@ -227,12 +231,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         return note_values
 
     @classmethod
-    def from_fractions(cls,
-                       fractions: Union[list, np.ndarray],
-                       time_signature: tuple[int, int] = (4, 4),
-                       beat_ms: int = 500,
-                       is_played: np.typing.ArrayLike[bool] = None,
-                       name: Optional[str] = None) -> Rhythm:
+    def from_fractions(
+        cls,
+        fractions: Union[list, np.ndarray],
+        time_signature: tuple[int, int] = (4, 4),
+        beat_ms: int = 500,
+        is_played: np.typing.ArrayLike[bool] = None,
+        name: Optional[str] = None,
+    ) -> Rhythm:
         r"""
 
         This class method can be used for creating a Rhythm on the basis of fractions. The fractions
@@ -282,15 +288,23 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         iois = np.array([float(frac) for frac in iois_as_fractions])
 
-        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+        return cls(
+            iois=iois,
+            time_signature=time_signature,
+            beat_ms=beat_ms,
+            is_played=is_played,
+            name=name,
+        )
 
     @classmethod
-    def from_integer_ratios(cls,
-                            numerators: npt.ArrayLike[float],
-                            time_signature: tuple[int, int] = (4, 4),
-                            beat_ms: int = 500,
-                            is_played: np.typing.ArrayLike[bool] = None,
-                            name: Optional[str] = None) -> Rhythm:
+    def from_integer_ratios(
+        cls,
+        numerators: npt.ArrayLike[float],
+        time_signature: tuple[int, int] = (4, 4),
+        beat_ms: int = 500,
+        is_played: np.typing.ArrayLike[bool] = None,
+        name: Optional[str] = None,
+    ) -> Rhythm:
         r"""
 
         Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
@@ -319,19 +333,23 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         numerators = np.array(numerators)
 
-        return cls(iois=numerators * beat_ms,
-                   beat_ms=beat_ms,
-                   time_signature=time_signature,
-                   is_played=is_played,
-                   name=name)
+        return cls(
+            iois=numerators * beat_ms,
+            beat_ms=beat_ms,
+            time_signature=time_signature,
+            is_played=is_played,
+            name=name,
+        )
 
     @classmethod
-    def from_note_values(cls,
-                         note_values: np.typing.ArrayLike[int],
-                         time_signature: tuple[int, int] = (4, 4),
-                         beat_ms: int = 500,
-                         is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                         name: Optional[str] = None) -> Rhythm:
+    def from_note_values(
+        cls,
+        note_values: np.typing.ArrayLike[int],
+        time_signature: tuple[int, int] = (4, 4),
+        beat_ms: int = 500,
+        is_played: Optional[np.typing.ArrayLike[bool]] = None,
+        name: Optional[str] = None,
+    ) -> Rhythm:
         r"""Create a Rhythm object on the basis of note values (i.e. note durations).
 
         Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
@@ -367,17 +385,25 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ratios = np.array([1 / note * time_signature[1] for note in note_values])
         iois = ratios * beat_ms
 
-        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+        return cls(
+            iois=iois,
+            time_signature=time_signature,
+            beat_ms=beat_ms,
+            is_played=is_played,
+            name=name,
+        )
 
     @classmethod
-    def generate_random_rhythm(cls,
-                               n_bars: int = 1,
-                               beat_ms: int = 500,
-                               time_signature: tuple[int, int] = (4, 4),
-                               allowed_note_values: Optional[np.typing.ArrayLike[int]] = None,
-                               n_rests: int = 0,
-                               rng: Optional[np.random.Generator] = None,
-                               name: Optional[str] = None) -> Rhythm:
+    def generate_random_rhythm(
+        cls,
+        n_bars: int = 1,
+        beat_ms: int = 500,
+        time_signature: tuple[int, int] = (4, 4),
+        allowed_note_values: Optional[np.typing.ArrayLike[int]] = None,
+        n_rests: int = 0,
+        rng: Optional[np.random.Generator] = None,
+        name: Optional[str] = None,
+    ) -> Rhythm:
         r"""
         This function generates a random rhythmic sequence on the basis of the provided parameters.
 
@@ -449,15 +475,23 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         else:
             is_played = None
 
-        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+        return cls(
+            iois=iois,
+            time_signature=time_signature,
+            beat_ms=beat_ms,
+            is_played=is_played,
+            name=name,
+        )
 
     @classmethod
-    def generate_isochronous(cls,
-                             n_bars: int = 1,
-                             time_signature: tuple[int, int] = (4, 4),
-                             beat_ms: int = 500,
-                             is_played: Optional[np.typing.ArrayLike[bool]] = None,
-                             name: Optional[str] = None) -> Rhythm:
+    def generate_isochronous(
+        cls,
+        n_bars: int = 1,
+        time_signature: tuple[int, int] = (4, 4),
+        beat_ms: int = 500,
+        is_played: Optional[np.typing.ArrayLike[bool]] = None,
+        name: Optional[str] = None,
+    ) -> Rhythm:
         r"""
 
         Simply generates an isochronous (i.e. with equidistant inter-onset intervals) rhythm. Will have
@@ -488,17 +522,25 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         iois = n_iois * [beat_ms]
 
-        return cls(iois=iois, time_signature=time_signature, beat_ms=beat_ms, is_played=is_played, name=name)
+        return cls(
+            iois=iois,
+            time_signature=time_signature,
+            beat_ms=beat_ms,
+            is_played=is_played,
+            name=name,
+        )
 
     @requires_lilypond
-    def plot_rhythm(self,
-                    filepath: Union[os.PathLike, str] = None,
-                    staff_type: str = "rhythm",
-                    print_staff: bool = True,
-                    title: Optional[str] = None,
-                    suppress_display: bool = False,
-                    dpi: int = 600,
-                    ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+    def plot_rhythm(
+        self,
+        filepath: Union[os.PathLike, str] = None,
+        staff_type: str = "rhythm",
+        print_staff: bool = True,
+        title: Optional[str] = None,
+        suppress_display: bool = False,
+        dpi: int = 600,
+        ax: Optional[plt.Axes] = None,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires you to install:
 
@@ -570,8 +612,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
         # Check whether abjad is installed
         if abjad is None:
-            raise ImportError("This method requires the 'abjad' Python package."
-                              "Install it, for instance by typing 'pip install abjad' into your terminal.")
+            raise ImportError(
+                "This method requires the 'abjad' Python package."
+                "Install it, for instance by typing 'pip install abjad' into your terminal."
+            )
 
         # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
         # This because abjad 3.13 etc require Python 3.10.
@@ -579,13 +623,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             make_notes = abjad.makers.make_notes
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
+
             def make_notes(*args):
                 return list(note_maker(*args))
 
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
-        preamble = textwrap.dedent(r"""
-             #(ly:set-option 'crop #t)
+        preamble = textwrap.dedent(
+            r"""
              \version "2.22.1"
              \language "english"
              \paper {
@@ -596,12 +641,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
              oddFooterMarkup = ""
              evenFooterMarkup = ""
              }
-             """)
-        
+             """
+        )
+
         # Make the notes
         durations = self._get_abjad_note_durations()
         durations, ties_at = self._get_abjad_ties(durations)
-        pitches = [abjad.NamedPitch('A3')] * len(durations)
+        pitches = [abjad.NamedPitch("A3")] * len(durations)
 
         notes = []
 
@@ -632,32 +678,37 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # Change clef and staff type
         if staff_type == "percussion":
-            abjad.attach(abjad.Clef('percussion'), staff[0])
+            abjad.attach(abjad.Clef("percussion"), staff[0])
         elif staff_type == "rhythm":
             staff.lilypond_type = "RhythmicStaff"
         abjad.attach(time_signature, staff[0])
 
         # Make cleff transparent if necessary
         if print_staff is False:
-            abjad.override(staff).clef.transparent = '##t'
+            abjad.override(staff).clef.transparent = "##t"
 
         # Make the score and convert to lilypond object
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
-        # Make lilypond string, adding the remove footers string (removes all unnecessary stuff, changes page size etc.)
+        # Make lilypond string, adding the remove footers string 
+        # (removes all unnecessary stuff, changes page size etc.)
         lpf = abjad.LilyPondFile([preamble, score_lp])
         lpf_str = abjad.lilypond(lpf)
 
-        print(lpf_str)
-
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
         if print_staff is False:
-            lpf_str = lpf_str.replace(r'\time', r'\stopStaff \time')
+            lpf_str = lpf_str.replace(r"\time", r"\stopStaff \time")
 
         # Plot!
-        fig, ax = thebeat.helpers.plot_lp(lp=lpf_str, filepath=filepath, suppress_display=suppress_display, title=title,
-                                          dpi=dpi, ax=ax)
+        fig, ax = thebeat.helpers.plot_lp(
+            lp=lpf_str,
+            filepath=filepath,
+            suppress_display=suppress_display,
+            title=title,
+            dpi=dpi,
+            ax=ax,
+        )
 
         return fig, ax
 
@@ -692,14 +743,21 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         new_iois = np.tile(self.iois, reps=times)
         is_played = self.is_played * times
 
-        return Rhythm(new_iois, beat_ms=self.beat_ms, time_signature=self.time_signature, is_played=is_played,
-                      name=self.name)
+        return Rhythm(
+            new_iois,
+            beat_ms=self.beat_ms,
+            time_signature=self.time_signature,
+            is_played=is_played,
+            name=self.name,
+        )
 
     def to_sequence(self) -> thebeat.core.Sequence:
         """
         Convert the rhythm to a :class:`~thebeat.core.Sequence` object.
         """
-        return thebeat.core.Sequence(iois=self.iois, first_onset=0.0, end_with_interval=True, name=self.name)
+        return thebeat.core.Sequence(
+            iois=self.iois, first_onset=0.0, end_with_interval=True, name=self.name
+        )
 
     def _get_abjad_note_durations(self):
         """Get abjad note durations from the integer_ratios
@@ -711,7 +769,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
         numerators = ratios * self.time_signature[0]
 
-        durations = [abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators]
+        durations = [
+            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
+        ]
 
         return durations
 
@@ -750,8 +810,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # If at the end of all this the bars are not full yet, raise an error
         if not bar_fullness % full_bar == 0:
-            raise ValueError("There was an error while trying to tie the final note of a bar to the first note"
-                             "of the subsequent bar. Try a different rhythm.")
+            raise ValueError(
+                "There was an error while trying to tie the final note of a bar to the first note"
+                "of the subsequent bar. Try a different rhythm."
+            )
 
         return notes, ties_at
 
@@ -772,13 +834,15 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
     """
 
-    def __init__(self,
-                 rhythm: thebeat.music.Rhythm,
-                 pitch_names: Union[npt.NDArray[str], list[str], str],
-                 octave: Optional[int] = None,
-                 key: Optional[str] = None,
-                 is_played: Optional[list] = None,
-                 name: Optional[str] = None):
+    def __init__(
+        self,
+        rhythm: thebeat.music.Rhythm,
+        pitch_names: Union[npt.NDArray[str], list[str], str],
+        octave: Optional[int] = None,
+        key: Optional[str] = None,
+        is_played: Optional[list] = None,
+        name: Optional[str] = None,
+    ):
         """
 
         Parameters
@@ -808,7 +872,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         """
 
         # Initialize namedtuple. The namedtuple template is saved as an attribute.
-        self.Event = namedtuple('event', 'onset_ms duration_ms note_value pitch_name is_played')
+        self.Event = namedtuple("event", "onset_ms duration_ms note_value pitch_name is_played")
 
         # Make is_played if None supplied
         if is_played is None:
@@ -830,11 +894,13 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self.pitch_names = pitch_names_list
 
         # Add initial events
-        self.events = self._make_namedtuples(rhythm=rhythm,
-                                             iois=rhythm.iois,
-                                             note_values=rhythm.note_values,
-                                             pitch_names=self.pitch_names,
-                                             is_played=is_played)
+        self.events = self._make_namedtuples(
+            rhythm=rhythm,
+            iois=rhythm.iois,
+            note_values=rhythm.note_values,
+            pitch_names=self.pitch_names,
+            is_played=is_played,
+        )
 
         # Save rhythmic/musical attributes
         self.time_signature = rhythm.time_signature
@@ -860,16 +926,18 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return f"Melody(n_bars={self.n_bars}, key={self.key})"
 
     @classmethod
-    def generate_random_melody(cls,
-                               n_bars: int = 1,
-                               beat_ms: int = 500,
-                               time_signature: tuple = (4, 4),
-                               key: str = 'C',
-                               octave: int = 4,
-                               n_rests: int = 0,
-                               allowed_note_values: list = None,
-                               rng: np.random.Generator = None,
-                               name: Optional[str] = None) -> Melody:
+    def generate_random_melody(
+        cls,
+        n_bars: int = 1,
+        beat_ms: int = 500,
+        time_signature: tuple = (4, 4),
+        key: str = "C",
+        octave: int = 4,
+        n_rests: int = 0,
+        allowed_note_values: list = None,
+        rng: np.random.Generator = None,
+        name: Optional[str] = None,
+    ) -> Melody:
         r"""
 
         Generate a random rhythm as well as a melody, based on the given parameters. Internally, for the
@@ -917,8 +985,10 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
         if abjad is None:
-            raise ImportError("This method requires the 'abjad' Python package."
-                              "Install it, for instance by typing 'pip install abjad' into your terminal.")
+            raise ImportError(
+                "This method requires the 'abjad' Python package."
+                "Install it, for instance by typing 'pip install abjad' into your terminal."
+            )
 
         if rng is None:
             rng = np.random.default_rng()
@@ -927,10 +997,16 @@ class Melody(thebeat.core.sequence.BaseSequence):
             allowed_note_values = [4, 8, 16]
 
         # Generate random rhythm and random tone_heights
-        rhythm = thebeat.music.Rhythm.generate_random_rhythm(n_bars=n_bars, beat_ms=beat_ms,
-                                                             time_signature=time_signature,
-                                                             allowed_note_values=allowed_note_values, rng=rng)
-        pitch_names_possible = [pitch.name for pitch in thebeat.utils.get_major_scale(tonic=key, octave=octave)]
+        rhythm = thebeat.music.Rhythm.generate_random_rhythm(
+            n_bars=n_bars,
+            beat_ms=beat_ms,
+            time_signature=time_signature,
+            allowed_note_values=allowed_note_values,
+            rng=rng,
+        )
+        pitch_names_possible = [
+            pitch.name for pitch in thebeat.utils.get_major_scale(tonic=key, octave=octave)
+        ]
 
         pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
 
@@ -941,7 +1017,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         is_played = n_rests * [False] + (len(rhythm.onsets) - n_rests) * [True]
         rng.shuffle(is_played)
 
-        return cls(rhythm=rhythm, pitch_names=pitch_names_chosen, is_played=is_played, name=name, key=key)
+        return cls(
+            rhythm=rhythm, pitch_names=pitch_names_chosen, is_played=is_played, name=name, key=key
+        )
 
     @property
     def note_values(self):
@@ -989,11 +1067,13 @@ class Melody(thebeat.core.sequence.BaseSequence):
             return copy.copy(self)
 
     @requires_lilypond
-    def plot_melody(self,
-                    filepath: Optional[Union[os.PathLike, str]] = None,
-                    key: Optional[str] = None,
-                    suppress_display: bool = False,
-                    dpi: int = 600) -> tuple[plt.Figure, plt.Axes]:
+    def plot_melody(
+        self,
+        filepath: Optional[Union[os.PathLike, str]] = None,
+        key: Optional[str] = None,
+        suppress_display: bool = False,
+        dpi: int = 600,
+    ) -> tuple[plt.Figure, plt.Axes]:
         """
         Use this function to plot the melody in musical notes. It requires lilypond to be installed. See
         :py:meth:`Rhythm.plot_rhythm` for installation instructions.
@@ -1036,28 +1116,34 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
         if abjad is None:
-            raise ImportError("This method requires the installation of abjad. Please install, for instance "
-                              "using 'pip install abjad'.")
+            raise ImportError(
+                "This method requires the installation of abjad. Please install, for instance "
+                "using 'pip install abjad'."
+            )
 
         key = self.key if key is None else key
 
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
-        fig, ax = thebeat.helpers.plot_lp(lp, filepath=filepath, suppress_display=suppress_display, dpi=dpi)
+        fig, ax = thebeat.helpers.plot_lp(
+            lp, filepath=filepath, suppress_display=suppress_display, dpi=dpi
+        )
 
         return fig, ax
 
-    def synthesize_and_return(self,
-                              event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
-                              fs: int = 48000,
-                              n_channels: int = 1,
-                              amplitude: float = 1.0,
-                              oscillator: str = 'sine',
-                              onramp_ms: int = 0,
-                              offramp_ms: int = 0,
-                              ramp_type: str = 'linear',
-                              metronome: bool = False,
-                              metronome_amplitude: float = 1.0) -> tuple[np.ndarray, int]:
+    def synthesize_and_return(
+        self,
+        event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+        fs: int = 48000,
+        n_channels: int = 1,
+        amplitude: float = 1.0,
+        oscillator: str = "sine",
+        onramp_ms: int = 0,
+        offramp_ms: int = 0,
+        ramp_type: str = "linear",
+        metronome: bool = False,
+        metronome_amplitude: float = 1.0,
+    ) -> tuple[np.ndarray, int]:
         """Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
         synthesize the sound. It returnes a tuple containing the sound samples as a NumPy 1-D array,
         and the sampling frequency.
@@ -1106,27 +1192,40 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        samples = self._make_melody_sound(fs=fs, oscillator=oscillator, amplitude=amplitude, onramp_ms=onramp_ms,
-                                          n_channels=n_channels, offramp_ms=offramp_ms, ramp_type=ramp_type,
-                                          event_durations_ms=event_durations_ms)
+        samples = self._make_melody_sound(
+            fs=fs,
+            oscillator=oscillator,
+            amplitude=amplitude,
+            onramp_ms=onramp_ms,
+            n_channels=n_channels,
+            offramp_ms=offramp_ms,
+            ramp_type=ramp_type,
+            event_durations_ms=event_durations_ms,
+        )
 
         if metronome is True:
-            samples = thebeat.helpers.get_sound_with_metronome(samples=samples, fs=fs, metronome_ioi=self.beat_ms,
-                                                               metronome_amplitude=metronome_amplitude)
+            samples = thebeat.helpers.get_sound_with_metronome(
+                samples=samples,
+                fs=fs,
+                metronome_ioi=self.beat_ms,
+                metronome_amplitude=metronome_amplitude,
+            )
 
         return samples, fs
 
-    def synthesize_and_play(self,
-                            event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
-                            fs: int = 48000,
-                            n_channels: int = 1,
-                            amplitude: float = 1.0,
-                            oscillator: str = 'sine',
-                            onramp_ms: int = 0,
-                            offramp_ms: int = 0,
-                            ramp_type: str = 'linear',
-                            metronome: bool = False,
-                            metronome_amplitude: float = 1.0):
+    def synthesize_and_play(
+        self,
+        event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+        fs: int = 48000,
+        n_channels: int = 1,
+        amplitude: float = 1.0,
+        oscillator: str = "sine",
+        onramp_ms: int = 0,
+        offramp_ms: int = 0,
+        ramp_type: str = "linear",
+        metronome: bool = False,
+        metronome_amplitude: float = 1.0,
+    ):
         """
         Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
         first synthesize the sound, and subsequently have it played via the internally used :func:`sounddevice.play`.
@@ -1177,27 +1276,37 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations_ms=event_durations_ms, fs=fs, n_channels=n_channels,
-                                                amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
-                                                offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
-                                                metronome_amplitude=metronome_amplitude)
+        samples, _ = self.synthesize_and_return(
+            event_durations_ms=event_durations_ms,
+            fs=fs,
+            n_channels=n_channels,
+            amplitude=amplitude,
+            oscillator=oscillator,
+            onramp_ms=onramp_ms,
+            offramp_ms=offramp_ms,
+            ramp_type=ramp_type,
+            metronome=metronome,
+            metronome_amplitude=metronome_amplitude,
+        )
 
         sounddevice.play(samples, samplerate=fs)
         sounddevice.wait()
 
-    def synthesize_and_write(self,
-                             filepath: Union[str, os.PathLike],
-                             event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
-                             fs: int = 48000,
-                             n_channels: int = 1,
-                             amplitude: float = 1.0,
-                             dtype: Union[str, np.dtype] = np.int16,
-                             oscillator: str = 'sine',
-                             onramp_ms: int = 0,
-                             offramp_ms: int = 0,
-                             ramp_type: str = 'linear',
-                             metronome: bool = False,
-                             metronome_amplitude: float = 1.0):
+    def synthesize_and_write(
+        self,
+        filepath: Union[str, os.PathLike],
+        event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+        fs: int = 48000,
+        n_channels: int = 1,
+        amplitude: float = 1.0,
+        dtype: Union[str, np.dtype] = np.int16,
+        oscillator: str = "sine",
+        onramp_ms: int = 0,
+        offramp_ms: int = 0,
+        ramp_type: str = "linear",
+        metronome: bool = False,
+        metronome_amplitude: float = 1.0,
+    ):
         """Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
         first synthesize the sound, and subsequently write it to disk as a wave file.
 
@@ -1250,20 +1359,30 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        samples, _ = self.synthesize_and_return(event_durations_ms=event_durations_ms, fs=fs, n_channels=n_channels,
-                                                amplitude=amplitude, oscillator=oscillator, onramp_ms=onramp_ms,
-                                                offramp_ms=offramp_ms, ramp_type=ramp_type, metronome=metronome,
-                                                metronome_amplitude=metronome_amplitude)
+        samples, _ = self.synthesize_and_return(
+            event_durations_ms=event_durations_ms,
+            fs=fs,
+            n_channels=n_channels,
+            amplitude=amplitude,
+            oscillator=oscillator,
+            onramp_ms=onramp_ms,
+            offramp_ms=offramp_ms,
+            ramp_type=ramp_type,
+            metronome=metronome,
+            metronome_amplitude=metronome_amplitude,
+        )
 
-        thebeat.helpers.write_wav(samples=samples, fs=fs, filepath=filepath, dtype=dtype, metronome=metronome,
-                                  metronome_ioi=self.beat_ms, metronome_amplitude=metronome_amplitude)
+        thebeat.helpers.write_wav(
+            samples=samples,
+            fs=fs,
+            filepath=filepath,
+            dtype=dtype,
+            metronome=metronome,
+            metronome_ioi=self.beat_ms,
+            metronome_amplitude=metronome_amplitude,
+        )
 
-    def _make_namedtuples(self,
-                          rhythm,
-                          iois,
-                          note_values,
-                          pitch_names,
-                          is_played) -> list:
+    def _make_namedtuples(self, rhythm, iois, note_values, pitch_names, is_played) -> list:
         events = []
 
         for event in zip(rhythm.onsets, iois, note_values, pitch_names, is_played):
@@ -1272,16 +1391,17 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         return events
 
-    def _make_melody_sound(self,
-                           fs: int,
-                           n_channels: int,
-                           oscillator: str,
-                           amplitude: float,
-                           onramp_ms: int,
-                           offramp_ms: int,
-                           ramp_type: str,
-                           event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None):
-
+    def _make_melody_sound(
+        self,
+        fs: int,
+        n_channels: int,
+        oscillator: str,
+        amplitude: float,
+        onramp_ms: int,
+        offramp_ms: int,
+        ramp_type: str,
+        event_durations_ms: Optional[Union[list[int], npt.NDArray[int], int]] = None,
+    ):
         # Calculate required number of frames
         total_duration_ms = np.sum(self.iois)
         n_frames = total_duration_ms / 1000 * fs
@@ -1310,13 +1430,22 @@ class Melody(thebeat.core.sequence.BaseSequence):
         # times.
         for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
-                event_samples = thebeat.helpers.synthesize_sound(duration_ms=duration_ms, fs=fs,
-                                                                 freq=abjad.NamedPitch(event.pitch_name).hertz,
-                                                                 n_channels=n_channels, oscillator=oscillator,
-                                                                 amplitude=amplitude)
+                event_samples = thebeat.helpers.synthesize_sound(
+                    duration_ms=duration_ms,
+                    fs=fs,
+                    freq=abjad.NamedPitch(event.pitch_name).hertz,
+                    n_channels=n_channels,
+                    oscillator=oscillator,
+                    amplitude=amplitude,
+                )
                 if onramp_ms or offramp_ms:
-                    event_samples = thebeat.helpers.make_ramps(samples=event_samples, fs=fs, onramp_ms=onramp_ms,
-                                                               offramp_ms=offramp_ms, ramp_type=ramp_type)
+                    event_samples = thebeat.helpers.make_ramps(
+                        samples=event_samples,
+                        fs=fs,
+                        onramp_ms=onramp_ms,
+                        offramp_ms=offramp_ms,
+                        ramp_type=ramp_type,
+                    )
 
                 # Calculate start- and end locations for inserting the event into the output array
                 # and warn if the location in terms of frames was rounded off.
@@ -1339,22 +1468,22 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         return samples
 
-    def _get_lp_from_events(self,
-                            key: str,
-                            time_signature: tuple):
-
+    def _get_lp_from_events(self, key: str, time_signature: tuple):
         # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
         # This because abjad 3.13 etc require Python 3.10.
         try:
             make_notes = abjad.makers.make_notes
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
+
             def make_notes(*args):
                 return list(note_maker(*args))
+
         time_signature = abjad.TimeSignature(time_signature)
         pitch = abjad.NamedPitchClass(key)
         key = abjad.KeySignature(pitch)
-        preamble = textwrap.dedent(r"""
+        preamble = textwrap.dedent(
+            r"""
              #(ly:set-option 'crop #t)
              \version "2.22.1"
              \language "english"
@@ -1366,7 +1495,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
              oddFooterMarkup = ""
              evenFooterMarkup = ""
              }
-             """)
+             """
+        )
 
         pitch_names = [event.pitch_name for event in self.events]
         is_played = [event.is_played for event in self.events]
@@ -1380,7 +1510,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
         numerators = ratios * self.time_signature[0]
 
-        note_durations = [abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators]
+        note_durations = [
+            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
+        ]
 
         notes = []
 
