@@ -1,4 +1,6 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
+[![GitHub CI status](https://github.com/jellevanderwerff/thebeat/actions/workflows/ci.yml/badge.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
+
 
 <img src=docs/source/thebeat_logo.png height="350" width="350">
 
