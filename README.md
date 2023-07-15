@@ -35,8 +35,11 @@ Note that if you want use *thebeat*'s functionality for plotting musical notatio
 you have to install it using:
 
 ```bash
-pip install thebeat[musical_notation]
+pip install thebeat[music_notation]
 ```
+
+This will install *thebeat* with the optional dependencies [abjad](https://abjad.github.io)
+and [Lilypond](https://lilypond.org).
 
 *thebeat* is actively tested on Linux, macOS, and Windows. We aim to provide support for all
 [supported versions](https://devguide.python.org/versions/) of Python (3.8 and higher).
