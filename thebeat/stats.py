@@ -249,11 +249,11 @@ def acf_values(
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
         signal_convoluted = np.convolve(signal, npdf)
-        signal = signal_convoluted[round(resolution * smoothing_window / 2) :]
+        signal = signal_convoluted[round(resolution * smoothing_window / 2):]
 
     try:
         correlation = np.correlate(signal, signal, "full")
-        correlation = correlation[round(len(correlation) / 2) - 1 :]
+        correlation = correlation[round(len(correlation) / 2) - 1:]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
@@ -474,8 +474,8 @@ def ccf_values(
         npdf = npdf / np.max(npdf)
         test_signal_convoluted = np.convolve(test_signal, npdf)
         ref_signal_convoluted = np.convolve(ref_signal, npdf)
-        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2) :]
-        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2) :]
+        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2):]
+        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2):]
 
     # Make signals of equal length
     diff = len(ref_signal) - len(test_signal)
@@ -487,7 +487,7 @@ def ccf_values(
     # Calculate cross-correlation
     try:
         correlation = np.correlate(test_signal, ref_signal, "full")
-        correlation = correlation[round(len(correlation) / 2) - 1 :]
+        correlation = correlation[round(len(correlation) / 2) - 1:]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"

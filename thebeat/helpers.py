@@ -256,7 +256,7 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
         offramp_amps = np.linspace(1, 0, int(offramp_ms / 1000 * fs))
     elif ramp_type == "raised-cosine":
         hann_complete = scipy.signal.windows.hann(offramp_samples_len * 2)
-        offramp_amps = hann_complete[hann_complete.shape[0] // 2 :]
+        offramp_amps = hann_complete[hann_complete.shape[0] // 2:]
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
@@ -373,7 +373,7 @@ def plot_lp(
         coords = np.array(np.nonzero(~mask))
         top_left = np.min(coords, axis=1) + 1
         bottom_right = np.max(coords, axis=1) + 1
-        img_cropped = image[top_left[0] : bottom_right[0], top_left[1] : bottom_right[1]]
+        img_cropped = image[top_left[0]:bottom_right[0], top_left[1]:bottom_right[1]]
 
         # the eps we cannot crop that easily unfortunately, so we use the one created
         # by lilypond if an .eps is desired.
