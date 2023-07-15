@@ -37,7 +37,7 @@ changelog = "https://github.com/Jellevanderwerff/thebeat/releases"
 [project.optional-dependencies]
 music_notation = [
     "abjad ; python_version > '3.9'",
-    "abjad<=3.4 ; python_version < '3.9'",
+    "abjad<=3.4 ; python_version <= '3.9'",
     "lilypond"
 ]
 
