@@ -187,8 +187,8 @@ class SoundStimulus:
         n_channels
             The number of channels. 1 for mono, 2 for stereo.
         amplitude
-            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
-            values higher than 1 in louder sounds.
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are
+            less loud, values higher than 1 in louder sounds.
         oscillator
             Either 'sine' (the default) 'square' or 'sawtooth'.
         onramp_ms
@@ -198,8 +198,9 @@ class SoundStimulus:
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
         name
-            Optionally, one can provide a name for the SoundStimulus. This is for instance useful when distinguishing
-            A and B stimuli. It is used when the SoundStimulus sound is printed, written to a file, or when it is plotted.
+            Optionally, one can provide a name for the SoundStimulus. This is for instance useful
+            when distinguishing A and B stimuli. It is used when the SoundStimulus sound is printed,
+            written to a file, or when it is plotted.
 
         Examples
         --------
@@ -254,8 +255,10 @@ class SoundStimulus:
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
         name
-            Optionally, one can provide a name for the SoundStimulus. This is for instance useful when distinguishing
-            A and B stimuli. It is used when the SoundStimulus sound is printed, written to a file, or when it is plotted.
+            Optionally, one can provide a name for the SoundStimulus. This is for instance useful
+            when distinguishing A and B stimuli. It is used when the SoundStimulus sound is printed,
+            written to a file,
+            or when it is plotted.
 
         Examples
         --------
@@ -301,10 +304,11 @@ class SoundStimulus:
         fs
             The sampling frequency in hertz.
         amplitude
-            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
-            values higher than 1 in louder sounds.
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are
+            less loud, values higher than 1 in louder sounds.
         oscillator
-            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
+            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or
+            'sawtooth'.
         onramp_ms
             The sound's 'attack' in milliseconds.
         offramp_ms
@@ -312,8 +316,9 @@ class SoundStimulus:
         ramp
             The type of on- and offramp_ms used. Either 'linear' (the default) or 'raised-cosine'.
         name
-            Optionally, one can provide a name for the SoundStimulus. This is for instance useful when distinguishing
-            A and B stimuli. It is used when the SoundStimulus sound is printed, written to a file, or when it is plotted.
+            Optionally, one can provide a name for the SoundStimulus. This is for instance useful
+            when distinguishing A and B stimuli. It is used when the SoundStimulus sound is printed,
+            written to a file, or when it is plotted.
 
         Examples
         --------
@@ -360,8 +365,9 @@ class SoundStimulus:
         sound_object : :class:`parselmouth.Sound` object
             The to-be imported Parselmouth Sound object.
         name : str, optional
-            Optionally, one can provide a name for the SoundStimulus. This is for instance useful when distinguishing
-            A and B stimuli. It is used when the SoundStimulus sound is printed, written to a file, or when it is plotted.
+            Optionally, one can provide a name for the SoundStimulus. This is for instance useful
+            when distinguishing A and B stimuli. It is used when the SoundStimulus sound is printed,
+            written to a file, or when it is plotted.
         """
         if not sound_object.__class__.__name__ == "Sound":
             raise TypeError("Please provide a parselmouth.Sound object.")
@@ -430,7 +436,8 @@ class SoundStimulus:
         Parameters
         ----------
         loop
-            If ``True``, the SoundStimulus object is played until the :py:meth:`SoundStimulus.stop` method is called.
+            If ``True``, the SoundStimulus object is played until the :py:meth:`SoundStimulus.stop`
+            method is called.
 
         Examples
         --------
@@ -461,7 +468,8 @@ class SoundStimulus:
         Parameters
         ----------
         **kwargs
-            Additional parameters (e.g. 'title', 'dpi' are passed to :py:func:`thebeat.helpers.plot_waveform`).
+            Additional parameters (e.g. 'title', 'dpi' are passed to
+            :py:func:`thebeat.helpers.plot_waveform`).
 
         Examples
         --------
@@ -501,8 +509,8 @@ class SoundStimulus:
         Parameters
         ----------
         filepath
-            The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
-            Of course be aware of OS-specific filepath conventions.
+            The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a
+            string. Of course be aware of OS-specific filepath conventions.
         dtype
             The data type of the samples. Defaults to ``np.int16``, meaning that the
             samples are saved as 16-bit integers.
