@@ -139,7 +139,9 @@ def get_major_scale(tonic: str, octave: int) -> list:
 
     Note
     ----
-    This function requires abjad to be installed.
+    This function requires abjad to be installed. It can be installed with ``pip install abjad`` or
+    ``pip install thebeat[music_notation]``.
+    For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
 
     Parameters
     ----------
@@ -157,7 +159,8 @@ def get_major_scale(tonic: str, octave: int) -> list:
     if abjad is None:
         raise ImportError(
             "This function requires the abjad package. Install, for instance by typing "
-            "'pip install abjad' into your terminal."
+            "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+            "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
         )
 
     intervals = "M2 M2 m2 M2 M2 M2 m2".split()
