@@ -7,32 +7,46 @@
 
 <img src=docs/source/thebeat_logo.png height="350" width="350">
 
-**Note that *thebeat* is still under development. Please report any issues by clicking the 'Issues' tab in the respository.**
-
 # *thebeat*: Rhythms in Python for Science
 
 *thebeat* is a Python package for working with temporal sequences and rhythms in the behavioural and cognitive sciences. It provides functionality for creating stimuli, and for visualizing and analyzing temporal data.
 
+As a collection of accepted methods for use in music and timing research, 
 *thebeat* will save you time when creating experiments or analyzing data.
-It is a collection of widely accepted methods for use in timing research.
+
 *thebeat* is an open-source, on-going, and collaborative project,
 integrating easily with the existing Python ecosystem, and with your own scripts.
 The package was specifically designed to be useful for both skilled and novice programmers.
 
 # Documentation
-The package documentation is available from [https://thebeat.readthedocs.io](https://thebeat.readthedocs.io).
+The package documentation is available from 
+[https://thebeat.readthedocs.io](https://thebeat.readthedocs.io). The documentation contains
+detailed descriptions of all package functionality, as well as a large number of (copyable) 
+examples.
 
 # Installation
-A development version of *thebeat* can be installed by downloading this repository as a ``.zip`` file (click the green 'Code' button > 'Download ZIP'), and installing via pip, by typing the following in a terminal where you've navigated to the folder containing the downloaded ``.zip`` file:
+*thebeat* is available through PyPI, and can be installed using:
 
 ```bash
-pip install thebeat-main.zip
+pip install thebeat
 ```
 
-# Try directly via Binder
-We have made available a Binder instantiation which already has *thebeat* installed. It can be accessed simply by following [this link](https://mybinder.org/v2/git/https%3A%2F%2Fgitlab.gwdg.de%2Fcomparative-bioacoustics%2Fthebeat-demo.git/HEAD?labpath=docs%2Fsource%2Fexamples%2FREADME.md).
+Note that if you want use *thebeat*'s functionality for plotting musical notation,
+you have to install it using:
 
-Note that it may take a few moments for the Binder environment to load. Once it has, you are free to experiment with *thebeat*. You can do this either by following one of the linked-to examples, or by creating new notebooks. New or changed notebooks will not be saved when Binder is closed!
+```bash
+pip install thebeat[musical_notation]
+```
+
+*thebeat* is actively tested on Linux, macOS, and Windows. We aim to provide support for all
+[supported versions](https://devguide.python.org/versions/) of Python (3.8 and higher).
+
+# Try directly via Binder
+If you first would like to try *thebeat*, or of you wish to use it in, for instance, an 
+educational setting, you can use 
+[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/HEAD) to try *thebeat* in a 
+Binder environment.
+
 
 # Getting started
 The code below illustrates how we might create a simple trial for use in an experiment:
@@ -50,10 +64,27 @@ trial.plot_sequence()  # plot as an event plot
 trial.write_wav('example_trial.wav')  # save file to disk
 ```
 
+# Open discussion
+One of the reasons for creating *thebeat* was the lack of a collection of standardized/accepted
+methods for use in rhythm and timing research. Therefore, an important part of *thebeat*'s merit
+lies in opening discussions about the methods that are included. As an example, there are different
+ways of calculating phase differences and integer ratios, and we imagine people to have different
+opinions about which method to use. Where possible, we have included
+references to the literature in the package documentation. But, we encourage anyone with an opinion
+to openly question the methods that *thebeat* provides. 
+
+There are two places where you can go with comments and/or questions:
+
+- You can click the 'Issues' tab at the top of this GitHub page, and start a thread. Note that
+this place is mostly for questioning methods, or for reporting bugs.
+- You can drop by in our [Gitter chatroom](https://matrix.to/#/#thebeat:gitter.im). This is likely
+the best place to go to with questions about how *thebeat* works.
+
 # License
 *thebeat* is distributed under the GPL-3 license. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
 
 # Collaborators
-The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for Psycholinguistics.
+The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for 
+Psycholinguistics, in Nijmegen, the Netherlands.
 
 The collaborators were: Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
