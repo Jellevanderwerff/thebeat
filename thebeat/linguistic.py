@@ -22,9 +22,9 @@ import numpy as np
 import thebeat.core
 
 
-def generate_moraic_sequence(n_feet: int,
-                             foot_ioi: float,
-                             rng: np.random.Generator | None = None) -> thebeat.core.Sequence:
+def generate_moraic_sequence(
+    n_feet: int, foot_ioi: float, rng: np.random.Generator | None = None
+) -> thebeat.core.Sequence:
     """
     This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
     structure of mora-timed languages. The feet contain clusters of either one or two IOIs with the same total duration.
@@ -60,7 +60,7 @@ def generate_moraic_sequence(n_feet: int,
     start_of_pattern = 2
 
     # built around clusters with either one or two iois with same total duration (3 * syllable_ioi)
-    ioi_types = (np.arange(start=1, stop=8) / 4)
+    ioi_types = np.arange(start=1, stop=8) / 4
 
     iois = np.array([], dtype=np.float32)
 
@@ -89,10 +89,12 @@ def generate_moraic_sequence(n_feet: int,
     return thebeat.core.Sequence(iois)
 
 
-def generate_stress_timed_sequence(n_events_per_phrase: int,
-                                   syllable_ioi: int = 500,
-                                   n_phrases: int = 1,
-                                   rng: np.random.Generator | None = None) -> thebeat.core.Sequence:
+def generate_stress_timed_sequence(
+    n_events_per_phrase: int,
+    syllable_ioi: int = 500,
+    n_phrases: int = 1,
+    rng: np.random.Generator | None = None,
+) -> thebeat.core.Sequence:
     """
     This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
     structure of stress-timed languages.

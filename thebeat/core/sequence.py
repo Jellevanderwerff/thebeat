@@ -47,14 +47,14 @@ class BaseSequence:
     ----------
     iois : NumPy 1-D array
         Contains the inter-onset intervals (IOIs). This is the bread and butter of the BaseSequence
-        class. Sequences that end with an event have *n* onsets and *n*-1 IOIs. Sequences that end 
+        class. Sequences that end with an event have *n* onsets and *n*-1 IOIs. Sequences that end
         with an interval have an equal number of IOIs and onsets.
     end_with_interval : bool
-        If ``False``, sequence has *n*-1 inter-onset intervals (IOIs) for *n* event onsets. 
+        If ``False``, sequence has *n*-1 inter-onset intervals (IOIs) for *n* event onsets.
         If ``True``, sequence has an equal number of IOIs and event onsets.
     name : str
-        If desired, one can give the object a name. This is for instance used when printing the 
-        sequence, or when plotting the sequence. It can always be retrieved and changed via this 
+        If desired, one can give the object a name. This is for instance used when printing the
+        sequence, or when plotting the sequence. It can always be retrieved and changed via this
         attribute.
 
     """
@@ -91,8 +91,8 @@ class BaseSequence:
 
     @property
     def iois(self) -> np.ndarray:
-        """The inter-onset intervals (IOIs) of the Sequence object. These are the intervals in 
-        milliseconds between the onset of an event, and the onset of the next event. 
+        """The inter-onset intervals (IOIs) of the Sequence object. These are the intervals in
+        milliseconds between the onset of an event, and the onset of the next event.
         This is the most important attribute of the Sequence class and is used throughout.
 
         This getter returns a copy of the IOIs instead of the actual attribute.
@@ -157,25 +157,25 @@ class BaseSequence:
 
 class Sequence(BaseSequence):
     """
-    Arguably, the :py:class:`~thebeat.core.Sequence` class is the most important class in this 
+    Arguably, the :py:class:`~thebeat.core.Sequence` class is the most important class in this
     package. It is used as the basis for many functions as it contains timing information in the
     form of inter-onset intervals (IOIs; the times between the onset of an event, and the onset of
-    the next event) and event onsets (i.e. *t* values). 
+    the next event) and event onsets (i.e. *t* values).
     IOIs are what we use to construct :py:class:`Sequence` objects.
 
-    The most basic way of constructing a :py:class:`Sequence` object is by passing it a list or 
+    The most basic way of constructing a :py:class:`Sequence` object is by passing it a list or
     array of IOIs (see under :py:meth:`~thebeat.core.Sequence.__init__`).
-    However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may 
+    However, the different class methods (e.g. :py:meth:`Sequence.generate_isochronous`) may
     also be used.
 
-    For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds 
+    For the :py:class:`Sequence` class it does not matter  whether the provided IOIs are in seconds
     or milliseconds. However, it does matter when passing the :py:class:`Sequence` object to e.g.
     a :py:class:`SoundSequence` object (see :py:meth:`SoundSequence.__init__`).
 
-    This class additionally contains methods and attributes to, for instance, change the tempo, 
+    This class additionally contains methods and attributes to, for instance, change the tempo,
     add Gaussian noise, or to plot the :py:class:`Sequence` object using matplotlib.
 
-    For more info, check out the :py:meth:`~thebeat.core.Sequence.__init__` method, and the 
+    For more info, check out the :py:meth:`~thebeat.core.Sequence.__init__` method, and the
     different methods below.
     """
 
@@ -187,8 +187,8 @@ class Sequence(BaseSequence):
         name: str | None = None,
     ):
         """Construct a Sequence class on the basis of inter-onset intervals (IOIs).
-        When ``end_with_interval`` is ``False`` (the default), the sequence contains *n* event 
-        onsets, but *n*-1 IOIs. If ``True``, the sequence contains an equal number of event onsets 
+        When ``end_with_interval`` is ``False`` (the default), the sequence contains *n* event
+        onsets, but *n*-1 IOIs. If ``True``, the sequence contains an equal number of event onsets
         and IOIs.
 
         Parameters
@@ -196,11 +196,11 @@ class Sequence(BaseSequence):
         iois
             An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         end_with_interval
-            Indicates whether sequence has an extra final inter-onset interval; this is useful for 
+            Indicates whether sequence has an extra final inter-onset interval; this is useful for
             musical/rhythmical sequences.
         name
-            Optionally, you can give the Sequence object a name. This is used when printing, 
-            plotting, or writing the Sequence object. It can always be retrieved and changed via 
+            Optionally, you can give the Sequence object a name. This is used when printing,
+            plotting, or writing the Sequence object. It can always be retrieved and changed via
             :py:attr:`BaseSequence.name`.
 
         Examples
@@ -302,7 +302,7 @@ class Sequence(BaseSequence):
             The numerators of the integer ratios. For instance: ``[1, 2, 4]``
         value_of_one
             This represents the duration of the 1, multiples of this value are used.
-            For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a 
+            For instance, a sequence of ``[2, 4]`` using ``value_of_one=500`` would be a
             :py:class:`Sequence` with IOIs: ``[1000 2000]``.
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor (see
@@ -322,16 +322,16 @@ class Sequence(BaseSequence):
     @classmethod
     def from_onsets(cls, onsets: np.ndarray[float] | list[float], **kwargs) -> Sequence:
         """
-        Class method that can be used to generate a new :py:class:`Sequence` object on the basis of 
+        Class method that can be used to generate a new :py:class:`Sequence` object on the basis of
         event onsets. Here, the onsets do not have to start with zero.
 
         Parameters
         ----------
         onsets
-            An array or list containg event onsets, for instance: ``[0, 500, 1000]``. 
+            An array or list containg event onsets, for instance: ``[0, 500, 1000]``.
             The onsets do not have to start with zero.
         **kwargs
-            Additional keyword arguments are passed to the :py:class:`Sequence` constructor 
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor
             (excluding ``first_onset`` and ``end_with_interval``, which are set by this method).
 
 
@@ -355,7 +355,7 @@ class Sequence(BaseSequence):
         **kwargs,
     ) -> Sequence:
         """
-        Class method that can be used to generate a new :py:class:`Sequence` object from a text 
+        Class method that can be used to generate a new :py:class:`Sequence` object from a text
         file.
 
         The text file is assumed to contain one IOI/onset per line.
@@ -391,8 +391,8 @@ class Sequence(BaseSequence):
         cls, n_events: int, ioi: float, end_with_interval: bool = False, **kwargs
     ) -> Sequence:
         """
-        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset 
-        intervals. Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to 
+        Class method that generates a sequence of isochronous (i.e. equidistant) inter-onset
+        intervals. Note that there will be *n*-1 IOIs in a sequence. IOIs are rounded off to
         integers.
 
         Parameters
@@ -402,7 +402,7 @@ class Sequence(BaseSequence):
         ioi
             The inter-onset interval to be used between all events.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval 
+            Indicates whether the sequence should end with an event (``False``) or an interval
             (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
@@ -442,7 +442,7 @@ class Sequence(BaseSequence):
         **kwargs,
     ) -> Sequence:
         """
-        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals 
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals
         (IOIs) based on the normal distribution.
 
         Parameters
@@ -454,10 +454,10 @@ class Sequence(BaseSequence):
         sigma
             The standard deviation of the normal distribution.
         rng
-            A :class:`numpy.random.Generator` object. If not supplied 
+            A :class:`numpy.random.Generator` object. If not supplied
             :func:`numpy.random.default_rng` is used.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval 
+            Indicates whether the sequence should end with an event (``False``) or an interval
             (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
@@ -496,7 +496,7 @@ class Sequence(BaseSequence):
         **kwargs,
     ) -> Sequence:
         """
-        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals 
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals
         (IOIs) based on a uniform distribution.
 
         Parameters
@@ -508,10 +508,10 @@ class Sequence(BaseSequence):
         b
             The right bound of the uniform distribution.
         rng
-            A :class:`numpy.random.Generator` object. If not supplied 
+            A :class:`numpy.random.Generator` object. If not supplied
             :func:`numpy.random.default_rng` is used.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval 
+            Indicates whether the sequence should end with an event (``False``) or an interval
             (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
@@ -548,7 +548,7 @@ class Sequence(BaseSequence):
         **kwargs,
     ) -> Sequence:
         """
-        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals 
+        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals
         (IOIs) based on a Poisson distribution.
 
         Parameters
@@ -558,10 +558,10 @@ class Sequence(BaseSequence):
         lam
             The desired value for lambda.
         rng
-            A :class:`numpy.random.Generator` object. If not supplied 
+            A :class:`numpy.random.Generator` object. If not supplied
             :func:`numpy.random.default_rng` is used.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval 
+            Indicates whether the sequence should end with an event (``False``) or an interval
             (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
@@ -596,7 +596,7 @@ class Sequence(BaseSequence):
         end_with_interval: bool = False,
         **kwargs,
     ) -> Sequence:
-        """Class method that generates a :py:class:`Sequence` object with random inter-onset 
+        """Class method that generates a :py:class:`Sequence` object with random inter-onset
         intervals (IOIs) based on an exponential distribution.
 
         Parameters
@@ -606,10 +606,10 @@ class Sequence(BaseSequence):
         lam
            The desired value for lambda.
         rng
-            A :class:`numpy.random.Generator` object. If not supplied NumPy's 
+            A :class:`numpy.random.Generator` object. If not supplied NumPy's
             :func:`numpy.random.default_rng` is used.
         end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval 
+            Indicates whether the sequence should end with an event (``False``) or an interval
             (``True``).
         **kwargs
             Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
@@ -636,7 +636,7 @@ class Sequence(BaseSequence):
 
     def merge(self, other: thebeat.core.Sequence | list[thebeat.core.Sequence]):
         """
-        Merge this :py:class:`Sequence` object with one or multiple other :py:class:`Sequence` 
+        Merge this :py:class:`Sequence` object with one or multiple other :py:class:`Sequence`
         objects.
 
         Returns a new :py:class:`Sequence` object.
@@ -690,8 +690,8 @@ class Sequence(BaseSequence):
         self.iois += rng.normal(loc=0, scale=noise_sd, size=len(self.iois))
 
     def change_tempo(self, factor: float) -> None:
-        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the 
-        tempo (resulting in smaller inter-onset intervals). A factor between 0 and 1 decreases the 
+        """Change the tempo of the `Sequence` object, where a factor of 1 or bigger increases the
+        tempo (resulting in smaller inter-onset intervals). A factor between 0 and 1 decreases the
         tempo (resulting in larger inter-onset intervals).
 
         Parameters
@@ -722,8 +722,8 @@ class Sequence(BaseSequence):
         ----------
         total_change
             Total tempo change at the end of the :py:class:`Sequence` compared to the beginning.
-            So, a total change of 2 (accelerando) results in a final IOI that is twice as short as 
-            the first IOI. A total change of 0.5 (ritardando) results in a final IOI that is twice 
+            So, a total change of 2 (accelerando) results in a final IOI that is twice as short as
+            the first IOI. A total change of 0.5 (ritardando) results in a final IOI that is twice
             as long as the first IOI.
 
         Examples
@@ -739,11 +739,11 @@ class Sequence(BaseSequence):
         self.iois /= np.linspace(start=1, stop=total_change, num=len(self.iois))
 
     def round_onsets(self, decimals: int = 0):
-        """Use this function to round off the :py:class:`Sequence` object's onsets 
-        (i.e. *t* values). This can, for instance, be useful to get rid of warnings that are the 
+        """Use this function to round off the :py:class:`Sequence` object's onsets
+        (i.e. *t* values). This can, for instance, be useful to get rid of warnings that are the
         result of frame rounding. See e.g. :py:class:`SoundSequence`.
 
-        Note that this function does not return anything. The onsets of the sequence object from 
+        Note that this function does not return anything. The onsets of the sequence object from
         which this method is called are rounded.
 
         Parameters
@@ -760,13 +760,13 @@ class Sequence(BaseSequence):
 
         Note
         ----
-        This function does not return anything. Instead, the onsets of the sequence object itself 
+        This function does not return anything. Instead, the onsets of the sequence object itself
         are changed.
 
         Parameters
         ----------
         to
-            The value to be quantized to. E.g. a value of ``100`` means that the onsets will be 
+            The value to be quantized to. E.g. a value of ``100`` means that the onsets will be
             quantized to the nearest multiple of 100.
 
         Examples
@@ -794,8 +794,8 @@ class Sequence(BaseSequence):
         Parameters
         ----------
         linewidth
-            The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset 
-            interval (IOI). Can be a single value that will be used for each onset, or a list or 
+            The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset
+            interval (IOI). Can be a single value that will be used for each onset, or a list or
             array of values (i.e with a value for each respective onsets).
         **kwargs
             Additional parameters (e.g. 'title', 'dpi' etc.) are passed to
@@ -856,7 +856,7 @@ class Sequence(BaseSequence):
 
         Notes
         -----
-        The method for calculating the integer ratios is based on 
+        The method for calculating the integer ratios is based on
         :cite:t:`jacobyIntegerRatioPriors2017`.
 
         Examples
@@ -901,8 +901,8 @@ class Sequence(BaseSequence):
     def _repeat(self, times: int) -> Sequence:
         """
         Repeat the inter-onset intervals (IOIs) ``times`` times. Returns a new Sequence instance.
-        Only works for Sequences that end with an interval! Otherwise, we do not know what the IOI 
-        is between the offset of the final event of the original sequence, and the onset of the 
+        Only works for Sequences that end with an interval! Otherwise, we do not know what the IOI
+        is between the offset of the final event of the original sequence, and the onset of the
         first sound in the repeated sequence.
 
         Parameters
