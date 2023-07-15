@@ -65,12 +65,6 @@ jobs:
           name: packages
           path: dist
 
-      - name: Collect executables
-        uses: actions/download-artifact@v3
-        with:
-          name: executables
-          path: dist
-
       - name: Upload wheel, sdist, and executables to release
         uses: ncipollo/release-action@v1
         with:
