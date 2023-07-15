@@ -3,9 +3,10 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
 [![GitHub CI status](https://github.com/jellevanderwerff/thebeat/actions/workflows/ci.yml/badge.svg)](https://github.com/Jellevanderwerff/thebeat)
 [![License](https://img.shields.io/pypi/l/praat-parselmouth.svg)](https://github.com/YannickJadoul/Parselmouth/blob/master/LICENSE)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/HEAD?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
 
 
-<img src=docs/source/thebeat_logo.png height="350" width="350">
+<img src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/thebeat_logo.png" height="350" width="350">
 
 # *thebeat*: Rhythms in Python for Science
 
@@ -47,8 +48,8 @@ and [Lilypond](https://lilypond.org).
 # Try directly via Binder
 If you first would like to try *thebeat*, or of you wish to use it in, for instance, an
 educational setting, you can use
-[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/HEAD) to try *thebeat* in a
-Binder environment.
+[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/HEAD?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
+to try *thebeat* in a Binder environment.
 
 
 # Getting started
@@ -80,7 +81,7 @@ There are two places where you can go with comments and/or questions:
 
 - You can click the 'Issues' tab at the top of this GitHub page, and start a thread. Note that
 this place is mostly for questioning methods, or for reporting bugs.
-- You can drop by in our [Gitter chatroom](https://matrix.to/#/#thebeat:gitter.im). This is likely
+- You can drop by in our [Gitter chatroom](https://app.gitter.im/#/room/#thebeat:gitter.im). This is likely
 the best place to go to with questions about how *thebeat* works.
 
 # License
