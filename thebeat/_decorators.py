@@ -29,9 +29,9 @@ def requires_lilypond(f):
             lilypond = None
 
         if not lilypond and not shutil.which('lilypond'):
-            raise ImportError("This function or method requires lilypond for plotting notes. "
-                              "Check out https://lilypond.org/download.en.html for instructions on how to install. "
-                              "Make sure to also follow the instructions on how to add lilypond to your PATH.")
+            raise ImportError("This function or method requires lilypond for plotting notes. You can install this "
+                              "opional depencency with pip install thebeat[music_notation].\n"
+                              "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.")
         orig_path = os.environ["PATH"]
         os.environ["PATH"] += os.pathsep + os.path.dirname(lilypond.executable())
         return_value = f(*args, **kwds)

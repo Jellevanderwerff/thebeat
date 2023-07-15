@@ -324,8 +324,9 @@ class SoundStimulus:
 
         if abjad is None:
             raise ImportError(
-                "This method requires the abjad package. Please install, for instance by typing "
-                "'pip install abjad' in your terminal."
+                "This function requires the abjad package. Install, for instance by typing "
+                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
