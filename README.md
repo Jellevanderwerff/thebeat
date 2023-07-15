@@ -6,7 +6,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/HEAD?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
 
 
-<img src=docs/source/thebeat_logo.png height="350" width="350">
+<img src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/thebeat_logo.png" height="350" width="350">
 
 # *thebeat*: Rhythms in Python for Science
 
