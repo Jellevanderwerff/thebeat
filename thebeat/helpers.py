@@ -353,7 +353,7 @@ def plot_lp(
         # read the png as image
         result_path_png = os.path.join(tmp_dir, "rhythm.cropped.png")
         image = mpimg.imread(result_path_png)
-        
+
         if filepath:
             path_to_file_for_saving = os.path.join(tmp_dir, f"rhythm.cropped{save_format}")
             shutil.copy(path_to_file_for_saving, filepath)
