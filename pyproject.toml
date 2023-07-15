@@ -64,9 +64,6 @@ filterwarnings = [
 [tool.flake8]
 max-line-length = 160
 max-doc-length = 100
-extend-ignore = [
-    "W505",
-]
 per-file-ignores = [
     "__init__.py:F401",
     "docs/source/conf.py:E402,E265",
