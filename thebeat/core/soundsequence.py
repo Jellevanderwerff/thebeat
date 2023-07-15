@@ -32,59 +32,67 @@ from thebeat.core.soundstimulus import SoundStimulus
 
 class SoundSequence(BaseSequence):
     """
-    The :py:class:`SoundSequence` class can be thought of as a combination of the :py:class:`SoundStimulus` class and
-    the :py:class:`Sequence` class; hence *SoundSequence*. It combines the timing information of a :py:class:`Sequence`
-    object with the auditory information (sound) of a :py:class:`SoundStimulus` object.
-    In most research one would refer to a :py:class:`SoundSequence` as a trial (which is also the
-    variable name used in some of the examples here). Remember that a :py:class:`Sequence` object is agnostic
-    about the used time unit, so when constructing a :py:class:`SoundSequence` object, you can specify the
-    time unit of the :py:class:`Sequence` object using the ``sequence_time_unit`` parameter (see
+    The :py:class:`SoundSequence` class can be thought of as a combination of the 
+    :py:class:`SoundStimulus` class and the :py:class:`Sequence` class; hence *SoundSequence*. 
+    It combines the timing information of a :py:class:`Sequence` object with the auditory 
+    information (sound) of a :py:class:`SoundStimulus` object. In most research one would refer to 
+    a :py:class:`SoundSequence` as a trial (which is also the variable name used in some of the 
+    examples here). Remember that a :py:class:`Sequence` object is agnostic about the used time 
+    unit, so when constructing a :py:class:`SoundSequence` object, you can specify the time unit of 
+    the :py:class:`Sequence` object using the ``sequence_time_unit`` parameter (see
     under :py:meth:`Sequence.__init__`.
 
-    One can construct a :py:class:`SoundSequence` object either by passing it a single :py:class:`SoundStimulus` object
-    (and a :py:class:`Sequence` object), or by passing it an array or list of :py:class:`SoundStimulus` objects
-    (and a :py:class:`Sequence` object).
+    One can construct a :py:class:`SoundSequence` object either by passing it a single 
+    :py:class:`SoundStimulus` object (and a :py:class:`Sequence` object), or by passing it an array 
+    or list of :py:class:`SoundStimulus` objects (and a :py:class:`Sequence` object).
 
-    If a single :py:class:`SoundStimulus` object is passed, this SoundStimulus sound is used for each event onset.
-    Otherwise, each :py:class:`SoundStimulus` sound is used for its respective event onsets. Of course,
-    then the number of :py:class:`SoundStimulus` objects in the iterable must be the same as the number of event onsets.
+    If a single :py:class:`SoundStimulus` object is passed, this SoundStimulus sound is used for 
+    each event onset. Otherwise, each :py:class:`SoundStimulus` sound is used for its respective 
+    event onsets. Of course, then the number of :py:class:`SoundStimulus` objects in the iterable 
+    must be the same as the number of event onsets.
 
-    :py:class:`SoundSequence` objects can be plotted, played, written to disk, statistically analyzed, and more...
-    During construction, checks are done to ensure you dit not accidentally use sounds that are longer
-    than the IOIs (impossible), that the sampling frequencies of all the :py:class:`SoundStimulus` objects are the same
-    (undesirable), and that the :py:class:`SoundStimulus` objects' number of channels are the same (probable).
+    :py:class:`SoundSequence` objects can be plotted, played, written to disk, statistically 
+    analyzed, and more... During construction, checks are done to ensure you dit not accidentally 
+    use sounds that are longer than the IOIs (impossible), that the sampling frequencies of all 
+    the :py:class:`SoundStimulus` objects are the same (undesirable), and that the 
+    :py:class:`SoundStimulus` objects' number of channels are the same (probable).
 
     """
 
-    def __init__(self,
-                 sound: SoundStimulus | list[SoundStimulus] | np.typing.NDArray[SoundStimulus],
-                 sequence: Sequence,
-                 sequence_time_unit: str = "ms",
-                 name: str | None = None):
+    def __init__(
+        self,
+        sound: SoundStimulus | list[SoundStimulus] | np.typing.NDArray[SoundStimulus],
+        sequence: Sequence,
+        sequence_time_unit: str = "ms",
+        name: str | None = None,
+    ):
         """
-        Initialize a :py:class:`SoundSequence` object using a :py:class:`SoundStimulus` object, or list or array of
-        :py:class:`SoundStimulus` objects, and a :py:class:`Sequence` object.
+        Initialize a :py:class:`SoundSequence` object using a :py:class:`SoundStimulus` object, or 
+        list or array of :py:class:`SoundStimulus` objects, and a :py:class:`Sequence` object.
 
-        During the construction of a :py:class:`SoundSequence` object, sound is generated on the basis of the passed
-        :py:class:`SoundStimulus` objects and the passed :py:class:`Sequence` object. A warning is issued if the frame
-        number, where one of the sounds would be placed, had to be rounded off. To get rid of this warning, you can use
-        the :py:meth:`Sequence.round_onsets` method before passing it to the :py:class`SoundSequence` constructor,
-        or try a different sampling frequency for the :py:class`SoundStimulus` sound.
+        During the construction of a :py:class:`SoundSequence` object, sound is generated on the 
+        basis of the passed :py:class:`SoundStimulus` objects and the passed :py:class:`Sequence` 
+        object. A warning is issued if the frame number, where one of the sounds would be placed, 
+        had to be rounded off. To get rid of this warning, you can use the 
+        :py:meth:`Sequence.round_onsets` method before passing it to the :py:class`SoundSequence` 
+        constructor, or try a different sampling frequency for the :py:class`SoundStimulus` sound.
 
         Parameters
         ----------
         sound
-            Either a single :py:class:`SoundStimulus` object (in which case the same sound is used for each event
-            onset), or a list or array of :py:class:`SoundStimulus` objects (in which case different sounds are used
-            for each event onset).
+            Either a single :py:class:`SoundStimulus` object (in which case the same sound is used 
+            for each event onset), or a list or array of :py:class:`SoundStimulus` objects (in 
+            which case different sounds are used for each event onset).
         sequence
-            A :py:class:`Sequence` object. This contains the timing information for the played events.
+            A :py:class:`Sequence` object. This contains the timing information for the played 
+            events.
         sequence_time_unit
-            If the :py:class:`Sequence` object was created using seconds, use "s". The default is milliseconds ("ms").
+            If the :py:class:`Sequence` object was created using seconds, use "s". The default is 
+            milliseconds ("ms").
         name
             You can provide a name for the :py:class:`SoundSequence` which is sometimes used
-            (e.g. when printing the object, or when plotting one). You can always retrieve this attribute from
-            :py:attr:`SoundSequence.name`.
+            (e.g. when printing the object, or when plotting one). You can always retrieve this 
+            attribute from :py:attr:`SoundSequence.name`.
 
         Examples
         --------
@@ -107,7 +115,9 @@ class SoundSequence(BaseSequence):
                 raise ValueError("Please provide an equal number of sounds as onsets.")
             sounds = sound
         else:
-            raise TypeError("Please pass a SoundStimulus object, or a list or array of SoundStimulus objects.")
+            raise TypeError(
+                "Please pass a SoundStimulus object, or a list or array of SoundStimulus objects."
+            )
 
         # Type checking for sequence
         if not isinstance(sequence, Sequence):
@@ -116,15 +126,17 @@ class SoundSequence(BaseSequence):
         # Get IOIs from sequence
         iois = sequence.iois
         if sequence._first_onset < 0:
-            raise ValueError("The first onset of the sequence is negative. This is not allowed "
-                             "when creating SoundSequence objects.")
+            raise ValueError(
+                "The first onset of the sequence is negative. This is not allowed "
+                "when creating SoundSequence objects."
+            )
 
         # If we're dealing with seconds, internally change to milliseconds
         if sequence_time_unit == "s":
             iois *= 1000
 
-        # Check whether dtype, number of channels etc. is the same. This function raises errors if that's
-        # not the case
+        # Check whether dtype, number of channels etc. is the same. This function raises errors if 
+        # that's not the case
         thebeat.helpers.check_sound_properties_sameness(sounds)
 
         # Save attributes
@@ -136,10 +148,12 @@ class SoundSequence(BaseSequence):
         self.sound_objects = sounds
 
         # Initialize BaseSequence class
-        super().__init__(iois,
-                         end_with_interval=sequence.end_with_interval,
-                         name=name,
-                         first_onset=sequence._first_onset)
+        super().__init__(
+            iois,
+            end_with_interval=sequence.end_with_interval,
+            name=name,
+            first_onset=sequence._first_onset,
+        )
 
         # Check whether there's overlap between the sounds with these IOIs
         sounds_durations = [sound.duration_ms for sound in sounds]
@@ -166,14 +180,18 @@ class SoundSequence(BaseSequence):
             for sound_name in self.sound_names:
                 sound_names.append(sound_name if sound_name else "Unknown")
 
-        end_with_interval = "(ends with interval)" if self.end_with_interval else "(ends with event)"
+        end_with_interval = (
+            "(ends with interval)" if self.end_with_interval else "(ends with event)"
+        )
 
-        return (f"Object of type SoundSequence {end_with_interval}:\n"
-                f"{len(self.onsets)} events\n"
-                f"IOIs: {self.iois}\n"
-                f"Onsets: {self.onsets}\n"
-                f"SoundStimulus names: {sound_names}\n"
-                f"SoundSequence name: {name}")
+        return (
+            f"Object of type SoundSequence {end_with_interval}:\n"
+            f"{len(self.onsets)} events\n"
+            f"IOIs: {self.iois}\n"
+            f"Onsets: {self.onsets}\n"
+            f"SoundStimulus names: {sound_names}\n"
+            f"SoundSequence name: {name}"
+        )
 
     def __repr__(self):
         if self.name:
@@ -195,10 +213,10 @@ class SoundSequence(BaseSequence):
         else:
             return copy.copy(self)
 
-    def merge(self,
-              other: thebeat.core.SoundSequence | list[thebeat.core.SoundSequence]):
+    def merge(self, other: thebeat.core.SoundSequence | list[thebeat.core.SoundSequence]):
         """
-        Merge this :py:class:`SoundSequence` object with one or multiple other :py:class:`SoundSequence` objects.
+        Merge this :py:class:`SoundSequence` object with one or multiple other 
+        :py:class:`SoundSequence` objects.
 
         Returns a new :py:class:`SoundSequence` object.
 
@@ -219,24 +237,21 @@ class SoundSequence(BaseSequence):
 
         return thebeat.utils.merge_soundsequences([self, *other])
 
-    def play(self,
-             loop: bool = False,
-             metronome: bool = False,
-             metronome_amplitude: float = 1.0):
+    def play(self, loop: bool = False, metronome: bool = False, metronome_amplitude: float = 1.0):
         """
         This method uses the :func:`sounddevice.play` to play the object's audio.
 
         Parameters
         ----------
         loop
-            If ``True``, the :py:class:`SoundSequence` will continue playing until the :py:meth:`SoundSequence.stop`
-            method is called.
+            If ``True``, the :py:class:`SoundSequence` will continue playing until the 
+            :py:meth:`SoundSequence.stop` method is called.
         metronome
             If ``True``, a metronome sound is added for playback.
         metronome_amplitude
             If desired, when playing the object with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value larger than 1 means
-            a louder metronome sound.
+            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value 
+            larger than 1 means a louder metronome sound.
 
         Examples
         --------
@@ -247,8 +262,14 @@ class SoundSequence(BaseSequence):
         >>> soundseq.play(metronome=True)  # doctest: +SKIP
 
         """
-        thebeat.helpers.play_samples(samples=self.samples, fs=self.fs, mean_ioi=self.mean_ioi, loop=loop,
-                                     metronome=metronome, metronome_amplitude=metronome_amplitude)
+        thebeat.helpers.play_samples(
+            samples=self.samples,
+            fs=self.fs,
+            mean_ioi=self.mean_ioi,
+            loop=loop,
+            metronome=metronome,
+            metronome_amplitude=metronome_amplitude,
+        )
 
     def stop(self) -> None:
         """
@@ -267,12 +288,12 @@ class SoundSequence(BaseSequence):
 
         sd.stop()
 
-    def plot_sequence(self,
-                      linewidth: float | list[float] | np.typing.NDArray[float] | None = None,
-                      **kwargs):
+    def plot_sequence(
+        self, linewidth: float | list[float] | np.typing.NDArray[float] | None = None, **kwargs
+    ):
         """
-        Plot the :py:class:`SoundSequence` object as an event plot on the basis of the event onsets and their durations.
-        See :py:func:`thebeat.visualization.plot_single_sequence`.
+        Plot the :py:class:`SoundSequence` object as an event plot on the basis of the event onsets 
+        and their durations. See :py:func:`thebeat.visualization.plot_single_sequence`.
 
         Parameters
         ----------
@@ -294,12 +315,14 @@ class SoundSequence(BaseSequence):
         """
 
         # Make title
-        if self.name and kwargs.get('title') is None:
-            kwargs.get('title', self.name)
+        if self.name and kwargs.get("title") is None:
+            kwargs.get("title", self.name)
 
         # The linewidths are the event durations for a SoundSequence unless otherwise specified
         if linewidth:
-            linewidths = [linewidth] * len(self.onsets) if isinstance(linewidth, (int, float)) else linewidth
+            linewidths = (
+                [linewidth] * len(self.onsets) if isinstance(linewidth, (int, float)) else linewidth
+            )
         else:
             linewidths = self.event_durations
 
@@ -314,11 +337,14 @@ class SoundSequence(BaseSequence):
             x_axis_label = "Time (ms)"
             final_ioi = self.iois[-1]
 
-        fig, ax = thebeat.helpers.plot_single_sequence(onsets=onsets,
-                                                       end_with_interval=self.end_with_interval,
-                                                       final_ioi=final_ioi,
-                                                       x_axis_label=x_axis_label,
-                                                       linewidths=linewidths, **kwargs)
+        fig, ax = thebeat.helpers.plot_single_sequence(
+            onsets=onsets,
+            end_with_interval=self.end_with_interval,
+            final_ioi=final_ioi,
+            x_axis_label=x_axis_label,
+            linewidths=linewidths,
+            **kwargs,
+        )
 
         return fig, ax
 
@@ -329,34 +355,40 @@ class SoundSequence(BaseSequence):
         Parameters
         ----------
         **kwargs
-            Additional parameters (e.g. 'title', 'dpi' are passed to :py:meth:`thebeat.helpers.plot_waveform`).
+            Additional parameters (e.g. 'title', 'dpi' are passed to 
+            :py:meth:`thebeat.helpers.plot_waveform`).
 
         Examples
         --------
-        >>> trial = SoundSequence(SoundStimulus.generate(), Sequence.generate_isochronous(n_events=10, ioi=500))
+        >>> sound = SoundStimulus.generate()
+        >>> seq = Sequence.generate_isochronous(n_events=10,ioi=500)
+        >>> trial = SoundSequence(sound, seq)
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
-        if self.name and kwargs.get('title') is None:
-            kwargs.get('title', self.name)
+        if self.name and kwargs.get("title") is None:
+            kwargs.get("title", self.name)
 
-        fig, ax = thebeat.helpers.plot_waveform(samples=self.samples, fs=self.fs, n_channels=self.n_channels,
-                                                **kwargs)
+        fig, ax = thebeat.helpers.plot_waveform(
+            samples=self.samples, fs=self.fs, n_channels=self.n_channels, **kwargs
+        )
 
         return fig, ax
 
-    def write_wav(self,
-                  filepath: str | os.PathLike,
-                  dtype: str | np.dtype = np.int16,
-                  metronome: bool = False,
-                  metronome_ioi: float | None = None,
-                  metronome_amplitude: float | None = None):
+    def write_wav(
+        self,
+        filepath: str | os.PathLike,
+        dtype: str | np.dtype = np.int16,
+        metronome: bool = False,
+        metronome_ioi: float | None = None,
+        metronome_amplitude: float | None = None,
+    ):
         """
         Parameters
         ----------
         filepath
-            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a string. Of course be
-            aware of OS-specific filepath conventions.
+            The output destination for the .wav file. Either pass e.g. a Path object, or a pass a 
+            string. Of course be aware of OS-specific filepath conventions.
         dtype
             The data type of the samples. Defaults to ``np.int16``, meaning that the
             samples are saved as 16-bit integers.
@@ -367,25 +399,33 @@ class SoundSequence(BaseSequence):
             metronome inter-onset interval (IOI). Defaults to the mean IOI of the sequence.
         metronome_amplitude
             If desired, when playing the StimSequence with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger than 1 means
-            a louder metronome sound.
+            metronome amplitude. A value between 0 and 1 means a less loud metronme, a value larger 
+            than 1 means a louder metronome sound.
 
         Examples
         --------
-        >>> soundseq = SoundSequence(SoundStimulus.generate(),Sequence.generate_isochronous(n_events=5,ioi=500))
+        >>> sound = SoundStimulus.generate()
+        >>> seq = Sequence.generate_isochronous(n_events=5,ioi=500)
+        >>> soundseq = SoundSequence(sound, seq)
         >>> soundseq.write_wav('my_soundseq.wav')  # doctest: +SKIP
         """
 
         if metronome is True and metronome_ioi is None:
             metronome_ioi = self.mean_ioi
 
-        thebeat.helpers.write_wav(samples=self.samples, fs=self.fs, filepath=filepath, dtype=dtype,
-                                  metronome=metronome, metronome_ioi=metronome_ioi,
-                                  metronome_amplitude=metronome_amplitude)
+        thebeat.helpers.write_wav(
+            samples=self.samples,
+            fs=self.fs,
+            filepath=filepath,
+            dtype=dtype,
+            metronome=metronome,
+            metronome_ioi=metronome_ioi,
+            metronome_amplitude=metronome_amplitude,
+        )
 
     def _make_soundseq_sound(self, sounds, onsets):
-        """Internal function used for combining different SoundStimulus samples and a passed Sequence object
-        into one array of samples containing the sound of a SoundSequence."""
+        """Internal function used for combining different SoundStimulus samples and a passed 
+        Sequence object into one array of samples containing the sound of a SoundSequence."""
 
         # Generate an array of silence that has the length of all the onsets + one final sound.
         # In the case of a sequence that ends with an interval, we add the final ioi.
@@ -441,8 +481,10 @@ class SoundSequence(BaseSequence):
             raise TypeError("Can only multiply the StimSequenec by an integer value")
 
         if not self.end_with_interval or not self.onsets[0] == 0:
-            raise ValueError("You can only repeat sequences that end with an interval."
-                             "Try adding the end_with_interval=True flag when creating the Sequence object.")
+            raise ValueError(
+                "You can only repeat sequences that end with an interval."
+                "Try adding the end_with_interval=True flag when creating the Sequence object."
+            )
 
         new_iois = np.tile(self.iois, reps=times)
         new_seq = Sequence(iois=new_iois, first_onset=0, end_with_interval=True)
