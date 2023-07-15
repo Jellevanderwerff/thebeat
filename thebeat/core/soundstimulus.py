@@ -138,7 +138,7 @@ class SoundStimulus:
         name
             If desired, one can give a :py:class:`SoundStimulus` object a name. This is used, for
             instance, when plotting or printing. It can always be retrieved from the
-            SoundStimulus.name atrribute.
+            :attr:`SoundStimulus.name` atrribute.
         new_fs
             If resampling is required, you can provide the target sampling frequency here,
             for instance ``48000``.

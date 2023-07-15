@@ -58,7 +58,7 @@ filterwarnings = [
 max-line-length = 160
 max-doc-length = 100
 extend-ignore = [
-    'W505',
+    "W505",
 ]
 per-file-ignores = [
     "__init__.py:F401",

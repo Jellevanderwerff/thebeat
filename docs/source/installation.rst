@@ -26,7 +26,7 @@ Installing through PyPI (recommended)
 
     pip install thebeat
 
-Note that if you want use thebeat's functionality for plotting musical notation, 
+Note that if you want use thebeat's functionality for plotting musical notation,
 you have to install it using:
 
 .. code-block:: console
