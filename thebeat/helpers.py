@@ -16,27 +16,27 @@
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-import os
+
 import importlib.resources as pkg_resources
-import warnings
-
-from thebeat._warnings import framerounding_soundsynthesis
-
-import scipy.signal
-
-import thebeat.resources
-import numpy as np
-import numpy.typing as npt
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy.signal import resample
-import sounddevice as sd
-from typing import Union, Optional
-from thebeat._decorators import requires_lilypond
-import tempfile
+import os
 import shutil
 import subprocess
+import tempfile
+import warnings
+from typing import Optional, Union
+
 import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+import scipy.signal
+import sounddevice as sd
+from scipy.io import wavfile
+from scipy.signal import resample
+
+import thebeat.resources
+from thebeat._decorators import requires_lilypond
+from thebeat._warnings import framerounding_soundsynthesis
 
 try:
     import abjad
@@ -68,7 +68,7 @@ def all_possibilities(numbers: list, target: float) -> np.ndarray:
     return np.array(res, dtype=object)
 
 
-def all_rhythmic_ratios(allowed_note_values: Union[list, np.ndarray],
+def all_rhythmic_ratios(allowed_note_values: list | np.ndarray,
                         time_signature: tuple[int, int]):
     # Find common denominator so we can work with integers, rather than floats
     common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
@@ -282,11 +282,11 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
 
 @requires_lilypond
 def plot_lp(lp,
-            filepath: Union[os.PathLike, str] = None,
+            filepath: os.PathLike | str = None,
             suppress_display: bool = False,
-            title: Optional[str] = None,
+            title: str | None = None,
             dpi: int = 300,
-            ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+            ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     This function plots a LilyPond object.
 
@@ -322,14 +322,14 @@ def plot_lp(lp,
         with open(os.path.join(tmp_dir, 'rhythm.ly'), 'w') as file:
             file.write(lp)
 
-        command = ['lilypond', '-dcrop', '-dbackend=eps', '--silent', f'-dresolution={dpi}', 
+        command = ['lilypond', '-dcrop', '-dbackend=eps', '--silent', f'-dresolution={dpi}',
                    '--eps', '-o', 'rhythm', 'rhythm.ly']
         subprocess.run(command, cwd=tmp_dir, check=True)
 
         # read the png as image
         result_path_png = os.path.join(tmp_dir, 'rhythm.cropped.png')
         image = mpimg.imread(result_path_png)
-        
+
         if filepath:
             path_to_file_for_saving = os.path.join(tmp_dir, f'rhythm.cropped{save_format}')
             shutil.copy(path_to_file_for_saving, filepath)
@@ -352,17 +352,17 @@ def plot_lp(lp,
     return fig, ax
 
 
-def plot_single_sequence(onsets: Union[list, np.ndarray],
+def plot_single_sequence(onsets: list | np.ndarray,
                          end_with_interval: bool,
-                         final_ioi: Optional[float] = None,
+                         final_ioi: float | None = None,
                          style: str = 'seaborn-v0_8',
-                         title: Optional[str] = None,
+                         title: str | None = None,
                          x_axis_label: str = "Time",
-                         linewidths: Optional[Union[list[float], npt.NDArray[float], float]] = None,
-                         figsize: Optional[tuple] = None,
+                         linewidths: list[float] | npt.NDArray[float] | float | None = None,
+                         figsize: tuple | None = None,
                          dpi: int = 100,
                          suppress_display: bool = False,
-                         ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                         ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     This function plots the onsets of a Sequence or SoundSequence object in an event plot.
 
@@ -442,11 +442,11 @@ def plot_waveform(samples: np.ndarray,
                   fs: int,
                   n_channels: int,
                   style: str = 'seaborn-v0_8',
-                  title: Optional[str] = None,
-                  figsize: Optional[tuple] = None,
+                  title: str | None = None,
+                  figsize: tuple | None = None,
                   dpi: int = 100,
                   suppress_display: bool = False,
-                  ax: Optional[plt.Axes] = None) -> tuple[plt.Figure, plt.Axes]:
+                  ax: plt.Axes | None = None) -> tuple[plt.Figure, plt.Axes]:
     """
     This helper function plots a waveform of a sound using matplotlib.
 
@@ -543,8 +543,8 @@ def play_samples(samples: np.ndarray,
     sd.wait()
 
 
-def read_wav(filepath: Union[str, os.PathLike],
-             new_fs: Optional[int]):
+def read_wav(filepath: str | os.PathLike,
+             new_fs: int | None):
     """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
     If dtype is different from np.float64, it converts the samples to that."""
     file_fs, samples = scipy.io.wavfile.read(filepath)
@@ -648,11 +648,11 @@ def synthesize_sound(duration_ms: float,
 
 def write_wav(samples: np.ndarray,
               fs: int,
-              filepath: Union[str, os.PathLike],
-              dtype: Union[str, np.dtype] = np.int16,
+              filepath: str | os.PathLike,
+              dtype: str | np.dtype = np.int16,
               metronome: bool = False,
-              metronome_ioi: Optional[float] = None,
-              metronome_amplitude: Optional[float] = None) -> None:
+              metronome_ioi: float | None = None,
+              metronome_amplitude: float | None = None) -> None:
     """
     This helper function writes the provided sound samples to disk as a wave file.
     See https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html for more info.
