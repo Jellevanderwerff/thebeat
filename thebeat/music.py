@@ -1273,7 +1273,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> mel = Melody.generate_random_melody()
         >>> mel.synthesize_and_play()  # doctest: +SKIP
 
-        >>> mel.synthesize_and_play(event_durations_ms=50)
+        >>> mel.synthesize_and_play(event_durations_ms=50)  # doctest: +SKIP
 
         """
 
