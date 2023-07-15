@@ -80,7 +80,7 @@ There are two places where you can go with comments and/or questions:
 
 - You can click the 'Issues' tab at the top of this GitHub page, and start a thread. Note that
 this place is mostly for questioning methods, or for reporting bugs.
-- You can drop by in our [Gitter chatroom](https://matrix.to/#/#thebeat:gitter.im). This is likely
+- You can drop by in our [Gitter chatroom](https://app.gitter.im/#/room/#thebeat:gitter.im). This is likely
 the best place to go to with questions about how *thebeat* works.
 
 # License
