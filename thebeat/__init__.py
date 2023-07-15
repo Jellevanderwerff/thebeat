@@ -18,4 +18,8 @@
 from . import _decorators, core, helpers, linguistic, music, resources, stats, utils, visualization
 from .core import Sequence, SoundSequence, SoundStimulus
 
-__version__ = '0.0.1.dev0'
+try:
+    from ._version import __version__
+except ImportError:
+    from setuptools_scm import get_version
+    __version__ = get_version(root='..', relative_to=__file__)
