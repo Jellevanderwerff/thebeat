@@ -18,12 +18,20 @@
 from __future__ import annotations
 
 import copy
-import os
 import re
 import textwrap
 import warnings
 from collections import namedtuple
+
+# Optional imports
+try:
+    import abjad
+except ImportError:
+    abjad = None
+
+import os
 from fractions import Fraction
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,16 +39,11 @@ import numpy.typing as npt
 import sounddevice
 
 import thebeat._warnings
+# Local imports
 import thebeat.core
 import thebeat.helpers
 import thebeat.utils
 from thebeat._decorators import requires_lilypond
-
-# Optional imports
-try:
-    import abjad
-except ImportError:
-    abjad = None
 
 
 class Rhythm(thebeat.core.sequence.BaseSequence):
@@ -622,13 +625,25 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
 
-            def make_notes(*args):  # noqa: E306
+            def make_notes(*args):
                 return list(note_maker(*args))
 
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
-        remove_footers = """\n\\paper {\nindent = 0\\mm\nline-width = 110\\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
-                oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
+        preamble = textwrap.dedent(
+            r"""
+             \version "2.22.1"
+             \language "english"
+             \paper {
+             indent = 0\mm
+             line-width = 110\mm
+             oddHeaderMarkup = ""
+             evenHeaderMarkup = ""
+             oddFooterMarkup = ""
+             evenFooterMarkup = ""
+             }
+             """
+        )
 
         # Make the notes
         durations = self._get_abjad_note_durations()
@@ -677,8 +692,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
-        # Make lilypond string, adding the remove footers string (removes all unnecessary stuff, changes page size etc.)
-        lpf = abjad.LilyPondFile([remove_footers, score_lp])
+        # Make lilypond string, adding the remove footers string
+        # (removes all unnecessary stuff, changes page size etc.)
+        lpf = abjad.LilyPondFile([preamble, score_lp])
         lpf_str = abjad.lilypond(lpf)
 
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
@@ -1257,7 +1273,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> mel = Melody.generate_random_melody()
         >>> mel.synthesize_and_play()  # doctest: +SKIP
 
-        >>> mel.synthesize_and_play(event_durations_ms=50)  # doctest: +SKIP
+        >>> mel.synthesize_and_play(event_durations_ms=50)
 
         """
 
@@ -1461,7 +1477,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         except AttributeError:
             note_maker = abjad.makers.NoteMaker()
 
-            def make_notes(*args):  # noqa: E306
+            def make_notes(*args):
                 return list(note_maker(*args))
 
         time_signature = abjad.TimeSignature(time_signature)
@@ -1469,6 +1485,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         key = abjad.KeySignature(pitch)
         preamble = textwrap.dedent(
             r"""
+             #(ly:set-option 'crop #t)
              \version "2.22.1"
              \language "english"
              \paper {
