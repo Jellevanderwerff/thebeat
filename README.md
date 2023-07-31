@@ -36,7 +36,7 @@ Note that if you want use *thebeat*'s functionality for plotting musical notatio
 you have to install it using:
 
 ```bash
-pip install thebeat[music_notation]
+pip install 'thebeat[music_notation]'
 ```
 
 This will install *thebeat* with the optional dependencies [abjad](https://abjad.github.io)
