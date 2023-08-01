@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "thebeat"
 description = "Python package for working with rhythms and other temporal sequences in science"
-license = { text = " GPL-3.0-or-later" }
+license = { text = "GNU General Public License v3 or later (GPLv3+)" }
 authors = [
-    {name = "Jelle van der Werff", email="jellevanderwerff@gmail.com"},
-    {name = "Yannick Jadoul", email="yannick.jadoul@gmail.com"},
+    {name = "Jelle van der Werff", email = "jellevanderwerff@gmail.com"},
+    {name = "Yannick Jadoul", email = "yannick.jadoul@gmail.com"},
 ]
 readme = "README.md"
 requires-python = ">=3.8"
@@ -28,10 +28,11 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://thebeat.readthedocs.io"
-repository = "https://github.com/Jellevanderwerff/thebeat"
-documentation = "https://thebeat.readthedocs.io"
-changelog = "https://github.com/Jellevanderwerff/thebeat/releases"
+"Homepage" = "https://thebeat.readthedocs.io/"
+"Documentation" = "https://thebeat.readthedocs.io/"
+"Changelog" = "https://github.com/Jellevanderwerff/thebeat/releases"
+"Bug Tracker" = "https://github.com/Jellevanderwerff/thebeat/issues"
+"Source Code" = "https://github.com/Jellevanderwerff/thebeat"
 
 [project.optional-dependencies]
 music_notation = [
