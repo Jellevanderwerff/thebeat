@@ -51,7 +51,10 @@ packages = [
 write_to = "thebeat/_version.py"
 
 [tool.check-manifest]
-ignore = ["thebeat/_version.py"]
+ignore = [
+    "thebeat/_version.py",
+    ".binder/*"
+]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
