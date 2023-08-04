@@ -1,9 +1,9 @@
 # *thebeat*: Demonstration
-<img src="https://docs.the-beat.info/_static/thebeat_logo.png"  width="300" height="300">
+<img src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/thebeat_logo.png" height="350" width="350">
 
 Thank you for taking a look at this demo!
 
-The examples available here are meant as illustrations of what *thebeat* can do. They are the same as [those from the documentation](https://docs.the-beat.info/examples/index.html), except that here they can be interacted with.
+The examples available here are meant as illustrations of what *thebeat* can do. They are the same as [those from the documentation](https://thebeat.readthedocs.io/), except that here they can be interacted with.
 
 In addition, new notebooks can be created for testing out specific functions.
 

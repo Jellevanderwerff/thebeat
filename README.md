@@ -3,7 +3,7 @@
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Jellevanderwerff/thebeat/main.svg)](https://results.pre-commit.ci/latest/github/Jellevanderwerff/thebeat/main)
 [![GitHub CI status](https://github.com/jellevanderwerff/thebeat/actions/workflows/ci.yml/badge.svg)](https://github.com/Jellevanderwerff/thebeat)
 [![License](https://img.shields.io/pypi/l/praat-parselmouth.svg)](https://github.com/YannickJadoul/Parselmouth/blob/master/LICENSE)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/main?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/main?labpath=docs%2Fsource%2Fexamples%2FREADME.md)
 
 
 <img src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/thebeat_logo.png" height="350" width="350">
