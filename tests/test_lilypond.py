@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+import re
 import shutil
 import sys
 
@@ -43,6 +44,7 @@ def test_lilypond_package(monkeypatch):
     monkeypatch.setattr(shutil, 'which', lambda x: None if x == 'lilypond' else _shutil_which(x))
 
     which_lilypond = thebeat._decorators.requires_lilypond(lambda: _shutil_which('lilypond'))()
+    which_lilypond = re.sub(r'.EXE$', '', which_lilypond, flags=re.IGNORECASE)
     assert which_lilypond == str(lilypond.executable())
 
     rng = np.random.default_rng(42)
@@ -74,4 +76,5 @@ def test_lilypond_precedence(monkeypatch):
         pytest.skip("lilypond not found on PATH")
 
     which_lilypond = thebeat._decorators.requires_lilypond(lambda: shutil.which('lilypond'))()
+    which_lilypond = re.sub(r'.EXE$', '', which_lilypond, flags=re.IGNORECASE)
     assert which_lilypond == str(lilypond.executable())
