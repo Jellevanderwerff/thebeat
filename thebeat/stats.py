@@ -666,12 +666,11 @@ def fft_plot(
     >>> from thebeat.stats import fft_plot
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
     >>> fft_plot(seq, unit_size=1000)
-    (<Figure size 1600x1100 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
+    (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=0.5, sigma=0.025)  # seconds
     >>> fft_plot(seq, unit_size=1, x_max=5)
-    (<Figure size 1600x1100 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
-
+    (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
     """
 
     # Calculate step size
