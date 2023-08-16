@@ -20,6 +20,7 @@ from __future__ import annotations
 import copy
 import numbers
 import pathlib
+import re
 from fractions import Fraction
 
 import matplotlib.pyplot as plt
@@ -285,6 +286,39 @@ class Sequence(BaseSequence):
             f"Sequence(name={self.name}, iois={np.array2string(self.iois, threshold=8, precision=2)})"
 
         return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
+
+    @classmethod
+    def from_binary_string(
+        cls, pattern: str, grid_ioi: float, **kwargs
+    ) -> Sequence:
+        """
+
+        This class method can be used to construct a new :py:class:`Sequence` object on the basis of
+        a binary string. The binary string is interpreted as a sequence of 0s and 1s, where 0
+        represents silence and 1 represents an event onset. The grid_ioi represents the duration of
+        one digit.
+
+        Parameters
+        ----------
+        string
+            The binary string. For instance: ``'10101100'``.
+        grid_ioi
+            The duration of one digit in the binary string. For instance: ``250``.
+        **kwargs
+            Additional keyword arguments are passed to the :py:class:`Sequence` constructor (see
+            :py:meth:`thebeat.core.Sequence.__init__`).
+
+        Examples
+        --------
+        >>> seq = Sequence.from_binary_string('10101100', 250)
+        >>> print(seq.iois)
+        [500. 500. 250. 750.]
+        """
+
+        split = re.findall(r"10*", pattern)
+        iois = np.array([len(s) for s in split]) * grid_ioi
+
+        return cls(iois=iois, **kwargs)
 
     @classmethod
     def from_integer_ratios(

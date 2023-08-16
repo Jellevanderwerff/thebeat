@@ -269,3 +269,9 @@ def test_copy():
     seq.name = "test2"
     assert seq2.name == 'test'
     assert seq.name == 'test2'
+
+
+def test_frombinarystring():
+    pattern = '10101100'  # output: 2 2 1 3
+    seq = thebeat.Sequence.from_binary_string(pattern, 250)
+    assert np.all(seq.iois == [500, 500, 250, 750])
