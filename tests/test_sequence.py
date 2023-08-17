@@ -275,3 +275,14 @@ def test_frombinarystring():
     pattern = '10101100'  # output: 2 2 1 3
     seq = thebeat.Sequence.from_binary_string(pattern, 250)
     assert np.all(seq.iois == [500, 500, 250, 750])
+
+
+def test_quantization():
+    to = 125
+    iois = [523, 111, 798, 512]
+
+    seq_interval = thebeat.Sequence(iois, end_with_interval=True)
+    seq_noninterval = thebeat.Sequence(iois, end_with_interval=False)
+
+    assert seq_interval.quantize(to).iois == [500, 125, 750, 500]
+    assert seq_noninterval.quantize(to).iois == [500, 125, 750, 500]

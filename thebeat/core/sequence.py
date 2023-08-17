@@ -288,9 +288,7 @@ class Sequence(BaseSequence):
         return f"Sequence(iois={np.array2string(self.iois, threshold=8, precision=2)})"
 
     @classmethod
-    def from_binary_string(
-        cls, pattern: str, grid_ioi: float, **kwargs
-    ) -> Sequence:
+    def from_binary_string(cls, pattern: str, grid_ioi: float, **kwargs) -> Sequence:
         """
 
         This class method can be used to construct a new :py:class:`Sequence` object on the basis of
@@ -789,19 +787,17 @@ class Sequence(BaseSequence):
 
         self.onsets = np.round(self.onsets, decimals=decimals)
 
-    def quantize(self, to: float):
-        """Quantize the Sequence object's onsets (i.e. *t* values) to a certain bin size.
+    def quantize(self, to: float, inplace: bool = False):
+        """Quantize the Sequence object's IOIs to be multiples of ``to``.
 
-        Note
-        ----
-        This function does not return anything. Instead, the onsets of the sequence object itself
-        are changed.
 
         Parameters
         ----------
         to
-            The value to be quantized to. E.g. a value of ``100`` means that the onsets will be
+            The value to be quantized to. E.g. a value of ``100`` means that the IOIs will be
             quantized to the nearest multiple of 100.
+        inplace
+            Whether to change the IOIs of the Sequence object itself (True), or to return a new Sequence object (False).
 
         Examples
         --------
@@ -814,7 +810,17 @@ class Sequence(BaseSequence):
 
         """
 
-        self.onsets = np.round(self.onsets / to) * to
+        round_iois = np.round(self.iois / to) * to
+
+        if inplace is True:
+            self.iois = round_iois
+        else:
+            return thebeat.Sequence(
+                iois=round_iois,
+                first_onset=self._first_onset,
+                end_with_interval=self.end_with_interval,
+                name=self.name,
+            )
 
     # Visualization
     def plot_sequence(
