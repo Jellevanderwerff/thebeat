@@ -787,7 +787,7 @@ class Sequence(BaseSequence):
 
         self.onsets = np.round(self.onsets, decimals=decimals)
 
-    def quantize(self, to: float, inplace: bool = False):
+    def quantize_iois(self, to: float, inplace: bool = False):
         """Quantize the Sequence object's IOIs to be multiples of ``to``.
 
 
@@ -802,11 +802,11 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> seq = Sequence(iois=[235, 510, 420, 99])
-        >>> print(seq.onsets)
-        [   0.  235.  745. 1165. 1264.]
-        >>> seq.quantize(to=100)
-        >>> print(seq.onsets)
-        [   0.  200.  700. 1200. 1300.]
+        >>> print(seq.iois)
+        [235. 510. 420.  99.]
+        >>> seq.quantize_iois(to=100, inplace=True)
+        >>> print(seq.iois)
+        [200. 500. 400. 100.]
 
         """
 

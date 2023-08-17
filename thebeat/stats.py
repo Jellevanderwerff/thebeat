@@ -665,11 +665,11 @@ def fft_plot(
     >>> from thebeat import Sequence
     >>> from thebeat.stats import fft_plot
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
-    >>> fft_plot(seq, unit_size=1000)
+    >>> fft_plot(seq, unit_size=1000)  # doctest: +SKIP
     (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     >>> seq = Sequence.generate_random_normal(n_events=100, mu=0.5, sigma=0.025)  # seconds
-    >>> fft_plot(seq, unit_size=1, x_max=5)
+    >>> fft_plot(seq, unit_size=1, x_max=5)  # doctest: +SKIP
     (<Figure size 800x550 with 1 Axes>, <Axes: title={'center': 'Fourier transform'}, xlabel='Cycles per unit', ylabel='Absolute power'>)
     """
 

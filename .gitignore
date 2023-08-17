@@ -15,5 +15,5 @@ __pycache__/
 
 thebeat.egg-info/
 *scratch.py*
-./build*
+./build/
 *.vscode*
