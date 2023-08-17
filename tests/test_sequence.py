@@ -284,5 +284,5 @@ def test_quantization():
     seq_interval = thebeat.Sequence(iois, end_with_interval=True)
     seq_noninterval = thebeat.Sequence(iois, end_with_interval=False)
 
-    assert seq_interval.quantize(to).iois == [500, 125, 750, 500]
-    assert seq_noninterval.quantize(to).iois == [500, 125, 750, 500]
+    assert np.all(seq_interval.quantize(to).iois == [500, 125, 750, 500])
+    assert np.all(seq_noninterval.quantize(to).iois == [500, 125, 750, 500])
