@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import numbers
-import warnings
 
 import Levenshtein
 import matplotlib.pyplot as plt
@@ -552,7 +551,8 @@ def edit_distance_sequence(
     """
     Calculates the edit/Levenshtein distance between two sequences.
 
-    If Sequences are not quantized to ``resolution``, they will be quantized to that resolution first.
+    Requires for all the IOIs in a Sequence to be multiples of 'resolution'. If needed, quantize the
+    Sequence first, e.g. using Sequence.quantize_iois().
 
     Note
     ----
@@ -569,9 +569,7 @@ def edit_distance_sequence(
     reference_sequence
         The sequence to which ``test_sequence`` will be compared.
     resolution
-        The resolution to which the sequences will be quantized.
-        If the sequences are already quantized to this resolution,
-        they will not be quantized again.
+        The used resolution (i.e. bin size).
 
     """
     if not isinstance(test_sequence, thebeat.core.Sequence) or not isinstance(
@@ -580,17 +578,13 @@ def edit_distance_sequence(
         raise TypeError("test_sequence and reference_sequence must be of type Sequence")
 
     # Check whether we need to quantize the sequences
-    if np.any(test_sequence.onsets % resolution != 0):
-        warnings.warn(
-            f"Test sequence has been quantized to onsets that are multiples of {resolution}."
+    if np.any(test_sequence.onsets % resolution != 0) or np.any(
+        reference_sequence.onsets % resolution != 0
+    ):
+        raise ValueError(
+            "test_sequence and reference_sequence must be quantized to multiples of {resolution} first,"
+            "for instance using Sequence.quantize_iois()"
         )
-        test_sequence.quantize(to=resolution)
-
-    if np.any(reference_sequence.onsets % resolution != 0):
-        warnings.warn(
-            f"Reference sequence has been quantized to onsets that are multiples of {resolution}."
-        )
-        reference_sequence.quantize(to=resolution)
 
     test_string = thebeat.helpers.sequence_to_binary(sequence=test_sequence, resolution=resolution)
     reference_string = thebeat.helpers.sequence_to_binary(
@@ -769,41 +763,31 @@ def ks_test(
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(
-    sequence: thebeat.core.Sequence | thebeat.music.Rhythm, bin_fraction: float = 0.03125
-):
+def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm, resolution: float):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
     If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
     A sequence that is completely isochronous has a Shannon entropy of 0.
 
-    The bin size is determined from the average inter-onset interval in the
-    :py:class:`thebeat.core.Sequence` object (i.e. the tempo) and the ``bin_fraction``.
-    The ``bin_fraction`` corresponds to temporal sensitivity. The default is 1/32th of the average IOI.
-    This implies that the smallest note value that can be detected is a 1/32th note.
+    The resolution determines the size of the bins/the underlying grid. Sequence needs to be quantized to multiples
+    of 'resolution'. If needed, quantize the Sequence first, e.g. using 'Sequence.quantize_iois'.
 
     Parameters
     ----------
     sequence
         The :py:class:`thebeat.core.Sequence` object for which Shannon entropy is calculated.
-    bin_fraction
-        The fraction of the average inter-onset interval (IOI) that determines the bin size.
-        It is multiplied by the average IOI to get the bin size.
-
-    Example
-    -------
-    A :py:class:`~thebeat.core.Sequence` has an average IOI of 500 ms. With a bin_fraction of 0.03125
-    (corresponding to 1/32th note value) the bins will have a size of 15.625 ms.
-    The entropy will be calculated from the number of IOIs in each bin.
-
-    References
-    ----------
-    #todo add reference here for this type of entropy calculation.
+    resolution
+        The size of the bins/the underlying grid.
 
     """
-    bin_size = np.mean(sequence.iois) * bin_fraction
+
+    if np.any(sequence.iois % resolution != 0):
+        raise ValueError(
+            f"Sequence needs to be quantized to multiples of {resolution}. If needed, quantize the Sequence first, e.g. using 'Sequence.quantize_iois'."
+        )
+
     bins = (
-        np.arange(0, np.max(sequence.iois) + 2 * bin_size, bin_size) - bin_size / 2
+        np.arange(0, np.max(sequence.iois) + 2 * resolution, resolution) - resolution / 2
     )  # shift bins to center
     bin_counts = np.histogram(sequence.iois, bins=bins)[0]
 
