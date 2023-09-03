@@ -105,10 +105,15 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         self.is_played = [True] * len(iois) if not is_played else list(is_played)
 
         # Calculate n_bars and check whether that makes whole bars
-        n_bars = np.sum(iois) / time_signature[0] / beat_ms
-        if not n_bars.is_integer():
-            raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
-        self.n_bars = n_bars
+        if time_signature is not None:
+            n_bars = np.sum(iois) / time_signature[0] / beat_ms
+            if not n_bars.is_integer():
+                raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
+            self.n_bars = n_bars
+        else:
+            if np.any(beat_ms % np.array(iois) != 0):
+                raise ValueError("The provided inter-onset intervals are not multiples of the beat duration.")
+            self.n_bars = 1
 
         # Call initializer of super class
         super().__init__(iois=iois, end_with_interval=True, name=name)
@@ -279,7 +284,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         fractions = np.array(fractions)
 
-        iois_as_fractions = fractions * beat_ms * time_signature[0]
+        if time_signature is not None:
+            iois_as_fractions = fractions * beat_ms * time_signature[0]
+        else:
+            iois_as_fractions = fractions * beat_ms
 
         iois = np.array([float(frac) for frac in iois_as_fractions])
 
@@ -377,6 +385,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [125. 125. 125. 125. 500. 500. 500.]
         """
 
+        if time_signature is None:
+            raise ValueError("We need a time signature for creating a Rhythm using this class method.")
+
         ratios = np.array([1 / note * time_signature[1] for note in note_values])
         iois = ratios * beat_ms
 
@@ -446,6 +457,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [ 500. 1000.  500.  500. 1000.  500.]
         """
 
+        if time_signature is None:
+            raise ValueError("We need a time signature for creating a Rhythm using this class method.")
+
         if rng is None:
             rng = np.random.default_rng()
 
@@ -513,6 +527,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         """
 
+        if time_signature is None:
+            raise ValueError("We need a time signature for creating a Rhythm using this class method. Try creating the Rhythm using IOIs instead, "
+                             "e.g. Rhythm([500, 500, 500, 500])")
+
         n_iois = time_signature[0] * n_bars
 
         iois = n_iois * [beat_ms]
@@ -530,7 +548,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         self,
         filepath: os.PathLike | str = None,
         staff_type: str = "rhythm",
-        print_staff: bool = True,
+        print_clef: bool = True,
         title: str | None = None,
         suppress_display: bool = False,
         dpi: int = 600,
@@ -619,13 +637,21 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 return list(note_maker(*args))
 
         # Preliminaries
-        time_signature = abjad.TimeSignature(self.time_signature)
+        if self.time_signature is not None:
+            time_signature = abjad.TimeSignature(self.time_signature)
+        else:
+            time_signature = None
+
+        # Remove footers in lilypond document
         remove_footers = """\n\\paper {\nindent = 0\\mm\nline-width = 110\\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
         durations = self._get_abjad_note_durations()
-        durations, ties_at = self._get_abjad_ties(durations)
+        if self.time_signature is not None:
+            durations, ties_at = self._get_abjad_ties(durations)
+        else:
+            ties_at = []
         pitches = [abjad.NamedPitch("A3")] * len(durations)
 
         notes = []
@@ -660,10 +686,18 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             abjad.attach(abjad.Clef("percussion"), staff[0])
         elif staff_type == "rhythm":
             staff.lilypond_type = "RhythmicStaff"
-        abjad.attach(time_signature, staff[0])
+        elif staff_type is None:
+            abjad.attach(abjad.LilyPondLiteral('\stopStaff'), staff[0])
 
-        # Make cleff transparent if necessary
-        if print_staff is False:
+        # Add time signature
+        if time_signature is not None:
+            abjad.attach(time_signature, staff[0])
+        else:
+            abjad.attach(abjad.LilyPondLiteral('\omit Score.BarLine'), staff[0])
+            abjad.attach(abjad.LilyPondLiteral('\omit Staff.TimeSignature'), staff[0])
+
+        # Make clef transparent if necessary
+        if print_clef is False:
             abjad.override(staff).clef.transparent = "##t"
 
         # Make the score and convert to lilypond object
@@ -674,8 +708,12 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         lpf = abjad.LilyPondFile([remove_footers, score_lp])
         lpf_str = abjad.lilypond(lpf)
 
+        # Remove measure bars
+        if self.time_signature is None:
+            lpf_str = lpf_str.replace(' \\bar "||"', '')
+
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
-        if print_staff is False:
+        if print_clef is False:
             lpf_str = lpf_str.replace(r"\time", r"\stopStaff \time")
 
         # Plot!
@@ -742,14 +780,17 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         #todo This needs to be done with lcm to avoid rounding problems,
           though seems to work for now.
         """
-        total_duration = np.sum(self.integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        durations = [
+        if self.time_signature is not None:
+            total_duration = np.sum(self.integer_ratios)
+            duration_of_bar = total_duration / self.n_bars
+            ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
+            numerators = ratios * self.time_signature[0]
+            durations = [
             abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
         ]
+        else:
+            fractions = [Fraction(int(ioi), int(self.beat_ms)) / 4 for ioi in self.iois]
+            durations = [abjad.Duration(fraction) for fraction in fractions]
 
         return durations
 
@@ -787,9 +828,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 bar_fullness = 0
 
         # If at the end of all this the bars are not full yet, raise an error
-        if not bar_fullness % full_bar == 0:
+        if self.time_signature is not None and not bar_fullness % full_bar == 0:
             raise ValueError(
-                "There was an error while trying to tie the final note of a bar to the first note"
+                "There was an error while trying to tie the final note of a bar to the first note "
                 "of the subsequent bar. Try a different rhythm."
             )
 
