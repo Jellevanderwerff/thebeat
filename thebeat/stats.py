@@ -615,7 +615,6 @@ def fft_plot(
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
     You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
-    Note that the first frame is discarded since it will always have the highest power, yet is not informative.
 
     Parameters
     ----------
@@ -674,12 +673,12 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
 
     # Make a sequence of ones and zeroes
     timeseries = sequence_to_binary(sequence, resolution=step_size)
-    duration = np.max(sequence.onsets)
+    duration = sequence.duration
     x_length = np.ceil(duration / step_size).astype(int)
 
     # Do the fft
-    yf = rfft(timeseries)[1:]
-    xf = rfftfreq(x_length, d=step_size)[1:] * (step_size / 0.001)
+    yf = rfft(timeseries)
+    xf = rfftfreq(x_length, d=step_size) * (step_size / 0.001)
 
     # Calculate reasonable max_freq
     max_freq_index = np.min(np.where(xf > x_max)) if x_max else len(xf) / 10

@@ -200,16 +200,19 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
     Converts a sequence of millisecond onsets to a series of zeros and ones.
     Ones for the onsets.
     """
-    duration = np.max(sequence.onsets)
-    zeros_n = int(duration / resolution)
-    signal = np.zeros(zeros_n)
+    sequence_end = sequence.onsets[-1]
+    if sequence.end_with_interval:
+        sequence_end += sequence.iois[-1]
 
-    for onset in sequence.onsets:
-        index = 0 if onset == 0 else int(onset / resolution) - 1
-        signal[index] = 1
+    n_samples = int(sequence_end / resolution)
+    if not sequence.end_with_interval:
+        n_samples += 1
 
-    if sequence.end_with_interval is True:
-        signal = np.append(signal, np.zeros(int(sequence.iois[-1] / resolution - 1)))
+    signal = np.zeros(n_samples)
+    one_indices = (sequence.onsets / resolution).astype(int)
+    signal[one_indices] = 1
+
+    return signal
 
     return np.array(signal)
 
