@@ -112,7 +112,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             self.n_bars = n_bars
         else:
             if np.any(beat_ms % np.array(iois) != 0):
-                raise ValueError("The provided inter-onset intervals are not multiples of the beat duration.")
+                raise ValueError(
+                    "The provided inter-onset intervals are not multiples of the beat duration."
+                )
             self.n_bars = 1
 
         # Call initializer of super class
@@ -386,7 +388,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         if time_signature is None:
-            raise ValueError("We need a time signature for creating a Rhythm using this class method.")
+            raise ValueError(
+                "We need a time signature for creating a Rhythm using this class method."
+            )
 
         ratios = np.array([1 / note * time_signature[1] for note in note_values])
         iois = ratios * beat_ms
@@ -458,7 +462,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         if time_signature is None:
-            raise ValueError("We need a time signature for creating a Rhythm using this class method.")
+            raise ValueError(
+                "We need a time signature for creating a Rhythm using this class method."
+            )
 
         if rng is None:
             rng = np.random.default_rng()
@@ -528,8 +534,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         if time_signature is None:
-            raise ValueError("We need a time signature for creating a Rhythm using this class method. Try creating the Rhythm using IOIs instead, "
-                             "e.g. Rhythm([500, 500, 500, 500])")
+            raise ValueError(
+                "We need a time signature for creating a Rhythm using this class method. Try creating the Rhythm using IOIs instead, "
+                "e.g. Rhythm([500, 500, 500, 500])"
+            )
 
         n_iois = time_signature[0] * n_bars
 
@@ -687,14 +695,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         elif staff_type == "rhythm":
             staff.lilypond_type = "RhythmicStaff"
         elif staff_type is None:
-            abjad.attach(abjad.LilyPondLiteral('\stopStaff'), staff[0])
+            abjad.attach(abjad.LilyPondLiteral(r"\stopStaff"), staff[0])
 
         # Add time signature
         if time_signature is not None:
             abjad.attach(time_signature, staff[0])
         else:
-            abjad.attach(abjad.LilyPondLiteral('\omit Score.BarLine'), staff[0])
-            abjad.attach(abjad.LilyPondLiteral('\omit Staff.TimeSignature'), staff[0])
+            abjad.attach(abjad.LilyPondLiteral(r"\omit Score.BarLine"), staff[0])
+            abjad.attach(abjad.LilyPondLiteral(r"\omit Staff.TimeSignature"), staff[0])
 
         # Make clef transparent if necessary
         if print_clef is False:
@@ -710,7 +718,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # Remove measure bars
         if self.time_signature is None:
-            lpf_str = lpf_str.replace(' \\bar "||"', '')
+            lpf_str = lpf_str.replace(' \\bar "||"', "")
 
         # Stop the staff if necessary (i.e. the horizontal lines behind the notes)
         if print_clef is False:
@@ -777,8 +785,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def _get_abjad_note_durations(self):
         """Get abjad note durations from the integer_ratios
-        #todo This needs to be done with lcm to avoid rounding problems,
-          though seems to work for now.
+        #todo This needs to be done with lcm to avoid rounding problems, though seems to work for now.
         """
         if self.time_signature is not None:
             total_duration = np.sum(self.integer_ratios)
@@ -786,8 +793,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
             numerators = ratios * self.time_signature[0]
             durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
+                abjad.Duration(Fraction(numerator) / self.time_signature[1])
+                for numerator in numerators
+            ]
         else:
             fractions = [Fraction(int(ioi), int(self.beat_ms)) / 4 for ioi in self.iois]
             durations = [abjad.Duration(fraction) for fraction in fractions]
