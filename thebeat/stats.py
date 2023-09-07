@@ -78,8 +78,8 @@ def acf_df(
     >>> print(df.head(3))
        timestamp  correlation
     0          0     1.000000
-    1         10     0.851373
-    2         20     0.590761
+    1         10     0.824706
+    2         20     0.547863
     """
 
     correlations = acf_values(
@@ -244,20 +244,23 @@ def acf_values(
 
     # npdf
     if smoothing_window and smoothing_sd:
+        # Here we make a tiny normal distribution, which has the width of the smoothing window
         x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution)
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
-        signal_convoluted = np.convolve(signal, npdf)
-        signal = signal_convoluted[round(resolution * smoothing_window / 2):]
+        # Convolve tiny normal distributions with the original signal
+        signal = np.convolve(signal, npdf, "same")
 
     try:
         correlation = np.correlate(signal, signal, "full")
-        correlation = correlation[round(len(correlation) / 2):]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
             "and smoothing_sd. Try choosing a smaller resolution."
         ) from e
+
+    # Now, we remove the negative lags (which have the length of signal)
+    correlation = correlation[len(signal) - 1:]
 
     return correlation
 
@@ -468,30 +471,25 @@ def ccf_values(
 
     # npdf
     if smoothing_window and smoothing_sd:
+        # Here we make a tiny normal distribution, which has the width of the smoothing window
         x = np.arange(start=-smoothing_window / 2, stop=smoothing_window / 2, step=resolution)
         npdf = scipy.stats.norm.pdf(x, 0, smoothing_sd)
         npdf = npdf / np.max(npdf)
-        test_signal_convoluted = np.convolve(test_signal, npdf)
-        ref_signal_convoluted = np.convolve(ref_signal, npdf)
-        test_signal = test_signal_convoluted[round(resolution * smoothing_window / 2):]
-        ref_signal = ref_signal_convoluted[round(resolution * smoothing_window / 2):]
-
-    # Make signals of equal length
-    diff = len(ref_signal) - len(test_signal)
-    if diff > 0:  # ref_signal is longer
-        test_signal = np.concatenate((test_signal, np.zeros(diff)))
-    elif diff < 0:  # test_signal is longer
-        ref_signal = np.concatenate((ref_signal, np.zeros(-diff)))
+        # Convolve tiny normal distributions with the original signal
+        test_signal = np.convolve(test_signal, npdf, "same")
+        ref_signal = np.convolve(ref_signal, npdf, "same")
 
     # Calculate cross-correlation
     try:
         correlation = np.correlate(test_signal, ref_signal, "full")
-        correlation = correlation[round(len(correlation) / 2):]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
             "and smoothing_sd. Try choosing a smaller resolution."
         ) from e
+
+    # Now, remove negative lags
+    correlation = correlation[len(test_signal) - 1:]
 
     return correlation
 

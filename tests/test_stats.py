@@ -20,7 +20,7 @@ import pytest
 
 from thebeat.core import Sequence
 from thebeat.music import Rhythm
-from thebeat.stats import acf_plot, ccf_plot, fft_plot, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
+from thebeat.stats import acf_plot, acf_values, ccf_plot, ccf_values, fft_plot, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
 
 
 def test_ugof():
@@ -104,3 +104,38 @@ def test_fft():
     max_y_index = np.argmax(y_data)
     max_x = x_data[max_y_index]
     assert 1000 / max_x == 250
+
+
+def test_ccf_values():
+    seq = Sequence([500, 250, 500, 250], end_with_interval=True)
+    seq2 = Sequence([250, 500, 500, 250, 500], end_with_interval=True)
+    assert ccf_values(seq, seq2, 1)[0] == 1
+    assert np.argmax(ccf_values(seq, seq2, 1)) == 250
+
+    seq = Sequence([500, 250, 250])
+    seq2 = Sequence([250, 500, 500, 250, 500], end_with_interval=True)
+    assert ccf_values(seq, seq2, 1)[0] == 0
+
+    seq = Sequence([500, 250, 250])
+    seq2 = Sequence([250, 500, 500, 250, 500])
+
+    assert ccf_values(seq, seq2, 1)[0] != 0
+
+    seq = Sequence([500, 250, 250])
+    seq2 = Sequence([250, 500, 500, 250, 500], end_with_interval=True)
+
+    assert ccf_values(seq, seq2, 50)[0] == 0
+    assert ccf_values(seq, seq2, 1, 10, 2)[0] != 0
+
+
+def test_acf_values():
+    seq = Sequence([500, 250, 500, 250], end_with_interval=True)
+    assert acf_values(seq, 1)[0] != 0
+
+    seq = Sequence([500, 250, 250])
+    assert acf_values(seq, 1)[0] != 0
+
+    seq = Sequence([500, 250, 250])
+
+    assert acf_values(seq, 50)[0] != 0
+    assert acf_values(seq, 1, 10, 2)[0] != 0
