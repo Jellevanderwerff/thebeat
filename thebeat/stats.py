@@ -252,7 +252,7 @@ def acf_values(
 
     try:
         correlation = np.correlate(signal, signal, "full")
-        correlation = correlation[round(len(correlation) / 2) - 1:]
+        correlation = correlation[round(len(correlation) / 2):]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"
@@ -486,7 +486,7 @@ def ccf_values(
     # Calculate cross-correlation
     try:
         correlation = np.correlate(test_signal, ref_signal, "full")
-        correlation = correlation[round(len(correlation) / 2) - 1:]
+        correlation = correlation[round(len(correlation) / 2):]
     except ValueError as e:
         raise ValueError(
             "Error! Hint: Most likely your resolution is too large for the chosen smoothing_window"

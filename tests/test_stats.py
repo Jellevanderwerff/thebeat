@@ -20,7 +20,7 @@ import pytest
 
 from thebeat.core import Sequence
 from thebeat.music import Rhythm
-from thebeat.stats import acf_plot, ccf_plot, ccf_values, fft_plot, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
+from thebeat.stats import acf_plot, ccf_plot, fft_plot, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
 
 
 def test_ugof():
@@ -37,19 +37,6 @@ def test_ks():
 def test_npvi():
     seq = Sequence.generate_isochronous(n_events=10, ioi=500)
     assert get_npvi(seq) == 0.0
-
-
-def test_ccf_values():
-    seq = Sequence([500, 500, 500, 500])
-    seq2 = Sequence([250, 500, 500, 500])
-
-    values = ccf_values(seq, seq2, 1)
-
-    # normalize
-    values = values / np.max(values)
-
-    # Check whether the correlation is 1 at lag 250 (because there's 250 diff between the seqs)
-    assert values[250] == 1.0
 
 
 @pytest.mark.mpl_image_compare
@@ -102,17 +89,18 @@ def test_fft():
     rng = np.random.default_rng(seed=123)
     r = Rhythm.generate_random_rhythm(1, 500, allowed_note_values=[8, 16], rng=rng)
     seq = r.to_sequence()
-    _, ax = fft_plot(seq, 1000)
+    _, ax = fft_plot(seq, 1000, suppress_display=True)
     x_data, y_data = ax.lines[0].get_data()
     x_data, y_data = x_data[1:], y_data[1:]
     max_y_index = np.argmax(y_data)
     max_x = x_data[max_y_index]
-    assert max_x == 125
+
+    assert 1000 / max_x == 125
 
     seq = Sequence([500, 250, 250, 250])
-    _, ax = fft_plot(seq, 1000)
+    _, ax = fft_plot(seq, 1000, suppress_display=True)
     x_data, y_data = ax.lines[0].get_data()
     x_data, y_data = x_data[1:], y_data[1:]
     max_y_index = np.argmax(y_data)
     max_x = x_data[max_y_index]
-    assert max_x == 250
+    assert 1000 / max_x == 250

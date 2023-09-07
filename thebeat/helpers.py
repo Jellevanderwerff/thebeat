@@ -214,8 +214,6 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
 
     return signal
 
-    return np.array(signal)
-
 
 def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
