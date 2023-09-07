@@ -208,9 +208,9 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
     if not sequence.end_with_interval:
         n_samples += 1
 
-    signal = np.zeros(n_samples, dtype=np.bool_)
+    signal = np.zeros(n_samples, dtype=np.int64)
     one_indices = (sequence.onsets / resolution).astype(int)
-    signal[one_indices] = True
+    signal[one_indices] = 1
 
     return signal
 
