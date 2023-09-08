@@ -21,6 +21,52 @@ import pytest
 import thebeat
 
 
+def test_sequence_to_binary():
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], end_with_interval=False)
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=1)
+    assert len(binary) == 2501
+    assert list(np.flatnonzero(binary)) == [0, 500, 1500, 1750, 2250, 2500]
+
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], end_with_interval=True)
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=1)
+    assert len(binary) == 2500
+    assert list(np.flatnonzero(binary)) == [0, 500, 1500, 1750, 2250]
+
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], first_onset=1000, end_with_interval=False)
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=1)
+    assert len(binary) == 3501
+    assert list(np.flatnonzero(binary)) == [1000, 1500, 2500, 2750, 3250, 3500]
+
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], first_onset=1000, end_with_interval=True)
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=1)
+    assert len(binary) == 3500
+    assert list(np.flatnonzero(binary)) == [1000, 1500, 2500, 2750, 3250]
+
+
+def test_sequence_to_binary_resolution():
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], end_with_interval=False)
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=1)
+    assert len(binary) == 2501
+    assert list(np.flatnonzero(binary)) == [0, 500, 1500, 1750, 2250, 2500]
+
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=0.5)
+    assert len(binary) == 5001
+    assert list(np.flatnonzero(binary)) == [0, 1000, 3000, 3500, 4500, 5000]
+
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=2)
+    assert len(binary) == 1251
+    assert list(np.flatnonzero(binary)) == [0, 250, 750, 875, 1125, 1250]
+
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=250)
+    assert len(binary) == 11
+    assert list(np.flatnonzero(binary)) == [0, 2, 6, 7, 9, 10]
+    assert list(binary.astype(int)) == [1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1]
+
+    binary = thebeat.helpers.sequence_to_binary(seq, resolution=3)
+    assert len(binary) == 834
+    assert list(np.flatnonzero(binary)) == [0, 166, 500, 583, 750, 833]
+
+
 def test_rhythm_to_binary():
     # Should raise error because there are 1/8th notes but the provides smallest note value is a 1/4th note
     with pytest.raises(ValueError):
