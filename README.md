@@ -32,7 +32,7 @@ examples.
 pip install thebeat
 ```
 
-Note that if you want use *thebeat*'s functionality for plotting musical notation,
+Note that if you want to use *thebeat*'s functionality for plotting musical notation,
 you have to install it using:
 
 ```bash
