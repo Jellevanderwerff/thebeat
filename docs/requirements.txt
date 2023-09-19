@@ -12,4 +12,5 @@ numpy
 pandas
 praat-parselmouth
 scipy
+seaborn
 sounddevice
