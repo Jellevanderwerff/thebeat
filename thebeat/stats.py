@@ -906,18 +906,19 @@ def get_ugof_isochronous(
     >>> seq = thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=1000)
     >>> ugof = get_ugof_isochronous(seq, reference_ioi=68.21)
     >>> print(ugof)
-    0.41817915
+    0.4646435
 
     """
 
-    # Input validation and getting onsets for test sequence
+    # Input validation
     if not isinstance(test_sequence, thebeat.core.sequence.Sequence):
         raise TypeError("test_sequence must be a Sequence object")
-    test_onsets = test_sequence.onsets
-
-    # Input validation and getting onsets for reference sequence
     if not isinstance(reference_ioi, numbers.Real):
         raise TypeError("reference_ioi must be a number (int or float)")
+
+    # Re-calculate onsets based on the sequence's IOIs, this to make sure both the test
+    # and reference sequences start with an onset at 0 (of which the ugof will be discarded)
+    test_onsets = np.concatenate([[0], np.cumsum(test_sequence.iois)])
 
     reference_onsets = np.arange(
         start=0, stop=np.max(test_onsets) + reference_ioi + 1, step=reference_ioi
@@ -931,8 +932,8 @@ def get_ugof_isochronous(
     ugof_values = minimal_deviations / maximal_deviation
 
     if output_statistic == "mean":
-        return np.float32(np.mean(ugof_values))
+        return np.float32(np.mean(ugof_values[1:]))  # discard the first value because that will always be 0
     elif output_statistic == "median":
-        return np.float32(np.median(ugof_values))
+        return np.float32(np.median(ugof_values[1:]))  # discard the first value because that will always be 0
     else:
         raise ValueError("The output statistic can only be 'median' or 'mean'.")
