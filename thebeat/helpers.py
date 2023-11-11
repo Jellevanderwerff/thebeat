@@ -671,7 +671,7 @@ def synthesize_sound(
     elif oscillator == "sawtooth":
         samples = amplitude * scipy.signal.sawtooth(2 * np.pi * freq * samples)
     else:
-        raise ValueError("Choose existing oscillator (for now only 'sine' or 'square')")
+        raise ValueError("Choose existing oscillator (for now only 'sine' or 'square' or 'sawtooth')")
 
     return samples
 
