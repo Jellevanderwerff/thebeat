@@ -17,6 +17,7 @@
 
 import numpy as np
 import pytest
+import scipy
 
 import thebeat
 
@@ -76,3 +77,16 @@ def test_rhythm_to_binary():
     # Should not raise error
     binary = thebeat.helpers.rhythm_to_binary(rhythm, smallest_note_value=8)
     assert np.all(binary == [1., 0., 1., 1., 1., 0., 1., 0.])
+
+
+@pytest.mark.parametrize("dtype", [np.int16, np.int32, np.float32, np.float64])
+def test_dtypes(tmp_path, dtype):
+    stim = thebeat.SoundStimulus.generate()
+    seq = thebeat.Sequence.generate_isochronous(n_events=10, ioi=500)
+    trial = thebeat.SoundSequence(stim, seq)
+
+    trial.write_wav(tmp_path / 'test.wav', metronome=True, dtype=dtype)
+
+    # test datatype
+    _, samples = scipy.io.wavfile.read(tmp_path / 'test.wav')
+    assert samples.dtype == dtype

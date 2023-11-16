@@ -701,7 +701,7 @@ def write_wav(
     elif dtype == np.int32:
         samples = np.clip(samples * (2**31), -(2**31), 2**31 - 1).astype(np.int32)
     elif dtype == np.float32:
-        samples = samples.astype(np.float64)
+        samples = samples.astype(np.float32)
     elif dtype == np.float64:
         pass
     else:
