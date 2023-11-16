@@ -787,7 +787,7 @@ class Sequence(BaseSequence):
 
         self.onsets = np.round(self.onsets, decimals=decimals)
 
-    def quantize_iois(self, to: float, inplace: bool = False):
+    def quantize_iois(self, to: float):
         """Quantize the Sequence object's IOIs to be multiples of ``to``.
 
 
@@ -796,31 +796,20 @@ class Sequence(BaseSequence):
         to
             The value to be quantized to. E.g. a value of ``100`` means that the IOIs will be
             quantized to the nearest multiple of 100.
-        inplace
-            Whether to change the IOIs of the Sequence object itself (True), or to return a new Sequence object (False).
 
         Examples
         --------
         >>> seq = Sequence(iois=[235, 510, 420, 99])
         >>> print(seq.iois)
         [235. 510. 420.  99.]
-        >>> seq.quantize_iois(to=100, inplace=True)
+        >>> seq.quantize_iois(to=100)
         >>> print(seq.iois)
         [200. 500. 400. 100.]
 
         """
 
         round_iois = np.round(self.iois / to) * to
-
-        if inplace is True:
-            self.iois = round_iois
-        else:
-            return thebeat.Sequence(
-                iois=round_iois,
-                first_onset=self._first_onset,
-                end_with_interval=self.end_with_interval,
-                name=self.name,
-            )
+        self.iois = round_iois
 
     # Visualization
     def plot_sequence(

@@ -80,7 +80,7 @@ def test_entropy():
     with pytest.raises(ValueError):
         print(get_rhythmic_entropy(seq, resolution=500))
 
-    seq = seq.quantize_iois(500)
+    seq.quantize_iois(500)
 
     assert get_rhythmic_entropy(seq, 500) == 0.0
 
