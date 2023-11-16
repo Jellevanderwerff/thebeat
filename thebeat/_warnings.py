@@ -46,3 +46,9 @@ phases_t_at_zero = (
     "If you want the first onset at a different time than zero, use the Sequence.from_onsets() method to "
     "create the Sequence object."
 )
+
+duplicate_names_sequence_plot = (
+    "thebeat: Two or more sequences have the same name.\n"
+    "Numbers were added to the y-axis labels to distinguish between them.\n"
+    "The numbers were added to the names in the order in which the sequences were provided."
+)

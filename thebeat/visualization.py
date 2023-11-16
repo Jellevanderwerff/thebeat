@@ -17,11 +17,14 @@
 
 from __future__ import annotations
 
+import warnings
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import scipy.stats
 
+import thebeat._warnings
 import thebeat.core
 import thebeat.helpers
 
@@ -548,8 +551,8 @@ def plot_multiple_sequences(
 
     """
 
+    # Get list of onsets arrays
     onsets = []
-
     for seq in sequences:
         if isinstance(seq, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
             onsets.append(seq.onsets)
@@ -558,9 +561,17 @@ def plot_multiple_sequences(
 
     # Make names for the bars
     n_seqs = len(sequences)
-    if y_axis_labels is None:
-        if all(sequence.name for sequence in sequences):
+    if y_axis_labels is None:  # No names are provided
+        if all(sequence.name for sequence in sequences):  # All sequences have names
             y_axis_labels = [sequence.name for sequence in sequences]
+            if not list(set(y_axis_labels)) == y_axis_labels:  # Check for duplicates in names
+                warnings.warn(thebeat._warnings.duplicate_names_sequence_plot)
+            # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
+                new_y_axis_labels = []
+                for i, name in enumerate(y_axis_labels):
+                    if y_axis_labels.count(name) > 1:
+                        new_y_axis_labels.append(name + f"-{i + 1}")
+                y_axis_labels = new_y_axis_labels
         else:
             y_axis_labels = [str(i) for i in range(1, n_seqs + 1)]
     elif len(y_axis_labels) != len(sequences):
