@@ -375,6 +375,60 @@ class SoundSequence(BaseSequence):
 
         return fig, ax
 
+    @staticmethod
+    def write_multichannel_wav(
+        soundsequences: list[SoundSequence],
+        filepath: str | os.PathLike,
+        dtype: str | np.dtype = np.int16,
+    ):
+        r"""
+        Write multiple :py:class:`SoundSequence` objects to a single multichannel .wav file.
+
+        Parameters
+        ----------
+        *soundsequences
+            One or more :py:class:`SoundSequence` objects.
+
+        Examples
+        --------
+        >>> sound = SoundStimulus.generate()
+        >>> seq1 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=50)
+        >>> seq1.round_onsets()
+        >>> seq2 = Sequence.generate_isochronous(n_events=5, ioi=500)
+        >>> trial1 = SoundSequence(sound, seq1)
+        >>> trial2 = SoundSequence(sound, seq2)
+        >>> SoundSequence.write_multichannel_wav([trial1, trial2], 'my_soundseqs.wav')  # doctest: +SKIP
+
+        """
+
+        if len(soundsequences) < 1 or not all(isinstance(obj, SoundSequence) for obj in soundsequences):
+            raise TypeError("Please provide SoundSequence objects.")
+
+        if not all(obj.fs == soundsequences[0].fs for obj in soundsequences):
+            raise ValueError("The provided SoundSequence objects do not have the same sampling frequency.")
+
+        # Get the samples
+        sample_arrays = [obj.samples for obj in soundsequences]
+        channels = [samples.reshape(-1, 1) if samples.ndim == 1 else samples for samples in sample_arrays]
+
+        # Pad samples with zeros if necessary
+        max_length = max(channel.shape[0] for channel in channels)
+        channels = [np.pad(channel, ((0, max_length - channel.shape[0]), (0, 0)), mode="constant") for channel in channels]
+
+        # Combine the channels
+        samples = np.hstack(channels)
+
+        # Write the samples
+        thebeat.helpers.write_wav(
+            samples=samples,
+            fs=soundsequences[0].fs,
+            filepath=filepath,
+            dtype=dtype,
+            metronome=False,
+            metronome_ioi=None,
+            metronome_amplitude=None,
+        )
+
     def write_wav(
         self,
         filepath: str | os.PathLike,
