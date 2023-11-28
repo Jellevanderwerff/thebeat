@@ -781,9 +781,6 @@ def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm,
 
     """
 
-    if not isinstance(sequence, (thebeat.core.Sequence, thebeat.music.Rhythm)):
-        raise TypeError("sequence must be a Sequence or Rhythm object")
-
     if np.any(sequence.iois % resolution != 0):
         raise ValueError(
             f"Sequence needs to be quantized to multiples of {resolution}."
@@ -791,8 +788,8 @@ def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm,
         )
 
     bins = (
-        np.arange(0, np.max(sequence.iois) + 2 * resolution, resolution) - resolution / 2  # shift bins to center
-    )
+        np.arange(0, np.max(sequence.iois) + 2 * resolution, resolution) - resolution / 2
+    )  # shift bins to center
     bin_counts = np.histogram(sequence.iois, bins=bins)[0]
 
     return scipy.stats.entropy(bin_counts)
