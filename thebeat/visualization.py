@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import warnings
 
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -552,12 +553,12 @@ def plot_multiple_sequences(
     """
 
     # Get list of onsets arrays
-    onsets = []
+    onsets_nested = []
     for seq in sequences:
         if isinstance(seq, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
-            onsets.append(seq.onsets)
+            onsets_nested.append(seq.onsets)
         else:
-            onsets.append(np.array(seq))
+            onsets_nested.append(np.array(seq))
 
     # Make names for the bars
     n_seqs = len(sequences)
@@ -566,7 +567,7 @@ def plot_multiple_sequences(
             y_axis_labels = [sequence.name for sequence in sequences]
             if not list(set(y_axis_labels)) == y_axis_labels:  # Check for duplicates in names
                 warnings.warn(thebeat._warnings.duplicate_names_sequence_plot)
-            # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
+                # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
                 new_y_axis_labels = []
                 for i, name in enumerate(y_axis_labels):
                     if y_axis_labels.count(name) > 1:
@@ -581,13 +582,30 @@ def plot_multiple_sequences(
     # default to 1/10th of the smallest IOI)
     if linewidths is None:
         if isinstance(sequences[0], thebeat.core.SoundSequence):
-            linewidths = [trial.event_durations for trial in sequences]
+            linewidths_nested = [trial.event_durations for trial in sequences]  # nested list
         else:
             all_iois = [sequence.iois for sequence in sequences]
             smallest_ioi = np.min(np.concatenate(all_iois))
-            linewidths = [smallest_ioi / 10] * len(sequences)
+            linewidths_nested = [
+                [smallest_ioi / 10] * len(seq.onsets) for seq in sequences
+            ]  # nested list
     else:
-        linewidths = [linewidths] * len(sequences)
+        # if the passed list is nested, we do not need to do anything
+        if isinstance(linewidths[0], (list, np.array)):  # nested list
+            pass
+        # if the passed list is not nested, we need to make it nested
+        elif isinstance(linewidths[0], (int, float)):
+            linewidths_nested = [[linewidths] * len(seq.onsets) for seq in sequences]  # nested list
+        else:
+            raise TypeError(
+                "Please provide a list or array of ints or floats, or a nested list or array of ints or floats."
+            )
+
+    # Check whether the linewidths correspond to the number of onsets
+    if not all(
+        len(linewidth) == len(onset) for linewidth, onset in zip(linewidths_nested, onsets_nested)
+    ):
+        raise ValueError("Please provide an equal number of linewidths as onsets.")
 
     # Plot
     with plt.style.context(style):
@@ -611,14 +629,45 @@ def plot_multiple_sequences(
         else:
             colors = [None] * len(sequences)
 
-        for onsets, label, linewidths, color in zip(
-            reversed(onsets), reversed(y_axis_labels), reversed(linewidths), reversed(colors)
-        ):
-            ax.barh(y=label, width=linewidths, left=onsets, color=color)
+        # Get y locations for sequences
+        y_locations = np.linspace(0, 1, n_seqs * 2)[0::2]
 
-        # Make sure we always have 0 on the left side of the x axis
-        current_lims = ax.get_xlim()
-        ax.set_xlim(0, current_lims[1])
+        # Calculate height of bars
+        bar_height = 1 / (n_seqs * 2 - 1)
+
+        # Loop over sequences and plot bars
+        for onsets, linewidths, y_location, color in zip(
+            onsets_nested, linewidths_nested, y_locations, colors
+        ):
+            # Loop over onsets
+            for onset, linewidth in zip(onsets, linewidths):
+                rect = mpatches.Rectangle(
+                    xy=(onset, y_location),
+                    height=bar_height,
+                    width=linewidth,
+                    color=color,
+                    fill=True,
+                )
+                ax.add_patch(rect)
+                print(
+                    f"Placed bar at x={onset}, y={y_location} with height {bar_height} and width {linewidth}."
+                )
+
+        # Get duration of longest sequence
+        onsets_flat = [onset for onset_list in onsets_nested for onset in onset_list]
+        linewidths_flat = [
+            linewidth for linewidth_list in linewidths_nested for linewidth in linewidth_list
+        ]
+        smallest_onset = min(onsets_flat)
+        largest_onset = max(onsets_flat)
+        largest_onset_index = np.argmax(onsets_flat)
+
+        # Set xlim
+        ax.set_xlim(min(0, smallest_onset), largest_onset + linewidths_flat[largest_onset_index])
+
+        ax.set_yticks(y_locations + bar_height / 2)
+        ax.set_yticklabels(y_axis_labels)
+        ax.axes.yaxis.set_visible(False)
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:

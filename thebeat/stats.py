@@ -113,7 +113,8 @@ def acf_plot(
     suppress_display: bool = False,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
-    This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
+    This function can be used for plotting an autocorrelation plot from a
+    :class:`~thebeat.core.Sequence`.
 
     Parameters
     ----------
@@ -132,14 +133,15 @@ def acf_plot(
         The window (in milliseconds) within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
-        The standard deviation of the normal probability density function used for smoothing out the analysis.
+        The standard deviation of the normal probability density function used for smoothing out
+        the analysis.
     style
         Style used by matplotlib. See `matplotlib style sheets reference
         <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
-        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` ``name`` attribute as the title of the
-        plot (if the object has one).
+        :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` ``name``
+        attribute as the title of the plot (if the object has one).
     x_axis_label
         A label for the x axis.
     y_axis_label
@@ -148,18 +150,20 @@ def acf_plot(
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
     dpi
-        The desired output resolution of the plot in dots per inch (DPI). This refers to the ``dpi`` parameter
-        in :func:`matplotlib.pyplot.figure`.
+        The desired output resolution of the plot in dots per inch (DPI). This refers to the
+        ``dpi`` parameter in :func:`matplotlib.pyplot.figure`.
     ax
-        If desired, one can provide an existing :class:`matplotlib.axes.Axes` object to plot the autocorrelation
-        plot on. This is for instance useful if you want to plot multiple autocorrelation plots on the same figure.
+        If desired, one can provide an existing :class:`matplotlib.axes.Axes` object to plot the
+        autocorrelation plot on. This is for instance useful if you want to plot multiple
+        autocorrelation plots on the same figure.
     suppress_display
         If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
     Notes
     -----
-    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
-    There, one can also find a more detailed description of the smoothing procedure.
+    This function is based on the procedure described in
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There, one can also find a more detailed
+    description of the smoothing procedure.
 
     """
 
@@ -213,8 +217,8 @@ def acf_values(
 ) -> np.ndarray:
     """
 
-    Perform autocorrelation. This function takes a :class:`~thebeat.core.Sequence` object, and returns an array with
-    steps of ``resolution`` of unstandardized correlation factors.
+    Perform autocorrelation. This function takes a :class:`~thebeat.core.Sequence` object, and
+    returns an array with steps of ``resolution`` of unstandardized correlation factors.
 
     Parameters
     ----------
@@ -229,12 +233,14 @@ def acf_values(
         The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
-        The standard deviation of the normal probability density function used for smoothing out the analysis.
+        The standard deviation of the normal probability density function used for smoothing out
+        the analysis.
 
     Notes
     -----
-    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
-    one can also find a more detailed description of the smoothing procedure.
+    This function is based on the procedure described in
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There, one can also find a more detailed
+    description of the smoothing procedure.
 
     This function uses the :func:`numpy.correlate` to calculate the correlations.
 
@@ -293,7 +299,8 @@ def ccf_df(
         The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
-        The standard deviation of the normal probability density function used for smoothing out the analysis.
+        The standard deviation of the normal probability density function used for smoothing out the
+        analysis.
 
     Returns
     -------
@@ -302,8 +309,9 @@ def ccf_df(
 
     Notes
     -----
-    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
-    There, one can also find a more detailed description of the smoothing procedure.
+    This function is based on the procedure described in
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There, one can also find a more detailed
+    description of the smoothing procedure.
 
 
     """
@@ -350,13 +358,14 @@ def ccf_plot(
     reference_sequence
         The reference sequence.
     resolution
-        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1. If the Sequence is in
-        seconds, try using 0.001.
+        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1. If
+        the Sequence is in seconds, try using 0.001.
     smoothing_window
         The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
-        The standard deviation of the normal probability density function used for smoothing out the analysis.
+        The standard deviation of the normal probability density function used for smoothing out
+        the analysis.
     style
         The matplotlib style to use. See
         `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
@@ -375,7 +384,8 @@ def ccf_plot(
     ax
         A :class:`matplotlib.axes.Axes` object. If ``None``, a new Figure and Axes is created.
     suppress_display
-        If ``True``, the plot is not displayed. This is useful e.g. if you only want to save the plot to a file
+        If ``True``, the plot is not displayed. This is useful e.g. if you only want to save the
+        plot to a file
 
     Returns
     -------
@@ -386,8 +396,9 @@ def ccf_plot(
 
     Notes
     -----
-    This function is based on the procedure described in :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There,
-    one can also find a more detailed description of the smoothing procedure.
+    This function is based on the procedure described in
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`. There, one can also find a more detailed
+    description of the smoothing procedure.
 
     """
 
@@ -440,8 +451,9 @@ def ccf_values(
     smoothing_sd: float | None = None,
 ) -> np.ndarray:
     """
-    Returns the unstandardized cross-correlation function (CCF) for two :class:`~thebeat.core.Sequence` objects.
-    The test sequence is compared to the reference sequence.
+    Returns the unstandardized cross-correlation function (CCF) for two
+    :class:`~thebeat.core.Sequence` objects. The test sequence is compared to the reference
+    sequence.
 
     Parameters
     ----------
@@ -450,13 +462,14 @@ def ccf_values(
     reference_sequence
         The reference sequence.
     resolution
-        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1. If the Sequence is in
-        seconds, try using 0.001.
+        The temporal resolution. If the used Sequence is in milliseconds, you probably want 1.
+        If the Sequence is in seconds, try using 0.001.
     smoothing_window
         The window within which a normal probability density function is used for
         smoothing out the analysis.
     smoothing_sd
-        The standard deviation of the normal probability density function used for smoothing out the analysis.
+        The standard deviation of the normal probability density function used for smoothing out
+        the analysis.
 
     Returns
     -------
@@ -514,7 +527,8 @@ def edit_distance_rhythm(
     reference_rhythm
         The rhythm to which ``test_rhythm`` will be compared.
     smallest_note_value
-        The smallest note value that is used in the underlying grid. 16 means 1/16th notes, 4 means 1/4th notes, etc.
+        The smallest note value that is used in the underlying grid. 16 means 1/16th notes, 4 means
+        1/4th notes, etc.
 
     Examples
     --------
@@ -549,16 +563,22 @@ def edit_distance_sequence(
     """
     Calculates the edit/Levenshtein distance between two sequences.
 
+<<<<<<< Updated upstream
     Requires for all the IOIs in a Sequence to be multiples of 'resolution'. If needed, quantize the
     Sequence first, e.g. using Sequence.quantize_iois().
+=======
+    If Sequences are not quantized to ``resolution``, they will be quantized to that resolution
+    first.
+>>>>>>> Stashed changes
 
     Note
     ----
-    The resolution also represents the underlying grid. If, for example, the resolution is 50, that means that
-    a grid will be created with steps of 50. The onsets of the sequence are then placed on the grid for both
-    sequences. The resulting sequences consist of ones and zeros, where ones represent the event onsets. This string
-    for ``test_sequence`` is compared to the string of the ``reference_sequence``. Note that ``test_sequence`` and
-    ``reference_sequence`` can be interchanged without an effect on the results.
+    The resolution also represents the underlying grid. If, for example, the resolution is 50, that
+    means that a grid will be created with steps of 50. The onsets of the sequence are then placed
+    on the grid for both sequences. The resulting sequences consist of ones and zeros, where ones
+    represent the event onsets. This string for ``test_sequence`` is compared to the string of the
+    ``reference_sequence``. Note that ``test_sequence`` and ``reference_sequence`` can be
+    interchanged without an effect on the results.
 
     Parameters
     ----------
@@ -611,8 +631,15 @@ def fft_plot(
 ) -> tuple[plt.Figure, plt.Axes]:
     """
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
+<<<<<<< Updated upstream
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
     You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
+=======
+    The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used
+    time unit. You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in
+    seconds. Note that the first frame is discarded since it will always have the highest power,
+    yet is not informative.
+>>>>>>> Stashed changes
 
     Parameters
     ----------
@@ -710,10 +737,11 @@ def ks_test(
 ):
     """
     This function returns the `D` statistic and `p` value of a one-sample Kolmogorov-Smirnov test.
-    It calculates how different the distribution of inter-onset intervals (IOIs) is compared to the provided reference
-    distribution.
+    It calculates how different the distribution of inter-onset intervals (IOIs) is compared to the
+    provided reference distribution.
 
-    If `p` is significant it means that the IOIs are not distributed according to the provided reference distribution.
+    If `p` is significant it means that the IOIs are not distributed according to the provided
+    reference distribution.
 
     Parameters
     ----------
@@ -766,18 +794,41 @@ statistic_sign=1)
 def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm, resolution: float):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
-    If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
-    A sequence that is completely isochronous has a Shannon entropy of 0.
+    If many different 'note durations' are present, entropy is high. If only a few are present,
+    entropy is low. A sequence that is completely isochronous has a Shannon entropy of 0.
 
+<<<<<<< Updated upstream
     The resolution determines the size of the bins/the underlying grid. Sequence needs to be quantized to multiples
     of 'resolution'. If needed, quantize the Sequence first, e.g. using 'Sequence.quantize_iois'.
+=======
+    The bin size is determined from the average inter-onset interval in the
+    :py:class:`thebeat.core.Sequence` object (i.e. the tempo) and the ``bin_fraction``.
+    The ``bin_fraction`` corresponds to temporal sensitivity. The default is 1/32th of the average
+    IOI. This implies that the smallest note value that can be detected is a 1/32th note.
+>>>>>>> Stashed changes
 
     Parameters
     ----------
     sequence
         The :py:class:`thebeat.core.Sequence` object for which Shannon entropy is calculated.
+<<<<<<< Updated upstream
     resolution
         The size of the bins/the underlying grid.
+=======
+    bin_fraction
+        The fraction of the average inter-onset interval (IOI) that determines the bin size.
+        It is multiplied by the average IOI to get the bin size.
+
+    Example
+    -------
+    A :py:class:`~thebeat.core.Sequence` has an average IOI of 500 ms. With a bin_fraction of
+    0.03125 (corresponding to 1/32th note value) the bins will have a size of 15.625 ms.
+    The entropy will be calculated from the number of IOIs in each bin.
+
+    References
+    ----------
+    #todo add reference here for this type of entropy calculation.
+>>>>>>> Stashed changes
 
     """
 
@@ -820,14 +871,15 @@ def get_cov(sequence: thebeat.core.Sequence) -> np.float64:
 def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     """
 
-    This function calculates the normalized pairwise variability index (nPVI) for a provided :py:class:`Sequence` or
-    :py:class:`SoundSequence` object, or for an interable of inter-onset intervals (IOIs).
+    This function calculates the normalized pairwise variability index (nPVI) for a provided
+    :py:class:`Sequence` or :py:class:`SoundSequence` object, or for an interable of inter-onset
+    intervals (IOIs).
 
     Parameters
     ----------
     sequence
-        Either a :py:class:`Sequence` or :py:class:`SoundSequence` object, or an iterable containing inter-onset
-        intervals (IOIs).
+        Either a :py:class:`Sequence` or :py:class:`SoundSequence` object, or an iterable containing
+        inter-onset intervals (IOIs).
 
     Returns
     -------
@@ -836,10 +888,11 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
 
     Notes
     -----
-    The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent temporal intervals.
-    The nPVI is zero for sequences that are perfectly isochronous.
-    See :cite:t:`jadoulSeekingTemporalPredictability2016` and :cite:t:`ravignaniMeasuringRhythmicComplexity2017`
-    for more information on its use in rhythm research.
+    The normalied pairwise variability index (nPVI) is a measure of the variability of adjacent
+    temporal intervals. The nPVI is zero for sequences that are perfectly isochronous.
+    See :cite:t:`jadoulSeekingTemporalPredictability2016` and
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017` for more information on its use in rhythm
+    research.
 
     Examples
     --------
@@ -877,20 +930,21 @@ def get_ugof_isochronous(
 
     This function calculates the universal goodness of fit (``ugof``) measure.
     The ``ugof`` statistic quantifies how well a theoretical sequence describes a sequence at hand
-    (the ``test_sequence``). This function can only calculate ``ugof`` using a theoretical sequence that is isochronous.
+    (the ``test_sequence``). This function can only calculate ``ugof`` using a theoretical sequence
+    that is isochronous.
 
     The ``reference_ioi`` is the IOI of an isochronous theoretical sequence.
 
     Parameters
     ----------
     test_sequence
-        A :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object that will be compared
-        to ``reference_sequence``.
+        A :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` object that
+        will be compared to ``reference_sequence``.
     reference_ioi
         A number (float or int) representing the IOI of an isochronous sequence.
     output_statistic
-        Either 'mean' (the default) or 'median'. This determines whether for the individual ugof values we take the mean
-        or the median as the output statistic.
+        Either 'mean' (the default) or 'median'. This determines whether for the individual ugof
+        values we take the mean or the median as the output statistic.
 
     Returns
     -------
@@ -900,8 +954,8 @@ def get_ugof_isochronous(
     Notes
     -----
     This measure is described in :cite:t:`burchardtNovelIdeasFurther2021`.
-    Please also refer to `this Github page <https://github.com/LSBurchardt/R_app_rhythm>`_ for an R implementation of
-    the *ugof* measure.
+    Please also refer to `this Github page <https://github.com/LSBurchardt/R_app_rhythm>`_ for an
+    R implementation of the *ugof* measure.
 
 
     Examples

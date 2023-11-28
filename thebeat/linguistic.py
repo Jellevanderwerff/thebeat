@@ -26,9 +26,9 @@ def generate_moraic_sequence(
     n_feet: int, foot_ioi: float, rng: np.random.Generator | None = None
 ) -> thebeat.core.Sequence:
     """
-    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
-    structure of mora-timed languages. The feet contain clusters of either one or two IOIs with the same total duration.
-    The total duration is specified in ``foot_ioi``.
+    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the
+    rhythmic structure of mora-timed languages. The feet contain clusters of either one or two IOIs
+    with the same total duration. The total duration is specified in ``foot_ioi``.
 
     The phrases all have the same duration, but are made up of different combinations of IOIs.
 
@@ -51,7 +51,8 @@ def generate_moraic_sequence(
 
     Notes
     -----
-    Both the methodology and the code are based on/taken from :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Both the methodology and the code are based on/taken from
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     """
     if rng is None:
@@ -96,8 +97,8 @@ def generate_stress_timed_sequence(
     rng: np.random.Generator | None = None,
 ) -> thebeat.core.Sequence:
     """
-    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the rhythmic
-    structure of stress-timed languages.
+    This function generates a Sequence object with inter-onset intervals (IOIs) mimicing the
+    rhythmic structure of stress-timed languages.
 
     In one sequence (cf. 'sentence'), there are ``n_phrases`` of ``n_events_per_phrase``.
 
@@ -112,7 +113,8 @@ def generate_stress_timed_sequence(
     n_phrases
         The number of phrases in the sequence.
     rng
-        A :class:`numpy.random.Generator` object. if none is supplied will default to :func:`numpy.random.default_rng`.
+        A :class:`numpy.random.Generator` object. if none is supplied will default to
+        :func:`numpy.random.default_rng`.
 
     Examples
     --------
@@ -123,7 +125,8 @@ def generate_stress_timed_sequence(
 
     Notes
     -----
-    Both the methodology and the code are based on/taken from :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
+    Both the methodology and the code are based on/taken from
+    :cite:t:`ravignaniMeasuringRhythmicComplexity2017`.
 
     """
     if rng is None:

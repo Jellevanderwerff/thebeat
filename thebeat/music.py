@@ -45,14 +45,15 @@ except ImportError:
 
 class Rhythm(thebeat.core.sequence.BaseSequence):
     """
-    The :py:class:`Rhythm` class can be used for working sequences that are rhythmical in the musical sense.
-    This means that in addition to having inter-onset intervals (IOIs) that represent the timing of the events in the
-    sequence, :py:class:`Rhythm` objects have musical properties such as a time signature, a beat duration,
-    and they may contain rests.
+    The :py:class:`Rhythm` class can be used for working sequences that are rhythmical in the
+    musical sense. This means that in addition to having inter-onset intervals (IOIs) that
+    represent the timing of the events in the sequence, :py:class:`Rhythm` objects have musical
+    properties such as a time signature, a beat duration, and they may contain rests.
 
     The :py:class:`Rhythm` class is also used as the basis for a :py:class:`~thebeat.music.Melody`.
 
-    For more info on these properties, please refer to the class's :py:meth:`~thebeat.music.Rhythm.__init__`.
+    For more info on these properties, please refer to the class's
+    :py:meth:`~thebeat.music.Rhythm.__init__`.
     """
 
     def __init__(
@@ -71,19 +72,20 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         iois
             An iterable of inter-onset intervals (IOIs). For instance: ``[500, 500, 400, 200]``.
         time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number
+            indicates *how many beats* there are in a bar. The lower number indicates the
+            denominator of the value that indicates *one beat*. So, in ``(4, 8)`` time, a bar
+            would be filled if we have four :math:`\frac{1}{8}` th notes.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         is_played
             A list or array containing booleans indicating whether a note should be played or not.
             Defaults to ``[True, True, True, ...]``.
         name
-            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+            Optionally, you can give the Sequence object a name. This is used when printing,
+            plotting, or writing the Sequence object. It can always be retrieved and changed via
+            :py:attr:`Rhythm.name`.
 
         Examples
         --------
@@ -139,13 +141,15 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     @property
     def fractions(self) -> np.ndarray:
-        r"""Calculate how to describe the rhythm in fractions from the total duration of the sequence.
+        r"""Calculate how to describe the rhythm in fractions from the total duration of the
+        sequence.
 
         Example
         -------
 
         A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
-        This can be described using the fractions :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
+        This can be described using the fractions
+        :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
         so this method returns the fractions ``[1/8, 2/8, 4/8, 1/8]``.
 
         Examples
@@ -175,7 +179,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Notes
         -----
-        The method for calculating the integer ratios is based on :cite:t:`jacobyIntegerRatioPriors2017`.
+        The method for calculating the integer ratios is based on
+        :cite:t:`jacobyIntegerRatioPriors2017`.
 
         Caution
         -------
@@ -199,14 +204,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     @property
     def note_values(self):
         """
-        This property returns the denominators of the note values in this sequence, calculated from the
-        inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note value of ``4`` means a
-        quarternote, etc. One triplet of three notes would be ``[12, 12, 12]``.
+        This property returns the denominators of the note values in this sequence, calculated
+        from the inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note
+        value of ``4`` means quarternote, etc. One triplet of three notes would be ``[12, 12, 12]``.
 
         Caution
         -------
-        Please note that this function is basic (e.g. there is no support for dotted notes etc.). That's beyond
-        the scope of this package.
+        Please note that this function is basic (e.g. there is no support for dotted notes etc.).
+        That's beyond the scope of this package.
 
         Examples
         --------
@@ -246,8 +251,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         time_signature
             The time signature of the rhythm. For instance: ``(4, 4)``.
         beat_ms
-            The duration of a beat in milliseconds. This refers to the duration of the denominator of the time
-            signature.
+            The duration of a beat in milliseconds. This refers to the duration of the denominator
+            of the time signature.
         is_played
             A list of booleans indicating which notes are played. If None, all notes are played.
         name
@@ -302,27 +307,28 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> Rhythm:
         r"""
 
-        Very simple conveniance class method that constructs a Rhythm object by calculating the inter-onset intervals
-        (IOIs) as ``numerators * beat_ms``.
+        Very simple conveniance class method that constructs a Rhythm object by calculating the
+        inter-onset intervals (IOIs) as ``numerators * beat_ms``.
 
         Parameters
         ----------
         numerators
             Contains the numerators of the integer ratios. For instance: ``[1, 2, 4]``.
         time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number
+            indicates *how many beats* there are in a bar. The lower number indicates the
+            denominator of the value that indicates *one beat*. So, in ``(4, 8)`` time, a bar would
+            be filled if we have four :math:`\frac{1}{8}` th notes.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         is_played
             A list or array containing booleans indicating whether a note should be played or not.
             Defaults to ``[True, True, True, ...]``.
         name
-            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+            Optionally, you can give the Sequence object a name. This is used when printing,
+            plotting, or writing the Sequence object. It can always be retrieved and changed via
+            :py:attr:`Rhythm.name`.
 
         """
 
@@ -347,28 +353,31 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> Rhythm:
         r"""Create a Rhythm object on the basis of note values (i.e. note durations).
 
-        Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
-        a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
+        Note values are input as the denominators of the fraction. A note value of ``2`` means a
+        half note, a note value of ``4`` means a quarternote etc. A triplet would be
+        ``[12, 12, 12]``.
 
         Parameters
         ----------
         note_values
-            A list or array containing the denominators of the note values. A note value of ``2`` means a half note,
-            a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
+            A list or array containing the denominators of the note values. A note value of ``2``
+            means a half note, a note value of ``4`` means a quarternote etc. A triplet would be
+            ``[12, 12, 12]``.
         time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number
+            indicates *how many beats* there are in a bar. The lower number indicates the
+            denominator of the value that indicates *one beat*. So, in ``(4, 8)`` time, a bar
+            would be filled if we have four :math:`\frac{1}{8}` th notes.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         is_played
             A list or array containing booleans indicating whether a note should be played or not.
             Defaults to ``[True, True, True, ...]``.
         name
-            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+            Optionally, you can give the Sequence object a name. This is used when printing,
+            plotting, or writing the Sequence object. It can always be retrieved and changed via
+            :py:attr:`Rhythm.name`.
 
         Examples
         --------
@@ -402,34 +411,36 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         r"""
         This function generates a random rhythmic sequence on the basis of the provided parameters.
 
-        It does so by first generating all possible combinations of note values that amount to one bar based on the
-        ``allowed_note_values`` parameter, and then selecting (with replacement) ``n_bars`` combinations out of
-        the possibilities.
+        It does so by first generating all possible combinations of note values that amount to one
+        bar based on the ``allowed_note_values`` parameter, and then selecting (with replacement)
+        ``n_bars`` combinations out of the possibilities.
 
         Parameters
         ----------
         n_bars
             The desired number of musical bars.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number
+            indicates *how many beats* there are in a bar. The lower number indicates the
+            denominator of the value that indicates *one beat*. So, in ``(4, 8)`` time, a bar
+            would be filled if we have four :math:`\frac{1}{8}` th notes.
         allowed_note_values
-            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
-            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the denominators of the allowed note values. A note value
+            of ``2`` means a half note, a note value of ``4`` means a quarternote etc. Defaults to
+            ``[4, 8, 16]``.
         n_rests
-            If desired, one can provide a number of rests to be inserted at random locations. These are placed after
-            the random selection of note values.
+            If desired, one can provide a number of rests to be inserted at random locations.
+            These are placed after the random selection of note values.
         rng
-            A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
-            used.
+            A :class:`numpy.random.Generator` object. If not supplied
+            :func:`numpy.random.default_rng` is used.
         name
-            If desired, one can give a rhythm a name. This is for instance used when printing the rhythm,
-            or when plotting the rhythm. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+            If desired, one can give a rhythm a name. This is for instance used when printing the
+            rhythm, or when plotting the rhythm. It can always be retrieved and changed via
+            :py:attr:`Rhythm.name`.
 
         Examples
         --------
@@ -489,27 +500,28 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> Rhythm:
         r"""
 
-        Simply generates an isochronous (i.e. with equidistant inter-onset intervals) rhythm. Will have
-        the bars filled with intervals of ``beat_ms``.
+        Simply generates an isochronous (i.e. with equidistant inter-onset intervals) rhythm.
+        Will have the bars filled with intervals of ``beat_ms``.
 
         Parameters
         ----------
         n_bars
             The desired number of musical bars.
         time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
+            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number
+            indicates *how many beats* there are in a bar. The lower number indicates the
+            denominator of the value that indicates *one beat*. So, in ``(4, 8)`` time, a bar
+            would be filled if we have four :math:`\frac{1}{8}` th notes.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         is_played
             A list or array containing booleans indicating whether a note should be played or not.
             Defaults to ``[True, True, True, ...]``.
         name
-            If desired, one can give a rhythm a name. This is for instance used when printing the rhythm,
-            or when plotting the rhythm. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
+            If desired, one can give a rhythm a name. This is for instance used when printing the
+            rhythm, or when plotting the rhythm. It can always be retrieved and changed via
+            :py:attr:`Rhythm.name`.
 
         """
 
@@ -537,12 +549,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ax: plt.Axes | None = None,
     ) -> tuple[plt.Figure, plt.Axes]:
         """
-        Make a plot containing the musical notation of the rhythm. This function requires install 'abjad' and
-        'lilypond'. You can install both through ``pip install thebeat[music_notation]``.
-        For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
+        Make a plot containing the musical notation of the rhythm. This function requires install
+        'abjad' and 'lilypond'. You can install both through
+        ``pip install thebeat[music_notation]``. For more details,
+        see https://thebeat.readthedocs.io/en/latest/installation.html.
 
-        The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
-        which you can manipulate.
+        The plot is returned as a :class:`matplotlib.figure.Figure` and
+        :class:`matplotlib.axes.Axes` object, which you can manipulate.
 
         .. figure:: images/plot_rhythm_rhythmstaff.png
             :scale: 100 %
@@ -566,24 +579,27 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         Parameters
         ----------
         filepath
-            Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.pdf'.
-            The desired file format will be selected based on what the filepath ends with.
+            Optionally, you can save the plot to a file. Supported file formats are only '.png' and
+            '.pdf'. The desired file format will be selected based on what the filepath ends with.
         staff_type
-            Either 'percussion' or 'rhythm'. 'Rhythm' is a single line (like a woodblock score). Percussion
-            is drum notation.
+            Either 'percussion' or 'rhythm'. 'Rhythm' is a single line (like a woodblock score).
+            Percussion is drum notation.
         print_staff
-            If desired, you can choose to print a musical staff (the default is not to do this). The staff will be a
-            `percussion staff <https://en.wikipedia.org/wiki/Percussion_notation>`_.
+            If desired, you can choose to print a musical staff (the default is not to do this).
+            The staff will be a `percussion staff
+            <https://en.wikipedia.org/wiki/Percussion_notation>`_.
         title
-            A title for the plot. Note that this is not considered when saving the plot as an .eps file.
+            A title for the plot.
         suppress_display
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
-            :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
-            use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+            :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to
+            save the plot or use the returned :class:`matplotlib.figure.Figure` and
+            :class:`matplotlib.axes.Axes` objects.
         dpi
             The resolution of the plot in dots per inch.
         ax
-            Optionally, you can provide an existing :class:`matplotlib.axes.Axes` object to plot the rhythm on.
+            Optionally, you can provide an existing :class:`matplotlib.axes.Axes` object to plot
+            the rhythm on.
 
 
         Examples
@@ -799,17 +815,18 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 class Melody(thebeat.core.sequence.BaseSequence):
     """
     A :py:class:`Melody` object contains a both a **rhythm** and **pitch information**.
-    It does not contain sound. However, the :py:class:`Melody` can be synthesized and played or written to
-    disk, for instance using the :py:meth:`~Melody.synthesize_and_play()` method.
+    It does not contain sound. However, the :py:class:`Melody` can be synthesized and played or
+    written to disk, for instance using the :py:meth:`~Melody.synthesize_and_play()` method.
 
-    See the :py:meth:`~Melody.__init__` to learn how a :py:class:`Melody` object is constructed, or use one
-    of the different class methods, such as the
+    See the :py:meth:`~Melody.__init__` to learn how a :py:class:`Melody` object is constructed, or
+    use one of the different class methods, such as the
     :py:meth:`~Melody.generate_random_melody` method.
 
-    Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
-    current version of `abjad` requires Python 3.10. The last version that supported Python 3.8-3.9 is
-    `this one <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
-    when you install `thebeat` with ``pip install thebeat[music_notation]``.
+    Most of the functions require you to install `abjad <https://abjad.github.io/>`_.
+    Please note that the current version of `abjad` requires Python 3.10.
+    The last version that supported Python 3.8-3.9 is
+    `this one <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed
+    automatically when you install `thebeat` with ``pip install thebeat[music_notation]``.
     For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
     """
 
@@ -831,17 +848,19 @@ class Melody(thebeat.core.sequence.BaseSequence):
         pitch_names
             An array or list containing note names. They can be in a variety of formats, such as
             ``"G4"`` for a G note in the fourth octave, or ``"g'"``, or simply ``G``. The names are
-            processed by :class:`abjad.pitch.NamedPitch`. Follow the link to find examples of the different
-            formats. Alternatively it can be a string, but only in the formats: ``'CCGGC'`` or ``'C4C4G4G4C4'``.
+            processed by :class:`abjad.pitch.NamedPitch`. Follow the link to find examples of the
+            different formats. Alternatively it can be a string, but only in the
+            formats: ``'CCGGC'`` or ``'C4C4G4G4C4'``.
         key
-            Optionally, you can provide a key. This is for instance used when plotting a :py:class:`Melody` object.
+            Optionally, you can provide a key. This is for instance used when plotting a
+            :py:class:`Melody` object.
         is_played
-            Optionally, you can indicate if you want rests in the :py:class:`Melody`. Provide an array or list of
-            booleans, for instance: ``[True, True, False, True]`` would mean a rest in place of the third event.
-            The default is True for each event.
+            Optionally, you can indicate if you want rests in the :py:class:`Melody`. Provide an
+            array or list of booleans, for instance: ``[True, True, False, True]`` would mean a
+            rest in place of the third event. The default is True for each event.
         name
-            Optionally, the :py:class:`Melody` object can have a name. This is saved to the :py:attr:`Melody.name`
-            attribute.
+            Optionally, the :py:class:`Melody` object can have a name. This is saved to the
+            :py:attr:`Melody.name` attribute.
 
         Examples
         --------
@@ -919,17 +938,17 @@ class Melody(thebeat.core.sequence.BaseSequence):
     ) -> Melody:
         r"""
 
-        Generate a random rhythm as well as a melody, based on the given parameters. Internally, for the
-        rhythm, the :py:meth:`Rhythm.generate_random_rhythm` method is used. The melody is a random selection
-        of pitch values based on the provided key and octave.
+        Generate a random rhythm as well as a melody, based on the given parameters. Internally, for
+        the rhythm, the :py:meth:`Rhythm.generate_random_rhythm` method is used. The melody is a
+        random selection of pitch values based on the provided key and octave.
 
         Parameters
         ----------
         n_bars
             The desired number of musical bars.
         beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
+            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th
+            note if the lower number in the time signature is 4.
         time_signature
             A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
             *how many beats* there are in a bar. The lower number indicates the denominator of the value that
@@ -1125,32 +1144,34 @@ class Melody(thebeat.core.sequence.BaseSequence):
         metronome: bool = False,
         metronome_amplitude: float = 1.0,
     ) -> tuple[np.ndarray, int]:
-        """Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
-        synthesize the sound. It returnes a tuple containing the sound samples as a NumPy 1-D array,
-        and the sampling frequency.
+        """Since :py:class:`Melody` objects do not contain any sound information, you can use this
+        method to synthesize the sound. It returnes a tuple containing the sound samples as a
+        NumPy 1-D array, and the sampling frequency.
 
         Note
         ----
         Theoretically, four quarternotes played after each other constitute one long sound. This
         behaviour is the default here. However, in many cases it will probably be best to supply
-        ``event_durations``, which means the events are played in the rhythm of the melody (i.e. according
-        to the inter-onset intervals of the rhythm), but using a supplied duration.
+        ``event_durations``, which means the events are played in the rhythm of the melody
+        (i.e. according to the inter-onset intervals of the rhythm), but using a supplied duration.
 
         Parameters
         ----------
         event_durations_ms
-            Can be supplied as a single integer, which means that duration will be used for all events
-            in the melody, or as an array of list containing individual durations for each event. That of course
-            requires an array or list with a size equal to the number of notes in the melody.
+            Can be supplied as a single integer, which means that duration will be used for all
+            events in the melody, or as an array of list containing individual durations for each
+            event. That of course requires an array or list with a size equal to the number of
+            notes in the melody.
         fs
             The desired sampling frequency in hertz.
         n_channels
             The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
-            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
-            values higher than 1 in louder sounds. Defaults to 1.0.
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are
+            less loud, values higher than 1 in louder sounds. Defaults to 1.0.
         oscillator
-            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
+            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or
+            'sawtooth'.
         onramp_ms
             The sound's 'attack' in milliseconds.
         offramp_ms
@@ -1158,12 +1179,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
         ramp_type
             The type of on- and offramp_ms used. Either 'linear' (the default) or 'raised-cosine'.
         metronome
-            If ``True``, a metronome sound is added to the samples. It uses :py:attr:`Melody.beat_ms` as the inter-onset
-            interval.
+            If ``True``, a metronome sound is added to the samples. It uses
+            :py:attr:`Melody.beat_ms` as the inter-onset interval.
         metronome_amplitude
             If desired, when synthesizing the object with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value larger than 1 means
-            a louder metronome sound.
+            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value
+            larger than 1 means a louder metronome sound.
 
 
         Examples
@@ -1208,31 +1229,34 @@ class Melody(thebeat.core.sequence.BaseSequence):
         metronome_amplitude: float = 1.0,
     ):
         """
-        Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
-        first synthesize the sound, and subsequently have it played via the internally used :func:`sounddevice.play`.
+        Since :py:class:`Melody` objects do not contain any sound information, you can use this
+        method to first synthesize the sound, and subsequently have it played via the internally
+        used :func:`sounddevice.play`.
 
         Note
         ----
         Theoretically, four quarternotes played after each other constitute one long sound. This
         behaviour is the default here. However, in many cases it will probably be best to supply
-        ``event_durations``, which means the events are played in the rhythm of the melody (i.e. according
-        to the inter-onset intervals of the rhythm), but using a supplied duration.
+        ``event_durations``, which means the events are played in the rhythm of the melody (i.e.
+        according to the inter-onset intervals of the rhythm), but using a supplied duration.
 
         Parameters
         ----------
         event_durations_ms
-            Can be supplied as a single integer, which means that duration will be used for all events
-            in the melody, or as an array of list containing individual durations for each event. That of course
-            requires an array or list with a size equal to the number of notes in the melody.
+            Can be supplied as a single integer, which means that duration will be used for all
+            events in the melody, or as an array of list containing individual durations for each
+            event. That of course requires an array or list with a size equal to the number of
+            notes in the melody.
         fs
             The desired sampling frequency in hertz.
         n_channels
             The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
-            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
-            values higher than 1 in louder sounds. Defaults to 1.0.
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are
+            less loud, values higher than 1 in louder sounds. Defaults to 1.0.
         oscillator
-            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
+            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or
+            'sawtooth'.
         onramp_ms
             The sound's 'attack' in milliseconds.
         offramp_ms
@@ -1240,12 +1264,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
         metronome
-            If ``True``, a metronome sound is added for playback. It uses :py:attr:`Melody.beat_ms` as the inter-onset
-            interval.
+            If ``True``, a metronome sound is added for playback. It uses :py:attr:`Melody.beat_ms`
+            as the inter-onset interval.
         metronome_amplitude
             If desired, when writing the object with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value larger than 1 means
-            a louder metronome sound.
+            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value
+            larger than 1 means a louder metronome sound.
 
 
         Examples
@@ -1288,37 +1312,39 @@ class Melody(thebeat.core.sequence.BaseSequence):
         metronome: bool = False,
         metronome_amplitude: float = 1.0,
     ):
-        """Since :py:class:`Melody` objects do not contain any sound information, you can use this method to
-        first synthesize the sound, and subsequently write it to disk as a wave file.
+        """Since :py:class:`Melody` objects do not contain any sound information, you can use this
+        method to first synthesize the sound, and subsequently write it to disk as a wave file.
 
         Note
         ----
         Theoretically, four quarternotes played after each other constitute one long sound. This
         behaviour is the default here. However, in many cases it will probably be best to supply
-        ``event_durations``, which means the events are played in the rhythm of the melody (i.e. according
-        to the inter-onset intervals of the rhythm), but using a supplied duration.
+        ``event_durations``, which means the events are played in the rhythm of the melody (i.e.
+        according to the inter-onset intervals of the rhythm), but using a supplied duration.
 
         Parameters
         ----------
         filepath
-            The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a string.
-            Of course be aware of OS-specific filepath conventions.
+            The output destination for the .wav file. Either pass e.g. a ``Path`` object, or a
+            string. Of course be aware of OS-specific filepath conventions.
         event_durations_ms
-            Can be supplied as a single integer, which means that duration will be used for all events
-            in the melody, or as an array of list containing individual durations for each event. That of course
-            requires an array or list with a size equal to the number of notes in the melody.
+            Can be supplied as a single integer, which means that duration will be used for all
+            events in the melody, or as an array of list containing individual durations for each
+            event. That of course requires an array or list with a size equal to the number of notes
+            in the melody.
         fs
             The desired sampling frequency in hertz.
         n_channels
             The desired number of channels. Can be 1 (mono) or 2 (stereo).
         amplitude
-            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are less loud,
-            values higher than 1 in louder sounds. Defaults to 1.0.
+            Factor with which sound is amplified. Values between 0 and 1 result in sounds that are
+            less loud, values higher than 1 in louder sounds. Defaults to 1.0.
         dtype
             The desired data type for the output file. Defaults to ``np.int16``.
             This means that the output file will be 16-bit PCM.
         oscillator
-            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or 'sawtooth'.
+            The oscillator used for generating the sound. Either 'sine' (the default), 'square' or
+            'sawtooth'.
         onramp_ms
             The sound's 'attack' in milliseconds.
         offramp_ms
@@ -1326,12 +1352,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
         ramp_type
             The type of on- and offramp used. Either 'linear' (the default) or 'raised-cosine'.
         metronome
-            If ``True``, a metronome sound is added to the output file. It uses :py:attr:`Melody.beat_ms` as the inter-onset
-            interval.
+            If ``True``, a metronome sound is added to the output file. It uses
+            :py:attr:`Melody.beat_ms` as the inter-onset interval.
         metronome_amplitude
             If desired, when playing the object with a metronome sound you can adjust the
-            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value larger than 1 means
-            a louder metronome sound.
+            metronome amplitude. A value between 0 and 1 means a less loud metronome, a value
+            larger than 1 means a louder metronome sound.
 
         Examples
         --------
@@ -1398,7 +1424,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         else:
             samples = np.zeros((n_frames, 2), dtype=np.float64)
 
-        # Set event durations to the IOIs if no event durations were supplied (i.e. use full length notes)
+        # Set event durations to the IOIs if no event durations were supplied (i.e. use full length
+        # notes)
         if event_durations_ms is None:
             event_durations = self.iois
         # If a single integer is passed, use that value for all the events
@@ -1407,8 +1434,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         else:
             event_durations = event_durations_ms
 
-        # Loop over the events, synthesize event sound, and add all of them to the samples array at the appropriate
-        # times.
+        # Loop over the events, synthesize event sound, and add all of them to the samples array at
+        # the appropriate times.
         for event, duration_ms in zip(self.events, event_durations):
             if event.is_played is True:
                 event_samples = thebeat.helpers.synthesize_sound(
@@ -1450,8 +1477,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return samples
 
     def _get_lp_from_events(self, key: str, time_signature: tuple):
-        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
-        # This because abjad 3.13 etc require Python 3.10.
+        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a
+        # workaround for compatability with all versions. This because abjad 3.13 etc require
+        # Python 3.10.
         try:
             make_notes = abjad.makers.make_notes
         except AttributeError:
