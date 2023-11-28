@@ -26,6 +26,7 @@ import tempfile
 import warnings
 
 import matplotlib.image as mpimg
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
@@ -384,6 +385,7 @@ def plot_single_sequence(
     title: str | None = None,
     x_axis_label: str = "Time",
     linewidths: list[float] | npt.NDArray[float] | float | None = None,
+    color: str | None = None,
     figsize: tuple | None = None,
     dpi: int = 100,
     suppress_display: bool = False,
@@ -404,6 +406,8 @@ def plot_single_sequence(
         The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
         Can be a single value that will be used for each onset, or a list or array of values
         (i.e with a value for each respective onsets).
+    color
+        The color of the bars. Defaults to the default of the chosen style.
     style
         Matplotlib style to use for the plot. Defaults to 'seaborn'.
         See `matplotlib style sheets reference
@@ -432,10 +436,14 @@ def plot_single_sequence(
     # Make onsets array
     onsets = np.array(onsets)
 
-    # Get matplotlib default size
+    # Get matplotlib current default size
     if not figsize:
         cur_size = plt.rcParams["figure.figsize"]
         figsize = (cur_size[0], cur_size[1] / 2)
+
+    # Get metplotlib current default patch colour
+    if not color:
+        color = plt.rcParams["lines.color"]
 
     # Make plot
     with plt.style.context(style):
@@ -448,13 +456,19 @@ def plot_single_sequence(
             fig = ax.get_figure()
             ax_provided = True
 
-        ax.axes.set_xlabel(x_axis_label)
+        # Set x and y limits
         ax.set_ylim(0, 1)
         left_x_lim = min(onsets[0], 0)
         right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
         ax.set_xlim(left_x_lim, right_x_lim)
-        ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
-        ax.vlines(onsets, ymin=0, ymax=1, linewidth=0.5)
+
+        # Plot onsets as rectangles
+        for onset, linewidth in zip(onsets, linewidths):
+            rect = mpatches.Rectangle(xy=(onset, 0), height=1, width=linewidth, color=color, fill=True)
+            ax.add_patch(rect)
+
+        # Set labels etc.
+        ax.axes.set_xlabel(x_axis_label)
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
