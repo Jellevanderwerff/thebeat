@@ -40,13 +40,6 @@ missing_values = "thebeat: There were missing values in the passed data."
 
 normalization = "thebeat: Sound was normalized to avoid distortion. If undesirable, change the amplitude of the sounds."
 
-phases_t_at_zero = (
-    "thebeat: The first onset of the test sequence was at t=0.\nThis would result in a phase difference "
-    "that is always 0, which is not very informative.\nTherefore, the first phase difference was discarded.\n"
-    "If you want the first onset at a different time than zero, use the Sequence.from_onsets() method to "
-    "create the Sequence object."
-)
-
 duplicate_names_sequence_plot = (
     "thebeat: Two or more sequences have the same name.\n"
     "Numbers were added to the y-axis labels to distinguish between them.\n"

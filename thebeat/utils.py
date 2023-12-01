@@ -17,13 +17,10 @@
 
 from __future__ import annotations
 
-import warnings
-
 import numpy as np
 import pandas as pd
 
 import thebeat.core
-from thebeat._warnings import phases_t_at_zero
 
 try:
     import abjad
@@ -183,20 +180,16 @@ def get_major_scale(tonic: str, octave: int) -> list:
 def get_phase_differences(
     test_sequence: thebeat.core.Sequence,
     reference_sequence: thebeat.core.Sequence | float,
-    circular_unit="degrees",
-):
-    # todo Verify this method of calculating phase differences. I'm not quite sure about using the period of the
-    #  test_sequence instead of the reference_sequence
-
+    reference_ioi_lag: str | int = "previous",
+    unit="degrees",
+) -> np.ndarray:
     """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``. If the second argument is a
     number, ``test_sequence`` will be compared with an isochronous sequence with a constant inter-onset interval (IOI)
     of that number and the same length as the test sequence.
 
-    Caution
+    Example
     -------
-    The phase differences are calculated for each onset of ``test_sequence`` compared to the onset with the same
-    index of ``reference_sequence``. Missing values are discarded. In addition, if the first onset of the test sequence
-    is at t = 0, that phase difference is also discarded.
+
 
     Parameters
     ----------
@@ -207,92 +200,103 @@ def get_phase_differences(
         The reference sequence. Can be a Sequence object, a list or array of Sequence objects, or a number.
         In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
         number and the same length as ``sequence_1``.
+    reference_ioi_lag
+        The lag of the reference IOI. Can be "containing", "previous", or an integer indicating the lag.
+        If "containing", the difference between an onset in the test sequence and its corresponding, closest onset
+        in the reference sequence will be divided by the IOI that 'contains' the onset. For example, if the
+        test onset is at t=1500, and there is a reference IOI from t=1000 to t=2000,
+        that IOI is used.
+        If "previous", the IOI of the reference sequence that precedes the test onset will be used. This is the same
+        as using a lag of -1. Positive values are also possible.
+        "Previous" is the default, and is the same as using a lag of 0.
     circular_unit
         The unit of the circular unit. Can be "degrees" or "radians".
 
+    Returns
+    -------
+    phase_diffs
+        The phase differences between the test sequence and the reference sequence. The phase differences are
+        expressed in the circular unit specified by ``circular_unit``.
+
     """
 
-    # Input validation
-    if not isinstance(test_sequence, thebeat.core.Sequence):
-        raise TypeError("Please provide a Sequence object as the left argument.")
-    elif isinstance(reference_sequence, (int, float)):
-        reference_sequence = thebeat.core.Sequence.generate_isochronous(
-            n_events=len(test_sequence.onsets), ioi=reference_sequence
-        )
-    elif isinstance(reference_sequence, thebeat.core.Sequence):
-        pass
+    # Input validation and processing
+    # test_sequence
+    if isinstance(test_sequence, (int, float, list, np.ndarray)):
+        test_onsets = np.array(test_sequence)
+    elif isinstance(test_sequence, thebeat.core.Sequence):
+        test_onsets = test_sequence.onsets
     else:
         raise TypeError(
-            "Please provide a Sequence object as the left-hand argument, and a Sequence object or a "
-            "number as the right-hand argument."
+            "test_sequence must be a Sequence object, a list or array of onsets, or a single number."
         )
 
-    # Get onsets once
-    test_onsets = test_sequence.onsets
-    ref_onsets = reference_sequence.onsets
-
-    # If the first onset is at t=0, raise warning and remove it
-    if test_sequence._first_onset == 0:
-        warnings.warn(phases_t_at_zero)
-        test_onsets = test_onsets[1:]
-        ref_onsets = ref_onsets[1:]
-        start_at_tzero = False
+    # reference_sequence
+    if isinstance(reference_sequence, thebeat.Sequence):
+        reference_onsets = reference_sequence.onsets
+        reference_iois = reference_sequence.iois
     else:
-        start_at_tzero = True
+        raise TypeError("reference_sequence must be a Sequence object")
 
-    # Check length sameness
-    if not len(test_onsets) == len(ref_onsets):
+    # output unit
+    if unit not in ("degrees", "radians", "ratio"):
+        raise ValueError("unit must be either 'degrees', 'radians' or 'ratio'")
+
+    # reference_ioi
+    if reference_ioi_lag == "containing":
+        reference_ioi_lag = 0
+    elif reference_ioi_lag == "previous":
+        reference_ioi_lag = -1
+    elif isinstance(reference_ioi_lag, int):
+        reference_ioi_lag = reference_ioi_lag
+    else:
         raise ValueError(
-            "This function only works if the number of events in the two sequences are equal. For "
-            "missing data, insert np.nan values in the sequence for the missing data."
+            "reference_ioi_lag must be either 'containing', 'previous' or an integer indicating the lag."
         )
 
-    # Output array
     phase_diffs = np.array([])
 
     # Calculate phase differences
-    for i, test_onset in enumerate(test_onsets):
-        # For the first event, we use the period of the IOI that follows the event, but only if it was the
-        # first onset
-        if i == 0 and start_at_tzero is True:
-            period_next = test_sequence.iois[0]
-            period_prev = period_next
-        # For the last event, we use the period of the IOI that precedes the event
-        elif i == len(test_onsets) - 1:
-            period_prev = test_sequence.iois[i - 1]
-            period_next = period_prev
-        # For all other events, we need both the previous and the next IOI
-        else:
-            period_prev = test_sequence.iois[i - 1]
-            period_next = test_sequence.iois[i]
-
-        if test_onset > ref_onsets[i]:
-            phase_diff = (test_onset - ref_onsets[i]) / period_next
-        elif test_onset < ref_onsets[i]:
-            phase_diff = (test_onset - ref_onsets[i]) / period_prev
-        elif test_onset == ref_onsets[i]:
-            phase_diff = 0.0
-        elif np.isnan(test_onset) or np.isnan(ref_onsets[i]):
+    for test_onset in test_onsets:
+        """
+        # Check if onset is not smaller than the first onset of the reference sequence
+        if test_onset < reference_onsets[0]:
             phase_diff = np.nan
-            warnings.warn(thebeat._warnings.missing_values)
-        else:
-            raise ValueError(
-                "Something went wrong during the calculation of the phase differences."
-                "Please check your data."
-            )
+        """
+        closest_onset_index = np.argmin(np.abs(reference_onsets - test_onset))
+        closest_onset = reference_onsets[closest_onset_index]
 
+        phase_diff = None
+
+        # Calculate non-absolute difference
+        diff = test_onset - closest_onset
+
+        if diff < 0:
+            relevant_ioi_index = closest_onset_index - 1 + reference_ioi_lag
+        else:
+            relevant_ioi_index = closest_onset_index + reference_ioi_lag
+
+        # Check if that IOI exists, if it doesn't set phase_diff to nan
+        if relevant_ioi_index is not None and (
+            relevant_ioi_index < 0 or relevant_ioi_index >= len(reference_iois)
+        ):
+            phase_diff = np.nan
+        elif relevant_ioi_index is not None:
+            reference_ioi = reference_iois[relevant_ioi_index]
+
+        # Calculate phase_diff if it does not exist yet
+        if phase_diff is None:
+            phase_diff = diff / reference_ioi
+
+        # Append to array
         phase_diffs = np.append(phase_diffs, phase_diff)
 
-    # Convert to degrees
-    phase_diff_degrees = (phase_diffs * 360) % 360
+    if unit == "degrees":
+        return phase_diffs * 360
+    elif unit == "radians":
+        return phase_diffs * 2 * np.pi
 
-    # Return
-    if circular_unit == "degrees":
-        return phase_diff_degrees
-    elif circular_unit == "radians":
-        return np.deg2rad(phase_diff_degrees)
-    else:
-        raise ValueError("Please provide a valid circular unit. Either 'degrees' or 'radians'.")
+    return phase_diffs
 
 
 def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
