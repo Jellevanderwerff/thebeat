@@ -73,3 +73,6 @@ autodoc_default_flags = ['members']
 
 # Type hints settings
 typehints_defaults = 'comma'
+
+# suppress warnings
+suppress_warnings = ['autosectionlabel.*']
