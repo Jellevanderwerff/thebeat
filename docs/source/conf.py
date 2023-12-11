@@ -44,7 +44,6 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
 
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
-    "extra_navbar": "<p>Package developed by the <a href='https://www.mpi.nl/department/comparative-bioacoustics/20'>Comparative Bioacoustics</a> group.</p>",
     "show_toc_level": 3,
     "collapse_navigation": True,
     'logo_only': True
