@@ -92,19 +92,10 @@ class BaseSequence:
 
     @property
     def iois(self) -> np.ndarray:
-        """The inter-onset intervals (IOIs) of the Sequence object. These are the intervals in
-        milliseconds between the onset of an event, and the onset of the next event.
-        This is the most important attribute of the Sequence class and is used throughout.
-
-        This getter returns a copy of the IOIs instead of the actual attribute.
-        """
-
         return np.array(self._iois, dtype=np.float64, copy=True)
 
     @iois.setter
     def iois(self, values: npt.ArrayLike[float]):
-        """IOI setter. Checks against negative (or zero) IOIs."""
-
         # We always want a NumPy array
         iois = np.array(values, dtype=np.float64, copy=True)
 
