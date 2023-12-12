@@ -5,8 +5,8 @@ Drop *thebeat*
 *thebeat* is a Python package for working with temporal sequences and rhythms in the behavioural and cognitive sciences.
 It provides functionality for creating stimuli, and for visualizing and analyzing temporal data.
 
-*thebeat* will save you time when creating experiments or analyzing data.
-It is a collection of widely accepted methods for use in timing research.
+*thebeat* is a collection of widely accepted methods for use in timing research,
+and will save you time when creating experiments or analyzing data.
 *thebeat* is an open-source, on-going, and collaborative project,
 integrating easily with the existing Python ecosystem, and with your own scripts.
 The package was specifically designed to be useful for both skilled and novice programmers.
