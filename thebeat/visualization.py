@@ -491,6 +491,7 @@ def plot_multiple_sequences(
     figsize: tuple | None = None,
     suppress_display: bool = False,
     dpi: int = 100,
+    cmap: str = "Dark2",
     colors: list | np.ndarray = None,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -528,8 +529,11 @@ def plot_multiple_sequences(
     dpi
         The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
         :func:`matplotlib.pyplot.figure`.
+    cmap
+        The colormap to use for the plot. See
+        `matplotlib colormaps reference <https://matplotlib.org/stable/gallery/color/colormap_reference.html>`_
     colors
-        A list or array of colors to use for the plot. If not provided, the default matplotlib colors are used.
+        A list or array of colors to use for the plot. If not provided, the colors from the cmap are used.
         Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
     ax
         If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
@@ -563,22 +567,22 @@ def plot_multiple_sequences(
     # Make names for the bars
     n_seqs = len(sequences)
     if y_axis_labels is None:  # No names are provided
-        if all(sequence.name for sequence in sequences):  # All sequences have names
+        if all(isinstance(sequence.name, str) for sequence in sequences):  # All sequences have names
             y_axis_labels = [sequence.name for sequence in sequences]
-            if not list(set(y_axis_labels)) == y_axis_labels:  # Check for duplicates in names
+            if len(set(y_axis_labels)) != len(y_axis_labels):  # Check for duplicates in names
                 warnings.warn(thebeat._warnings.duplicate_names_sequence_plot)
                 # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
-                new_y_axis_labels = []
-                for i, name in enumerate(y_axis_labels):
-                    if y_axis_labels.count(name) > 1:
-                        new_y_axis_labels.append(name + f"-{i + 1}")
-                y_axis_labels = new_y_axis_labels
+                for label in y_axis_labels:
+                    if y_axis_labels.count(label) > 1:
+                        labels_indices = [i for i, x in enumerate(y_axis_labels) if x == label]
+                        for j, i in enumerate(labels_indices):
+                            y_axis_labels[i] = y_axis_labels[i] + "-" + str(j + 1)
         else:
             y_axis_labels = [str(i) for i in range(1, n_seqs + 1)]
-    elif len(y_axis_labels) != len(sequences):
+    elif len(y_axis_labels) != n_seqs:
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
-    # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
+    # Make line widths (these are either the event durations in case SoundSequences were passed, in case of Sequences these
     # default to 1/10th of the smallest IOI)
     if linewidths is None:
         if isinstance(sequences[0], thebeat.core.SoundSequence):
@@ -624,20 +628,37 @@ def plot_multiple_sequences(
 
         # Colors
         if colors:
-            if len(colors) != len(sequences):
-                raise ValueError("Please provide an equal number of colors as sequences.")
+            if isinstance(colors, (list, np.ndarray)):
+                if len(colors) != n_seqs:
+                    raise ValueError(
+                        "Please provide an equal number of colors as sequences. "
+                        "You can also provide a single color, which will be used for all sequences."
+                    )
+            elif isinstance(colors, str):
+                colors = [colors] * n_seqs
         else:
-            colors = [None] * len(sequences)
+            # Sample as many colours from the currently active cmap as there are sequences
+            cmap = plt.cm.get_cmap(cmap, n_seqs)
+            colors = [cmap(i) for i in range(n_seqs)]
+
+        # First create a barh plot with no bars, just to get the y locations and bar heights
+        ax.barh(
+            y=y_axis_labels,
+            width=1
+        )
 
         # Get y locations for sequences
-        y_locations = np.linspace(0, 1, n_seqs * 2)[0::2]
+        y_locations = [p.get_y() for p in ax.patches]
 
-        # Calculate height of bars
-        bar_height = 1 / (n_seqs * 2 - 1)
+        # Get height of bars
+        bar_height = ax.patches[0].get_height()
+
+        # Remove patches
+        [p.remove() for p in ax.patches]
 
         # Loop over sequences and plot bars
         for onsets, linewidths, y_location, color in zip(
-            onsets_nested, linewidths_nested, y_locations, colors
+            reversed(onsets_nested), reversed(linewidths_nested), reversed(y_locations), reversed(colors)  # reversed so that the first sequence is plotted up
         ):
             # Loop over onsets
             for onset, linewidth in zip(onsets, linewidths):
@@ -649,25 +670,6 @@ def plot_multiple_sequences(
                     fill=True,
                 )
                 ax.add_patch(rect)
-                print(
-                    f"Placed bar at x={onset}, y={y_location} with height {bar_height} and width {linewidth}."
-                )
-
-        # Get duration of longest sequence
-        onsets_flat = [onset for onset_list in onsets_nested for onset in onset_list]
-        linewidths_flat = [
-            linewidth for linewidth_list in linewidths_nested for linewidth in linewidth_list
-        ]
-        smallest_onset = min(onsets_flat)
-        largest_onset = max(onsets_flat)
-        largest_onset_index = np.argmax(onsets_flat)
-
-        # Set xlim
-        ax.set_xlim(min(0, smallest_onset), largest_onset + linewidths_flat[largest_onset_index])
-
-        ax.set_yticks(y_locations + bar_height / 2)
-        ax.set_yticklabels(y_axis_labels)
-        ax.axes.yaxis.set_visible(False)
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:
