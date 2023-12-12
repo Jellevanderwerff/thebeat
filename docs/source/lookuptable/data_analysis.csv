@@ -1,0 +1,21 @@
+Keyword,Class,"Function, method, attribute",Example
+Autocorrelations DataFrame,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.acf_df`,:ref:`Beat-finding using autocorrelations`
+Autocorrelations values,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.acf_values`,:ref:`Beat-finding using autocorrelations`
+Coefficient of variation,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_cov`,
+Cross-correlations DataFrame,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ccf_df`,
+Cross-correlations values,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ccf_values`,
+Edit distance,:py:class:`~thebeat.music.Rhythm`,:py:func:`~thebeat.stats.edit_distance_rhythm`,
+Edit distance,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.edit_distance_sequence`,
+Entropy,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_rhythmic_entropy`,
+Get IOIs,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.iois`,
+Get IOIs as DataFrame,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.utils.get_ioi_df`,:ref:`Exporting a DataFrame from a list of sequences`
+Get duration,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.duration`,
+Get duration (ms),:py:class:`~thebeat.core.SoundSequence`,:py:attr:`~thebeat.core.SoundSequence.get_duration_ms`,
+Get duration (s),:py:class:`~thebeat.core.SoundSequence`,:py:attr:`~thebeat.core.SoundSequence.get_duration_s`,
+Get integer ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
+Get interval ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
+Get onsets,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.onsets`,
+KS-test,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ks_test`,
+Round off onsets,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.round_onsets`,:ref:`Frame rounding`
+nPVI,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_npvi`,
+ugof,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_ugof_isochronous`,

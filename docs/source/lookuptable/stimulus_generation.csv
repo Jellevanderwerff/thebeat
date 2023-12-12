@@ -1,0 +1,47 @@
+Keyword,Class,"Function, method, attribute",Example
+Accelerando,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.change_tempo_linearly`,
+Add Gaussian noise,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.add_noise_gaussian`,
+Change amplitude,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.change_amplitude`,:ref:`Isochronous sequences with target speech stimulus`
+Change tempo,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.change_tempo`,
+Concatenate,:py:class:`~thebeat.core.Sequence`,'+' operator or :py:func:`~thebeat.utils.concatenate_sequences`,":ref:`Merging, concatenating, and repeating objects`"
+Concatenate,:py:class:`~thebeat.core.SoundSequence`,'+' operator or :py:func:`~thebeat.utils.concatenate_soundsequences`,":ref:`Merging, concatenating, and repeating objects`"
+Concatenate,:py:class:`~thebeat.core.SoundStimulus`,'+' operator or :py:func:`~thebeat.utils.concatenate_soundstimuli`,":ref:`Merging, concatenating, and repeating objects`"
+Concatenate,:py:class:`~thebeat.music.Rhythm`,'+' operator,":ref:`Merging, concatenating, and repeating objects`"
+Concatenate,:py:class:`~thebeat.music.Melody`,'+' operator,":ref:`Merging, concatenating, and repeating objects`"
+Create from 1's and 0's,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.from_binary_string`,
+Create from IOIs,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.__init__`,:ref:`Getting started`
+Create from Parselmouth object,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.from_parselmouth`,
+Create from fractions,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhythm.from_fractions`,
+Create from integer ratios,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.from_integer_ratios`,":ref:`Merging, concatenating, and repeating objects`"
+Create from integer ratios,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhythm.from_integer_ratios`,:ref:`Uneven rhythms`
+Create from note,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.from_note`,
+Create from note values,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhythm.from_note_values`,:ref:`Uneven rhythms`
+Create from onsets,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.from_onsets`,:ref:`From a list of onsets`
+Create from sound samples,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.__init__`,
+Create from txt file,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.from_txt`,
+Create from wav file,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.from_wav`,:ref:`Isochronous sequences with target speech stimulus`
+Create trial,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.__init__`,:ref:`Getting started`
+Generate isochronous,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.generate_isochronous`,:ref:`Isochronous sequences with target speech stimulus`
+Generate moraic seq,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.linguistic.generate_moraic_sequence`,
+Generate random,:py:class:`~thebeat.music.Melody`,:py:meth:`~thebeat.music.Melody.generate_random_melody`,
+Generate random,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhythm.generate_random_rhythm`,
+Generate random (Poisson dist),:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.generate_random_poisson`,
+Generate random (exponential dist),:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.generate_random_exponential`,
+Generate random (normal dist),:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.generate_random_normal`,:ref:`Beat-finding using autocorrelations`
+Generate random (uniform dist),:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.generate_random_uniform`,:ref:`Plotting multiple sequences`
+Generate sound,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.generate`,:ref:`Getting started`
+Generate stress-timed seq,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.linguistic.generate_stress_timed_sequence`,
+Generate white noise,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.generate_white_noise`,
+Merge (overlay),:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.merge` :py:meth:`~thebeat.utils.merge_sequences`,":ref:`Merging, concatenating, and repeating objects`"
+Merge (overlay),:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.merge` :py:meth:`~thebeat.utils.merge_soundsequences`,":ref:`Merging, concatenating, and repeating objects`"
+Merge (overlay),:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.merge` :py:meth:`thebeat.utils.merge_soundstimuli`,":ref:`Merging, concatenating, and repeating objects`"
+Play sound,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.play`,:ref:`Getting started`
+Play sound,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.play`,:ref:`Getting started`
+Play sound,:py:class:`~thebeat.music.Melody`,:py:meth:`~thebeat.music.Melody.synthesize_and_play`,
+Quantize,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.quantize_iois`,
+Ritardando,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.change_tempo_linearly`,
+Stop playing,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.stop`,
+Stop playing,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.stop`,:ref:`Getting started`
+Write to wav,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.write_wav`,:ref:`Getting started`
+Write to wav,:py:class:`~thebeat.music.Melody`,:py:meth:`~thebeat.music.Melody.synthesize_and_write`,
+Write wav with extra channels,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.write_multichannel_wav`,

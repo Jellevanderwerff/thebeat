@@ -44,6 +44,7 @@ intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
 
 html_theme = 'sphinx_book_theme'
 html_theme_options = {
+    "extra_navbar": "",
     "show_toc_level": 3,
     "collapse_navigation": True,
     'logo_only': True

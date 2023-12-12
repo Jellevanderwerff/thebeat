@@ -1,0 +1,16 @@
+Keyword,Class,"Function, method, attribute",Example
+Autocorrelations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.plot_acf`,:ref:`Beat-finding using autocorrelations`
+Cross-correlations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.plot_ccf`,
+Event plot,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.plot_sequence`,:ref:`Plotting a single sequence`
+Event plot,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.plot_sequence`,:ref:`Plotting a single sequence`
+Event plot (multiple seqs),:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_multiple_sequences`,:ref:`Plotting multiple sequences`
+Fourier transform,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.fft_plot`,:ref:`Beat-finding using Fourier transform`
+Interval ratios (density),:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_interval_ratios_density`,
+Interval ratios (histogram),:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_interval_ratios_histogram`,
+Musical notation,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhythm.plot_rhythm`,:ref:`Uneven rhythms`
+Musical notation,:py:class:`~thebeat.music.Melody`,:py:meth:`~thebeat.music.Melody.plot_melody`,
+Phase differences,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_phase_differences`,:ref:`Plotting phase differences (circular plots)`
+Phase space plot,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.phase_space_plot`,
+Recurrence plot,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.recurrence_plot`,:ref:`Saving and manipulating plots`
+Waveform,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.plot_waveform`,:ref:`Getting started`
+Waveform,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.plot_waveform`,:ref:`Roving oddball`

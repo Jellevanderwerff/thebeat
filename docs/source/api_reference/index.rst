@@ -1,10 +1,11 @@
-Package contents
-================
+=============
+API reference
+=============
 
-This what the package contains. Some more informative info here.
+Here you can find a complete overview of all the different classes, methods, and functions included in *thebeat*.
 
 .. toctree::
-    :maxdepth: 5
+    :maxdepth: 1
 
     Core classes<core.rst>
     Extras<extras.rst>

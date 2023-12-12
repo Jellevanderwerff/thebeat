@@ -1,5 +1,6 @@
-Most important classes
-======================
+========================
+*thebeat*'s core classes
+========================
 
 There are three classes that make up the core of this package:
 
@@ -14,7 +15,7 @@ In principle it is irrelevant, except for understanding the internal workings of
 
 .. toctree::
     :hidden:
-    :maxdepth: 3
+    :maxdepth: 5
 
     Sequence class<core/Sequence.rst>
     SoundStimulus class<core/SoundStimulus.rst>
