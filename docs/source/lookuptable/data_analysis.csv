@@ -10,8 +10,8 @@ Entropy,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_rhythmic
 Get IOIs,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.iois`,
 Get IOIs as DataFrame,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.utils.get_ioi_df`,:ref:`Exporting a DataFrame from a list of sequences`
 Get duration,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.duration`,
-Get duration (ms),:py:class:`~thebeat.core.SoundSequence`,:py:attr:`~thebeat.core.SoundSequence.get_duration_ms`,
-Get duration (s),:py:class:`~thebeat.core.SoundSequence`,:py:attr:`~thebeat.core.SoundSequence.get_duration_s`,
+Get duration (ms),:py:class:`~thebeat.core.SoundStimulus`,:py:attr:`~thebeat.core.SoundStimulus.duration_ms`,
+Get duration (s),:py:class:`~thebeat.core.SoundStimulus`,:py:attr:`~thebeat.core.SoundStimulus.duration_s`,
 Get integer ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
 Get interval ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
 Get onsets,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.onsets`,

@@ -1,6 +1,6 @@
 Keyword,Class,"Function, method, attribute",Example
-Autocorrelations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.plot_acf`,:ref:`Beat-finding using autocorrelations`
-Cross-correlations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.plot_ccf`,
+Autocorrelations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.acf_plot`,:ref:`Beat-finding using autocorrelations`
+Cross-correlations,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ccf_plot`,
 Event plot,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.plot_sequence`,:ref:`Plotting a single sequence`
 Event plot,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.plot_sequence`,:ref:`Plotting a single sequence`
 Event plot (multiple seqs),:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_multiple_sequences`,:ref:`Plotting multiple sequences`
