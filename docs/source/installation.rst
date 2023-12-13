@@ -20,7 +20,7 @@ Installation
 Installing through PyPI (recommended)
 *************************************
 
-*thebeat* is available through PyPI, and can be installed using:
+*thebeat* is available through PyPI, and can be installed by typing the following in a command window or terminal:
 
 .. code-block:: console
 
@@ -42,6 +42,14 @@ You can now import *thebeat* in your preferred editor using:
 
     import thebeat
 
+
+*********************************
+Try *thebeat* directly via Binder
+*********************************
+
+If you don't use a lot of Python, and the above instructions are a bit too much,
+you can try *thebeat* directly in your browser via Binder.
+Follow `this link<https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb>`_ to do so.
 
 ******************************************
 Installing development version from GitHub
