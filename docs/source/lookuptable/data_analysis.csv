@@ -13,7 +13,7 @@ Get duration,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence
 Get duration (ms),:py:class:`~thebeat.core.SoundStimulus`,:py:attr:`~thebeat.core.SoundStimulus.duration_ms`,
 Get duration (s),:py:class:`~thebeat.core.SoundStimulus`,:py:attr:`~thebeat.core.SoundStimulus.duration_s`,
 Get integer ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
-Get interval ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.integer_ratios`,
+Get interval ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.interval_ratios_from_dyads`,
 Get onsets,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.onsets`,
 KS-test,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ks_test`,
 Round off onsets,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.round_onsets`,:ref:`Frame rounding`

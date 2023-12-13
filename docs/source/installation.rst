@@ -49,7 +49,7 @@ Try *thebeat* directly via Binder
 
 If you don't use a lot of Python, and the above instructions are a bit too much,
 you can try *thebeat* directly in your browser via Binder.
-Follow `this link<https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb>`_ to do so.
+Follow `this link <https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb>`_ to do so.
 
 ******************************************
 Installing development version from GitHub
