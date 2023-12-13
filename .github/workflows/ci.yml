@@ -54,6 +54,7 @@ jobs:
         run: |
           pip install -r tests/requirements.txt
           pip install pytest-github-actions-annotate-failures
+          pip install pytest-mpl
 
       - name: Run tests with pytest
         run: |
@@ -62,6 +63,11 @@ jobs:
       - name: Run doctests with pytest
         run: |
           pytest --doctest-modules thebeat/
+
+      - name: Run doctests with pytest-mpl
+        if: contains(matrix.os, 'macos')
+        run: |
+          pytest --mpl
 
   docs:
     name: Documentation
