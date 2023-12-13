@@ -491,7 +491,6 @@ def plot_multiple_sequences(
     figsize: tuple | None = None,
     suppress_display: bool = False,
     dpi: int = 100,
-    cmap: str = "Dark2",
     colors: list | np.ndarray = None,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -529,9 +528,6 @@ def plot_multiple_sequences(
     dpi
         The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
         :func:`matplotlib.pyplot.figure`.
-    cmap
-        The colormap to use for the plot. See
-        `matplotlib colormaps reference <https://matplotlib.org/stable/gallery/color/colormap_reference.html>`_
     colors
         A list or array of colors to use for the plot. If not provided, the colors from the cmap are used.
         Colors may be provided as strings (e.g. ``'red'``) or as RGB tuples (e.g. ``(1, 0, 0)``).
@@ -564,7 +560,7 @@ def plot_multiple_sequences(
         else:
             onsets_nested.append(np.array(seq))
 
-    # Make names for the bars
+    # Make y axis labels (categorical)
     n_seqs = len(sequences)
     if y_axis_labels is None:  # No names are provided
         if all(isinstance(sequence.name, str) for sequence in sequences):  # All sequences have names
@@ -582,8 +578,9 @@ def plot_multiple_sequences(
     elif len(y_axis_labels) != n_seqs:
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
-    # Make line widths (these are either the event durations in case SoundSequences were passed, in case of Sequences these
-    # default to 1/10th of the smallest IOI)
+    # Make line widths
+    # These are either the event durations in case SoundSequences were passed, in case of Sequences these
+    # default to 1/10th of the smallest IOI
     if linewidths is None:
         if isinstance(sequences[0], thebeat.core.SoundSequence):
             linewidths_nested = [trial.event_durations for trial in sequences]  # nested list
@@ -622,11 +619,7 @@ def plot_multiple_sequences(
             fig = ax.get_figure()
             ax_provided = True
 
-        # Labels
-        ax.axes.set_title(title)
-        ax.axes.set_xlabel(x_axis_label)
-
-        # Colors
+        # Make colors (we do this here because we need the Axes object to get the color cycle)
         if colors:
             if isinstance(colors, (list, np.ndarray)):
                 if len(colors) != n_seqs:
@@ -637,9 +630,12 @@ def plot_multiple_sequences(
             elif isinstance(colors, str):
                 colors = [colors] * n_seqs
         else:
-            # Sample as many colours from the currently active cmap as there are sequences
-            cmap = plt.cm.get_cmap(cmap, n_seqs)
-            colors = [cmap(i) for i in range(n_seqs)]
+            # Get colors from the axes color cycle generator
+            colors = [dict(next(ax._get_patches_for_fill.prop_cycler))['color'] for _ in range(n_seqs)]
+
+        # Labels
+        ax.set_title(title)
+        ax.set_xlabel(x_axis_label)
 
         # First create a barh plot with no bars, just to get the y locations and bar heights
         ax.barh(
@@ -656,7 +652,7 @@ def plot_multiple_sequences(
         # Remove patches
         [p.remove() for p in ax.patches]
 
-        # Loop over sequences and plot bars
+        # Loop over reversed sequences () and plot bars
         for onsets, linewidths, y_location, color in zip(
             reversed(onsets_nested), reversed(linewidths_nested), reversed(y_locations), reversed(colors)  # reversed so that the first sequence is plotted up
         ):
