@@ -763,32 +763,41 @@ statistic_sign=1)
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm, resolution: float):
+def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm, smallest_unit: float):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
     If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
     A sequence that is completely isochronous has a Shannon entropy of 0.
 
-    The resolution determines the size of the bins/the underlying grid. Sequence needs to be quantized to multiples
-    of 'resolution'. If needed, quantize the Sequence first, e.g. using 'Sequence.quantize_iois'.
+    The smallest_unit determines the size of the bins/the underlying grid.
+    In musical terms, this for instance represents a 1/16th note. Bins will then be made such
+    that each bin has a width of one 1/16th note. A 1/4th note will then be contained in one of those bins.
+    Sequence needs to be quantized to multiples
+    of 'smallest_unit'. If needed, quantize the Sequence first, e.g. using 'Sequence.quantize_iois'.
 
     Parameters
     ----------
     sequence
         The :py:class:`thebeat.core.Sequence` object for which Shannon entropy is calculated.
-    resolution
+    smallest_unit
         The size of the bins/the underlying grid.
+
+    Example
+    -------
+    >>> seq = thebeat.Sequence.generate_isochronous(n_events=10, ioi=500)
+    >>> print(get_rhythmic_entropy(seq, smallest_unit=250))
+    0.0
 
     """
 
-    if np.any(sequence.iois % resolution != 0):
+    if np.any(sequence.iois % smallest_unit != 0):
         raise ValueError(
-            f"Sequence needs to be quantized to multiples of {resolution}."
+            f"Sequence needs to be quantized to multiples of {smallest_unit}."
             "If needed, quantize the Sequence first e.g. using 'Sequence.quantize_iois'."
         )
 
     bins = (
-        np.arange(0, np.max(sequence.iois) + 2 * resolution, resolution) - resolution / 2
+        np.arange(0, np.max(sequence.iois) + 2 * smallest_unit, smallest_unit) - smallest_unit / 2
     )  # shift bins to center
     bin_counts = np.histogram(sequence.iois, bins=bins)[0]
 

@@ -78,7 +78,7 @@ def test_entropy():
     seq = Sequence([500, 502, 500, 500])
 
     with pytest.raises(ValueError):
-        print(get_rhythmic_entropy(seq, resolution=500))
+        print(get_rhythmic_entropy(seq, smallest_unit=500))
 
     seq.quantize_iois(500)
 
