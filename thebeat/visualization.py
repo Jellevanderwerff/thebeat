@@ -559,22 +559,22 @@ def plot_multiple_sequences(
         else:
             onsets.append(np.array(seq))
 
-    # Make names for the bars
+    # Make y axis labels (categorical)
     n_seqs = len(sequences)
     if y_axis_labels is None:  # No names are provided
-        if all(sequence.name for sequence in sequences):  # All sequences have names
+        if all(isinstance(sequence.name, str) for sequence in sequences):  # All sequences have names
             y_axis_labels = [sequence.name for sequence in sequences]
-            if not list(set(y_axis_labels)) == y_axis_labels:  # Check for duplicates in names
+            if len(set(y_axis_labels)) != len(y_axis_labels):  # Check for duplicates in names
                 warnings.warn(thebeat._warnings.duplicate_names_sequence_plot)
-            # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
-                new_y_axis_labels = []
-                for i, name in enumerate(y_axis_labels):
-                    if y_axis_labels.count(name) > 1:
-                        new_y_axis_labels.append(name + f"-{i + 1}")
-                y_axis_labels = new_y_axis_labels
+                # Add a number to the end of each duplicate name; this to avoid matplotlib merging the sequences in the plot
+                for label in y_axis_labels:
+                    if y_axis_labels.count(label) > 1:
+                        labels_indices = [i for i, x in enumerate(y_axis_labels) if x == label]
+                        for j, i in enumerate(labels_indices):
+                            y_axis_labels[i] = y_axis_labels[i] + "-" + str(j + 1)
         else:
             y_axis_labels = [str(i) for i in range(1, n_seqs + 1)]
-    elif len(y_axis_labels) != len(sequences):
+    elif len(y_axis_labels) != n_seqs:
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
     # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
