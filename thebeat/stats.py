@@ -30,7 +30,6 @@ from scipy.fft import rfft, rfftfreq
 
 import thebeat.core
 import thebeat.helpers
-from thebeat.helpers import sequence_to_binary
 
 
 def acf_df(
@@ -595,10 +594,69 @@ def edit_distance_sequence(
     return edit_distance
 
 
+def fft_values(
+    sequence: thebeat.core.Sequence,
+    unit_size: float,
+    x_min: float | None = None,
+    x_max: float | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Gets the x and y values for a Fourier transform of a :class:`~thebeat.core.Sequence` object.
+    The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
+    You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
+
+    The x values indicate the number of cycles per unit, and y values the absolute power.
+    The number of cycles per unit can be interpreted as the beat frequency. For instance, 2 cycles for a unit size of
+    1000 ms means a beat frequency of 2 Hz.
+
+    Parameters
+    ----------
+    sequence
+        The sequence.
+    unit_size
+        The size of the unit in which the sequence is measured. If the sequence is in milliseconds,
+        you probably want 1000. If the sequence is in seconds, you probably want 1.
+
+    Returns
+    -------
+    xf
+        The x values.
+    yf
+        The y values. Note that absolute values are returned.
+
+    Examples
+    --------
+    >>> from thebeat import Sequence
+    >>> from thebeat.stats import fft_values
+    >>> seq = Sequence.generate_random_normal(n_events=100, mu=500, sigma=25)  # milliseconds
+    >>> xf, yf = fft_values(seq, unit_size=1000, x_max=10)
+
+    """
+    # Calculate step size
+    step_size = unit_size / 1000
+
+    # Make a sequence of ones and zeroes
+    timeseries = thebeat.helpers.sequence_to_binary(sequence, resolution=step_size)
+    duration = sequence.duration
+    x_length = np.ceil(duration / step_size).astype(int)
+
+    # Do the fft
+    yf = rfft(timeseries)
+    xf = rfftfreq(x_length, d=step_size) * (step_size / 0.001)
+
+    # Slice the data and take absolute values (we don't care about complex numbers)
+    min_freq_index = np.min(np.where(xf > x_min)).astype(int) if x_min else None
+    max_freq_index = np.min(np.where(xf > x_max)).astype(int) if x_max else None
+    yf = np.abs(yf[min_freq_index:max_freq_index])
+    xf = xf[min_freq_index:max_freq_index]
+
+    return xf, yf
+
+
 def fft_plot(
     sequence: thebeat.core.Sequence,
     unit_size: float,
-    x_min: float = 0,
+    x_min: float | None = None,
     x_max: float | None = None,
     style: str = "seaborn-v0_8",
     title: str = "Fourier transform",
@@ -613,6 +671,18 @@ def fft_plot(
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
     You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
+
+    On the x axis is plotted the number of cycles per unit, and on the y axis the absolute power.
+    The number of cycles per unit can be interpreted as the beat frequency. For instance, 2 cycles for a unit size of
+    1000 ms means a beat frequency of 2 Hz.
+
+    Note
+    ----
+    In most beat-finding applications you will want to set the ``x_max`` argument to something reasonable.
+    The Fourier transform is plotted for all possible frequencies until the Nyquist frequency (half the
+    value of ``unit_size``). However, in most cases you will not be interested in frequencies that are higher than
+    the beat frequency. For instance, if you have a sequence with a beat frequency of 2 Hz, you will not be interested
+    in frequencies higher than, say, 20 Hz. In that case, you can set ``x_max`` to 20.
 
     Parameters
     ----------
@@ -666,22 +736,8 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
 xlabel='Cycles per unit', ylabel='Absolute power'>)
     """
 
-    # Calculate step size
-    step_size = unit_size / 1000
-
-    # Make a sequence of ones and zeroes
-    timeseries = sequence_to_binary(sequence, resolution=step_size)
-    duration = sequence.duration
-    x_length = np.ceil(duration / step_size).astype(int)
-
-    # Do the fft
-    yf = rfft(timeseries)
-    xf = rfftfreq(x_length, d=step_size) * (step_size / 0.001)
-
-    # Calculate reasonable max_freq
-    max_freq_index = np.min(np.where(xf > x_max)) if x_max else len(xf) / 10
-    yf = yf[: int(max_freq_index)]
-    xf = xf[: int(max_freq_index)]
+    # Get values
+    xf, yf = fft_values(sequence=sequence, unit_size=unit_size, x_min=x_min, x_max=x_max)
 
     # Plot
     with plt.style.context(style):
@@ -691,7 +747,7 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
         else:
             fig = ax.get_figure()
             ax_provided = True
-        ax.plot(xf, np.abs(yf))
+        ax.plot(xf, yf)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_xlim(x_min, None)
@@ -763,7 +819,9 @@ statistic_sign=1)
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
-def get_rhythmic_entropy(sequence: thebeat.core.Sequence | thebeat.music.Rhythm, smallest_unit: float):
+def get_rhythmic_entropy(
+    sequence: thebeat.core.Sequence | thebeat.music.Rhythm, smallest_unit: float
+):
     """
     Calculate Shannon entropy from bins. This is a measure of rhythmic complexity.
     If many different 'note durations' are present, entropy is high. If only a few are present, entropy is low.
@@ -941,8 +999,12 @@ def get_ugof_isochronous(
     ugof_values = minimal_deviations / maximal_deviation
 
     if output_statistic == "mean":
-        return np.float32(np.mean(ugof_values[1:]))  # discard the first value because that will always be 0
+        return np.float32(
+            np.mean(ugof_values[1:])
+        )  # discard the first value because that will always be 0
     elif output_statistic == "median":
-        return np.float32(np.median(ugof_values[1:]))  # discard the first value because that will always be 0
+        return np.float32(
+            np.median(ugof_values[1:])
+        )  # discard the first value because that will always be 0
     else:
         raise ValueError("The output statistic can only be 'median' or 'mean'.")
