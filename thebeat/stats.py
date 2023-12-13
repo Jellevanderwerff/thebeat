@@ -819,6 +819,31 @@ statistic_sign=1)
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
+def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
+    r"""
+    Return sequential interval ratios, calculated as:
+
+    :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
+
+    Note that for *n* IOIs this property returns *n*-1 ratios.
+
+    Parameters
+    ----------
+    sequence
+        The sequence from which to calculate the interval ratios. Can be a Sequence object, or a list or array of
+        IOIs.
+
+    Notes
+    -----
+    The used method is based on the methodology from :cite:t:`roeskeCategoricalRhythmsAre2020`.
+
+    """
+    if isinstance(sequence, thebeat.core.Sequence):
+        sequence = sequence.iois
+
+    return sequence[:-1] / (sequence[1:] + sequence[:-1])
+
+
 def get_rhythmic_entropy(
     sequence: thebeat.core.Sequence | thebeat.music.Rhythm, smallest_unit: float
 ):
