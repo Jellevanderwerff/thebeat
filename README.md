@@ -48,7 +48,7 @@ and [Lilypond](https://lilypond.org).
 # Try directly via Binder
 If you first would like to try *thebeat*, or of you wish to use it in, for instance, an
 educational setting, you can use
-[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/main?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
+[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
 to try *thebeat* in a Binder environment.
 
 
