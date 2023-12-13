@@ -916,7 +916,7 @@ class Sequence(BaseSequence):
         """
 
         iois = self.iois
-        return thebeat.utils.get_interval_ratios_from_dyads(iois)
+        return thebeat.stats.get_interval_ratios_from_dyads(iois)
 
     def _repeat(self, times: int) -> Sequence:
         """
