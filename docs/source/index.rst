@@ -19,6 +19,37 @@ can be found in the :ref:`lookup table<Lookup table>`,
 and all package contents can be found under :ref:`API reference`.
 There, each function is described in detail.
 
+.. grid:: 2
+
+    .. grid-item-card::  :material-regular:`download;1.5em` Installation
+        :link: Installation
+        :link-type: any
+
+
+        Here you can find instructions on how to install *thebeat*.
+
+    .. grid-item-card::  :material-regular:`start;1.5em` Getting started
+        :link: getting-started
+        :link-type: any
+
+        Start using *thebeat* right away with an easy example and a short explanation of how the package works.
+
+
+.. grid:: 2
+
+    .. grid-item-card::  :material-regular:`functions;1.5em` Functions lookup table
+        :link: lookup-table
+        :link-type: ref
+
+        Click here to see an overview of functionality included in *thebeat* with links to examples and documentation.
+
+    .. grid-item-card::  :material-regular:`api;1.5em` API reference
+        :link: api-reference
+        :link-type: any
+
+        Here you can find detailed descriptions and examples of everything included in *thebeat*.
+
+
 .. toctree::
     :hidden:
 

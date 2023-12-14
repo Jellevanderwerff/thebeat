@@ -1,3 +1,5 @@
+.. _lookup-table:
+
 ============
 Lookup table
 ============

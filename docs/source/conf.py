@@ -21,6 +21,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinxcontrib.bibtex",
     "sphinx.ext.autosectionlabel",
+    "sphinx_design",
 ]
 
 # bibtex
