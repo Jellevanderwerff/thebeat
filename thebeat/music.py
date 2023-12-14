@@ -533,6 +533,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         print_staff: bool = True,
         title: str | None = None,
         suppress_display: bool = False,
+        figsize: tuple[float, float] | None = None,
         dpi: int = 600,
         ax: plt.Axes | None = None,
     ) -> tuple[plt.Figure, plt.Axes]:
@@ -580,6 +581,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
             use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+        figsize
+            The figure size in inches, as a tuple of floats. This refers to the figsize argument in :func:`matplotlib.pyplot.figure`.
         dpi
             The resolution of the plot in dots per inch.
         ax
@@ -684,6 +687,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             filepath=filepath,
             suppress_display=suppress_display,
             title=title,
+            figsize=figsize,
             dpi=dpi,
             ax=ax,
         )
@@ -1052,6 +1056,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         filepath: os.PathLike | str | None = None,
         key: str | None = None,
         suppress_display: bool = False,
+        figsize: tuple[float, float] | None = None,
         dpi: int = 600,
     ) -> tuple[plt.Figure, plt.Axes]:
         """
@@ -1079,6 +1084,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
             use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
+        figsize
+            The figure size in inches, as a tuple of floats. This refers to the figsize argument in :func:`matplotlib.pyplot.figure`.
         dpi
             The resolution of the plot in dots per inch.
 
@@ -1107,7 +1114,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
         fig, ax = thebeat.helpers.plot_lp(
-            lp, filepath=filepath, suppress_display=suppress_display, dpi=dpi
+            lp, filepath=filepath, suppress_display=suppress_display, figsize=figsize, dpi=dpi
         )
 
         return fig, ax
