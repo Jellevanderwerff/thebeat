@@ -19,7 +19,19 @@ import numpy as np
 import pytest
 
 from thebeat.core import Sequence
-from thebeat.stats import acf_plot, acf_values, ccf_plot, ccf_values, fft_plot, fft_values, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
+from thebeat.stats import (
+    acf_plot,
+    acf_values,
+    ccf_plot,
+    ccf_values,
+    fft_plot,
+    fft_values,
+    get_npvi,
+    get_phase_differences,
+    get_rhythmic_entropy,
+    get_ugof_isochronous,
+    ks_test
+)
 
 
 def test_ugof():
@@ -133,3 +145,31 @@ def test_acf_values():
 
     assert acf_values(seq, 50)[0] != 0
     assert acf_values(seq, 1, 10, 2)[0] != 0
+
+
+def test_phase_differences():  # TODO Also consider cases where Sequence.end_with_interval=True
+    ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
+    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 3000, 3500, 4000])
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag="containing", unit="fraction")
+    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, np.nan, np.nan, np.nan]
+    assert np.all(phase_diffs == expected_phase_diffs)
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag=0, unit="fraction")
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag="previous", unit="fraction")
+    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0, 0.5, 1]
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag=-1, unit="fraction")
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+
+#     phase_diffs = ref_sequence.get_phase_differences(
+#         test_sequence, reference_ioi_lag=1, unit="fraction"
+#     )
+#     assert phase_diffs == [0, 0, 0, 0]
+
+#     phase_diffs = ref_sequence.get_phase_differences(
+#         test_sequence, reference_ioi_lag=2, unit="fraction"
+#     )
+#     assert phase_diffs == [0, 0, 0, 0]
