@@ -6,7 +6,12 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/main?labpath=docs%2Fsource%2Fexamples%2FREADME.md)
 
 
-<img src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/thebeat_logo.png" height="350" width="350">
+<picture align='center'>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/_static/thebeat_logo_dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/_static/thebeat_logo.png">
+  <img alt="thebeat logo" src="https://raw.githubusercontent.com/Jellevanderwerff/thebeat/main/docs/source/_static/thebeat_logo.png", width=350>
+</picture>
+
 
 # *thebeat*: Rhythms in Python for Science
 
@@ -48,7 +53,7 @@ and [Lilypond](https://lilypond.org).
 # Try directly via Binder
 If you first would like to try *thebeat*, or of you wish to use it in, for instance, an
 educational setting, you can use
-[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/main?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
+[this link](https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb)
 to try *thebeat* in a Binder environment.
 
 

@@ -19,8 +19,7 @@ import numpy as np
 import pytest
 
 from thebeat.core import Sequence
-from thebeat.music import Rhythm
-from thebeat.stats import acf_plot, acf_values, ccf_plot, ccf_values, fft_plot, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
+from thebeat.stats import acf_plot, acf_values, ccf_plot, ccf_values, fft_plot, fft_values, get_npvi, get_rhythmic_entropy, get_ugof_isochronous, ks_test
 
 
 def test_ugof():
@@ -78,32 +77,27 @@ def test_entropy():
     seq = Sequence([500, 502, 500, 500])
 
     with pytest.raises(ValueError):
-        print(get_rhythmic_entropy(seq, resolution=500))
+        print(get_rhythmic_entropy(seq, smallest_unit=500))
 
     seq.quantize_iois(500)
 
     assert get_rhythmic_entropy(seq, 500) == 0.0
 
 
-def test_fft():
-    rng = np.random.default_rng(seed=123)
-    r = Rhythm.generate_random_rhythm(1, 500, allowed_note_values=[8, 16], rng=rng)
-    seq = r.to_sequence()
-    _, ax = fft_plot(seq, 1000, suppress_display=True)
-    x_data, y_data = ax.lines[0].get_data()
-    x_data, y_data = x_data[1:], y_data[1:]
-    max_y_index = np.argmax(y_data)
-    max_x = x_data[max_y_index]
+def test_fft_values():
+    seq = Sequence([500, 500, 500, 500])
+    x, y = fft_values(seq, unit_size=1000, x_min=None, x_max=None)
+    assert np.argmax(y) == 0
 
-    assert 1000 / max_x == 125
+    x, y = fft_values(seq, unit_size=1000, x_min=1, x_max=3)
+    assert x[np.argmax(y)] == 2
 
-    seq = Sequence([500, 250, 250, 250])
-    _, ax = fft_plot(seq, 1000, suppress_display=True)
-    x_data, y_data = ax.lines[0].get_data()
-    x_data, y_data = x_data[1:], y_data[1:]
-    max_y_index = np.argmax(y_data)
-    max_x = x_data[max_y_index]
-    assert 1000 / max_x == 250
+
+@pytest.mark.mpl_image_compare
+def test_fft_plot():
+    seq = Sequence([500, 500, 500, 500])
+    fig, ax = fft_plot(seq, unit_size=1000, x_min=None, x_max=None, suppress_display=True)
+    return fig
 
 
 def test_ccf_values():

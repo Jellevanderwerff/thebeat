@@ -382,12 +382,14 @@ class SoundSequence(BaseSequence):
         dtype: str | np.dtype = np.int16,
     ):
         r"""
-        Write multiple :py:class:`SoundSequence` objects to a single multichannel .wav file.
+        This is a static method that is used to write multiple :py:class:`SoundSequence` objects to a
+        single multichannel .wav file. This can e.g. be useful when creating stimuli that have a synchronization
+        stimulus on one of the other (e.g. third) channels. This may be useful e.g. for EEG experiments.
 
         Parameters
         ----------
-        *soundsequences
-            One or more :py:class:`SoundSequence` objects.
+        soundsequences
+            A list of :py:class:`SoundSequence` objects.
 
         Examples
         --------

@@ -11,4 +11,5 @@ graft docs/source/_static
 include docs/Makefile docs/make.bat
 
 global-exclude *.py[cod]
+global-exclude *.ai
 prune docs/build

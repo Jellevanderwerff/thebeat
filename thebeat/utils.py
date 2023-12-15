@@ -299,31 +299,6 @@ def get_phase_differences(
     return phase_diffs
 
 
-def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
-    r"""
-    Return sequential interval ratios, calculated as:
-
-    :math:`\textrm{ratio}_k = \frac{\textrm{IOI}_k}{\textrm{IOI}_k + \textrm{IOI}_{k+1}}`.
-
-    Note that for *n* IOIs this property returns *n*-1 ratios.
-
-    Parameters
-    ----------
-    sequence
-        The sequence from which to calculate the interval ratios. Can be a Sequence object, or a list or array of
-        IOIs.
-
-    Notes
-    -----
-    The used method is based on the methodology from :cite:t:`roeskeCategoricalRhythmsAre2020`.
-
-    """
-    if isinstance(sequence, thebeat.core.Sequence):
-        sequence = sequence.iois
-
-    return sequence[:-1] / (sequence[1:] + sequence[:-1])
-
-
 def concatenate_sequences(sequences: np.typing.ArrayLike, name: str | None = None):
     """Concatenate an array or list of :py:class:`~thebeat.core.Sequence` objects.
 

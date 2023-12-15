@@ -1,3 +1,5 @@
+.. _installation:
+
 ============
 Installation
 ============
@@ -20,7 +22,7 @@ Installation
 Installing through PyPI (recommended)
 *************************************
 
-*thebeat* is available through PyPI, and can be installed using:
+*thebeat* is available through PyPI, and can be installed by typing the following in a command window or terminal:
 
 .. code-block:: console
 
@@ -43,12 +45,13 @@ You can now import *thebeat* in your preferred editor using:
     import thebeat
 
 
-.. Hint::
-    For Windows, take a look at `this <https://www.digitalcitizen.life/command-prompt-how-use-basic-commands/>`_ tutorial if you do not know how to navigate to a directory using the command line.
-    For Mac OS, take a look at `this <https://www.macworld.com/article/221277/command-line-navigating-files-folders-mac-terminal.html>`_ tutorial.
-    For Linux, take a look at `this one <https://www.cyberciti.biz/faq/how-to-change-directory-in-linux-terminal/>`_.
+*********************************
+Try *thebeat* directly via Binder
+*********************************
 
-
+If you don't use a lot of Python, and the above instructions are a bit too much,
+you can try *thebeat* directly in your browser via Binder.
+Follow `this link <https://mybinder.org/v2/gh/Jellevanderwerff/thebeat/stable?labpath=docs%2Fsource%2Fgettingstarted.ipynb>`_ to do so.
 
 ******************************************
 Installing development version from GitHub
@@ -58,4 +61,4 @@ Open up a terminal and run:
 
 .. code-block:: console
 
-    pip install git+https://github.com/jellevanderwerff/thebeat.git#egg=thebeat
+    pip install git+https://github.com/jellevanderwerff/thebeat.git@main#egg=thebeat

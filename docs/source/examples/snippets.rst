@@ -1,7 +1,6 @@
+========
 Snippets
 ========
-
-Available snippets:
 
 .. toctree::
    :maxdepth: 1

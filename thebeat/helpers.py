@@ -301,6 +301,7 @@ def plot_lp(
     filepath: os.PathLike | str = None,
     suppress_display: bool = False,
     title: str | None = None,
+    figsize: tuple[float, float] | None = None,
     dpi: int = 300,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -317,6 +318,9 @@ def plot_lp(
         If True, the plot will not be displayed using :func:`matplotlib.figure.Figure.show`.
     title
         Title of the plot.
+    figsize
+        A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
+        This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
     dpi
         The resolution of the plot in dots per inch.
     ax
@@ -360,7 +364,7 @@ def plot_lp(
             shutil.copy(path_to_file_for_saving, filepath)
 
     if ax is None:
-        fig, ax = plt.subplots(dpi=dpi)
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
         ax_provided = False
     else:
         fig = ax.get_figure()
@@ -454,7 +458,6 @@ def plot_single_sequence(
         right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
         ax.set_xlim(left_x_lim, right_x_lim)
         ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
-        ax.vlines(onsets, ymin=0, ymax=1, linewidth=0.5)
         ax.axes.set_title(title)
         ax.axes.yaxis.set_visible(False)
 
