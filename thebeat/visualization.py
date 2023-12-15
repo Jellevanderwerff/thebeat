@@ -327,19 +327,19 @@ def plot_phase_differences(
                 ref_seq = reference_sequence
 
             phase_diffs = np.append(
-                phase_diffs, thebeat.utils.get_phase_differences(test_seq, ref_seq)
+                phase_diffs, thebeat.stats.get_phase_differences(test_seq, ref_seq)
             )
 
     else:
         if ref_iterable_passed:
             for ref_seq in reference_sequence:
                 phase_diffs = np.append(
-                    phase_diffs, thebeat.utils.get_phase_differences(test_sequence, ref_seq)
+                    phase_diffs, thebeat.stats.get_phase_differences(test_sequence, ref_seq)
                 )
         else:
             # we have a single test sequence and a single ref sequences
             phase_diffs = np.append(
-                phase_diffs, thebeat.utils.get_phase_differences(test_sequence, reference_sequence)
+                phase_diffs, thebeat.stats.get_phase_differences(test_sequence, reference_sequence)
             )
 
     # Calculate the bins

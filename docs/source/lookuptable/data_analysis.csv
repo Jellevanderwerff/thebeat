@@ -16,6 +16,7 @@ Integer ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequen
 Interval ratios,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.interval_ratios_from_dyads`,
 KS-test,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.ks_test`,
 Onsets,:py:class:`~thebeat.core.Sequence`,:py:attr:`~thebeat.core.Sequence.onsets`,
+Phase differences,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_phase_differences`,
 Round off onsets,:py:class:`~thebeat.core.Sequence`,:py:meth:`~thebeat.core.Sequence.round_onsets`,:ref:`Frame rounding`
 nPVI,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_npvi`,
 ugof,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.stats.get_ugof_isochronous`,
