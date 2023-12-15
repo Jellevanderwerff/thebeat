@@ -35,6 +35,6 @@ References
 
 References mentioned in the documentation are listed below.
 
-.. bibliography::
+.. bibliography::  refs.bib
     :style: unsrt
     :list: bullet

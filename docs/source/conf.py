@@ -48,11 +48,17 @@ intersphinx_mapping = {
 
 html_theme = "sphinx_book_theme"
 html_theme_options = {
+    "repository_url": "https://github.com/jellevanderwerff/thebeat",
+    "repository_branch": "main",
+    "use_edit_page_button": True,  # GitHub
+    "use_source_button": True,  # GitHub
+    "use_issues_button": True,  # GitHub
     "show_toc_level": 3,
     "collapse_navigation": True,
     "logo": {
         "image_light": "_static/thebeat_logo.png",
         "image_dark": "_static/thebeat_logo_dark.png",
+
     },
 }
 html_static_path = ["_static"]
