@@ -851,7 +851,7 @@ def get_phase_differences(
     window_size: int | None = None,
     unit: str = "degrees",
     modulo: bool = True
-) -> np.ndarray:
+) -> np.ndarray | float:
     r"""Get the phase differences for ``test_events`` compared to ``reference_sequence``.
 
     Phase differences are a (circular) measure of temporal alignment. They are calculated as the difference between
