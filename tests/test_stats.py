@@ -179,9 +179,27 @@ def test_phase_differences(end_with_interval):
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=False)
     expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 1, 1.6, 0, 0.5, 1]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=1, unit="fraction", modulo=False)
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=True)
     expected_phase_diffs = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0.6, 0, 0.5, 0])
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    # TODO Insert test with window_size parameters
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=2, unit="fraction", modulo=False)
+    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 2/3, 16/15, 0, 2/3, 4/3]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=3, unit="fraction", modulo=False)
+    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 3/5, 6/5]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
+
+    window_size = len(ref_sequence.iois) + 1
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=window_size, unit="fraction", modulo=False)
+    assert np.all(np.isnan(phase_diffs))
+
+    with pytest.raises(ValueError, match="window_size must be a positive integer"):
+        get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=0, unit="fraction", modulo=False)
+
+    with pytest.raises(ValueError, match="window_size must be a positive integer"):
+        get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=-1, unit="fraction", modulo=False)
