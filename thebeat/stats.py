@@ -873,6 +873,9 @@ def get_rhythmic_entropy(
 
     """
 
+    if not isinstance(sequence, (thebeat.core.Sequence, thebeat.music.Rhythm)):
+        raise TypeError("sequence must be a Sequence or Rhythm object")
+
     if np.any(sequence.iois % smallest_unit != 0):
         raise ValueError(
             f"Sequence needs to be quantized to multiples of {smallest_unit}."
