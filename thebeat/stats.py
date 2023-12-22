@@ -892,6 +892,7 @@ def get_phase_differences(
     >>> reference = Sequence.from_onsets([0, 250, 1000])
     >>> test = Sequence.from_onsets([250, 1250])
     >>> get_phase_differences(test, reference, reference_ioi='preceding', unit='fraction')
+    array([0.        , 0.33333333])
 
 
     Parameters
