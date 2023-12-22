@@ -143,8 +143,8 @@ class BaseSequence:
 
     @property
     def duration(self) -> np.float64:
-        """Property that returns the total duration of the sequence."""
-        return np.float64(np.sum(self.iois) + self._first_onset)
+        """Property that returns the summed total of the inter-onset intervals."""
+        return np.float64(np.sum(self.iois))
 
 
 class Sequence(BaseSequence):
