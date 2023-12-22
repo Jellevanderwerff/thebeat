@@ -223,15 +223,11 @@ def plot_interval_ratios_histogram(
 
 
 def plot_phase_differences(
-    test_sequence: (
-        thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
-    ),
-    reference_sequence: (
-        thebeat.core.Sequence
-        | float
-        | list[thebeat.core.Sequence]
-        | np.ndarray[thebeat.core.Sequence]
-    ),
+    test_sequence: thebeat.core.Sequence,
+    reference_sequence: thebeat.core.Sequence,
+    reference_ioi: str = "preceding",
+    window_size: int | None = None,
+    modulo: bool = True,
     circular_unit: str = "degrees",
     binwidth: int = 10,
     zero_direction: str = "E",
@@ -313,6 +309,9 @@ def plot_phase_differences(
         if len(test_sequence) != len(reference_sequence):
             raise ValueError("The test and reference sequences must be the same length.")
 
+    if circular_unit not in ("degrees", "radians"):
+        raise ValueError("circular_unit must be either 'degrees' or 'radians'.")
+
     # Output array
     phase_diffs = np.array([])
 
@@ -327,19 +326,43 @@ def plot_phase_differences(
                 ref_seq = reference_sequence
 
             phase_diffs = np.append(
-                phase_diffs, thebeat.stats.get_phase_differences(test_seq, ref_seq)
+                phase_diffs,
+                thebeat.stats.get_phase_differences(
+                    test_sequence=test_seq,
+                    reference_sequence=ref_seq,
+                    reference_ioi=reference_ioi,
+                    window_size=window_size,
+                    modulo=modulo,
+                    unit=circular_unit,
+                ),
             )
 
     else:
         if ref_iterable_passed:
             for ref_seq in reference_sequence:
                 phase_diffs = np.append(
-                    phase_diffs, thebeat.stats.get_phase_differences(test_sequence, ref_seq)
+                    phase_diffs,
+                    thebeat.stats.get_phase_differences(
+                        test_sequence=test_sequence,
+                        reference_sequence=ref_seq,
+                        reference_ioi=reference_ioi,
+                        window_size=window_size,
+                        modulo=modulo,
+                        unit=circular_unit,
+                    ),
                 )
         else:
             # we have a single test sequence and a single ref sequences
             phase_diffs = np.append(
-                phase_diffs, thebeat.stats.get_phase_differences(test_sequence, reference_sequence)
+                phase_diffs,
+                thebeat.stats.get_phase_differences(
+                    test_sequence,
+                    reference_sequence,
+                    reference_ioi=reference_ioi,
+                    window_size=window_size,
+                    modulo=modulo,
+                    unit=circular_unit,
+                ),
             )
 
     # Calculate the bins

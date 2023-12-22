@@ -105,9 +105,16 @@ def test_recurrence_plot_nothreshold(rng):
 
 @pytest.mark.mpl_image_compare
 def test_plot_phase_differences(rng):
-    # TODO make test
+    test_seqs = [
+        Sequence.generate_random_normal(n_events=10, mu=500, sigma=100, rng=rng) for _ in range(100)
+    ]
+    ref_seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=100, rng=rng)
 
-    return None
+    fig, ax = thebeat.visualization.plot_phase_differences(
+        test_seqs, ref_seq, suppress_display=True, title="My first phase difference plot"
+    )
+
+    return fig
 
 
 @pytest.mark.mpl_image_compare
