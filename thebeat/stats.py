@@ -927,7 +927,6 @@ def get_phase_differences(
         else:
             containing_ioi_index = np.flatnonzero(test_onset >= reference_onsets)[-1]
 
-        print(containing_ioi_index)
         if reference_ioi == "containing":
             if not 0 <= containing_ioi_index < len(reference_iois):
                 phase_diff = np.nan
@@ -940,7 +939,8 @@ def get_phase_differences(
                 phase_diff = np.nan
             else:
                 mean_reference_ioi = np.mean(reference_iois[containing_ioi_index - window_size:containing_ioi_index])
-                phase_diff = (test_onset - reference_onsets[containing_ioi_index]) / mean_reference_ioi
+                reference_onset = reference_onsets[containing_ioi_index] if containing_ioi_index < len(reference_onsets) else reference_end
+                phase_diff = (test_onset - reference_onset) / mean_reference_ioi
         phase_diffs.append(phase_diff)
 
     phase_diffs = np.array(phase_diffs, dtype=np.float64)
