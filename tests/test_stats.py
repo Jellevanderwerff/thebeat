@@ -148,46 +148,40 @@ def test_acf_values():
 
 
 @pytest.mark.parametrize("end_with_interval", [False, True])
-def test_phase_differences_containing(end_with_interval):
+def test_phase_differences(end_with_interval):
     ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
     ref_sequence.end_with_interval = end_with_interval
-    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 3000, 3500, 4000])
+    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 2800, 3000, 3500, 4000])
 
+    # Containing
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="fraction")
-    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, np.nan, np.nan, np.nan]
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, 0.8, np.nan, np.nan, np.nan]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="degrees")
-    expected_phase_diffs = [np.nan, np.nan, 0, 36, 180, 324, 0, 72, 0, 180, np.nan, np.nan, np.nan]
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    expected_phase_diffs = [np.nan, np.nan, 0, 36, 180, 324, 0, 72, 0, 180, 288, np.nan, np.nan, np.nan]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="radians")
-    expected_phase_diffs = [np.nan, np.nan, 0, 0.2 * np.pi, np.pi, 1.8 * np.pi, 0, 0.4 * np.pi, 0, np.pi, np.nan, np.nan, np.nan]
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    expected_phase_diffs = [np.nan, np.nan, 0, 0.2 * np.pi, np.pi, 1.8 * np.pi, 0, 0.4 * np.pi, 0, np.pi, 1.6 * np.pi, np.nan, np.nan, np.nan]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
+    with pytest.raises(ValueError, match="reference_ioi must be either 'containing' or 'preceding'"):
+        get_phase_differences(test_sequence, ref_sequence, reference_ioi="invalid", unit="fraction")
 
-def test_phase_differences_preceding():  # TODO Also consider cases where Sequence.end_with_interval=True
-    ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
-    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 3000, 3500, 4000])
+    with pytest.raises(ValueError, match="unit must be either 'degrees', 'radians' or 'fraction'"):
+        get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="invalid")
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag="containing", unit="fraction")
-    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, np.nan, np.nan, np.nan]
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag=0, unit="fraction")
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    with pytest.raises(ValueError, match="window_size cannot be used with reference_ioi='containing'"):
+        get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", window_size=1, unit="fraction")
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag="previous", unit="fraction")
-    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0, 0.5, 1]
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag=-1, unit="fraction")
-    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+    # Preceding
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=False)
+    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 1, 1.6, 0, 0.5, 1]
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-#     phase_diffs = ref_sequence.get_phase_differences(
-#         test_sequence, reference_ioi_lag=1, unit="fraction"
-#     )
-#     assert phase_diffs == [0, 0, 0, 0]
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=True)
+    expected_phase_diffs = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0.6, 0, 0.5, 0])
+    assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-#     phase_diffs = ref_sequence.get_phase_differences(
-#         test_sequence, reference_ioi_lag=2, unit="fraction"
-#     )
-#     assert phase_diffs == [0, 0, 0, 0]
+    # TODO Insert test with window_size parameters
