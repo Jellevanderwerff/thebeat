@@ -912,9 +912,7 @@ def get_phase_differences(
 
     Returns
     -------
-    phase_diffs
-        The phase differences between the test sequence and the reference sequence. The phase differences are
-        expressed in the circular unit specified by ``circular_unit``.
+    :class:`numpy.ndarray`
 
     """
 
