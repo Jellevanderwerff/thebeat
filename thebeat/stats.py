@@ -874,13 +874,8 @@ def get_phase_differences(
     If ``reference_ioi='preceding'``, the reference IOI that will be used is the one from :math:`t = 0` to :math:`t = 250`.
 
     In addition, one can specify a (moving average) window size. This is only used if ``reference_ioi='preceding'``.
-    The window size determines the number of reference IOIs that are used to calculate a mean reference IOI. For instance, if the
-    window size is 2, and the reference IOIs are:
-
-    :math:`\textrm{IOI}_1 = 1000`, :math:`\textrm{IOI}_2 = 500`, :math:`\textrm{IOI}_3 = 2000`, :math:`\textrm{IOI}_4 = 1000`
-
-    Then, the mean reference IOI will be :math:`\frac{500 + 2000}{2} = 1250`. Applying such a moving average
-    for the reference IOI be useful in cases where one wants to smoothe highly irregular (reference) sequences.
+    The window size determines the number of reference IOIs (up to and including the 'preceding' one) that are used to calculate a mean reference IOI.
+    This can be useful to smoothe out the reference IOI when using irregular (reference) sequences.
 
     Finally, one can specify whether modulo arithmetic should be used. For degrees, if ``modulo=True``, the phase differences will be
     expressed in the range :math:`[0, 360]`. If ``modulo=False``, the phase differences will be expressed in the range
