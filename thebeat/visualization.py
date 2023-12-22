@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import numbers
 import warnings
 
 import matplotlib.pyplot as plt
@@ -562,7 +563,9 @@ def plot_multiple_sequences(
     # Make y axis labels (categorical)
     n_seqs = len(sequences)
     if y_axis_labels is None:  # No names are provided
-        if all(isinstance(sequence.name, str) for sequence in sequences):  # All sequences have names
+        if all(
+            isinstance(sequence.name, str) for sequence in sequences
+        ):  # All sequences have names
             y_axis_labels = [sequence.name for sequence in sequences]
             if len(set(y_axis_labels)) != len(y_axis_labels):  # Check for duplicates in names
                 warnings.warn(thebeat._warnings.duplicate_names_sequence_plot)
@@ -577,17 +580,26 @@ def plot_multiple_sequences(
     elif len(y_axis_labels) != n_seqs:
         raise ValueError("Please provide an equal number of bar names as sequences.")
 
-    # Make line widths (these are either the event durations in case StimTrials were passed, in case of Sequences these
+    # Make line widths (these are either the event durations in case SoundSequences were passed, in case of Sequences these
     # default to 1/10th of the smallest IOI)
+
+    smallest_ioi = np.min(np.concatenate([sequence.iois for sequence in sequences]))
+
     if linewidths is None:
-        if isinstance(sequences[0], thebeat.core.SoundSequence):
-            linewidths = [trial.event_durations for trial in sequences]
-        else:
-            all_iois = [sequence.iois for sequence in sequences]
-            smallest_ioi = np.min(np.concatenate(all_iois))
-            linewidths = [smallest_ioi / 10] * len(sequences)
-    else:
+        linewidths = []
+        for seq in sequences:
+            if isinstance(seq, thebeat.core.SoundSequence):
+                linewidths.append(seq.event_durations)
+            elif isinstance(seq, thebeat.core.Sequence):
+                linewidths.append(smallest_ioi / 10)
+    elif isinstance(linewidths, numbers.Real):
         linewidths = [linewidths] * len(sequences)
+    elif hasattr(linewidths, "__iter__"):
+        linewidths = linewidths
+    else:
+        raise TypeError(
+            "Please provide a single number, a list or array of numbers, or a nested array or list of numbers for argument linewidths."
+        )
 
     # Plot
     with plt.style.context(style):
@@ -611,14 +623,32 @@ def plot_multiple_sequences(
         else:
             colors = [None] * len(sequences)
 
-        for onsets, label, linewidths, color in zip(
-            reversed(onsets), reversed(y_axis_labels), reversed(linewidths), reversed(colors)
+        # Keep track of potential xlims
+        left_xlims = []
+        right_xlims = []
+
+        for sequence, onsets, label, linewidths, color in zip(
+            reversed(sequences),
+            reversed(onsets),
+            reversed(y_axis_labels),
+            reversed(linewidths),
+            reversed(colors),
         ):
             ax.barh(y=label, width=linewidths, left=onsets, color=color)
 
+            # Add xlims
+            left_xlims.append(np.min(onsets))
+            if sequence.end_with_interval is True:
+                right_xlims.append(sequence.onsets[0] + sequence.duration)
+            elif sequence.end_with_interval is False:
+                right_xlims.append(
+                    np.max(onsets) + linewidths[-1]
+                    if isinstance(linewidths, (list, np.ndarray))
+                    else np.max(onsets) + linewidths
+                )
+
         # Make sure we always have 0 on the left side of the x axis
-        current_lims = ax.get_xlim()
-        ax.set_xlim(0, current_lims[1])
+        ax.set_xlim(left=np.min(left_xlims), right=np.max(right_xlims))
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:
