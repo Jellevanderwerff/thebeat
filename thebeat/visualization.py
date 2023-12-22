@@ -328,8 +328,8 @@ def plot_phase_differences(
             phase_diffs = np.append(
                 phase_diffs,
                 thebeat.stats.get_phase_differences(
-                    test_sequence=test_seq,
-                    reference_sequence=ref_seq,
+                    test_seq,
+                    ref_seq,
                     reference_ioi=reference_ioi,
                     window_size=window_size,
                     modulo=modulo,
@@ -343,8 +343,8 @@ def plot_phase_differences(
                 phase_diffs = np.append(
                     phase_diffs,
                     thebeat.stats.get_phase_differences(
-                        test_sequence=test_sequence,
-                        reference_sequence=ref_seq,
+                        test_sequence,
+                        ref_seq,
                         reference_ioi=reference_ioi,
                         window_size=window_size,
                         modulo=modulo,
