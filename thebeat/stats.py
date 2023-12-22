@@ -847,8 +847,10 @@ def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | 
 def get_phase_differences(
     test_sequence: thebeat.core.Sequence,
     reference_sequence: thebeat.core.Sequence,
-    reference_ioi_lag: str | int = "previous",
-    unit="degrees",
+    reference_ioi: str = "preceding",
+    window_size: int | None = None,
+    unit: str = "degrees",
+    modulo: bool = True
 ) -> np.ndarray:
     """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``.
 
@@ -872,7 +874,7 @@ def get_phase_differences(
         In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
         number and the same length as ``sequence_1``.
     reference_ioi_lag
-        The lag of the reference IOI. Can be "containing", "previous", or an integer indicating the lag.
+        The lag of the reference IOI. Can be "containing", "preceding", or an integer indicating the lag.
         If "containing", the difference between an onset in the test sequence and its corresponding, closest onset
         in the reference sequence will be divided by the IOI that 'contains' the onset. For example, if the
         test onset is at t=1500, and there is a reference IOI from t=1000 to t=2000,
@@ -898,45 +900,52 @@ def get_phase_differences(
     if not isinstance(reference_sequence, thebeat.Sequence):
         raise TypeError("reference_sequence must be a Sequence object.")
 
+    if reference_ioi not in ("containing", "preceding"):
+        raise ValueError("reference_ioi must be either 'containing' or 'preceding'.")
+
+    if reference_ioi == "containing" and window_size is not None:
+        raise ValueError("window_size cannot be used with reference_ioi='containing'.")
+    elif reference_ioi == "preceding" and window_size is None:
+        window_size = 1
+    elif reference_ioi == "preceding" and window_size <= 0:
+        raise ValueError("window_size must be a positive integer.")
+
     if unit not in ("degrees", "radians", "fraction"):
         raise ValueError("unit must be either 'degrees', 'radians' or 'fraction'")
 
-    if reference_ioi_lag == "containing":
-        reference_ioi_lag = 0
-    elif reference_ioi_lag == "previous":
-        reference_ioi_lag = -1
-    elif isinstance(reference_ioi_lag, int):
-        reference_ioi_lag = reference_ioi_lag
-    else:
-        raise ValueError(
-            "reference_ioi_lag must be either 'containing', 'previous' or an integer indicating the lag."
-        )
-
     test_onsets = test_sequence.onsets
     reference_onsets = reference_sequence.onsets
+    reference_end = reference_sequence.onsets[0] + reference_sequence.duration
     reference_iois = reference_sequence.iois
     phase_diffs = []
 
-    # Calculate phase differences
     for test_onset in test_onsets:
-        if test_onset >= reference_onsets[-1]:
+        if test_onset >= reference_end:
             containing_ioi_index = len(reference_iois)
         elif test_onset < reference_onsets[0]:
             containing_ioi_index = -1
         else:
             containing_ioi_index = np.flatnonzero(test_onset >= reference_onsets)[-1]
-        relevant_ioi_index = containing_ioi_index + reference_ioi_lag
 
-        # Check if that IOI exists, if it doesn't set phase_diff to nan
-        if relevant_ioi_index < 0 or relevant_ioi_index >= len(reference_iois):
-            phase_diff = np.nan
+        print(containing_ioi_index)
+        if reference_ioi == "containing":
+            if not 0 <= containing_ioi_index < len(reference_iois):
+                phase_diff = np.nan
+            else:
+                reference_ioi_ = reference_iois[containing_ioi_index]
+                phase_diff = (test_onset - reference_onsets[containing_ioi_index]) / reference_ioi_
         else:
-            reference_ioi = reference_iois[relevant_ioi_index]
-            phase_diff = (test_onset - reference_onsets[relevant_ioi_index]) / reference_ioi
-
+            assert reference_ioi == "preceding"
+            if containing_ioi_index < window_size:
+                phase_diff = np.nan
+            else:
+                mean_reference_ioi = np.mean(reference_iois[containing_ioi_index - window_size:containing_ioi_index])
+                phase_diff = (test_onset - reference_onsets[containing_ioi_index]) / mean_reference_ioi
         phase_diffs.append(phase_diff)
 
     phase_diffs = np.array(phase_diffs, dtype=np.float64)
+    if modulo:
+        phase_diffs = np.fmod(phase_diffs, 1)
 
     if unit == "degrees":
         return phase_diffs * 360
