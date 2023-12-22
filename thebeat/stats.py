@@ -845,14 +845,14 @@ def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | 
 
 
 def get_phase_differences(
-    test_sequence: thebeat.core.Sequence,
+    test_events: thebeat.core.Sequence | list[numbers.Real] | np.ndarray | numbers.Real,
     reference_sequence: thebeat.core.Sequence,
     reference_ioi: str = "preceding",
     window_size: int | None = None,
     unit: str = "degrees",
     modulo: bool = True
 ) -> np.ndarray:
-    r"""Get the phase differences for ``test_sequence`` compared to ``reference_sequence``.
+    r"""Get the phase differences for ``test_events`` compared to ``reference_sequence``.
 
     Phase differences are a (circular) measure of temporal alignment. They are calculated as the difference between
     the onset of a test event and the onset of the corresponding reference event, divided by the IOI of the reference
@@ -873,18 +873,22 @@ def get_phase_differences(
     and ``reference_ioi='containing'``, the reference IOI that will be used is the one from :math:`t = 250` to :math:`t = 1000`.
     If ``reference_ioi='preceding'``, the reference IOI that will be used is the one from :math:`t = 0` to :math:`t = 250`.
 
-    In addition, one can specify a (moving average) window size. This is only used if ``reference_ioi='preceding'``.
-    The window size determines the number of reference IOIs (up to and including the 'preceding' one) that are used to calculate a mean reference IOI.
-    This can be useful to smoothe out the reference IOI when using irregular (reference) sequences.
+    In addition, one can specify a window size to get a (moving) average of the preceeding IOIs. This is only used if ``reference_ioi='preceding'``.
+    The window size determines the number of reference IOIs (up to and including the immediately 'preceding' one) that are used to calculate a mean
+    reference IOI. This can be useful to smoothe out the reference IOI when using irregular (reference) sequences.
 
-    Finally, one can specify whether modulo arithmetic should be used. For degrees, if ``modulo=True``, the phase differences will be
-    expressed in the range :math:`[0, 360]`. If ``modulo=False``, the phase differences will be expressed in the range
-    :math:`[-\infty, \infty]`.
+    Finally, one can specify whether modular arithmetic should be used. For degrees, if ``modulo=True``, the phase differences will be
+    expressed in the range :math:`[0, 360)` degrees, :math:`[0, 2\pi)` radians, or :math:`[0, 1)` (as a plain 'fraction').
+    If ``modulo=False``, the phase differences will be expressed in the range :math:`[0, \infty)`, with the event at the start of the containing
+    interval corresponding to 0 for both the 'containing' and 'preceeding' values.
 
     Note
     ----
-    In cases where it is not possible to calculate a phase difference (e.g. because the test onset is before the first
-    reference onset), ``np.nan`` is returned.
+    In cases where it is not possible to calculate a phase difference, ``np.nan`` is returned.
+    This can happen in the following cases:
+    - The test event is before the first onset in the reference sequence.
+    - The test event is after the last onset in the reference sequence, and ``reference_ioi='containing'``.
+    - The test event is in the nth interval of the reference sequence, and ``reference_ioi='preceding'`` and a ``window_size`` is larger than n.
 
     Examples
     --------
@@ -897,9 +901,9 @@ def get_phase_differences(
 
     Parameters
     ----------
-    test_sequence
-        The sequence to be compared with the reference sequence. Can either be a single Sequence or
-        a list or array of Sequences.
+    test_events
+        A sequence or a single time point to be compared with the reference sequence. Can either be a single event time,
+        or a Sequence, list, or NumPy array containing multiple events.
     reference_sequence
         The reference sequence. Can be a Sequence object, a list or array of Sequence objects, or a number.
         In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
@@ -910,16 +914,27 @@ def get_phase_differences(
         The window size used for calculating the mean reference IOI. Only used if ``reference_ioi='preceding'``.
     circular_unit
         The unit of the circular unit. Can be "degrees" (the default), "radians", or "fraction".
+    modulo
+        Return the phase differences modulo 360 degrees or not. Only has an effect if ``reference_ioi='preceding'``.
 
     Returns
     -------
     :class:`numpy.ndarray`
+        An array containing the phase differences if a Sequence, list, or NumPy array was passed.
+    :class:`float`
+        The phase difference if a single event time was passed.
 
     """
 
     # Input validation and processing
-    if not isinstance(test_sequence, thebeat.Sequence):
-        raise TypeError("test_sequence must be a Sequence object.")
+    if isinstance(test_events, thebeat.Sequence):
+        test_onsets = test_events.onsets
+    elif isinstance(test_events, (list, np.ndarray)):
+        test_onsets = np.array(test_events)
+    elif isinstance(test_events, numbers.Real):
+        test_onsets = np.array([test_events])
+    else:
+        raise TypeError("test_events must be a Sequence, list, NumPy array, or float.")
 
     if not isinstance(reference_sequence, thebeat.Sequence):
         raise TypeError("reference_sequence must be a Sequence object.")
@@ -937,7 +952,6 @@ def get_phase_differences(
     if unit not in ("degrees", "radians", "fraction"):
         raise ValueError("unit must be either 'degrees', 'radians' or 'fraction'")
 
-    test_onsets = test_sequence.onsets
     reference_onsets = reference_sequence.onsets
     reference_end = reference_sequence.onsets[0] + reference_sequence.duration
     reference_iois = reference_sequence.iois
@@ -976,7 +990,10 @@ def get_phase_differences(
     elif unit == "radians":
         return phase_diffs * 2 * np.pi
 
-    return phase_diffs
+    if isinstance(test_events, numbers.Real):
+        return float(phase_diffs[0])
+    else:
+        return phase_diffs
 
 
 def get_rhythmic_entropy(
