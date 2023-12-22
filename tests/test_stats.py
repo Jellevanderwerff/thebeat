@@ -147,13 +147,31 @@ def test_acf_values():
     assert acf_values(seq, 1, 10, 2)[0] != 0
 
 
-def test_phase_differences():  # TODO Also consider cases where Sequence.end_with_interval=True
+@pytest.mark.parametrize("end_with_interval", [False, True])
+def test_phase_differences_containing(end_with_interval):
+    ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
+    ref_sequence.end_with_interval = end_with_interval
+    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 3000, 3500, 4000])
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="fraction")
+    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, np.nan, np.nan, np.nan]
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="degrees")
+    expected_phase_diffs = [np.nan, np.nan, 0, 36, 180, 324, 0, 72, 0, 180, np.nan, np.nan, np.nan]
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+
+    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="radians")
+    expected_phase_diffs = [np.nan, np.nan, 0, 0.2 * np.pi, np.pi, 1.8 * np.pi, 0, 0.4 * np.pi, 0, np.pi, np.nan, np.nan, np.nan]
+    assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
+
+
+def test_phase_differences_preceding():  # TODO Also consider cases where Sequence.end_with_interval=True
     ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
     test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 3000, 3500, 4000])
 
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag="containing", unit="fraction")
     expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, np.nan, np.nan, np.nan]
-    assert np.all(phase_diffs == expected_phase_diffs)
     assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
     phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi_lag=0, unit="fraction")
     assert np.array_equal(phase_diffs, expected_phase_diffs, equal_nan=True)
