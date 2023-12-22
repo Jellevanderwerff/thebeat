@@ -203,3 +203,10 @@ def test_phase_differences(end_with_interval):
 
     with pytest.raises(ValueError, match="window_size must be a positive integer"):
         get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=-1, unit="fraction", modulo=False)
+
+    # Single values and lists
+    assert get_phase_differences(2100, ref_sequence, reference_ioi="containing", unit="fraction") == pytest.approx(0.1)
+    assert get_phase_differences([2200, 2300], ref_sequence, reference_ioi="containing", unit="fraction") == pytest.approx([0.2, 0.3])
+
+    assert get_phase_differences(2100, ref_sequence, reference_ioi="preceding", unit="fraction") == pytest.approx(0.2)
+    assert get_phase_differences([2200, 2300], ref_sequence, reference_ioi="preceding", unit="fraction") == pytest.approx([0.4, 0.6])
