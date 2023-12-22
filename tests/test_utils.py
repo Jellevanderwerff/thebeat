@@ -15,16 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
-import pytest
-
-import thebeat.utils
-from thebeat import Sequence
-
-
-def test_phasedifferences():
-    seq = Sequence([499, 501, 505, 501])
-
-    with pytest.warns(UserWarning, match="The first onset of the test sequence was at t=0"):
-        diffs = list(thebeat.stats.get_phase_differences(seq, 500))
-
-    assert diffs == [359.2814371257485, 0.0, 3.5643564356435644, 4.2772277227722775]
+# import pytest

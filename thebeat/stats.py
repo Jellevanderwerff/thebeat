@@ -852,16 +852,51 @@ def get_phase_differences(
     unit: str = "degrees",
     modulo: bool = True
 ) -> np.ndarray:
-    """Get the phase differences for ``test_sequence`` compared to ``reference_sequence``.
+    r"""Get the phase differences for ``test_sequence`` compared to ``reference_sequence``.
 
-    #TODO note: We don't do modulo 1 here, because we want to be able to use the phase differences for
-    #TODO note: further calculations. However, this means that the phase differences can be larger than 1.
+    Phase differences are a (circular) measure of temporal alignment. They are calculated as the difference between
+    the onset of a test event and the onset of the corresponding reference event, divided by the IOI of the reference
+    IOI:
 
-    If test_onset is same as reference_onset, phase difference will be 0.
-    If test_onset is same as a theoretical onset at the end of a sequence (based on the previous IOI), it is nan.
+    :math:`\textrm{phase difference} = \frac{\textrm{test onset} - \textrm{reference onset}}{\textrm{reference IOI}}`
 
-    Example
-    -------
+    The resulting phase differences are expressed in the unit specified by ``unit``, where the default is in degrees.
+
+    The reference IOI can either be the IOI in the reference sequence that 'contains' an onset in the test sequence
+    (``reference_ioi='containing'``), or the IOI in the reference sequences that precedes this onset (``reference_ioi='preceding'``).
+    The default is for the reference IOI to be the one that precedes the test onset. Let us consider a reference
+    sequence with onsets:
+
+    :math:`t = 0`, :math:`t = 250`, :math:`t = 1000`
+
+    If an onset in the test sequence is at :math:`t = 750`,
+    and ``reference_ioi='containing'``, the reference IOI that will be used is the one from :math:`t = 250` to :math:`t = 1000`.
+    If ``reference_ioi='preceding'``, the reference IOI that will be used is the one from :math:`t = 0` to :math:`t = 250`.
+
+    In addition, one can specify a (moving average) window size. This is only used if ``reference_ioi='preceding'``.
+    The window size determines the number of reference IOIs that are used to calculate a mean reference IOI. For instance, if the
+    window size is 2, and the reference IOIs are:
+
+    :math:`\textrm{IOI}_1 = 1000`, :math:`\textrm{IOI}_2 = 500`, :math:`\textrm{IOI}_3 = 2000`, :math:`\textrm{IOI}_4 = 1000`
+
+    Then, the mean reference IOI will be :math:`\frac{500 + 2000}{2} = 1250`. Applying such a moving average
+    for the reference IOI be useful in cases where one wants to smoothe highly irregular (reference) sequences.
+
+    Finally, one can specify whether modulo arithmetic should be used. For degrees, if ``modulo=True``, the phase differences will be
+    expressed in the range :math:`[0, 360]`. If ``modulo=False``, the phase differences will be expressed in the range
+    :math:`[-\infty, \infty]`.
+
+    Note
+    ----
+    In cases where it is not possible to calculate a phase difference (e.g. because the test onset is before the first
+    reference onset), ``np.nan`` is returned.
+
+    Examples
+    --------
+    >>> from thebeat.core import Sequence
+    >>> reference = Sequence.from_onsets([0, 250, 1000])
+    >>> test = Sequence.from_onsets([250, 1250])
+    >>> get_phase_differences(test, reference, reference_ioi='preceding', unit='fraction')
 
 
     Parameters
@@ -873,17 +908,12 @@ def get_phase_differences(
         The reference sequence. Can be a Sequence object, a list or array of Sequence objects, or a number.
         In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
         number and the same length as ``sequence_1``.
-    reference_ioi_lag
-        The lag of the reference IOI. Can be "containing", "preceding", or an integer indicating the lag.
-        If "containing", the difference between an onset in the test sequence and its corresponding, closest onset
-        in the reference sequence will be divided by the IOI that 'contains' the onset. For example, if the
-        test onset is at t=1500, and there is a reference IOI from t=1000 to t=2000,
-        that IOI is used.
-        If "previous", the IOI of the reference sequence that precedes the test onset will be used. This is the same
-        as using a lag of -1. Positive values are also possible.
-        "Previous" is the default, and is the same as using a lag of -1.
+    reference_ioi
+        The IOI in the reference sequence that is used as the reference IOI. Can be either "containing" or "preceding".
+    window_size
+        The window size used for calculating the mean reference IOI. Only used if ``reference_ioi='preceding'``.
     circular_unit
-        The unit of the circular unit. Can be "degrees" or "radians".
+        The unit of the circular unit. Can be "degrees" (the default), "radians", or "fraction".
 
     Returns
     -------
