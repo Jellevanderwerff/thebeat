@@ -91,6 +91,19 @@ def test_recurrence_plot_threshold(rng):
 
 
 @pytest.mark.mpl_image_compare
+def test_plot_multiple_sequences_3(rng):
+    seq1 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, rng=rng)
+    seq1.round_onsets()
+    seq2 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, rng=rng)
+    seq2.round_onsets()
+    sound_seq = SoundSequence(SoundStimulus.generate(), seq2)
+    fig, ax = plot_multiple_sequences(
+        [seq1, sound_seq], figsize=(10, 5), suppress_display=True, colors=[(1, 0, 0), (0, 0, 1)]
+    )
+    return fig
+
+
+@pytest.mark.mpl_image_compare
 def test_recurrence_plot_nothreshold(rng):
     seq = (
         Sequence.generate_random_normal(
