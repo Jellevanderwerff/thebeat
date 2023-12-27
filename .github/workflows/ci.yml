@@ -58,13 +58,13 @@ jobs:
       - name: Run tests with pytest
         id: pytest
         run: |
-          pytest --mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html
+          pytest ${{ matrix.python-version == '3.11' && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
 
       - name: Upload pytest-mpl results
-        if: failure() && steps.pytest.conclusion == 'failure'
+        if: failure() && matrix.python-version == '3.11' && steps.pytest.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-mpl-results-${{ matrix.os }}-${{ matrix.python-version }}
+          name: pytest-mpl-results-${{ runner.os }}
           path: pytest_mpl_results/
 
       - name: Run doctests with pytest
