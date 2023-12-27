@@ -18,8 +18,6 @@ jobs:
 
     name: Test • Python ${{ matrix.python-version }} • ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    env:
-      PYTEST_MPL: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11' }}
 
     steps:
       - name: Checkout code
@@ -58,14 +56,15 @@ jobs:
           pip install pytest-github-actions-annotate-failures
 
       - name: Run tests with pytest
+        id: pytest
         run: |
-          pytest ${{ fromJSON(env.PYTEST_MPL) && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
+          pytest --mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html
 
       - name: Upload pytest-mpl results
-        if: always() && fromJSON(env.PYTEST_MPL)
+        if: failure() && steps.pytest.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-mpl-results
+          name: pytest-mpl-results-${{ matrix.os }}-${{ matrix.python-version }}
           path: pytest_mpl_results/
 
       - name: Run doctests with pytest
