@@ -15,10 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+import matplotlib
 import pytest
 
 
 # Remove once a new version of pytest-mpl is released, and brings --mpl-default-style as CLI and/or INI option
 # See also https://github.com/matplotlib/pytest-mpl/issues/198
 def pytest_configure(config):
+    matplotlib.use('agg')
     pytest.custom_mpl_image_compare = pytest.mark.mpl_image_compare(backend='agg', style='default', tolerance=0)
