@@ -119,7 +119,7 @@ def test_multiplication():
     assert len(seq.iois) == 30
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_sequence_plot_0():
     # simple case
     seq = thebeat.core.Sequence([500, 1000, 200])
@@ -127,7 +127,7 @@ def test_sequence_plot_0():
     return fig
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_sequence_plot_1():
     # plot onto existing Axes
     seq = thebeat.core.Sequence([500, 1000, 200])

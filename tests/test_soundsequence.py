@@ -68,7 +68,7 @@ def test_multiplication():
     assert len(trial.onsets) == 50
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_soundsequence_plot():
     ss = thebeat.core.SoundSequence(thebeat.core.SoundStimulus.generate(),
                                     thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500))

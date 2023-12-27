@@ -36,7 +36,7 @@ def test_lilypond_unavailable(monkeypatch):
         _ = melody.plot_melody(suppress_display=True)
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_lilypond_package(monkeypatch):
     lilypond = pytest.importorskip('lilypond')
 
@@ -53,7 +53,7 @@ def test_lilypond_package(monkeypatch):
     return fig
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_lilypond_system(monkeypatch):
     if shutil.which('lilypond') is None:
         pytest.skip("lilypond not found on PATH")

@@ -49,7 +49,7 @@ def test_whitenoise(rng):
     assert stim.duration_ms == 1000
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_plot_stimulus_waveform_0(rng):  # Plot new plot
     # regular example
     stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
@@ -57,7 +57,7 @@ def test_plot_stimulus_waveform_0(rng):  # Plot new plot
     return fig
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_plot_stimulus_waveform_1(rng):  # Plot onto existing plot
     fig, axs = plt.subplots(1, 2)
     stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)

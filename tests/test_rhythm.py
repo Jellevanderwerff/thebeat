@@ -47,7 +47,7 @@ def test_rhythm():
     assert len(rhythm.iois) == 16
 
 
-@pytest.mark.mpl_image_compare
+@pytest.custom_mpl_image_compare
 def test_rhythm_plot():
     rhythm = thebeat.music.Rhythm([500, 500, 500, 500])
     fig, ax = rhythm.plot_rhythm(suppress_display=True)
