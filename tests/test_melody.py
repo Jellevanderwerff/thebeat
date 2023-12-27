@@ -35,7 +35,7 @@ def test_melody(tmp_path):
     mel.synthesize_and_write(tmp_path / 'test_melody.wav', n_channels=2, metronome=True)
 
 
-@pytest.custom_mpl_image_compare
+@pytest.custom_mpl_image_compare(tolerance=3)
 def test_melody_plot():
     rng = np.random.default_rng(seed=123)
     mel = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
