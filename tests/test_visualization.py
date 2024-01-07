@@ -78,19 +78,6 @@ def test_plot_multiple_sequences_2(rng):
 
 
 @pytest.custom_mpl_image_compare
-def test_recurrence_plot_threshold(rng):
-    seq = (
-        Sequence.generate_random_normal(
-            n_events=10, mu=500, sigma=20, end_with_interval=True, rng=rng
-        )
-        * 5
-    )
-    fig, ax = recurrence_plot(seq, 0.03, suppress_display=True)
-
-    return fig
-
-
-@pytest.custom_mpl_image_compare
 def test_plot_multiple_sequences_3(rng):
     seq1 = Sequence.generate_random_normal(n_events=5, mu=500, sigma=25, rng=rng)
     seq1.round_onsets()
@@ -100,6 +87,19 @@ def test_plot_multiple_sequences_3(rng):
     fig, ax = plot_multiple_sequences(
         [seq1, sound_seq], figsize=(10, 5), suppress_display=True, colors=[(1, 0, 0), (0, 0, 1)]
     )
+    return fig
+
+
+@pytest.custom_mpl_image_compare
+def test_recurrence_plot_threshold(rng):
+    seq = (
+        Sequence.generate_random_normal(
+            n_events=10, mu=500, sigma=20, end_with_interval=True, rng=rng
+        )
+        * 5
+    )
+    fig, ax = recurrence_plot(seq, 0.03, suppress_display=True)
+
     return fig
 
 
