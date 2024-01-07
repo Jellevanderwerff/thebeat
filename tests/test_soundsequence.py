@@ -22,6 +22,11 @@ import scipy
 import thebeat.core
 
 
+@pytest.fixture
+def rng():
+    return np.random.default_rng(42)
+
+
 def test_soundsequence(tmp_path):
     seq = thebeat.core.Sequence.generate_isochronous(10, 500)
     stim = thebeat.core.SoundStimulus.generate()
@@ -119,3 +124,21 @@ def test_multichannel(tmp_path):
     assert samples.ndim == 2
     assert samples.shape[1] == 3
     assert samples.dtype == np.float32
+
+
+@pytest.mark.mpl_image_compare
+def test_soundsequence_plot_sequence(rng):
+    seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
+    stim = thebeat.core.SoundStimulus.generate()
+    sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
+    fig, _ = sound_sequence.plot_sequence(suppress_display=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_soundsequence_plot_waveform(rng):
+    seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
+    stim = thebeat.core.SoundStimulus.generate()
+    sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
+    fig, _ = sound_sequence.plot_waveform(suppress_display=True)
+    return fig
