@@ -315,8 +315,8 @@ class SoundSequence(BaseSequence):
         """
 
         # Make title
-        if self.name and kwargs.get("title") is None:
-            kwargs.get("title", self.name)
+        if self.name:
+            kwargs.setdefault("title", self.name)
 
         # The linewidths are the event durations for a SoundSequence unless otherwise specified
         if linewidth:
@@ -366,8 +366,8 @@ class SoundSequence(BaseSequence):
         >>> trial.plot_waveform()  # doctest: +SKIP
 
         """
-        if self.name and kwargs.get("title") is None:
-            kwargs.get("title", self.name)
+        if self.name:
+            kwargs.setdefault("title", self.name)
 
         fig, ax = thebeat.helpers.plot_waveform(
             samples=self.samples, fs=self.fs, n_channels=self.n_channels, **kwargs
