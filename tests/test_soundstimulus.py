@@ -60,7 +60,7 @@ def test_plot_stimulus_waveform_0(rng):  # Plot new plot
 @pytest.custom_mpl_image_compare
 def test_plot_stimulus_waveform_1(rng):  # Plot onto existing plot
     fig, axs = plt.subplots(1, 2)
-    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
+    stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, name='TestStimulus', rng=rng)
     stim.plot_waveform(ax=axs[0])
     return fig
 
