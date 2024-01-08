@@ -496,6 +496,8 @@ def phase_space_plot(
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
         ax.set_title(title)
+        ax.set_xlim(0, np.max(iois))
+        ax.set_ylim(0, np.max(iois))
         ax.set_aspect("equal")
 
     if not suppress_display and not ax_provided:
