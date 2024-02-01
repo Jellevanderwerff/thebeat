@@ -835,10 +835,9 @@ class Sequence(BaseSequence):
 
         """
 
-        # For the title, use the Sequence name if it has one. Otherwise use the title parameter,
-        # which may be None.
-        if self.name and kwargs.get("title") is None:
-            kwargs.get("title", self.name)
+        # If no title is provided, use the sequence name if it exists.
+        if self.name:
+            kwargs.setdefault("title", self.name)
 
         # Linewidths
         if linewidth is None:

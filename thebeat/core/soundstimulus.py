@@ -484,8 +484,8 @@ class SoundStimulus:
         >>> plt.show()  # doctest: +SKIP
         """
 
-        if self.name and kwargs.get("title") is None:
-            kwargs.get("title", self.name)
+        if self.name:
+            kwargs.setdefault("title", self.name)
 
         fig, ax = thebeat.helpers.plot_waveform(
             samples=self.samples, fs=self.fs, n_channels=self.n_channels, **kwargs

@@ -120,7 +120,7 @@ def test_multiplication():
 
 
 @pytest.custom_mpl_image_compare
-def test_sequence_plot_0():
+def test_plot_sequence():
     # simple case
     seq = thebeat.core.Sequence([500, 1000, 200])
     fig, ax = seq.plot_sequence(suppress_display=True)
@@ -128,11 +128,19 @@ def test_sequence_plot_0():
 
 
 @pytest.custom_mpl_image_compare
-def test_sequence_plot_1():
+def test_plot_sequence_on_ax():
     # plot onto existing Axes
-    seq = thebeat.core.Sequence([500, 1000, 200])
+    seq = thebeat.core.Sequence([500, 1000, 200], name="TestSequence")
     fig, axs = plt.subplots(2, 1)
     seq.plot_sequence(ax=axs[0])
+    return fig
+
+
+@pytest.custom_mpl_image_compare
+def test_plot_sequence_title():
+    # simple case
+    seq = thebeat.core.Sequence([500, 1000, 200], name="TestSequence")
+    fig, ax = seq.plot_sequence(title="This title, not the name", suppress_display=True)
     return fig
 
 

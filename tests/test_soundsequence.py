@@ -19,7 +19,13 @@ import numpy as np
 import pytest
 import scipy
 
+import thebeat._warnings
 import thebeat.core
+
+
+@pytest.fixture
+def rng():
+    return np.random.default_rng(42)
 
 
 def test_soundsequence(tmp_path):
@@ -119,3 +125,30 @@ def test_multichannel(tmp_path):
     assert samples.ndim == 2
     assert samples.shape[1] == 3
     assert samples.dtype == np.float32
+
+
+def test_soundsequence_rounding_warning(rng):
+    with pytest.warns(UserWarning, match=r"the exact start or end positions in frames \(i.e. samples\) were rounded off to the neirest integer ceiling"):
+        seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
+        stim = thebeat.core.SoundStimulus.generate()
+        thebeat.core.SoundSequence(stim, seq)
+
+
+@pytest.mark.mpl_image_compare
+def test_soundsequence_plot_sequence(rng):
+    seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
+    seq.round_onsets()
+    stim = thebeat.core.SoundStimulus.generate()
+    sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
+    fig, _ = sound_sequence.plot_sequence(suppress_display=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_soundsequence_plot_waveform(rng):
+    seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
+    seq.round_onsets()
+    stim = thebeat.core.SoundStimulus.generate()
+    sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
+    fig, _ = sound_sequence.plot_waveform(suppress_display=True)
+    return fig
