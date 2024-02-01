@@ -666,18 +666,18 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 notes.append(note)
             # if note doesn't fit the bar
             else:
-                # try to divide the note up into smaller bits
-                for division in (2, 4, 8):
-                    # if now it fits in the bar
-                    if (note / division) + bar_fullness <= 1:
-                        # we split up the original note into a small bit, and the rest (e.g. 1/4 and 3/4)
-                        split_notes = [note / division, note - (note / division)]
-                        # We need to remember which notes to tie later
-                        notes += split_notes
-                        ties_at.append(i)
-                        bar_fullness += sum(split_notes)
-                        bar_fullness -= full_bar
-                        break
+                remains = note
+                status = False
+                while status is False or remains > full_bar:
+                    possibilities = [remains / division for division in range(2, 10)]  # TODO consider range
+                    left_side = [poss for poss in possibilities if (poss + bar_fullness) == full_bar and poss.numerator == 1][0]
+                    remains = note - left_side
+                    split_notes = [left_side, remains]
+                    notes += split_notes
+                    ties_at.append(i)
+                    bar_fullness += sum(split_notes)
+                    bar_fullness -= full_bar
+                    status = True
 
             # if bar is full set bar_fullness to zero
             if is_full_bar_multiple(bar_fullness, full_bar):
