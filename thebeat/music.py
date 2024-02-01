@@ -538,8 +538,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         ax: plt.Axes | None = None,
     ) -> tuple[plt.Figure, plt.Axes]:
         """
-        Make a plot containing the musical notation of the rhythm. This function requires install 'abjad' and
-        'lilypond'. You can install both through ``pip install thebeat[music_notation]``.
+        Make a plot containing the musical notation of the rhythm. This function requires an installation of 'abjad' and
+        'lilypond'. You can install both through ``pip install 'thebeat[music_notation]'``.
         For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
 
         The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
