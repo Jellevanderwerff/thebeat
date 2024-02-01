@@ -609,6 +609,11 @@ def fft_values(
     The number of cycles per unit can be interpreted as the beat frequency. For instance, 2 cycles for a unit size of
     1000 ms means a beat frequency of 2 Hz.
 
+    Note
+    ----
+    If a sequence ends with an event, the last event is not included in the calculation of the Fourier transform.
+    This is because the Fourier transform assumes that the sequence can be repeated indefinitely.
+
     Parameters
     ----------
     sequence
@@ -637,7 +642,8 @@ def fft_values(
 
     # Make a sequence of ones and zeroes
     timeseries = thebeat.helpers.sequence_to_binary(sequence, resolution=step_size)
-    duration = sequence.duration
+    timeseries = timeseries if sequence.end_with_interval is True else timeseries[:-1]
+    duration = len(timeseries) * step_size
     x_length = np.ceil(duration / step_size).astype(int)
 
     # Do the fft

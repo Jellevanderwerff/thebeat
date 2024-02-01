@@ -104,11 +104,20 @@ def test_fft_values():
     x, y = fft_values(seq, unit_size=1000, x_min=1, x_max=3)
     assert x[np.argmax(y)] == 2
 
+    seq = Sequence([500, 501, 500, 500])
+    x, y = fft_values(seq, unit_size=1000)
+
+    seq = Sequence([501.1, 500.3, 500, 500])
+    x, y = fft_values(seq, unit_size=1000)
+
+    seq = Sequence.from_onsets([-10, 40, 100, 1000])
+    x, y = fft_values(seq, unit_size=1000)
+
 
 @pytest.mark.mpl_image_compare
 def test_fft_plot():
     seq = Sequence([500, 500, 500, 500])
-    fig, ax = fft_plot(seq, unit_size=1000, x_min=None, x_max=None, suppress_display=True)
+    fig, ax = fft_plot(seq, unit_size=1000, x_min=None, x_max=10, suppress_display=True)
     return fig
 
 
@@ -151,85 +160,259 @@ def test_acf_values():
 def test_phase_differences(end_with_interval):
     ref_sequence = Sequence.from_onsets([500, 1500, 2000, 3000])
     ref_sequence.end_with_interval = end_with_interval
-    test_sequence = Sequence.from_onsets([-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 2800, 3000, 3500, 4000])
+    test_sequence = Sequence.from_onsets(
+        [-100, 100, 500, 600, 1000, 1400, 1500, 1600, 2000, 2500, 2800, 3000, 3500, 4000]
+    )
 
     # Containing
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="fraction")
-    expected_phase_diffs = [np.nan, np.nan, 0., 0.1, 0.5, 0.9, 0, 0.2, 0, 0.5, 0.8, np.nan, np.nan, np.nan]
+    phase_diffs = get_phase_differences(
+        test_sequence, ref_sequence, reference_ioi="containing", unit="fraction"
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        0.0,
+        0.1,
+        0.5,
+        0.9,
+        0,
+        0.2,
+        0,
+        0.5,
+        0.8,
+        np.nan,
+        np.nan,
+        np.nan,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="degrees")
-    expected_phase_diffs = [np.nan, np.nan, 0, 36, 180, 324, 0, 72, 0, 180, 288, np.nan, np.nan, np.nan]
+    phase_diffs = get_phase_differences(
+        test_sequence, ref_sequence, reference_ioi="containing", unit="degrees"
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        0,
+        36,
+        180,
+        324,
+        0,
+        72,
+        0,
+        180,
+        288,
+        np.nan,
+        np.nan,
+        np.nan,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="radians")
-    expected_phase_diffs = [np.nan, np.nan, 0, 0.2 * np.pi, np.pi, 1.8 * np.pi, 0, 0.4 * np.pi, 0, np.pi, 1.6 * np.pi, np.nan, np.nan, np.nan]
+    phase_diffs = get_phase_differences(
+        test_sequence, ref_sequence, reference_ioi="containing", unit="radians"
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        0,
+        0.2 * np.pi,
+        np.pi,
+        1.8 * np.pi,
+        0,
+        0.4 * np.pi,
+        0,
+        np.pi,
+        1.6 * np.pi,
+        np.nan,
+        np.nan,
+        np.nan,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    with pytest.raises(ValueError, match="reference_ioi must be either 'containing' or 'preceding'"):
+    with pytest.raises(
+        ValueError, match="reference_ioi must be either 'containing' or 'preceding'"
+    ):
         get_phase_differences(test_sequence, ref_sequence, reference_ioi="invalid", unit="fraction")
 
     with pytest.raises(ValueError, match="unit must be either 'degrees', 'radians' or 'fraction'"):
-        get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", unit="invalid")
+        get_phase_differences(
+            test_sequence, ref_sequence, reference_ioi="containing", unit="invalid"
+        )
 
-    with pytest.raises(ValueError, match="window_size cannot be used with reference_ioi='containing'"):
-        get_phase_differences(test_sequence, ref_sequence, reference_ioi="containing", window_size=1, unit="fraction")
+    with pytest.raises(
+        ValueError, match="window_size cannot be used with reference_ioi='containing'"
+    ):
+        get_phase_differences(
+            test_sequence, ref_sequence, reference_ioi="containing", window_size=1, unit="fraction"
+        )
 
     # Preceding
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=False)
-    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 1, 1.6, 0, 0.5, 1]
+    phase_diffs = get_phase_differences(
+        test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=False
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        0,
+        0.1,
+        0,
+        1,
+        1.6,
+        0,
+        0.5,
+        1,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=1, unit="fraction", modulo=False)
+    phase_diffs = get_phase_differences(
+        test_sequence,
+        ref_sequence,
+        reference_ioi="preceding",
+        window_size=1,
+        unit="fraction",
+        modulo=False,
+    )
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=True)
-    expected_phase_diffs = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0.6, 0, 0.5, 0])
+    phase_diffs = get_phase_differences(
+        test_sequence, ref_sequence, reference_ioi="preceding", unit="fraction", modulo=True
+    )
+    expected_phase_diffs = np.array(
+        [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 0.1, 0, 0, 0.6, 0, 0.5, 0]
+    )
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=2, unit="fraction", modulo=False)
-    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 2/3, 16/15, 0, 2/3, 4/3]
+    phase_diffs = get_phase_differences(
+        test_sequence,
+        ref_sequence,
+        reference_ioi="preceding",
+        window_size=2,
+        unit="fraction",
+        modulo=False,
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        0,
+        2 / 3,
+        16 / 15,
+        0,
+        2 / 3,
+        4 / 3,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=3, unit="fraction", modulo=False)
-    expected_phase_diffs = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0, 3/5, 6/5]
+    phase_diffs = get_phase_differences(
+        test_sequence,
+        ref_sequence,
+        reference_ioi="preceding",
+        window_size=3,
+        unit="fraction",
+        modulo=False,
+    )
+    expected_phase_diffs = [
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        np.nan,
+        0,
+        3 / 5,
+        6 / 5,
+    ]
     assert phase_diffs == pytest.approx(expected_phase_diffs, nan_ok=True)
 
     window_size = len(ref_sequence.iois) + 1
-    phase_diffs = get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=window_size, unit="fraction", modulo=False)
+    phase_diffs = get_phase_differences(
+        test_sequence,
+        ref_sequence,
+        reference_ioi="preceding",
+        window_size=window_size,
+        unit="fraction",
+        modulo=False,
+    )
     assert np.all(np.isnan(phase_diffs))
 
     with pytest.raises(ValueError, match="window_size must be a positive integer"):
-        get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=0, unit="fraction", modulo=False)
+        get_phase_differences(
+            test_sequence,
+            ref_sequence,
+            reference_ioi="preceding",
+            window_size=0,
+            unit="fraction",
+            modulo=False,
+        )
 
     with pytest.raises(ValueError, match="window_size must be a positive integer"):
-        get_phase_differences(test_sequence, ref_sequence, reference_ioi="preceding", window_size=-1, unit="fraction", modulo=False)
+        get_phase_differences(
+            test_sequence,
+            ref_sequence,
+            reference_ioi="preceding",
+            window_size=-1,
+            unit="fraction",
+            modulo=False,
+        )
 
     # Single values and lists
-    assert get_phase_differences(2100, ref_sequence, reference_ioi="containing", unit="fraction") == pytest.approx(0.1)
-    assert get_phase_differences([2200, 2300], ref_sequence, reference_ioi="containing", unit="fraction") == pytest.approx([0.2, 0.3])
+    assert get_phase_differences(
+        2100, ref_sequence, reference_ioi="containing", unit="fraction"
+    ) == pytest.approx(0.1)
+    assert get_phase_differences(
+        [2200, 2300], ref_sequence, reference_ioi="containing", unit="fraction"
+    ) == pytest.approx([0.2, 0.3])
 
-    assert get_phase_differences(2100, ref_sequence, reference_ioi="preceding", unit="fraction") == pytest.approx(0.2)
-    assert get_phase_differences([2200, 2300], ref_sequence, reference_ioi="preceding", unit="fraction") == pytest.approx([0.4, 0.6])
+    assert get_phase_differences(
+        2100, ref_sequence, reference_ioi="preceding", unit="fraction"
+    ) == pytest.approx(0.2)
+    assert get_phase_differences(
+        [2200, 2300], ref_sequence, reference_ioi="preceding", unit="fraction"
+    ) == pytest.approx([0.4, 0.6])
 
 
 def test_phase_differences_moving_average():
     ref_sequence = Sequence([1, 2, 4, 1, 2])
     test_events = [1.5, 3.5, 7.5, 8.5, 10.5]
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=1, unit="fraction")
-    assert phase_diffs == pytest.approx([1/2, 1/4, 1/8, 1/2, 1/4], nan_ok=True)
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=1, unit="fraction"
+    )
+    assert phase_diffs == pytest.approx([1 / 2, 1 / 4, 1 / 8, 1 / 2, 1 / 4], nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=2, unit="fraction")
-    assert phase_diffs == pytest.approx([np.nan, 1/3, 1/6, 1/5, 1/3], nan_ok=True)
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=2, unit="fraction"
+    )
+    assert phase_diffs == pytest.approx([np.nan, 1 / 3, 1 / 6, 1 / 5, 1 / 3], nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=3, unit="fraction")
-    assert phase_diffs == pytest.approx([np.nan, np.nan, 3/14, 3/14, 3/14], nan_ok=True)
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=3, unit="fraction"
+    )
+    assert phase_diffs == pytest.approx([np.nan, np.nan, 3 / 14, 3 / 14, 3 / 14], nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=4, unit="fraction")
-    assert phase_diffs == pytest.approx([np.nan, np.nan, np.nan, 1/4, 2/9], nan_ok=True)
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=4, unit="fraction"
+    )
+    assert phase_diffs == pytest.approx([np.nan, np.nan, np.nan, 1 / 4, 2 / 9], nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=5, unit="fraction")
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=5, unit="fraction"
+    )
     assert phase_diffs == pytest.approx([np.nan, np.nan, np.nan, np.nan, 1 / 4], nan_ok=True)
 
-    phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=6, unit="fraction")
+    phase_diffs = get_phase_differences(
+        test_events, ref_sequence, reference_ioi="preceding", window_size=6, unit="fraction"
+    )
     assert phase_diffs == pytest.approx([np.nan, np.nan, np.nan, np.nan, np.nan], nan_ok=True)
