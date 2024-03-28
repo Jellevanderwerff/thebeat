@@ -167,6 +167,26 @@ def get_sound_with_metronome(
     return sound_samples
 
 
+
+def interpret_ratio_string(ratio: str) -> float:
+    """
+    Given a ratio string, return the corresponding float.
+
+    Parameters
+    ----------
+    ratio : str
+        The ratio string to interpret.
+
+    """
+    if not ':' in ratio:
+        raise ValueError(f'Invalid ratio string: {ratio}. Must be of form like "1:2".')
+
+    num, den = ratio.split(':')
+    num = int(num)
+    den = int(den)
+
+    return num / sum([num, den])
+
 # todo Use NumPy functions
 def join_rhythms(iterator):
     """

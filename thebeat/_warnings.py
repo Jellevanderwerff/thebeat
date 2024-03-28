@@ -45,3 +45,7 @@ duplicate_names_sequence_plot = (
     "Numbers were added to the y-axis labels to distinguish between them.\n"
     "The numbers were added to the names in the order in which the sequences were provided."
 )
+
+ratios_not_symmetric = (
+    "thebeat: The provided ratios do not describe a symmetric distribution (so e.g. '1:2' is included but not its reciprocal '2:1')."
+)

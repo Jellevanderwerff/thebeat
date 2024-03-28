@@ -18,10 +18,13 @@
 from __future__ import annotations
 
 import numbers
+import warnings
+import thebeat._warnings
 
 import Levenshtein
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import scipy.fft
 import scipy.signal
@@ -259,7 +262,7 @@ def acf_values(
         ) from e
 
     # Now, we remove the negative lags (which have the length of signal)
-    correlation = correlation[len(signal) - 1:]
+    correlation = correlation[len(signal) - 1 :]
 
     return correlation
 
@@ -488,7 +491,7 @@ def ccf_values(
         ) from e
 
     # Now, remove negative lags
-    correlation = correlation[len(test_signal) - 1:]
+    correlation = correlation[len(test_signal) - 1 :]
 
     return correlation
 
@@ -819,6 +822,81 @@ statistic_sign=1)
         raise ValueError("Unknown distribution. Choose 'normal' or 'uniform'.")
 
 
+def get_interval_ratios_counts(
+    seqs: npt.ArrayLike | thebeat.Sequence,
+    ratios: npt.ArrayLike,
+    normalize: bool = True,
+    collapse_symmetric: bool = False,
+) -> pd.DataFrame:
+    """
+    Given a list of sequences, return a list of the normalized bin counts of ratios.
+
+    Parameters
+    ----------
+
+    seqs : npt.ArrayLike[thebeat.Sequence] | thebeat.Sequence
+        A list of sequences to analyze.
+    ratios : npt.ArrayLike
+        Should be a list-like with strings specified as e.g. '1:2'. Must have a minimum length of two ratios, otherwise it is not possible to
+        define on- vs off-boundaries.
+    normalize : bool
+        If True, normalize the counts by the size of the bin on the x axis.
+    collapse_symmetric : bool
+        If True, collapse e.g. '1:2' and '2:1' into the same bin.
+
+    """
+
+    if len(ratios) < 2:
+        raise ValueError(
+            "Must provide at least two ratios in order to be able to define on- vs off-boundaries."
+        )
+
+    if isinstance(seqs, thebeat.Sequence):
+        seqs = [seqs]
+    if isinstance(bin_centers, str):
+        bin_centers = [bin_centers]
+
+    bin_centers = np.array([thebeat.helpers.interpret_ratio_string(ratio_str) for ratio_str in bin_centers])
+    ratios = np.array([seq.interval_ratios_from_dyads for seq in seqs])
+
+    # Check whether supplied ratios are symmetric (i.e. includes both 1:2 and 2:1); if not warn (only necessary if collapse_symmetric=False)
+    if not collapse_symmetric:
+        centers_folded = [
+            1 - center if center > 0.5 else center for center in bin_centers[bin_centers != 0.5]
+        ]
+        if not all(centers_folded.count(center) == 2 for center in centers_folded):
+            warnings.warn(thebeat._warnings.ratios_not_symmetric)
+
+    # Define bins (on- and off)
+
+    """
+    Bin index    Bin center  Bin width    Range          Meaning
+    0            1/4.5       0.0247678    1/4.75—1/4.25  off ternary
+    1            1/4         0.03137255   1/4.25—1/3.75  on ternary
+    2            1/3.5       0.04102564   1/3.75—1/3.25  off binary
+    3            1/3         0.05594406   1/3.25—1/2.75  on binary
+    4            1/2.5       0.08080808   1/2.75—1/2.25  off isochrony
+    5            1/2         0.05555556   1/2.25—1/2     on isochrony
+
+
+    boundaries = [1/4.75, 1/4.25, 1/3.75, 1/3.25, 1/2.75, 1/2.25, 1/2]
+    bin_widths = np.diff(boundaries)
+    """
+
+    # Get counts
+    # For every pair of ratios insert the mean
+    bin_centers = np.sort(bin_centers)
+    bin_centers_ext = np.sort(np.concatenate([bin_centers, [np.mean([a, b]) for a, b in zip(bin_centers[:-1], bin_centers[1:])]]))
+    print(bin_centers_ext)
+
+
+    # Normalize (if needed)
+
+    # Make DF
+
+    # Return DF
+
+
 def get_interval_ratios_from_dyads(sequence: np.array | thebeat.core.Sequence | list):
     r"""
     Return sequential interval ratios, calculated as:
@@ -850,7 +928,7 @@ def get_phase_differences(
     reference_ioi: str = "preceding",
     window_size: int | None = None,
     unit: str = "degrees",
-    modulo: bool = True
+    modulo: bool = True,
 ) -> np.ndarray | float:
     r"""Get the phase differences for ``test_events`` compared to ``reference_sequence``.
 
@@ -976,8 +1054,14 @@ def get_phase_differences(
             if containing_ioi_index < window_size:
                 phase_diff = np.nan
             else:
-                mean_reference_ioi = np.mean(reference_iois[containing_ioi_index - window_size:containing_ioi_index])
-                reference_onset = reference_onsets[containing_ioi_index] if containing_ioi_index < len(reference_onsets) else reference_end
+                mean_reference_ioi = np.mean(
+                    reference_iois[containing_ioi_index - window_size : containing_ioi_index]
+                )
+                reference_onset = (
+                    reference_onsets[containing_ioi_index]
+                    if containing_ioi_index < len(reference_onsets)
+                    else reference_end
+                )
                 phase_diff = (test_onset - reference_onset) / mean_reference_ioi
         phase_diffs.append(phase_diff)
 
