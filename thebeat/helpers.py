@@ -160,12 +160,11 @@ def get_sound_with_metronome(
         start_pos = int(onset * fs / 1000)
         end_pos = int(start_pos + metronome_samples.shape[0])
         new_samples = sound_samples[start_pos:end_pos] + metronome_samples
-        sound_samples[
-            start_pos:end_pos
-        ] = new_samples  # we add the metronome sound to the existing sound
+        sound_samples[start_pos:end_pos] = (
+            new_samples  # we add the metronome sound to the existing sound
+        )
 
     return sound_samples
-
 
 
 def interpret_ratio_string(ratio: str) -> float:
@@ -178,14 +177,18 @@ def interpret_ratio_string(ratio: str) -> float:
         The ratio string to interpret.
 
     """
-    if not ':' in ratio:
-        raise ValueError(f'Invalid ratio string: {ratio}. Must be of form like "1:2".')
+    try:
+        num, den = ratio.split(":")
+        num = float(num)
+        den = float(den)
+    except ValueError:
+        raise ValueError(f'Invalid ratio string: "{ratio}". Must be of form "1:2".')
 
-    num, den = ratio.split(':')
-    num = int(num)
-    den = int(den)
+    if den == 0 or num == 0:
+        raise ValueError("Ratio cannot include zero.")
 
     return num / sum([num, den])
+
 
 # todo Use NumPy functions
 def join_rhythms(iterator):
@@ -277,7 +280,7 @@ def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
         offramp_amps = np.linspace(1, 0, int(offramp_ms / 1000 * fs))
     elif ramp_type == "raised-cosine":
         hann_complete = scipy.signal.windows.hann(offramp_samples_len * 2)
-        offramp_amps = hann_complete[hann_complete.shape[0] // 2:]
+        offramp_amps = hann_complete[hann_complete.shape[0] // 2 :]
     else:
         raise ValueError("Unknown ramp type. Use 'linear' or 'raised-cosine'")
 
@@ -363,15 +366,15 @@ def plot_lp(
             file.write(lp)
 
         command = [
-                "lilypond",
-                "-dbackend=eps",
-                "-dcrop",
-                "--silent",
-                f"-dresolution={dpi}",
-                "-o",
-                "rhythm",
-                "rhythm.ly",
-            ]
+            "lilypond",
+            "-dbackend=eps",
+            "-dcrop",
+            "--silent",
+            f"-dresolution={dpi}",
+            "-o",
+            "rhythm",
+            "rhythm.ly",
+        ]
 
         subprocess.run(command, cwd=tmp_dir, check=True)
 
@@ -694,7 +697,9 @@ def synthesize_sound(
     elif oscillator == "sawtooth":
         samples = amplitude * scipy.signal.sawtooth(2 * np.pi * freq * samples)
     else:
-        raise ValueError("Choose existing oscillator (for now only 'sine' or 'square' or 'sawtooth')")
+        raise ValueError(
+            "Choose existing oscillator (for now only 'sine' or 'square' or 'sawtooth')"
+        )
 
     return samples
 

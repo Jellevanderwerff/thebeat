@@ -27,6 +27,7 @@ from thebeat.stats import (
     fft_plot,
     fft_values,
     get_npvi,
+    get_interval_ratios_counts,
     get_phase_differences,
     get_rhythmic_entropy,
     get_ugof_isochronous,
@@ -233,3 +234,11 @@ def test_phase_differences_moving_average():
 
     phase_diffs = get_phase_differences(test_events, ref_sequence, reference_ioi="preceding", window_size=6, unit="fraction")
     assert phase_diffs == pytest.approx([np.nan, np.nan, np.nan, np.nan, np.nan], nan_ok=True)
+
+
+def test_ratio_counts():
+    seqs = [Sequence.generate_random_uniform(10, 100, 1000, rng=np.random.default_rng(123)) for _ in range(10)]
+    counts = get_interval_ratios_counts(seqs, ratios=["1:1", "1:2", "1:3", "1:4", "1:5", "1:6", "1:7", "1:8", "1:9", "1:10"])
+
+    seq = Sequence([500, 500, 250, 1000])  # 1:1, 2:1, 1:4
+    counts = get_interval_ratios_counts(seq, ['1:1', '1:2', '2:1', '1:2'])

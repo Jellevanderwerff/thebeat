@@ -90,3 +90,16 @@ def test_dtypes(tmp_path, dtype):
     # test datatype
     _, samples = scipy.io.wavfile.read(tmp_path / 'test.wav')
     assert samples.dtype == dtype
+
+
+def test_interpret_ratio_str():
+    with pytest.raises(ValueError):
+        thebeat.helpers.interpret_ratio_string('1/2/3')
+    with pytest.raises(ValueError):
+        thebeat.helpers.interpret_ratio_string('1:2:3')
+    with pytest.raises(ValueError):
+        thebeat.helpers.interpret_ratio_string('1:')
+    with pytest.raises(ValueError):
+        thebeat.helpers.interpret_ratio_string(':2')
+    with pytest.raises(ValueError):
+        thebeat.helpers.interpret_ratio_string('1:2:3:4')

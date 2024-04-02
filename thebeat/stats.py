@@ -851,21 +851,31 @@ def get_interval_ratios_counts(
             "Must provide at least two ratios in order to be able to define on- vs off-boundaries."
         )
 
+    # Check input. We rename ratios to bin_centers to make the code more readable
     if isinstance(seqs, thebeat.Sequence):
         seqs = [seqs]
-    if isinstance(bin_centers, str):
-        bin_centers = [bin_centers]
+    if isinstance(ratios, str):
+        bin_centers = [ratios]
+    else:
+        bin_centers = ratios
 
-    bin_centers = np.array([thebeat.helpers.interpret_ratio_string(ratio_str) for ratio_str in bin_centers])
+    bin_centers = np.array([thebeat.helpers.interpret_ratio_string(ratio_str) for ratio_str in bin_centers]).sort()
     ratios = np.array([seq.interval_ratios_from_dyads for seq in seqs])
 
     # Check whether supplied ratios are symmetric (i.e. includes both 1:2 and 2:1); if not warn (only necessary if collapse_symmetric=False)
+    ratios_collapsed = np.array([1 - center if center > 0.5 else center for center in bin_centers])
+
     if not collapse_symmetric:
-        centers_folded = [
-            1 - center if center > 0.5 else center for center in bin_centers[bin_centers != 0.5]
-        ]
-        if not all(centers_folded.count(center) == 2 for center in centers_folded):
+        print(ratios_collapsed)
+        if not all(ratios_collapsed.count(ratio) == 2 for ratio in ratios_collapsed if ratio != 0.5):
             warnings.warn(thebeat._warnings.ratios_not_symmetric)
+
+    # For every pair of ratios insert the mean
+    #bin_centers_ext = np.sort(np.concatenate([bin_centers, (bin_centers[:-1] + bin_centers[1:]) / 2]))
+    bin_centers_ext = np.interp(x=range(len(bin_centers) + 1),
+                                xp=range(1, 2 * len(bin_centers) + 1, 2),
+                                fp=bin_centers)
+
 
     # Define bins (on- and off)
 
@@ -884,11 +894,6 @@ def get_interval_ratios_counts(
     """
 
     # Get counts
-    # For every pair of ratios insert the mean
-    bin_centers = np.sort(bin_centers)
-    bin_centers_ext = np.sort(np.concatenate([bin_centers, [np.mean([a, b]) for a, b in zip(bin_centers[:-1], bin_centers[1:])]]))
-    print(bin_centers_ext)
-
 
     # Normalize (if needed)
 
