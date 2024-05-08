@@ -20,6 +20,7 @@ from __future__ import annotations
 import copy
 import os
 import re
+import warnings
 
 import numpy as np
 import sounddevice as sd
@@ -374,15 +375,12 @@ class SoundStimulus:
             raise TypeError("Please provide a parselmouth.Sound object.")
 
         fs = sound_object.sampling_frequency
+        # Parselmouth's sampling frequency is always a floating-point number, so we convert and warn if it was not a round number.
+        if not fs.is_integer():
+            warnings.warn("Sampling frequency was not a round number. It was rounded to the nearest integer.")
+        fs = int(sound_object.sampling_frequency)
 
-        if sound_object.n_channels == 1:
-            samples = sound_object.values[0]
-        elif sound_object.n_channels == 2:
-            samples = sound_object.values
-        else:
-            raise ValueError(
-                "Incorrect number of dimensions in samples. Should be 1 (mono) or 2 (stereo)."
-            )
+        samples = sound_object.values.T
 
         return cls(samples, fs, name)
 
