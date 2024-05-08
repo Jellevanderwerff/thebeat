@@ -375,9 +375,9 @@ class SoundStimulus:
 
         fs = sound_object.sampling_frequency
 
-        if sound_object.samples.ndim == 1:
+        if sound_object.n_channels == 1:
             samples = sound_object.values[0]
-        elif sound_object.samples.ndim == 2:
+        elif sound_object.n_channels == 2:
             samples = sound_object.values
         else:
             raise ValueError(
