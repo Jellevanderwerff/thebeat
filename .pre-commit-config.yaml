@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
         args: [--maxkb=8000]
@@ -31,12 +31,12 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.19.0
     hooks:
     - id: pyupgrade
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         additional_dependencies: [flake8-pyproject]
@@ -47,7 +47,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/mgedmin/check-manifest
-    rev: '0.49'
+    rev: '0.50'
     hooks:
     - id: check-manifest
       stages: [manual]
