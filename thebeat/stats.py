@@ -1106,7 +1106,7 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
 
     for i in range(1, len(iois)):
         diff = iois[i] - iois[i - 1]
-        mean = np.mean(iois[i] + iois[i - 1])
+        mean = np.mean([iois[i], iois[i - 1]])
         npvi_values.append(np.abs(diff / mean))
 
     npvi = (100 / (len(iois) - 1)) * np.sum(npvi_values)
