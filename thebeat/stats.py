@@ -797,8 +797,8 @@ def ks_test(
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=100,mu=500,sigma=25,rng=rng)
     >>> print(ks_test(seq))
-    KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911, statistic_location=496.3505526721194, \
-statistic_sign=1)
+    KstestResult(statistic=np.float64(0.07176677141846549), pvalue=np.float64(0.6608009345687911), \
+statistic_location=np.float64(496.3505526721194), statistic_sign=np.int8(1))
 
     """
 
