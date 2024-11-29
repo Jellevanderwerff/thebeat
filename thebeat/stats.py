@@ -1094,7 +1094,7 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=10,mu=500,sigma=50,rng=rng)
     >>> print(get_npvi(seq))
-    4.703289681619325
+    9.40657936323865
     """
 
     if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
