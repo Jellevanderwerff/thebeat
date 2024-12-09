@@ -1,2 +1,5 @@
 pytest
 pytest-mpl
+
+numpy>=2; python_version>="3.9"
+numpy<2; python_version<"3.9"
