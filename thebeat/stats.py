@@ -779,7 +779,7 @@ def ks_test(
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
         is compared.
     alternative
-        Either ‘two-sided’, ‘less’ or ‘greater’. See :func:`scipy.stats.kstest` for more information.
+        Either 'two-sided', 'less', or 'greater'. See :func:`scipy.stats.kstest` for more information.
 
     Returns
     -------
