@@ -653,7 +653,7 @@ def fft_values(
     # Slice the data and take absolute values (we don't care about complex numbers)
     min_freq_index = np.min(np.where(xf > x_min)).astype(int) if x_min else None
     max_freq_index = np.min(np.where(xf > x_max)).astype(int) if x_max else None
-    yf = np.abs(yf[min_freq_index:max_freq_index])
+    yf = np.abs(yf[min_freq_index:max_freq_index])**2
     xf = xf[min_freq_index:max_freq_index]
 
     return xf, yf
