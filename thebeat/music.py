@@ -539,7 +539,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> tuple[plt.Figure, plt.Axes]:
         """
         Make a plot containing the musical notation of the rhythm. This function requires an installation of 'abjad' and
-        'lilypond'. You can install both through ``pip install 'thebeat[music_notation]'``.
+        'lilypond'. You can install both through ``pip install 'thebeat[music-notation]'``.
         For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
 
         The plot is returned as a :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` object,
@@ -607,7 +607,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         if abjad is None:
             raise ImportError(
                 "This function requires the abjad package. Install, for instance by typing "
-                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "`pip install abjad` or `pip install thebeat[music-notation]` into your terminal.\n"
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
@@ -813,7 +813,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
     Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
     current version of `abjad` requires Python 3.10. The last version that supported Python 3.8-3.9 is
     `this one <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
-    when you install `thebeat` with ``pip install thebeat[music_notation]``.
+    when you install `thebeat` with ``pip install thebeat[music-notation]``.
     For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
     """
 
@@ -970,7 +970,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         if abjad is None:
             raise ImportError(
                 "This function requires the abjad package. Install, for instance by typing "
-                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "`pip install abjad` or `pip install thebeat[music-notation]` into your terminal.\n"
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
@@ -1105,7 +1105,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         if abjad is None:
             raise ImportError(
                 "This function requires the abjad package. Install, for instance by typing "
-                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "`pip install abjad` or `pip install thebeat[music-notation]` into your terminal.\n"
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 

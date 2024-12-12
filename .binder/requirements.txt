@@ -1,1 +1,1 @@
-.[music_notation]
+.[music-notation]

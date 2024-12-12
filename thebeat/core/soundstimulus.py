@@ -331,7 +331,7 @@ class SoundStimulus:
         if abjad is None:
             raise ImportError(
                 "This function requires the abjad package. Install, for instance by typing "
-                "`pip install abjad` or `pip install thebeat[music_notation]` into your terminal.\n"
+                "`pip install abjad` or `pip install thebeat[music-notation]` into your terminal.\n"
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
