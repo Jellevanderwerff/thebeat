@@ -38,6 +38,12 @@ you have to install it using:
 This will install thebeat with the dependencies needed for plotting musical notation.
 These dependencies are `abjad <https://abjad.github.io>`_ and `Lilypond <https://lilypond.org>`_.
 
+.. note::
+   Unfortunately, Mac OS silicon users will in any case have to install Lilypond manually. This can be done by following the instructions on the
+   `Lilypond website <https://lilypond.org>`_. The easiest way of installing Lilypond is by using `Homebrew <https://brew.sh>`_. After installing Homebrew,
+   it is as simple as running ``brew install lilypond`` in a terminal window.
+
+
 You can now import *thebeat* in your preferred editor using:
 
 .. code-block:: python
