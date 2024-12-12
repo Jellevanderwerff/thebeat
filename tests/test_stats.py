@@ -98,10 +98,10 @@ def test_entropy():
 
 def test_fft_values():
     seq = Sequence([500, 500, 500, 500])
-    x, y = fft_values(seq, unit_size=1000, x_min=None, x_max=None)
+    x, y = fft_values(seq, unit_size=1000, x_min=None, x_max=None, remove_dc=False)
     assert np.argmax(y) == 0
 
-    x, y = fft_values(seq, unit_size=1000, x_min=1, x_max=3)
+    x, y = fft_values(seq, unit_size=1000, x_min=1, x_max=3, remove_dc=True)
     assert x[np.argmax(y)] == 2
 
 
