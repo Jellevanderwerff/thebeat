@@ -17,12 +17,26 @@
 
 import re
 import shutil
+import subprocess
 import sys
 
 import numpy as np
 import pytest
 
 import thebeat
+
+
+def test_lilypond_version():
+    # To ensure valid comparisons to the Matplotlib tests' baseline images, make sure the
+    # LilyPond version is pre-2.25 (which apparently slightly changed the layout)
+    @thebeat._decorators.requires_lilypond
+    def run_lilypond(lilypond_args, **kwargs):
+        return subprocess.run(["lilypond"] + lilypond_args, **kwargs)
+
+    result = run_lilypond(["--version"], check=True, capture_output=True, text=True)
+    match = re.search(r"^GNU LilyPond ([0-9]+)\.([0-9]+)\.([0-9]+)", result.stdout)
+    version = tuple(int(x) for x in match.groups()) if match else None
+    assert version < (2, 25, 0)
 
 
 def test_lilypond_unavailable(monkeypatch):
