@@ -820,7 +820,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
     def __init__(
         self,
         rhythm: thebeat.music.Rhythm,
-        pitch_names: npt.NDArray[str] | list[str] | str,
+        pitch_names: npt.NDArray[np.str_] | list[str] | str,
         octave: int | None = None,
         key: str | None = None,
         is_played: list | None = None,
@@ -874,7 +874,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         else:
             pitch_names_list = pitch_names
 
-        self.pitch_names = pitch_names_list
+        self.pitch_names = [str(pitch_name) for pitch_name in pitch_names_list]
 
         # Add initial events
         self.events = self._make_namedtuples(

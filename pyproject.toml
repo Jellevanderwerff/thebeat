@@ -38,7 +38,7 @@ dynamic = ["version"]
 music_notation = [
     "abjad ; python_version > '3.9'",
     "abjad<=3.4 ; python_version <= '3.9'",
-    "lilypond"
+    "lilypond; sys_platform != 'darwin' or platform_machine != 'arm64'"
 ]
 
 [tool.setuptools]

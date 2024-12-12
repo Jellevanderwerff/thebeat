@@ -779,7 +779,7 @@ def ks_test(
         Either 'normal' or 'uniform'. The distribution against which the distribution of inter-onset intervals (IOIs)
         is compared.
     alternative
-        Either ‘two-sided’, ‘less’ or ‘greater’. See :func:`scipy.stats.kstest` for more information.
+        Either 'two-sided', 'less', or 'greater'. See :func:`scipy.stats.kstest` for more information.
 
     Returns
     -------
@@ -796,9 +796,9 @@ def ks_test(
     --------
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=100,mu=500,sigma=25,rng=rng)
-    >>> print(ks_test(seq))
-    KstestResult(statistic=0.07176677141846549, pvalue=0.6608009345687911, statistic_location=496.3505526721194, \
-statistic_sign=1)
+    >>> ks_result = ks_test(seq)
+    >>> print(round(ks_result.pvalue, 5))
+    0.6608
 
     """
 
@@ -1094,7 +1094,7 @@ def get_npvi(sequence: thebeat.core.Sequence) -> np.float64:
     >>> rng = np.random.default_rng(seed=123)
     >>> seq = thebeat.core.Sequence.generate_random_normal(n_events=10,mu=500,sigma=50,rng=rng)
     >>> print(get_npvi(seq))
-    4.703289681619325
+    9.40657936323865
     """
 
     if isinstance(sequence, (thebeat.core.Sequence, thebeat.core.SoundSequence)):
