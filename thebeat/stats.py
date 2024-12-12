@@ -599,6 +599,7 @@ def fft_values(
     unit_size: float,
     x_min: float | None = None,
     x_max: float | None = None,
+    remove_dc: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     Gets the x and y values for a Fourier transform of a :class:`~thebeat.core.Sequence` object.
@@ -621,6 +622,13 @@ def fft_values(
     unit_size
         The size of the unit in which the sequence is measured. If the sequence is in milliseconds,
         you probably want 1000. If the sequence is in seconds, you probably want 1.
+    x_min
+        The minimum number of cycles per unit to be plotted.
+    x_max
+        The maximum number of cycles per unit to be plotted.
+    remove_dc
+        If True, the DC component is removed from the Fourier transform by subtracting the mean from the signal. The DC component
+        is the first value of the Fourier transform and represents the average of the sequence.
 
     Returns
     -------
@@ -638,11 +646,16 @@ def fft_values(
 
     """
     # Calculate step size
-    step_size = unit_size / 1000
+    step_size = unit_size / 1000  # TODO Is this true in each case? Seems dodgy
 
     # Make a sequence of ones and zeroes
     timeseries = thebeat.helpers.sequence_to_binary(sequence, resolution=step_size)
     timeseries = timeseries if sequence.end_with_interval is True else timeseries[:-1]
+
+    # Remove DC component if necessary
+    if remove_dc:
+        timeseries = timeseries - np.mean(timeseries)
+
     duration = len(timeseries) * step_size
     x_length = np.ceil(duration / step_size).astype(int)
 
@@ -650,7 +663,7 @@ def fft_values(
     yf = rfft(timeseries)
     xf = rfftfreq(x_length, d=step_size) * (step_size / 0.001)
 
-    # Slice the data and take absolute values (we don't care about complex numbers)
+    # Slice the data and take absolute values
     min_freq_index = np.min(np.where(xf > x_min)).astype(int) if x_min else None
     max_freq_index = np.min(np.where(xf > x_max)).astype(int) if x_max else None
     yf = np.abs(yf[min_freq_index:max_freq_index])**2
@@ -664,6 +677,7 @@ def fft_plot(
     unit_size: float,
     x_min: float | None = None,
     x_max: float | None = None,
+    remove_dc: bool = True,
     style: str = "seaborn-v0_8",
     title: str = "Fourier transform",
     x_axis_label: str = "Cycles per unit",
@@ -701,6 +715,9 @@ def fft_plot(
         The minimum number of cycles per unit to be plotted.
     x_max
         The maximum number of cycles per unit to be plotted.
+    remove_dc
+        If True, the DC component is removed from the Fourier transform by subtracting the mean from the signal. The DC component
+        is the first value of the Fourier transform and represents the average of the sequence.
     style
         The matplotlib style to use. See
         `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
@@ -743,7 +760,7 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
     """
 
     # Get values
-    xf, yf = fft_values(sequence=sequence, unit_size=unit_size, x_min=x_min, x_max=x_max)
+    xf, yf = fft_values(sequence=sequence, unit_size=unit_size, x_min=x_min, x_max=x_max, remove_dc=remove_dc)
 
     # Plot
     with plt.style.context(style):
