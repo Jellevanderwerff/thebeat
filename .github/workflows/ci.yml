@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
-        os: [ubuntu-latest, macos-latest, macos-13, windows-latest]
+        os: [ubuntu-latest, macos-13, macos-latest, windows-latest]
 
     name: Test • Python ${{ matrix.python-version }} • ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -61,7 +61,7 @@ jobs:
       - name: Run tests with pytest
         id: pytest
         run: |
-          pytest ${{ matrix.python-version == '3.11' && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
+          pytest ${{ (matrix.python-version == '3.11' && matrix.os != 'macos-latest') && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
 
       - name: Upload pytest-mpl results
         if: failure() && matrix.python-version == '3.11' && steps.pytest.conclusion == 'failure'
