@@ -659,7 +659,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         # Keep track of how full the current bar is
         bar_fullness = abjad.Duration(0)
 
-        for i, note in enumerate(durations):
+        for note in durations:
             # if the note fits in the bar
             if (note + bar_fullness) <= full_bar:
                 bar_fullness += note
@@ -667,17 +667,18 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             # if note doesn't fit the bar
             else:
                 remains = note
-                status = False
-                while status is False or remains > full_bar:
-                    possibilities = [remains / division for division in range(2, 10)]  # TODO consider range
-                    left_side = [poss for poss in possibilities if (poss + bar_fullness) == full_bar and poss.numerator == 1][0]
-                    remains = note - left_side
-                    split_notes = [left_side, remains]
-                    notes += split_notes
-                    ties_at.append(i)
-                    bar_fullness += sum(split_notes)
-                    bar_fullness -= full_bar
-                    status = True
+
+                while (remains + bar_fullness) > full_bar:
+                    right_side = bar_fullness + remains - full_bar
+                    left_side = remains - right_side
+                    ties_at.append(len(notes))  # add tie at current index
+                    notes.append(left_side)
+                    remains = right_side
+                    bar_fullness = 0
+
+                if remains != 0:
+                    bar_fullness += remains
+                    notes.append(remains)
 
             # if bar is full set bar_fullness to zero
             if is_full_bar_multiple(bar_fullness, full_bar):
