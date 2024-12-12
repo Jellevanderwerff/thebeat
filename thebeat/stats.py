@@ -646,7 +646,7 @@ def fft_values(
 
     """
     # Calculate step size
-    step_size = unit_size / 1000  # TODO Is this true in each case? Seems dodgy
+    step_size = unit_size / 1000
 
     # Make a sequence of ones and zeroes
     timeseries = thebeat.helpers.sequence_to_binary(sequence, resolution=step_size)
