@@ -61,7 +61,7 @@ jobs:
       - name: Run tests with pytest
         id: pytest
         run: |
-          pytest ${{ (matrix.python-version == '3.11' && matrix.os != 'macos-latest') && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
+          pytest ${{ matrix.python-version == '3.11' && '--mpl --mpl-results-path=pytest_mpl_results/ --mpl-generate-summary=html' || '' }}
 
       - name: Upload pytest-mpl results
         if: failure() && matrix.python-version == '3.11' && steps.pytest.conclusion == 'failure'
