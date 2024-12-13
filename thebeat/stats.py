@@ -18,6 +18,7 @@
 from __future__ import annotations
 
 import numbers
+from fractions import Fraction
 
 import Levenshtein
 import matplotlib.pyplot as plt
@@ -475,7 +476,7 @@ def ccf_values(
 def edit_distance_rhythm(
     test_rhythm: thebeat.music.Rhythm,
     reference_rhythm: thebeat.music.Rhythm,
-    smallest_note_value: int = 16,
+    smallest_note_value: Fraction | float = Fraction(1, 16),
 ) -> float:
     """
     Caculates edit/Levenshtein distance between two rhythms. The ``smallest_note_value`` determines
@@ -497,12 +498,13 @@ def edit_distance_rhythm(
     Examples
     --------
     >>> from thebeat.music import Rhythm
-    >>> test_rhythm = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4])
-    >>> reference_rhythm = Rhythm.from_fractions([1/4, 1/8, 1/8, 1/4, 1/4])
+    >>> test_rhythm = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
+    >>> reference_rhythm = Rhythm.from_note_values([1/4, 1/8, 1/8, 1/4, 1/4])
     >>> print(edit_distance_rhythm(test_rhythm, reference_rhythm))
     1
 
     """
+    smallest_note_value = Fraction(smallest_note_value).limit_denominator()
     if not isinstance(test_rhythm, thebeat.music.Rhythm) or not isinstance(
         reference_rhythm, thebeat.music.Rhythm
     ):

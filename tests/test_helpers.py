@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+from fractions import Fraction
+
 import numpy as np
 import pytest
 import scipy
@@ -71,11 +73,11 @@ def test_sequence_to_binary_resolution():
 def test_rhythm_to_binary():
     # Should raise error because there are 1/8th notes but the provides smallest note value is a 1/4th note
     with pytest.raises(ValueError):
-        rhythm = thebeat.music.Rhythm.from_note_values([4, 8, 8, 4, 4])
-        print(thebeat.helpers.rhythm_to_binary(rhythm, smallest_note_value=4))
+        rhythm = thebeat.music.Rhythm.from_note_values([1/4, 1/8, 1/8, 1/4, 1/4])
+        print(thebeat.helpers.rhythm_to_binary(rhythm, smallest_note_value=Fraction(1, 4)))
 
     # Should not raise error
-    binary = thebeat.helpers.rhythm_to_binary(rhythm, smallest_note_value=8)
+    binary = thebeat.helpers.rhythm_to_binary(rhythm, smallest_note_value=Fraction(1, 8))
     assert np.all(binary == [1., 0., 1., 1., 1., 0., 1., 0.])
 
 

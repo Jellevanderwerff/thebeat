@@ -23,9 +23,9 @@ import thebeat.music
 
 def test_melody(tmp_path):
     rng = np.random.default_rng(seed=123)
-    r = thebeat.music.Rhythm.from_note_values([4, 4, 4, 4])
+    r = thebeat.music.Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
     m = thebeat.music.Melody(r, 'CEGC', octave=3)
-    assert list(m.note_values) == [4, 4, 4, 4]
+    assert list(m.note_values) == [1/4, 1/4, 1/4, 1/4]
 
     mel = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=5, rng=rng)
     samples, fs = mel.synthesize_and_return(n_channels=2, metronome=True)
