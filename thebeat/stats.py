@@ -649,9 +649,8 @@ def fft_values(
     # Calculate step size
     step_size = unit_size / 1000
 
-    # Make a sequence of ones and zeroes
-    timeseries = thebeat.helpers.sequence_to_binary(sequence, resolution=step_size)
-    timeseries = timeseries if sequence.end_with_interval is True else timeseries[:-1]
+    # Make a sequence of ones and zeroes (we use IOIs here to account for sequences that end with onsets, or with first onset different than 0)
+    timeseries = thebeat.helpers.sequence_to_binary(thebeat.Sequence(sequence.iois, end_with_interval=True), resolution=step_size)
 
     # Remove DC component if necessary
     if remove_dc:
