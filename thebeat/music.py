@@ -269,8 +269,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
 
         >>> import fractions
-        >>> dotted_halfnote = fractions.Fraction(3, 5)
-        >>> halfnote = fractions.Fraction(2, 5)
+        >>> dotted_halfnote = fractions.Fraction(3, 4)
+        >>> halfnote = fractions.Fraction(2, 4)
         >>> r = Rhythm.from_fractions([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
 
         >>> r = Rhythm.from_fractions([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
