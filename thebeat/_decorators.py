@@ -30,7 +30,7 @@ def requires_lilypond(f):
 
         if lilypond is None and not shutil.which('lilypond'):
             raise ImportError("This function or method requires lilypond for plotting notes. You can install this "
-                              "opional depencency with pip install 'thebeat[music_notation]'.\n"
+                              "opional depencency with pip install 'thebeat[music-notation]'.\n"
                               "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.")
 
         if lilypond is not None:

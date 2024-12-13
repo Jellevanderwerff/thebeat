@@ -35,7 +35,7 @@ dynamic = ["version"]
 "Source Code" = "https://github.com/Jellevanderwerff/thebeat"
 
 [project.optional-dependencies]
-music_notation = [
+music-notation = [
     "abjad ; python_version > '3.9'",
     "abjad<=3.4 ; python_version <= '3.9'",
     "lilypond; sys_platform != 'darwin' or platform_machine != 'arm64'"

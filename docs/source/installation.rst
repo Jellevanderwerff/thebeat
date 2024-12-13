@@ -33,7 +33,7 @@ you have to install it using:
 
 .. code-block:: console
 
-    pip install 'thebeat[music_notation]'
+    pip install 'thebeat[music-notation]'
 
 This will install thebeat with the dependencies needed for plotting musical notation.
 These dependencies are `abjad <https://abjad.github.io>`_ and `Lilypond <https://lilypond.org>`_.
