@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+from fractions import Fraction
+
 import numpy as np
 import pytest
 
@@ -23,17 +25,23 @@ import thebeat
 
 def test_rhythm():
     # generate random rhythm
-    rrhythm = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
-    assert rrhythm
+    rhythm = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
+    assert rhythm
+
+    rhythm = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/3, 1/6])
+    assert rhythm
 
     # combine two rhythms
-    rhythm1 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
-    rhythm2 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
+    rhythm1 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
+    rhythm2 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
     combined_rhythm = rhythm1 + rhythm2
     assert sum(combined_rhythm.iois) == sum(rhythm1.iois) + sum(rhythm2.iois)
 
-    rhythm = thebeat.music.Rhythm.from_note_values([4, 4, 4, 4])
+    rhythm = thebeat.music.Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
     assert np.all(rhythm.iois == [500, 500, 500, 500])
+
+    rhythm = thebeat.music.Rhythm.from_note_values([1/3, 1/3, 1/3])
+    assert np.all(rhythm.iois == [2000 / 3, 2000 / 3, 2000 / 3])
 
     rhythm = thebeat.music.Rhythm([500, 1000, 500], (4, 4), 500)
     assert rhythm.beat_ms == 500
@@ -47,18 +55,28 @@ def test_rhythm():
     assert len(rhythm.iois) == 16
 
 
-def test_rhythm_from_fractions():
-    r1 = thebeat.music.Rhythm.from_fractions([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
+def test_rhythm_from_note_values():
+    r1 = thebeat.music.Rhythm.from_note_values([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
     assert np.all(r1.iois == [500, 1500, 250, 750, 1000])
+    assert r1.note_values == [Fraction(1, 4), Fraction(3, 4), Fraction(1, 8), Fraction(3, 8), Fraction(1, 2)]
 
-    r2 = thebeat.music.Rhythm.from_fractions([1/2, 3/2, 2/8, 6/8, 2/2], beat_ms=500, time_signature=(4, 2))
+    r2 = thebeat.music.Rhythm.from_note_values([1/2, 3/2, 2/8, 6/8, 2/2], beat_ms=500, time_signature=(4, 2))
     assert np.all(r2.iois == [500, 1500, 250, 750, 1000])
+    assert r2.note_values == [Fraction(1, 2), Fraction(3, 2), Fraction(2, 8), Fraction(6, 8), Fraction(2, 2)]
 
-    r3 = thebeat.music.Rhythm.from_fractions([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
+    r3 = thebeat.music.Rhythm.from_note_values([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
     assert np.all(r3.iois == [500, 1000, 250, 750, 500])
+    assert r3.note_values == [Fraction(1, 4), Fraction(1, 2), Fraction(1, 8), Fraction(3, 8), Fraction(1, 4)]
 
-    r4 = thebeat.music.Rhythm.from_fractions([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
+    r4 = thebeat.music.Rhythm.from_note_values([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
     assert np.all(r4.iois == [500, 1000, 250, 750, 500])
+    assert r4.note_values == [Fraction(1, 8), Fraction(1, 4), Fraction(1, 16), Fraction(3, 16), Fraction(1, 8)]
+
+    r5 = thebeat.music.Rhythm.from_note_values([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
+    assert np.all(r5.note_values == [1/4, 1/2, 1/8, 3/8, 1/4])
+
+    r6 = thebeat.music.Rhythm.from_note_values([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
+    assert np.all(r6.note_values == [1/8, 1/4, 1/16, 3/16, 1/8])
 
 
 @pytest.custom_mpl_image_compare(tolerance=2)
