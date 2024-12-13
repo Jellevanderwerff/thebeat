@@ -606,14 +606,15 @@ def fft_values(
     The ``unit_size`` parameter is required, because Sequence objects are agnostic about the used time unit.
     You can use 1000 if the Sequence is in milliseconds, and 1 if the Sequence is in seconds.
 
-    The x values indicate the number of cycles per unit, and y values the absolute power.
+    The x values indicate the number of cycles per unit, and y values indicate the absolute power (amplitude squared).
     The number of cycles per unit can be interpreted as the beat frequency. For instance, 2 cycles for a unit size of
     1000 ms means a beat frequency of 2 Hz.
 
     Note
     ----
     If a sequence ends with an event, the last event is not included in the calculation of the Fourier transform.
-    This is because the Fourier transform assumes that the sequence can be repeated indefinitely.
+    This is because the Fourier transform assumes that the sequence can be repeated indefinitely. In other words,
+    we estimate the Fourier transform on the basis of the IOIs, not on the basis of the onsets.
 
     Parameters
     ----------
