@@ -112,4 +112,4 @@ jobs:
           dbus-launch pulseaudio --start  # See LABSN/sound-ci-helpers
           export PYDEVD_DISABLE_FILE_VALIDATION=1
           cd docs
-          make html
+          SPHINXOPTS="-W --keep-going -n" make html
