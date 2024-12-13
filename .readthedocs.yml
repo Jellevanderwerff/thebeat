@@ -6,10 +6,15 @@ build:
     python: "3.11"
   apt_packages:
     - libportaudio2
+    - lilypond
 
 sphinx:
    configuration: docs/source/conf.py
 
 python:
   install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - music-notation
     - requirements: docs/requirements.txt
