@@ -47,6 +47,20 @@ def test_rhythm():
     assert len(rhythm.iois) == 16
 
 
+def test_rhythm_from_fractions():
+    r1 = thebeat.music.Rhythm.from_fractions([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
+    assert np.all(r1.iois == [500, 1500, 250, 750, 1000])
+
+    r2 = thebeat.music.Rhythm.from_fractions([1/2, 3/2, 2/8, 6/8, 2/2], beat_ms=500, time_signature=(4, 2))
+    assert np.all(r2.iois == [500, 1500, 250, 750, 1000])
+
+    r3 = thebeat.music.Rhythm.from_fractions([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
+    assert np.all(r3.iois == [500, 1000, 250, 750, 500])
+
+    r4 = thebeat.music.Rhythm.from_fractions([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
+    assert np.all(r4.iois == [500, 1000, 250, 750, 500])
+
+
 @pytest.custom_mpl_image_compare(tolerance=2)
 def test_rhythm_plot():
     rhythm = thebeat.music.Rhythm([500, 500, 500, 500])

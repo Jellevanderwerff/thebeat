@@ -273,13 +273,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> halfnote = fractions.Fraction(2, 5)
         >>> r = Rhythm.from_fractions([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
 
-        >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 8), beat_ms=500)
+        >>> r = Rhythm.from_fractions([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
 
         """
 
         fractions = np.array(fractions)
 
-        iois_as_fractions = fractions * beat_ms * time_signature[0]
+        iois_as_fractions = fractions * beat_ms * time_signature[1]
 
         iois = np.array([float(frac) for frac in iois_as_fractions])
 
