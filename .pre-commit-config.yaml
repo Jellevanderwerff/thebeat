@@ -33,7 +33,7 @@ repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.19.0
     hooks:
-    - id: pyupgrade
+     - id: pyupgrade
 
   - repo: https://github.com/PyCQA/flake8
     rev: 7.1.1
@@ -49,5 +49,11 @@ repos:
   - repo: https://github.com/mgedmin/check-manifest
     rev: '0.50'
     hooks:
-    - id: check-manifest
-      stages: [manual]
+      - id: check-manifest
+        stages: [manual]
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        args: ['--keep-id']
