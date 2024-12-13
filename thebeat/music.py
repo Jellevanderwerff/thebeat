@@ -108,7 +108,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         n_bars = np.sum(iois) / time_signature[0] / beat_ms
         if not n_bars.is_integer():
             raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
-        self.n_bars = n_bars
+        self.n_bars = int(n_bars)
 
         # Call initializer of super class
         super().__init__(iois=iois, end_with_interval=True, name=name)
@@ -136,30 +136,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def __mul__(self, other):
         return self._repeat(times=other)
-
-    @property
-    def fractions(self) -> np.ndarray:
-        r"""Calculate how to describe the rhythm in fractions from the total duration of the sequence.
-
-        Example
-        -------
-
-        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
-        This can be described using the fractions :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
-        so this method returns the fractions ``[1/8, 2/8, 4/8, 1/8]``.
-
-        Examples
-        --------
-        >>> r = Rhythm([250, 500, 1000, 250])
-        >>> print(r.fractions)
-        [Fraction(1, 8) Fraction(1, 4) Fraction(1, 2) Fraction(1, 8)]
-
-        """
-
-        floats = self.iois / np.sum(self.iois)
-
-        fractions = [Fraction.from_float(f) for f in floats]
-        return np.array(fractions)
 
     @property
     def integer_ratios(self) -> np.ndarray:
@@ -219,14 +195,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [12 12 12  4  4  4]
 
         """
-        ratios = self.iois / self.beat_ms / 4
 
-        note_values = np.array([int(1 // ratio) for ratio in ratios])
+        float_estimates = self.iois / self.beat_ms
+        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
 
         return note_values
 
     @classmethod
-    def from_fractions(
+    def from_note_values(
         cls,
         fractions: list | np.ndarray,
         time_signature: tuple[int, int] = (4, 4),
@@ -236,13 +212,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> Rhythm:
         r"""
 
-        This class method can be used for creating a Rhythm on the basis of fractions. The fractions
+        This class method can be used for creating a Rhythm on the basis of fractions (i.e. note values). The fractions
         can be input either as floats (e.g. 0.25) or as :class:`fractions.Fraction` objects.
 
         Parameters
         ----------
         fractions
-            Contains the fractions of the rhythm. For instance: ``[1, 2, 4]``.
+            The fractions of the rhythm. For instance: ``[1/4, 1/2, 1/4]``.
         time_signature
             The time signature of the rhythm. For instance: ``(4, 4)``.
         beat_ms
@@ -255,14 +231,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Example
         -------
-        The fractions represent for each note the proportion of the bar that the note takes up,
-        taking into account the time signature. A few examples:
-
-        In 4/4 time, a quarter note would be 1/4, an eighth note 1/8, etc.
-        In 4/8 time, a quarter note would be 1/2, an eighth note 1/4, etc.
-
-        In 5/4 time, we would input a quarter note as 1/5, an eighth note as 1/10, etc.
-        In 5/8 time, we would input a dotted quarter note as 3/5, an eighth  note as 1/5, etc.
 
         Examples
         --------
@@ -337,64 +305,12 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         )
 
     @classmethod
-    def from_note_values(
-        cls,
-        note_values: np.typing.ArrayLike[int],
-        time_signature: tuple[int, int] = (4, 4),
-        beat_ms: int = 500,
-        is_played: np.typing.ArrayLike[bool] | None = None,
-        name: str | None = None,
-    ) -> Rhythm:
-        r"""Create a Rhythm object on the basis of note values (i.e. note durations).
-
-        Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
-        a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
-
-        Parameters
-        ----------
-        note_values
-            A list or array containing the denominators of the note values. A note value of ``2`` means a half note,
-            a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
-        time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
-        beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
-        is_played
-            A list or array containing booleans indicating whether a note should be played or not.
-            Defaults to ``[True, True, True, ...]``.
-        name
-            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
-
-        Examples
-        --------
-        >>> r = Rhythm.from_note_values([16, 16, 16, 16, 4, 4, 4], beat_ms=500)
-        >>> print(r.iois)
-        [125. 125. 125. 125. 500. 500. 500.]
-        """
-
-        ratios = np.array([1 / note * time_signature[1] for note in note_values])
-        iois = ratios * beat_ms
-
-        return cls(
-            iois=iois,
-            time_signature=time_signature,
-            beat_ms=beat_ms,
-            is_played=is_played,
-            name=name,
-        )
-
-    @classmethod
     def generate_random_rhythm(
         cls,
         n_bars: int = 1,
         beat_ms: int = 500,
         time_signature: tuple[int, int] = (4, 4),
-        allowed_note_values: np.typing.ArrayLike[int] | None = None,
+        allowed_note_values: np.typing.ArrayLike[Fraction, float, int] | None = None,
         n_rests: int = 0,
         rng: np.random.Generator | None = None,
         name: str | None = None,
@@ -419,8 +335,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
             :math:`\frac{1}{8}` th notes.
         allowed_note_values
-            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
-            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the allowed note values. A note value of ``1/2`` means a half
+            note, a note value of ``1/4`` means a quarternote etc. Defaults to ``[1/4, 1/8, 1/16]``.
         n_rests
             If desired, one can provide a number of rests to be inserted at random locations. These are placed after
             the random selection of note values.
@@ -441,7 +357,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         >>> import numpy as np  # not required, here for reproducability
         >>> generator = np.random.default_rng(seed=321)  # not required, here for reproducability
-        >>> r = Rhythm.generate_random_rhythm(beat_ms=1000,allowed_note_values=[2, 4, 8],rng=generator)
+        >>> r = Rhythm.generate_random_rhythm(beat_ms=1000, allowed_note_values=[1/2, 1/4, 1/8],rng=generator)
         >>> print(r.iois)
         [ 500. 1000.  500.  500. 1000.  500.]
         """
@@ -450,15 +366,17 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             rng = np.random.default_rng()
 
         if allowed_note_values is None:
-            allowed_note_values = [4, 8, 16]
+            allowed_note_values = [Fraction(1, 4), Fraction(1, 8), Fraction(1, 16)]
+        else:
+            allowed_note_values = [Fraction.from_float(val) if not isinstance(val, Fraction) else val for val in allowed_note_values]
 
         iois = np.empty(0)
 
         all_ratios = thebeat.helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
 
-        for bar in range(n_bars):
+        for _ in range(n_bars):
             ratios = rng.choice(all_ratios, 1)[0]
-            new_iois = ratios * 4 * beat_ms
+            new_iois = ratios * time_signature[1] * beat_ms
             iois = np.append(iois, new_iois)
 
         # Make rests
@@ -598,7 +516,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> fig, ax = r.plot_rhythm(print_staff=True, suppress_display=True)  # doctest: +SKIP
         >>> plt.show()  # doctest: +SKIP
 
-        >>> r = Rhythm.from_note_values([4, 4, 4, 4])
+        >>> r = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
         >>> r.plot_rhythm(filepath='isochronous_rhythm.pdf')  # doctest: +SKIP
 
 
@@ -852,7 +770,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = thebeat.music.Rhythm.from_note_values([4, 4, 4, 4, 4, 4, 2])
+        >>> r = thebeat.music.Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2])
         >>> mel = Melody(r, 'CCGGAAG')
 
         """
@@ -1033,9 +951,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        ratios = self.iois / self.beat_ms / 4
-
-        note_values = np.array([int(1 // ratio) for ratio in ratios])
+        float_estimates = self.iois / self.beat_ms
+        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
 
         return note_values
 

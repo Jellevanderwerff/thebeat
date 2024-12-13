@@ -32,7 +32,7 @@ def test_rhythm():
     combined_rhythm = rhythm1 + rhythm2
     assert sum(combined_rhythm.iois) == sum(rhythm1.iois) + sum(rhythm2.iois)
 
-    rhythm = thebeat.music.Rhythm.from_note_values([4, 4, 4, 4])
+    rhythm = thebeat.music.Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
     assert np.all(rhythm.iois == [500, 500, 500, 500])
 
     rhythm = thebeat.music.Rhythm([500, 1000, 500], (4, 4), 500)
@@ -48,16 +48,16 @@ def test_rhythm():
 
 
 def test_rhythm_from_fractions():
-    r1 = thebeat.music.Rhythm.from_fractions([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
+    r1 = thebeat.music.Rhythm.from_note_values([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
     assert np.all(r1.iois == [500, 1500, 250, 750, 1000])
 
-    r2 = thebeat.music.Rhythm.from_fractions([1/2, 3/2, 2/8, 6/8, 2/2], beat_ms=500, time_signature=(4, 2))
+    r2 = thebeat.music.Rhythm.from_note_values([1/2, 3/2, 2/8, 6/8, 2/2], beat_ms=500, time_signature=(4, 2))
     assert np.all(r2.iois == [500, 1500, 250, 750, 1000])
 
-    r3 = thebeat.music.Rhythm.from_fractions([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
+    r3 = thebeat.music.Rhythm.from_note_values([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
     assert np.all(r3.iois == [500, 1000, 250, 750, 500])
 
-    r4 = thebeat.music.Rhythm.from_fractions([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
+    r4 = thebeat.music.Rhythm.from_note_values([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
     assert np.all(r4.iois == [500, 1000, 250, 750, 500])
 
 
@@ -70,14 +70,14 @@ def test_rhythm_plot():
 
 @pytest.custom_mpl_image_compare(tolerance=2)
 def test_note_ties():
-    r1 = thebeat.music.Rhythm.from_fractions([1/4, 2, 3/4], beat_ms=500, time_signature=(4, 4))
+    r1 = thebeat.music.Rhythm.from_note_values([1/4, 2, 3/4], beat_ms=500, time_signature=(4, 4))
     fig, ax = r1.plot_rhythm(suppress_display=True)
     return fig
 
 
 @pytest.custom_mpl_image_compare(tolerance=2)
 def test_note_ties2():
-    r2 = thebeat.music.Rhythm.from_fractions([1/16, 1/16, 1/16, 5/16, 5/16, 1/16, 1/16, 1/16], beat_ms=500, time_signature=(4, 4))
+    r2 = thebeat.music.Rhythm.from_note_values([1/16, 1/16, 1/16, 5/16, 5/16, 1/16, 1/16, 1/16], beat_ms=500, time_signature=(4, 4))
     fig, ax = r2.plot_rhythm(suppress_display=True)
     return fig
 
