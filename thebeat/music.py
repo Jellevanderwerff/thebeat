@@ -535,9 +535,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             is_played.insert(tie_at + count, is_played[tie_at])
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = abjad.makers.make_notes([pitch], [duration])[0] if is_plyd else abjad.Rest(duration)
-            notes.append(note)
+        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
+            these_notes = abjad.makers.make_notes([pitch], [duration]) if is_plyd else [abjad.Rest(duration)]
+            notes.extend(these_notes)
+            if len(these_notes) > 1:
+                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
 
         # plot the notes
         staff = abjad.Staff(notes)
