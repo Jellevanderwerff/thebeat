@@ -35,7 +35,6 @@ def plot_interval_ratios_density(
         thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
     ),
     resolution: float = 0.01,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     x_axis_label: str = "Interval ratios from dyads",
     y_axis_label: str = "Probability density",
@@ -66,9 +65,6 @@ def plot_interval_ratios_density(
         The sequence or list or array of sequences to plot.
     resolution
         The resolution of the density plot. At each point, the probability density is calculated.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         A title for the plot.
     x_axis_label
@@ -102,28 +98,28 @@ def plot_interval_ratios_density(
             "Sequence objects."
         )
 
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
+    # Plot
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
 
-        # Get kernel density function
-        kde = scipy.stats.gaussian_kde(interval_ratios)
+    # Get kernel density function
+    kde = scipy.stats.gaussian_kde(interval_ratios)
 
-        # Get x values
-        x = np.arange(0, 1, resolution)
+    # Get x values
+    x = np.arange(0, 1, resolution)
 
-        # Get y values
-        y = kde.evaluate(x)
+    # Get y values
+    y = kde.evaluate(x)
 
-        # Plot and set texts
-        ax.plot(x, y)
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_title(title)
+    # Plot and set texts
+    ax.plot(x, y)
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
 
     if not suppress_display and not ax_provided:
         fig.show()
@@ -136,7 +132,6 @@ def plot_interval_ratios_histogram(
         thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
     ),
     bins: int = 100,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     x_axis_label: str = "Interval ratios from dyads",
     y_axis_label: str = "Count",
@@ -166,9 +161,6 @@ def plot_interval_ratios_histogram(
         The sequence or list or array of sequences to plot.
     bins
         The number of bins to use in the histogram.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         A title for the plot.
     x_axis_label
@@ -202,19 +194,18 @@ def plot_interval_ratios_histogram(
             "Sequence objects."
         )
 
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
 
-        ax.hist(interval_ratios, bins=bins)
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_xlim(0, 1)
-        ax.set_title(title)
+    ax.hist(interval_ratios, bins=bins)
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_xlim(0, 1)
+    ax.set_title(title)
 
     if not suppress_display and not ax_provided:
         fig.show()
@@ -232,7 +223,6 @@ def plot_phase_differences(
     binwidth: int = 10,
     zero_direction: str = "E",
     color: str = None,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     figsize: tuple[int, int] | None = None,
     suppress_display: bool = False,
@@ -272,9 +262,6 @@ def plot_phase_differences(
     color
         The color of the bars. Can be a single color or a list of colors, one for each bar.
         See :meth:`matplotlib.axes.Axes.bar` for more information.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         A title for the plot.
     figsize
@@ -370,41 +357,41 @@ def plot_phase_differences(
     centers = np.deg2rad(np.ediff1d(b) // 2 + b[:-1])
 
     # Plot the histogram
-    with plt.style.context(style):
-        # If no Axes was provided, create one
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={"projection": "polar"})
-            axes_provided = False
-        # If an Axes object was provided, use that one but check if it is a polar one
-        else:
-            fig = ax.get_figure()
-            if not ax.name == "polar":
-                raise ValueError(
-                    "Please provide a polar Axes object. Use projection='polar' when creating it."
-                )
-            axes_provided = True
-        ax.bar(centers, a, width=np.deg2rad(binwidth), bottom=0.0, color=color, alpha=0.5)
-        ax.set_title(title)
 
-        # Make the plot face north
-        ax.set_theta_zero_location(zero_direction)
-        ax.set_theta_direction(-1)
-
-        if circular_unit == "radians":
-            ax.set_xticks(ax.get_xticks())
-            ax.set_xticklabels(
-                [
-                    r"$0$",
-                    r"$\pi/4$",
-                    r"$\pi/2$",
-                    r"$3\pi/4$",
-                    r"$\pi$",
-                    r"$5\pi/4$",
-                    r"$3\pi/2$",
-                    r"$7\pi/4$",
-                ]
+    # If no Axes was provided, create one
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={"projection": "polar"})
+        axes_provided = False
+    # If an Axes object was provided, use that one but check if it is a polar one
+    else:
+        fig = ax.get_figure()
+        if not ax.name == "polar":
+            raise ValueError(
+                "Please provide a polar Axes object. Use projection='polar' when creating it."
             )
-            ax.set_theta_direction(1)
+        axes_provided = True
+    ax.bar(centers, a, width=np.deg2rad(binwidth), bottom=0.0, color=color, alpha=0.5)
+    ax.set_title(title)
+
+    # Make the plot face north
+    ax.set_theta_zero_location(zero_direction)
+    ax.set_theta_direction(-1)
+
+    if circular_unit == "radians":
+        ax.set_xticks(ax.get_xticks())
+        ax.set_xticklabels(
+            [
+                r"$0$",
+                r"$\pi/4$",
+                r"$\pi/2$",
+                r"$3\pi/4$",
+                r"$\pi$",
+                r"$5\pi/4$",
+                r"$3\pi/2$",
+                r"$7\pi/4$",
+            ]
+        )
+        ax.set_theta_direction(1)
 
     # Show
     if not suppress_display and axes_provided is False:
@@ -415,7 +402,6 @@ def plot_phase_differences(
 
 def phase_space_plot(
     sequence: thebeat.core.Sequence,
-    style: str = "seaborn-v0_8",
     linecolor: str = "black",
     linewidth: float = 0.5,
     title: str | None = None,
@@ -433,9 +419,6 @@ def phase_space_plot(
     ----------
     sequence
         The sequence to plot.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     linecolor
         The color of the lines.
     linewidth
@@ -477,28 +460,28 @@ def phase_space_plot(
 
     """
 
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, dpi=dpi, tight_layout=True)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
-        iois = sequence.iois
-        for i in range(len(iois) - 2):
-            ax.plot(
-                [iois[i], iois[i + 1]],
-                [iois[i + 1], iois[i + 2]],
-                color=linecolor,
-                linewidth=linewidth,
-            )
+    # Plot
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi, tight_layout=True)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
+    iois = sequence.iois
+    for i in range(len(iois) - 2):
+        ax.plot(
+            [iois[i], iois[i + 1]],
+            [iois[i + 1], iois[i + 2]],
+            color=linecolor,
+            linewidth=linewidth,
+        )
 
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_title(title)
-        ax.set_xlim(0, np.max(iois))
-        ax.set_ylim(0, np.max(iois))
-        ax.set_aspect("equal")
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
+    ax.set_xlim(0, np.max(iois))
+    ax.set_ylim(0, np.max(iois))
+    ax.set_aspect("equal")
 
     if not suppress_display and not ax_provided:
         fig.show()
@@ -508,7 +491,6 @@ def phase_space_plot(
 
 def plot_multiple_sequences(
     sequences: list | np.ndarray,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     x_axis_label: str = "Time",
     y_axis_labels: list[str] | np.ndarray[str] | None = None,
@@ -528,9 +510,6 @@ def plot_multiple_sequences(
         A list or array of :py:class:`~thebeat.core.Sequence` or :py:class:`~thebeat.core.SoundSequence` objects.
         Alternatively, one can provide e.g. a list of lists containing event onsets, for instance:
         ``[[0, 500, 1000], [0, 600, 800], [0, 400, 550]]``.
-    style
-        Matplotlib style to use for the plot. See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     x_axis_label
         A label for the x axis.
     y_axis_labels
@@ -627,53 +606,53 @@ def plot_multiple_sequences(
         )
 
     # Plot
-    with plt.style.context(style):
-        # If an existing Axes object was passed, do not create new Figure and Axes.
-        # Else, only create a new Figure object (Then,)
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
 
-        # Labels
-        ax.axes.set_title(title)
-        ax.axes.set_xlabel(x_axis_label)
+    # If an existing Axes object was passed, do not create new Figure and Axes.
+    # Else, only create a new Figure object
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
 
-        # Colors
-        if colors:
-            if len(colors) != len(sequences):
-                raise ValueError("Please provide an equal number of colors as sequences.")
-        else:
-            colors = [None] * len(sequences)
+    # Labels
+    ax.axes.set_title(title)
+    ax.axes.set_xlabel(x_axis_label)
 
-        # Keep track of potential xlims
-        left_xlims = []
-        right_xlims = []
+    # Colors
+    if colors:
+        if len(colors) != len(sequences):
+            raise ValueError("Please provide an equal number of colors as sequences.")
+    else:
+        colors = [None] * len(sequences)
 
-        for sequence, onsets, label, linewidths, color in zip(
-            reversed(sequences),
-            reversed(onsets),
-            reversed(y_axis_labels),
-            reversed(linewidths),
-            reversed(colors),
-        ):
-            ax.barh(y=label, width=linewidths, left=onsets, color=color)
+    # Keep track of potential xlims
+    left_xlims = []
+    right_xlims = []
 
-            # Add xlims
-            left_xlims.append(np.min(onsets))
-            if sequence.end_with_interval is True:
-                right_xlims.append(sequence.onsets[0] + sequence.duration)
-            elif sequence.end_with_interval is False:
-                right_xlims.append(
-                    np.max(onsets) + linewidths[-1]
-                    if isinstance(linewidths, (list, np.ndarray))
-                    else np.max(onsets) + linewidths
-                )
+    for sequence, onsets, label, linewidths, color in zip(
+        reversed(sequences),
+        reversed(onsets),
+        reversed(y_axis_labels),
+        reversed(linewidths),
+        reversed(colors),
+    ):
+        ax.barh(y=label, width=linewidths, left=onsets, color=color)
 
-        # Make sure we always have 0 on the left side of the x axis
-        ax.set_xlim(left=np.min(left_xlims), right=np.max(right_xlims))
+        # Add xlims
+        left_xlims.append(np.min(onsets))
+        if sequence.end_with_interval is True:
+            right_xlims.append(sequence.onsets[0] + sequence.duration)
+        elif sequence.end_with_interval is False:
+            right_xlims.append(
+                np.max(onsets) + linewidths[-1]
+                if isinstance(linewidths, (list, np.ndarray))
+                else np.max(onsets) + linewidths
+            )
+
+    # Make sure we always have 0 on the left side of the x axis
+    ax.set_xlim(left=np.min(left_xlims), right=np.max(right_xlims))
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:
@@ -688,7 +667,6 @@ def recurrence_plot(
     colorbar: bool = False,
     colorbar_label: str | None = "Distance",
     cmap: str | None = None,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     x_axis_label: str = r"$\mathregular{N_i}$",
     y_axis_label: str = r"$\mathregular{N_i}$",
@@ -732,9 +710,6 @@ def recurrence_plot(
         `matplotlib colormaps reference <https://matplotlib.org/stable/gallery/color/colormap_reference.html>`_
         for the different options. For binary plots, the default is ``'Greys'``, for colored plots, the default is
         ``'viridis'``.
-    style
-        Matplotlib style to use for the plot. See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot.
     x_axis_label
@@ -790,24 +765,23 @@ def recurrence_plot(
         cmap = cmap if cmap else "viridis"
 
     # Plot
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
 
-        pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
-        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-        ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_title(title)
-        ax.set_aspect("equal")
+    pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
+    ax.set_aspect("equal")
 
-        if colorbar is True:
-            fig.colorbar(pcm, ax=ax, label=colorbar_label)
+    if colorbar is True:
+        fig.colorbar(pcm, ax=ax, label=colorbar_label)
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:

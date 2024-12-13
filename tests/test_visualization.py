@@ -40,7 +40,7 @@ def test_plot_multiple_sequences_0(rng):
         stims = [SoundStimulus.generate() for _ in range(10)]  # = 10 stimuli
         trials.append(SoundSequence(stims, seq))
 
-    fig, ax = plot_multiple_sequences(trials, style="ggplot", suppress_display=True)
+    fig, ax = plot_multiple_sequences(trials, suppress_display=True)
 
     return fig
 

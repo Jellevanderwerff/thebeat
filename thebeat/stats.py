@@ -102,7 +102,6 @@ def acf_plot(
     max_lag: float | None = None,
     smoothing_window: float | None = None,
     smoothing_sd: float | None = None,
-    style: str = "seaborn-v0_8",
     title: str = "Autocorrelation",
     x_axis_label: str = "Lag",
     y_axis_label: str = "Correlation",
@@ -132,9 +131,6 @@ def acf_plot(
         smoothing out the analysis.
     smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
-    style
-        Style used by matplotlib. See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
         :class:`~thebeat.core.Sequence` or :class:`~thebeat.core.SoundSequence` ``name`` attribute as the title of the
@@ -187,16 +183,16 @@ def acf_plot(
     # Make x axis
     x = np.arange(start=min_lag, stop=max_lag * x_step, step=x_step)
 
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        else:
-            fig = ax.get_figure()
+    # Plot
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+    else:
+        fig = ax.get_figure()
 
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_title(title)
-        ax.plot(x, y)
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
+    ax.plot(x, y)
 
     if not suppress_display and ax is not None:
         plt.show()
@@ -329,7 +325,6 @@ def ccf_plot(
     resolution,
     smoothing_window: float | None = None,
     smoothing_sd: float | None = None,
-    style: str = "seaborn-v0_8",
     title: str = "Cross-correlation",
     x_axis_label: str = "Lag",
     y_axis_label: str = "Correlation",
@@ -356,9 +351,6 @@ def ccf_plot(
         smoothing out the analysis.
     smoothing_sd
         The standard deviation of the normal probability density function used for smoothing out the analysis.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         The title of the plot.
     x_axis_label
@@ -414,16 +406,15 @@ def ccf_plot(
     x = np.arange(start=0, stop=len(y) * x_step, step=x_step)
 
     # Plot
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        else:
-            fig = ax.get_figure()
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+    else:
+        fig = ax.get_figure()
 
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_title(title)
-        ax.plot(x, y)
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_title(title)
+    ax.plot(x, y)
 
     if not suppress_display and ax is not None:
         plt.show()
@@ -678,7 +669,6 @@ def fft_plot(
     x_min: float | None = None,
     x_max: float | None = None,
     remove_dc: bool = True,
-    style: str = "seaborn-v0_8",
     title: str = "Fourier transform",
     x_axis_label: str = "Cycles per unit",
     y_axis_label: str = "Absolute power",
@@ -718,9 +708,6 @@ def fft_plot(
     remove_dc
         If True, the DC component is removed from the Fourier transform by subtracting the mean from the signal. The DC component
         is the first value of the Fourier transform and represents the average of the sequence.
-    style
-        The matplotlib style to use. See
-        `matplotlib style reference <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         The title of the plot.
     x_axis_label
@@ -763,18 +750,17 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
     xf, yf = fft_values(sequence=sequence, unit_size=unit_size, x_min=x_min, x_max=x_max, remove_dc=remove_dc)
 
     # Plot
-    with plt.style.context(style):
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
-        ax.plot(xf, yf)
-        ax.set_xlabel(x_axis_label)
-        ax.set_ylabel(y_axis_label)
-        ax.set_xlim(x_min, None)
-        ax.set_title(title)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
+    ax.plot(xf, yf)
+    ax.set_xlabel(x_axis_label)
+    ax.set_ylabel(y_axis_label)
+    ax.set_xlim(x_min, None)
+    ax.set_title(title)
 
     if not suppress_display and ax_provided is False:
         fig.show()
