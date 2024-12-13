@@ -384,7 +384,6 @@ def plot_single_sequence(
     onsets: list | np.ndarray,
     end_with_interval: bool,
     final_ioi: float | None = None,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     x_axis_label: str = "Time",
     linewidths: list[float] | npt.NDArray[float] | float | None = None,
@@ -408,10 +407,6 @@ def plot_single_sequence(
         The desired width of the bars (events). Defaults to 1/10th of the smallest inter-onset interval (IOI).
         Can be a single value that will be used for each onset, or a list or array of values
         (i.e with a value for each respective onsets).
-    style
-        Matplotlib style to use for the plot. Defaults to 'seaborn'.
-        See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot. This takes precedence over using the
         name of the object as the title of the plot (if the object has one).
@@ -442,24 +437,24 @@ def plot_single_sequence(
         figsize = (cur_size[0], cur_size[1] / 2)
 
     # Make plot
-    with plt.style.context(style):
-        # If an existing Axes object was passed, do not create new Figure and Axes.
-        # Else, get the current Figure object from the Axes object.
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
 
-        ax.axes.set_xlabel(x_axis_label)
-        ax.set_ylim(0, 1)
-        left_x_lim = min(onsets[0], 0)
-        right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
-        ax.set_xlim(left_x_lim, right_x_lim)
-        ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
-        ax.axes.set_title(title)
-        ax.axes.yaxis.set_visible(False)
+    # If an existing Axes object was passed, do not create new Figure and Axes.
+    # Else, get the current Figure object from the Axes object.
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
+
+    ax.axes.set_xlabel(x_axis_label)
+    ax.set_ylim(0, 1)
+    left_x_lim = min(onsets[0], 0)
+    right_x_lim = onsets[-1] + final_ioi if end_with_interval else onsets[-1] + linewidths[-1]
+    ax.set_xlim(left_x_lim, right_x_lim)
+    ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
+    ax.axes.set_title(title)
+    ax.axes.yaxis.set_visible(False)
 
     # Show plot if desired, and if no existing Axes object was passed.
     if suppress_display is False and ax_provided is False:
@@ -472,7 +467,6 @@ def plot_waveform(
     samples: np.ndarray,
     fs: int,
     n_channels: int,
-    style: str = "seaborn-v0_8",
     title: str | None = None,
     figsize: tuple | None = None,
     dpi: int = 100,
@@ -490,9 +484,6 @@ def plot_waveform(
         Sampling frequency in hertz (e.g. 48000).
     n_channels
         Number of channels (1 for mono, 2 for stereo).
-    style
-        Style used by matplotlib. See `matplotlib style sheets reference
-        <https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html>`_.
     title
         If desired, one can provide a title for the plot.
     figsize
@@ -531,23 +522,23 @@ def plot_waveform(
         x_right_lim = samples.shape[0] / fs * 1000
 
     # Plot
-    with plt.style.context(style):
-        # If an Axes object is provided, we use that one. Save whether that was done to know
-        # if we need to return a newly created Figure and Axes.
-        if ax is None:
-            fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-            ax_provided = False
-        else:
-            fig = ax.get_figure()
-            ax_provided = True
 
-        ax.set_xlim(0, x_right_lim)
-        ax.plot(frames, samples, alpha=alph)
-        if n_channels == 2:
-            ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
-        ax.set_ylabel("Amplitude")
-        ax.set_xlabel(x_label)
-        ax.set_title(title)
+    # If an Axes object is provided, we use that one. Save whether that was done to know
+    # if we need to return a newly created Figure and Axes.
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
+        ax_provided = False
+    else:
+        fig = ax.get_figure()
+        ax_provided = True
+
+    ax.set_xlim(0, x_right_lim)
+    ax.plot(frames, samples, alpha=alph)
+    if n_channels == 2:
+        ax.legend(["Left channel", "Right channel"], loc=0, frameon=True)
+    ax.set_ylabel("Amplitude")
+    ax.set_xlabel(x_label)
+    ax.set_title(title)
 
     if suppress_display is False and not ax_provided:
         fig.show()
