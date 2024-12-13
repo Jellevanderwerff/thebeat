@@ -197,7 +197,7 @@ def join_rhythms(iterator):
 
 def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
     """
-    Converts a sequence of millisecond onsets to a series of zeros and ones.
+    Converts a sequence of onsets to a series of zeros and ones.
     Ones for the onsets.
     """
     sequence_end = sequence.onsets[-1]
