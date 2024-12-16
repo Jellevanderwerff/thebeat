@@ -67,9 +67,10 @@ def all_possibilities(numbers: list, target: float) -> np.ndarray:
     return np.array(res, dtype=object)
 
 
-def all_rhythmic_ratios(allowed_note_values: list | np.ndarray, time_signature: tuple[int, int]):
+def all_combinations_of_note_values(allowed_note_values: list | np.ndarray, time_signature: tuple[int, int]):
     # Find common denominator so we can work with integers, rather than floats
-    common_denom = np.lcm(np.lcm.reduce([note.numerator for note in allowed_note_values]), time_signature[1])  # numpy.int64
+    allowed_note_values = [Fraction(note).limit_denominator() for note in allowed_note_values]
+    common_denom = np.lcm(np.lcm.reduce([note.denominator for note in allowed_note_values]), time_signature[1])  # numpy.int64
 
     # Which numerators are allowed?
     allowed_numerators = [int(common_denom * note) for note in allowed_note_values]

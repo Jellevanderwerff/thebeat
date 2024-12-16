@@ -23,12 +23,12 @@ import thebeat
 
 def test_rhythm():
     # generate random rhythm
-    rrhythm = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
+    rrhythm = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
     assert rrhythm
 
     # combine two rhythms
-    rhythm1 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
-    rhythm2 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[4, 8])
+    rhythm1 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
+    rhythm2 = thebeat.music.Rhythm.generate_random_rhythm(allowed_note_values=[1/4, 1/8])
     combined_rhythm = rhythm1 + rhythm2
     assert sum(combined_rhythm.iois) == sum(rhythm1.iois) + sum(rhythm2.iois)
 
@@ -47,7 +47,7 @@ def test_rhythm():
     assert len(rhythm.iois) == 16
 
 
-def test_rhythm_from_fractions():
+def test_rhythm_from_note_values():
     r1 = thebeat.music.Rhythm.from_note_values([1/4, 3/4, 1/8, 3/8, 1/2], beat_ms=500, time_signature=(4, 4))
     assert np.all(r1.iois == [500, 1500, 250, 750, 1000])
 
@@ -59,6 +59,12 @@ def test_rhythm_from_fractions():
 
     r4 = thebeat.music.Rhythm.from_note_values([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
     assert np.all(r4.iois == [500, 1000, 250, 750, 500])
+
+    r5 = thebeat.music.Rhythm.from_note_values([1/4, 1/2, 1/8, 3/8, 1/4], beat_ms=500, time_signature=(3, 4))
+    assert np.all(r5.note_values == [1/4, 1/2, 1/8, 3/8, 1/4])
+
+    r6 = thebeat.music.Rhythm.from_note_values([1/8, 1/4, 1/16, 3/16, 1/8], beat_ms=500, time_signature=(3, 8))
+    assert np.all(r6.note_values == [1/8, 1/4, 1/16, 3/16, 1/8])
 
 
 @pytest.custom_mpl_image_compare(tolerance=2)

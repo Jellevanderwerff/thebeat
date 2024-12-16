@@ -95,7 +95,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> iois = [500, 250, 250, 500]
         >>> r = Rhythm(iois=iois, time_signature=(3, 4), beat_ms=250)
         >>> print(r.note_values)
-        [2 4 4 2]
+        [Fraction(1, 2), Fraction(1, 4), Fraction(1, 4), Fraction(1, 2)]
 
         """
 
@@ -234,14 +234,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
+        >>> r = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
 
         >>> import fractions
-        >>> dotted_halfnote = fractions.Fraction(3, 5)
-        >>> halfnote = fractions.Fraction(2, 5)
-        >>> r = Rhythm.from_fractions([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
+        >>> dotted_halfnote = fractions.Fraction(3, 4)
+        >>> halfnote = fractions.Fraction(1, 2)
+        >>> r = Rhythm.from_note_values([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
 
-        >>> r = Rhythm.from_fractions([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
+        >>> r = Rhythm.from_note_values([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
 
         """
 
@@ -372,11 +372,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         iois = np.empty(0)
 
-        all_ratios = thebeat.helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
+        all_combinations = thebeat.helpers.all_combinations_of_note_values(allowed_note_values, time_signature)
 
         for _ in range(n_bars):
-            ratios = rng.choice(all_ratios, 1)[0]
-            new_iois = ratios * time_signature[1] * beat_ms
+            fractions = rng.choice(all_combinations, 1)[0]
+            new_iois = fractions * beat_ms * time_signature[1]
             iois = np.append(iois, new_iois)
 
         # Make rests
@@ -868,8 +868,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             If desired, one can provide a number of rests to be inserted at random locations. These are placed after
             the random selection of note values.
         allowed_note_values
-            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
-            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the allowed note values. A note value of ``1/2`` means a half
+            note, a note value of ``1/4`` means a quarternote etc. Defaults to ``[1/4, 1/8, 1/16]``. Note that the meaning of the note values
+            depends on the time signature.
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
@@ -881,8 +882,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         --------
         >>> generator = np.random.default_rng(seed=123)
         >>> m = Melody.generate_random_melody(rng=generator)
-        >>> print(m.note_values)
-        [16 16 16 16 16 16 16  8  8 16  8 16 16]
+        >>> print(m.note_values) # doctest: +ELLIPSIS
+        [Fraction(1, 16), Fraction(1, 16), Fraction(1, 16), Fraction(1, 16), ...]
         >>> print(m.pitch_names)
         ["a'", "g'", "c'", "c''", "d'", "e'", "d'", "e'", "d'", "e'", "b'", "f'", "c''"]
 
@@ -899,7 +900,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
             rng = np.random.default_rng()
 
         if allowed_note_values is None:
-            allowed_note_values = [4, 8, 16]
+            allowed_note_values = [1/4, 1/8, 1/16]
 
         # Generate random rhythm and random tone_heights
         rhythm = thebeat.music.Rhythm.generate_random_rhythm(
