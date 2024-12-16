@@ -229,9 +229,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         name
             A name for the rhythm.
 
-        Example
-        -------
-
         Examples
         --------
         >>> r = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)

@@ -11,6 +11,6 @@ Musical notation,:py:class:`~thebeat.music.Rhythm`,:py:meth:`~thebeat.music.Rhyt
 Musical notation,:py:class:`~thebeat.music.Melody`,:py:meth:`~thebeat.music.Melody.plot_melody`,
 Phase differences,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.plot_phase_differences`,:ref:`Plotting phase differences (circular plots)`
 Phase space plot,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.phase_space_plot`,
-Recurrence plot,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.recurrence_plot`,:ref:`Saving and manipulating plots`
+Recurrence plot,:py:class:`~thebeat.core.Sequence`,:py:func:`~thebeat.visualization.recurrence_plot`,":ref:`Plotting: saving, manipulating, adding styles`"
 Waveform,:py:class:`~thebeat.core.SoundSequence`,:py:meth:`~thebeat.core.SoundSequence.plot_waveform`,:ref:`Getting started`
 Waveform,:py:class:`~thebeat.core.SoundStimulus`,:py:meth:`~thebeat.core.SoundStimulus.plot_waveform`,:ref:`Roving oddball`
