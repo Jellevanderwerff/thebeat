@@ -5,3 +5,5 @@ pyarrow
 numpy>=2; python_version>="3.9"
 numpy<2; python_version<"3.9"
 lilypond<2.25; sys_platform != 'darwin' or platform_machine != 'arm64'
+
+matplotlib<3.10
