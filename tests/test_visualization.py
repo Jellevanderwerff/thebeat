@@ -40,7 +40,7 @@ def test_plot_multiple_sequences_0(rng):
         stims = [SoundStimulus.generate() for _ in range(10)]  # = 10 stimuli
         trials.append(SoundSequence(stims, seq))
 
-    fig, ax = plot_multiple_sequences(trials, suppress_display=True)
+    fig, ax = plot_multiple_sequences(trials)
 
     return fig
 
@@ -48,7 +48,7 @@ def test_plot_multiple_sequences_0(rng):
 @pytest.custom_mpl_image_compare
 def test_plot_multiple_sequences_1(rng):
     seqs = [Sequence.generate_random_normal(10, mu=500, sigma=25, rng=rng) for _ in range(10)]
-    plot_multiple_sequences(seqs, suppress_display=True)
+    plot_multiple_sequences(seqs)
 
     seq1 = Sequence.generate_random_normal(
         n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng
@@ -57,7 +57,7 @@ def test_plot_multiple_sequences_1(rng):
         n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng
     )
     fig, ax = plot_multiple_sequences(
-        [seq1, seq2], figsize=(10, 5), suppress_display=True, colors=["red", "blue"]
+        [seq1, seq2], figsize=(10, 5), colors=["red", "blue"]
     )
 
     return fig
@@ -72,7 +72,7 @@ def test_plot_multiple_sequences_2(rng):
         n_events=5, mu=500, sigma=25, end_with_interval=True, rng=rng
     )
     fig, ax = plot_multiple_sequences(
-        [seq1, seq2], figsize=(10, 5), suppress_display=True, colors=[(1, 0, 0), (0, 0, 1)]
+        [seq1, seq2], figsize=(10, 5), colors=[(1, 0, 0), (0, 0, 1)]
     )
     return fig
 
@@ -85,7 +85,7 @@ def test_plot_multiple_sequences_3(rng):
     seq2.round_onsets()
     sound_seq = SoundSequence(SoundStimulus.generate(), seq2)
     fig, ax = plot_multiple_sequences(
-        [seq1, sound_seq], figsize=(10, 5), suppress_display=True, colors=[(1, 0, 0), (0, 0, 1)]
+        [seq1, sound_seq], figsize=(10, 5), colors=[(1, 0, 0), (0, 0, 1)]
     )
     return fig
 
@@ -98,7 +98,7 @@ def test_recurrence_plot_threshold(rng):
         )
         * 5
     )
-    fig, ax = recurrence_plot(seq, 0.03, suppress_display=True)
+    fig, ax = recurrence_plot(seq, 0.03)
 
     return fig
 
@@ -111,7 +111,7 @@ def test_recurrence_plot_nothreshold(rng):
         )
         * 5
     )
-    fig, ax = recurrence_plot(seq, suppress_display=True)
+    fig, ax = recurrence_plot(seq)
 
     return fig
 
@@ -124,7 +124,7 @@ def test_plot_phase_differences(rng):
     ref_seq = Sequence.generate_random_normal(n_events=10, mu=500, sigma=100, rng=rng)
 
     fig, ax = thebeat.visualization.plot_phase_differences(
-        test_seqs, ref_seq, suppress_display=True, title="My first phase difference plot"
+        test_seqs, ref_seq, title="My first phase difference plot"
     )
 
     return fig
@@ -137,7 +137,7 @@ def test_interval_ratios_plot_density(rng):
     ]
 
     fig, ax = thebeat.visualization.plot_interval_ratios_density(
-        seqs, suppress_display=True, title="My first density plot", resolution=0.1
+        seqs, title="My first density plot", resolution=0.1
     )
     return fig
 
@@ -149,6 +149,6 @@ def test_interval_ratios_plot_histogram(rng):
     ]
 
     fig, ax = thebeat.visualization.plot_interval_ratios_histogram(
-        seqs, suppress_display=True, title="My first density plot"
+        seqs, title="My first density plot"
     )
     return fig

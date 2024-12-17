@@ -294,7 +294,6 @@ def overlay_samples(samples_arrays: np.typing.ArrayLike) -> np.ndarray:
 def plot_lp(
     lp,
     filepath: os.PathLike | str = None,
-    suppress_display: bool = False,
     title: str | None = None,
     figsize: tuple[float, float] | None = None,
     dpi: int = 300,
@@ -309,8 +308,6 @@ def plot_lp(
         A LilyPond string.
     filepath
         If provided, the plot will be saved to this path. Has to end with either .png or .pdf.
-    suppress_display
-        If True, the plot will not be displayed using :func:`matplotlib.figure.Figure.show`.
     title
         Title of the plot.
     figsize
@@ -360,17 +357,11 @@ def plot_lp(
 
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
     ax.imshow(image)
     ax.set_axis_off()
     ax.set_title(title)
-
-    # show plot if necessary
-    if not suppress_display and not ax_provided:
-        fig.show()
 
     return fig, ax
 
@@ -384,7 +375,6 @@ def plot_single_sequence(
     linewidths: list[float] | npt.NDArray[float] | float | None = None,
     figsize: tuple | None = None,
     dpi: int = 100,
-    suppress_display: bool = False,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
@@ -412,8 +402,6 @@ def plot_single_sequence(
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.subplots`.
     dpi
         The number of dots per inch. This refers to the ``dpi`` parameter in :class:`matplotlib.figure.Figure`.
-    suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
     ax
         If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
@@ -437,10 +425,8 @@ def plot_single_sequence(
     # Else, get the current Figure object from the Axes object.
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     ax.axes.set_xlabel(x_axis_label)
     ax.set_ylim(0, 1)
@@ -450,10 +436,6 @@ def plot_single_sequence(
     ax.barh(0.5, width=linewidths, height=1.0, left=onsets)
     ax.axes.set_title(title)
     ax.axes.yaxis.set_visible(False)
-
-    # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False and ax_provided is False:
-        fig.show()
 
     return fig, ax
 
@@ -465,7 +447,6 @@ def plot_waveform(
     title: str | None = None,
     figsize: tuple | None = None,
     dpi: int = 100,
-    suppress_display: bool = False,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
@@ -487,8 +468,6 @@ def plot_waveform(
     dpi
         The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
         :func:`matplotlib.pyplot.figure`.
-    suppress_display
-        If ``True``, :meth:`matplotlib.pyplot.Figure.show` is not run.
     ax
         If desired, you can provide an existing :class:`matplotlib.axes.Axes` object onto which to plot.
         See the Examples of the different plotting functions to see how to do this
@@ -522,10 +501,8 @@ def plot_waveform(
     # if we need to return a newly created Figure and Axes.
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     ax.set_xlim(0, x_right_lim)
     ax.plot(frames, samples, alpha=alph)
@@ -534,9 +511,6 @@ def plot_waveform(
     ax.set_ylabel("Amplitude")
     ax.set_xlabel(x_label)
     ax.set_title(title)
-
-    if suppress_display is False and not ax_provided:
-        fig.show()
 
     return fig, ax
 

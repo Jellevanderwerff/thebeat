@@ -532,7 +532,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         staff_type: str = "rhythm",
         print_staff: bool = True,
         title: str | None = None,
-        suppress_display: bool = False,
         figsize: tuple[float, float] | None = None,
         dpi: int = 600,
         ax: plt.Axes | None = None,
@@ -577,10 +576,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             `percussion staff <https://en.wikipedia.org/wiki/Percussion_notation>`_.
         title
             A title for the plot. Note that this is not considered when saving the plot as an .eps file.
-        suppress_display
-            If desired,you can choose to suppress displaying the plot in your IDE. This means that
-            :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
-            use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
         figsize
             The figure size in inches, as a tuple of floats. This refers to the figsize argument in :func:`matplotlib.pyplot.figure`.
         dpi
@@ -595,7 +590,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> r.plot_rhythm()  # doctest: +SKIP
 
         >>> r = Rhythm([250, 250, 500, 500, 1500], time_signature=(3, 4))
-        >>> fig, ax = r.plot_rhythm(print_staff=True, suppress_display=True)  # doctest: +SKIP
+        >>> fig, ax = r.plot_rhythm(print_staff=True)  # doctest: +SKIP
         >>> plt.show()  # doctest: +SKIP
 
         >>> r = Rhythm.from_note_values([4, 4, 4, 4])
@@ -681,7 +676,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         fig, ax = thebeat.helpers.plot_lp(
             lp=lpf_str,
             filepath=filepath,
-            suppress_display=suppress_display,
             title=title,
             figsize=figsize,
             dpi=dpi,
@@ -1061,7 +1055,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self,
         filepath: os.PathLike | str | None = None,
         key: str | None = None,
-        suppress_display: bool = False,
         figsize: tuple[float, float] | None = None,
         dpi: int = 600,
     ) -> tuple[plt.Figure, plt.Axes]:
@@ -1086,10 +1079,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
             The musical key to plot in. Can differ from the key used to construct the :class:`Melody` object.
             Say you want to emphasize the accidentals (sharp or flat note), you can choose to plot the melody
             in 'C'. The default is to plot in the key that was used to construct the object.
-        suppress_display
-            If desired,you can choose to suppress displaying the plot in your IDE. This means that
-            :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
-            use the returned :class:`matplotlib.figure.Figure` and :class:`matplotlib.axes.Axes` objects.
         figsize
             The figure size in inches, as a tuple of floats. This refers to the figsize argument in :func:`matplotlib.pyplot.figure`.
         dpi
@@ -1103,9 +1092,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> m = Melody(r, 'CCGC')
         >>> m.plot_melody()  # doctest: +SKIP
 
-        >>> m.plot_melody(filepath='mymelody.png', suppress_display=True)  # doctest: +SKIP
+        >>> m.plot_melody(filepath='mymelody.png')  # doctest: +SKIP
 
-        >>> fig, ax = m.plot_melody(key='C', suppress_display=True)  # doctest: +SKIP
+        >>> fig, ax = m.plot_melody(key='C')  # doctest: +SKIP
 
         """
         if abjad is None:
@@ -1120,7 +1109,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
 
         fig, ax = thebeat.helpers.plot_lp(
-            lp, filepath=filepath, suppress_display=suppress_display, figsize=figsize, dpi=dpi
+            lp, filepath=filepath, figsize=figsize, dpi=dpi
         )
 
         return fig, ax

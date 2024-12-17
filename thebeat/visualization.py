@@ -39,7 +39,6 @@ def plot_interval_ratios_density(
     x_axis_label: str = "Interval ratios from dyads",
     y_axis_label: str = "Probability density",
     figsize: tuple[int, int] | None = None,
-    suppress_display: bool = False,
     dpi: int = 100,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -73,8 +72,6 @@ def plot_interval_ratios_density(
         The label for the y axis.
     figsize
         The size of the figure to be created in inches, width x height, e.g. (4, 4).
-    suppress_display
-        If True, the figure will not be displayed.
     dpi
         The resolution of the figure in dots per inch.
     ax
@@ -101,10 +98,8 @@ def plot_interval_ratios_density(
     # Plot
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     # Get kernel density function
     kde = scipy.stats.gaussian_kde(interval_ratios)
@@ -121,9 +116,6 @@ def plot_interval_ratios_density(
     ax.set_ylabel(y_axis_label)
     ax.set_title(title)
 
-    if not suppress_display and not ax_provided:
-        fig.show()
-
     return fig, ax
 
 
@@ -136,7 +128,6 @@ def plot_interval_ratios_histogram(
     x_axis_label: str = "Interval ratios from dyads",
     y_axis_label: str = "Count",
     figsize: tuple[int, int] | None = None,
-    suppress_display: bool = False,
     dpi: int = 100,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -169,8 +160,6 @@ def plot_interval_ratios_histogram(
         The label for the y axis.
     figsize
         The size of the figure to be created in inches, width x height, e.g. (4, 4).
-    suppress_display
-        If True, the figure will not be displayed.
     dpi
         The resolution of the figure in dots per inch.
     ax
@@ -196,19 +185,14 @@ def plot_interval_ratios_histogram(
 
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     ax.hist(interval_ratios, bins=bins)
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel(y_axis_label)
     ax.set_xlim(0, 1)
     ax.set_title(title)
-
-    if not suppress_display and not ax_provided:
-        fig.show()
 
     return fig, ax
 
@@ -225,7 +209,6 @@ def plot_phase_differences(
     color: str = None,
     title: str | None = None,
     figsize: tuple[int, int] | None = None,
-    suppress_display: bool = False,
     dpi: int = 100,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -266,8 +249,6 @@ def plot_phase_differences(
         A title for the plot.
     figsize
         The size of the figure to be created in inches.
-    suppress_display
-        If True, the figure will not be displayed.
     dpi
         The resolution of the figure in dots per inch.
     ax
@@ -361,7 +342,6 @@ def plot_phase_differences(
     # If no Axes was provided, create one
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={"projection": "polar"})
-        axes_provided = False
     # If an Axes object was provided, use that one but check if it is a polar one
     else:
         fig = ax.get_figure()
@@ -369,7 +349,6 @@ def plot_phase_differences(
             raise ValueError(
                 "Please provide a polar Axes object. Use projection='polar' when creating it."
             )
-        axes_provided = True
     ax.bar(centers, a, width=np.deg2rad(binwidth), bottom=0.0, color=color, alpha=0.5)
     ax.set_title(title)
 
@@ -393,10 +372,6 @@ def plot_phase_differences(
         )
         ax.set_theta_direction(1)
 
-    # Show
-    if not suppress_display and axes_provided is False:
-        fig.show()
-
     return fig, ax
 
 
@@ -408,7 +383,6 @@ def phase_space_plot(
     x_axis_label: str = r"$\mathregular{IOI_t}$",
     y_axis_label: str = r"$\mathregular{IOI_{t+1}}$",
     figsize: tuple[int, int] | None = None,
-    suppress_display: bool = False,
     dpi: int = 100,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -431,8 +405,6 @@ def phase_space_plot(
         The label for the y axis.
     figsize
         The size of the figure to be created in inches, width x height, e.g. (4, 4).
-    suppress_display
-        If True, the figure will not be displayed.
     dpi
         The resolution of the figure in dots per inch.
     ax
@@ -463,10 +435,9 @@ def phase_space_plot(
     # Plot
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi, tight_layout=True)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
+
     iois = sequence.iois
     for i in range(len(iois) - 2):
         ax.plot(
@@ -483,9 +454,6 @@ def phase_space_plot(
     ax.set_ylim(0, np.max(iois))
     ax.set_aspect("equal")
 
-    if not suppress_display and not ax_provided:
-        fig.show()
-
     return fig, ax
 
 
@@ -496,7 +464,6 @@ def plot_multiple_sequences(
     y_axis_labels: list[str] | np.ndarray[str] | None = None,
     linewidths: list[float] | np.typing.NDArray[float] | float | None = None,
     figsize: tuple | None = None,
-    suppress_display: bool = False,
     dpi: int = 100,
     colors: list | np.ndarray = None,
     ax: plt.Axes | None = None,
@@ -527,8 +494,6 @@ def plot_multiple_sequences(
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
         This refers to the ``figsize`` parameter in :func:`matplotlib.pyplot.figure`.
-    suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
     dpi
         The resolution of the plot in dots per inch. This refers to the ``dpi`` parameter in
         :func:`matplotlib.pyplot.figure`.
@@ -611,10 +576,8 @@ def plot_multiple_sequences(
     # Else, only create a new Figure object
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     # Labels
     ax.axes.set_title(title)
@@ -654,10 +617,6 @@ def plot_multiple_sequences(
     # Make sure we always have 0 on the left side of the x axis
     ax.set_xlim(left=np.min(left_xlims), right=np.max(right_xlims))
 
-    # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False and ax_provided is False:
-        fig.show()
-
     return fig, ax
 
 
@@ -671,7 +630,6 @@ def recurrence_plot(
     x_axis_label: str = r"$\mathregular{N_i}$",
     y_axis_label: str = r"$\mathregular{N_i}$",
     figsize: tuple = (5, 4),
-    suppress_display: bool = False,
     dpi: int = 100,
     ax: plt.Axes | None = None,
 ) -> tuple[plt.Figure, plt.Axes]:
@@ -718,8 +676,6 @@ def recurrence_plot(
         A label for the y axis.
     figsize
         A tuple containing the desired output size of the plot in inches, e.g. ``(4, 1)``.
-    suppress_display
-        If ``True``, the plot is only returned, and not displayed via :func:`matplotlib.pyplot.show`.
     dpi
         The resolution of the plot in dots per inch.
     ax
@@ -741,7 +697,7 @@ def recurrence_plot(
     >>> fig.savefig('recurrence_plot.png', bbox_inches='tight')  # doctest: +SKIP
 
     >>> seq = Sequence.generate_random_normal(n_events=3,mu=5000,sigma=50,end_with_interval=True) * 10
-    >>> fig, ax = recurrence_plot(seq, threshold=5, dpi=300, suppress_display=True)
+    >>> fig, ax = recurrence_plot(seq, threshold=5, dpi=300)
     >>> fig.savefig('recurrence_plot.png')  # doctest: +SKIP
 
     Notes
@@ -767,10 +723,8 @@ def recurrence_plot(
     # Plot
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
 
     pcm = ax.pcolormesh(distance_matrix, cmap=cmap)
     ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
@@ -782,9 +736,5 @@ def recurrence_plot(
 
     if colorbar is True:
         fig.colorbar(pcm, ax=ax, label=colorbar_label)
-
-    # Show plot if desired, and if no existing Axes object was passed.
-    if suppress_display is False and ax_provided is False:
-        fig.show()
 
     return fig, ax
