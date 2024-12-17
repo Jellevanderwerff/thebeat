@@ -79,7 +79,7 @@ def test_soundsequence_plot():
     ss = thebeat.core.SoundSequence(thebeat.core.SoundStimulus.generate(),
                                     thebeat.core.Sequence.generate_isochronous(n_events=10, ioi=500))
 
-    fig, ax = ss.plot_waveform(suppress_display=True)
+    fig, ax = ss.plot_waveform()
 
     return fig
 
@@ -140,7 +140,7 @@ def test_soundsequence_plot_sequence(rng):
     seq.round_onsets()
     stim = thebeat.core.SoundStimulus.generate()
     sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
-    fig, _ = sound_sequence.plot_sequence(suppress_display=True)
+    fig, _ = sound_sequence.plot_sequence()
     return fig
 
 
@@ -150,5 +150,5 @@ def test_soundsequence_plot_waveform(rng):
     seq.round_onsets()
     stim = thebeat.core.SoundStimulus.generate()
     sound_sequence = thebeat.core.SoundSequence(stim, seq, name='TestSoundSequence')
-    fig, _ = sound_sequence.plot_waveform(suppress_display=True)
+    fig, _ = sound_sequence.plot_waveform()
     return fig
