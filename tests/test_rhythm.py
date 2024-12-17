@@ -64,7 +64,7 @@ def test_rhythm_from_fractions():
 @pytest.custom_mpl_image_compare(tolerance=2)
 def test_rhythm_plot():
     rhythm = thebeat.music.Rhythm([500, 500, 500, 500])
-    fig, ax = rhythm.plot_rhythm(suppress_display=True)
+    fig, ax = rhythm.plot_rhythm()
     return fig
 
 

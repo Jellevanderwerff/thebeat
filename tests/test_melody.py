@@ -39,7 +39,7 @@ def test_melody(tmp_path):
 def test_melody_plot():
     rng = np.random.default_rng(seed=123)
     mel = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
-    fig, ax = mel.plot_melody(suppress_display=True)
+    fig, ax = mel.plot_melody()
     return fig
 
 

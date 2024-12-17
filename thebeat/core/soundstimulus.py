@@ -486,7 +486,7 @@ class SoundStimulus:
 
         >>> import matplotlib.pyplot as plt  # doctest: +SKIP
         >>> stim = SoundStimulus.generate()
-        >>> fig, ax = stim.plot_waveform(suppress_display=True)
+        >>> fig, ax = stim.plot_waveform()
         >>> fig.set_facecolor('blue')
         >>> plt.show()  # doctest: +SKIP
         """

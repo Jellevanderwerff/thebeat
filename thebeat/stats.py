@@ -108,7 +108,6 @@ def acf_plot(
     figsize: tuple | None = None,
     dpi: int = 100,
     ax: plt.Axes | None = None,
-    suppress_display: bool = False,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
     This function can be used for plotting an autocorrelation plot from a :class:`~thebeat.core.Sequence`.
@@ -148,8 +147,6 @@ def acf_plot(
     ax
         If desired, one can provide an existing :class:`matplotlib.axes.Axes` object to plot the autocorrelation
         plot on. This is for instance useful if you want to plot multiple autocorrelation plots on the same figure.
-    suppress_display
-        If ``True``, :func:`matplotlib.pyplot.show` is not run.
 
     Notes
     -----
@@ -193,9 +190,6 @@ def acf_plot(
     ax.set_ylabel(y_axis_label)
     ax.set_title(title)
     ax.plot(x, y)
-
-    if not suppress_display and ax is not None:
-        plt.show()
 
     return fig, ax
 
@@ -331,7 +325,6 @@ def ccf_plot(
     figsize: tuple | None = None,
     dpi: int = 100,
     ax: plt.Axes | None = None,
-    suppress_display: bool = False,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
     Calculate and plot the cross-correlation function (CCF) between two :class:`~thebeat.core.Sequence` objects.
@@ -365,8 +358,6 @@ def ccf_plot(
         :func:`matplotlib.pyplot.figure`.
     ax
         A :class:`matplotlib.axes.Axes` object. If ``None``, a new Figure and Axes is created.
-    suppress_display
-        If ``True``, the plot is not displayed. This is useful e.g. if you only want to save the plot to a file
 
     Returns
     -------
@@ -415,9 +406,6 @@ def ccf_plot(
     ax.set_ylabel(y_axis_label)
     ax.set_title(title)
     ax.plot(x, y)
-
-    if not suppress_display and ax is not None:
-        plt.show()
 
     return fig, ax
 
@@ -675,7 +663,6 @@ def fft_plot(
     figsize: tuple | None = None,
     dpi: int = 100,
     ax: plt.Axes | None = None,
-    suppress_display: bool = False,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
     Plots the Fourier transform of a :class:`~thebeat.core.Sequence` object.
@@ -721,8 +708,6 @@ def fft_plot(
         The resolution of the plot in dots per inch.
     ax
         A matplotlib Axes object to plot on. If not provided, a new figure and axes will be created.
-    suppress_display
-        If True, the plot will not be displayed.
 
     Returns
     -------
@@ -752,18 +737,13 @@ xlabel='Cycles per unit', ylabel='Absolute power'>)
     # Plot
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, tight_layout=True, dpi=dpi)
-        ax_provided = False
     else:
         fig = ax.get_figure()
-        ax_provided = True
     ax.plot(xf, yf)
     ax.set_xlabel(x_axis_label)
     ax.set_ylabel(y_axis_label)
     ax.set_xlim(x_min, None)
     ax.set_title(title)
-
-    if not suppress_display and ax_provided is False:
-        fig.show()
 
     return fig, ax
 
