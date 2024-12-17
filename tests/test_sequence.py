@@ -123,7 +123,7 @@ def test_multiplication():
 def test_plot_sequence():
     # simple case
     seq = thebeat.core.Sequence([500, 1000, 200])
-    fig, ax = seq.plot_sequence(suppress_display=True)
+    fig, ax = seq.plot_sequence()
     return fig
 
 
@@ -140,7 +140,7 @@ def test_plot_sequence_on_ax():
 def test_plot_sequence_title():
     # simple case
     seq = thebeat.core.Sequence([500, 1000, 200], name="TestSequence")
-    fig, ax = seq.plot_sequence(title="This title, not the name", suppress_display=True)
+    fig, ax = seq.plot_sequence(title="This title, not the name")
     return fig
 
 

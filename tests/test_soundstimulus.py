@@ -53,7 +53,7 @@ def test_whitenoise(rng):
 def test_plot_stimulus_waveform_0(rng):  # Plot new plot
     # regular example
     stim = thebeat.core.SoundStimulus.generate_white_noise(duration_ms=1000, rng=rng)
-    fig, ax = stim.plot_waveform(suppress_display=True)
+    fig, ax = stim.plot_waveform()
     return fig
 
 
