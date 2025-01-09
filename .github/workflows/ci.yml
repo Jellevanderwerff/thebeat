@@ -67,7 +67,7 @@ jobs:
         if: failure() && matrix.python-version == '3.11' && steps.pytest.conclusion == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-mpl-results-${{ runner.os }}
+          name: pytest-mpl-results-${{ runner.os }}${{ matrix.os == 'macos-latest' && '_arm64' || '' }}
           path: pytest_mpl_results/
 
       - name: Run doctests with pytest
