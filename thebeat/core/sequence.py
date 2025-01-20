@@ -562,55 +562,6 @@ class Sequence(BaseSequence):
         return cls(iois, end_with_interval=end_with_interval, **kwargs)
 
     @classmethod
-    def generate_random_poisson(
-        cls,
-        n_events: int,
-        lam: float,
-        rng: np.random.Generator | None = None,
-        end_with_interval: bool = False,
-        **kwargs,
-    ) -> Sequence:
-        """
-        Class method that generates a :py:class:`Sequence` object with random inter-onset intervals
-        (IOIs) based on a Poisson distribution.
-
-        Parameters
-        ----------
-        n_events
-            The desired number of events in the sequence.
-        lam
-            The desired value for lambda.
-        rng
-            A :class:`numpy.random.Generator` object. If not supplied
-            :func:`numpy.random.default_rng` is used.
-        end_with_interval
-            Indicates whether the sequence should end with an event (``False``) or an interval
-            (``True``).
-        **kwargs
-            Additional keyword arguments are passed to the :py:class:`Sequence` constructor.
-
-
-        Examples
-        --------
-        >>> generator = np.random.default_rng(123)
-        >>> seq = Sequence.generate_random_poisson(n_events=5,lam=500,rng=generator)
-        >>> print(seq.iois)
-        [512. 480. 476. 539.]
-
-        """
-        if rng is None:
-            rng = np.random.default_rng()
-
-        # Number of IOIs depends on end_with_interval argument
-        n_iois = n_events if end_with_interval else n_events - 1
-
-        return cls(
-            rng.poisson(lam=lam, size=n_iois),
-            end_with_interval=end_with_interval,
-            **kwargs,
-        )
-
-    @classmethod
     def generate_random_exponential(
         cls,
         n_events: int,
@@ -619,15 +570,22 @@ class Sequence(BaseSequence):
         end_with_interval: bool = False,
         **kwargs,
     ) -> Sequence:
-        """Class method that generates a :py:class:`Sequence` object with random inter-onset
-        intervals (IOIs) based on an exponential distribution.
+        """Generate a :py:class:`Sequence` object with random inter-onset intervals (IOIs) sampled
+        from an exponential distribution.
+
+        Random IOIs drawn from an exponential distribution will result in a sequence sampled from a
+        Poisson point process. Consequently, the number of events within a certain time window
+        will follow a corresponding Poisson distribution. In particular, if IOIs are exponentially
+        distributed according to parameter :math:`\\lambda`, the number of events within any interval
+        of duration 1 will follow a Poisson distribution with the same :math:`\\lambda` value.
 
         Parameters
         ----------
         n_events
             The desired number of events in the sequence.
         lam
-           The desired value for lambda.
+           The desired value for lambda, the rate parameter (the mean number of events per time unit,
+           equal to the inverse of the mean interval duration).
         rng
             A :class:`numpy.random.Generator` object. If not supplied NumPy's
             :func:`numpy.random.default_rng` is used.
@@ -641,7 +599,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_random_exponential(n_events=5,lam=500,rng=generator)
+        >>> seq = Sequence.generate_random_exponential(n_events=5, lam=0.002, rng=generator)
         >>> print(seq.iois)
         [298.48624756  58.51553052 125.89734975 153.98272273]
 
@@ -652,7 +610,7 @@ class Sequence(BaseSequence):
         n_iois = n_events if end_with_interval else n_events - 1
 
         return cls(
-            rng.exponential(scale=lam, size=n_iois),
+            rng.exponential(scale=1 / lam, size=n_iois),
             end_with_interval=end_with_interval,
             **kwargs,
         )
