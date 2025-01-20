@@ -584,7 +584,8 @@ class Sequence(BaseSequence):
         n_events
             The desired number of events in the sequence.
         lam
-           The desired value for lambda.
+           The desired value for lambda, the rate parameter (the mean number of events per time unit,
+           equal to the inverse of the mean interval duration).
         rng
             A :class:`numpy.random.Generator` object. If not supplied NumPy's
             :func:`numpy.random.default_rng` is used.
@@ -598,7 +599,7 @@ class Sequence(BaseSequence):
         Examples
         --------
         >>> generator = np.random.default_rng(seed=123)
-        >>> seq = Sequence.generate_random_exponential(n_events=5, lam=500, rng=generator)
+        >>> seq = Sequence.generate_random_exponential(n_events=5, lam=0.002, rng=generator)
         >>> print(seq.iois)
         [298.48624756  58.51553052 125.89734975 153.98272273]
 
