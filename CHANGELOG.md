@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-_Nothing yet_
+### Fixed
+- Fixed interpretation of `Sequence.generate_random_exponential`'s `lam` parameter, to match common interpretation of lambda parameters of exponential and Poisson distributions (#108)
+
+### Removed
+- Removed `Sequence.generate_random_poisson`, potentially generating invalid sequences; refer to `Sequence.generate_random_exponetial` instead (#108)
 
 ## [0.2.0] - 2023-12-22
 ### Added
