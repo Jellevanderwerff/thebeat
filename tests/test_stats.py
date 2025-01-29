@@ -55,7 +55,7 @@ def test_ccf_plot():
     seq = Sequence([500, 500, 500, 500])
     seq2 = Sequence([250, 500, 500, 500])
 
-    fig, ax = ccf_plot(seq, seq2, 1, suppress_display=True)
+    fig, ax = ccf_plot(seq, seq2, 1)
 
     return fig
 
@@ -70,7 +70,6 @@ def test_acf_image_seconds():
         max_lag=1000 / 1000,
         smoothing_window=50 / 1000,
         smoothing_sd=10 / 1000,
-        suppress_display=True,
     )
     return fig
 
@@ -80,7 +79,7 @@ def test_acf_image_milliseconds():
     rng = np.random.default_rng(seed=123)
     seq = Sequence.generate_random_normal(100, 500, 25, rng=rng)
     fig, ax = acf_plot(
-        seq, 1, max_lag=1000, smoothing_window=50, smoothing_sd=10, suppress_display=True
+        seq, 1, max_lag=1000, smoothing_window=50, smoothing_sd=10
     )
     return fig
 
@@ -108,7 +107,7 @@ def test_fft_values():
 @pytest.mark.mpl_image_compare
 def test_fft_plot():
     seq = Sequence([500, 500, 500, 500])
-    fig, ax = fft_plot(seq, unit_size=1000, x_min=None, x_max=None, suppress_display=True)
+    fig, ax = fft_plot(seq, unit_size=1000, x_min=None, x_max=None)
     return fig
 
 
