@@ -120,6 +120,67 @@ def check_sound_properties_sameness(objects: np.typing.ArrayLike):
         return True
 
 
+def get_abjad_note_durations(integer_ratios, time_signature, n_bars):
+    """Get abjad note durations from the integer_ratios
+    #todo This needs to be done with lcm to avoid rounding problems,
+        though seems to work for now.
+    """
+    total_duration = np.sum(integer_ratios)
+    duration_of_bar = total_duration / n_bars
+    ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
+    numerators = ratios * time_signature[0]
+
+    durations = [
+        abjad.Duration(Fraction(numerator) / time_signature[1]) for numerator in numerators
+    ]
+
+    return durations
+
+
+def get_abjad_ties(durations, time_signature):
+    full_bar = time_signature[0] / time_signature[1]
+    # will be output
+    notes = []
+    ties_at = []
+
+    # Keep track of how full the current bar is
+    bar_fullness = 0
+
+    for note in durations:
+        # if the note fits in the bar
+        if (note + bar_fullness) <= full_bar:
+            bar_fullness += note
+            notes.append(note)
+        # if note doesn't fit the bar
+        else:
+            remains = note
+
+            while (remains + bar_fullness) > full_bar:
+                right_side = bar_fullness + remains - full_bar
+                left_side = remains - right_side
+                ties_at.append(len(notes))  # add tie at current index
+                notes.append(left_side)
+                remains = right_side
+                bar_fullness = 0
+
+            if remains != 0:
+                bar_fullness += remains
+                notes.append(remains)
+
+        # if bar is full set bar_fullness to zero
+        if bar_fullness % full_bar == 0:
+            bar_fullness = 0
+
+    # If at the end of all this the bars are not full yet, raise an error
+    if not bar_fullness % full_bar == 0:
+        raise ValueError(
+            "There was an error while trying to tie the final note of a bar to the first note"
+            "of the subsequent bar. Try a different rhythm."
+        )
+
+    return notes, ties_at
+
+
 def get_sound_with_metronome(
     samples: np.ndarray, fs: int, metronome_ioi: float, metronome_amplitude: float
 ) -> np.ndarray:

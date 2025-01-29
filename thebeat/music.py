@@ -542,8 +542,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
-        durations = self._get_abjad_note_durations()
-        durations, ties_at = self._get_abjad_ties(durations)
+        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
         pitches = [abjad.NamedPitch("A3")] * len(durations)
 
         notes = []
@@ -658,65 +658,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             iois=self.iois, first_onset=0.0, end_with_interval=True, name=self.name
         )
 
-    def _get_abjad_note_durations(self):
-        """Get abjad note durations from the integer_ratios
-        #todo This needs to be done with lcm to avoid rounding problems,
-          though seems to work for now.
-        """
-        total_duration = np.sum(self.integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
-
-        return durations
-
-    def _get_abjad_ties(self, durations):
-        full_bar = self.time_signature[0] / self.time_signature[1]
-        # will be output
-        notes = []
-        ties_at = []
-
-        # Keep track of how full the current bar is
-        bar_fullness = 0
-
-        for note in durations:
-            # if the note fits in the bar
-            if (note + bar_fullness) <= full_bar:
-                bar_fullness += note
-                notes.append(note)
-            # if note doesn't fit the bar
-            else:
-                remains = note
-
-                while (remains + bar_fullness) > full_bar:
-                    right_side = bar_fullness + remains - full_bar
-                    left_side = remains - right_side
-                    ties_at.append(len(notes))  # add tie at current index
-                    notes.append(left_side)
-                    remains = right_side
-                    bar_fullness = 0
-
-                if remains != 0:
-                    bar_fullness += remains
-                    notes.append(remains)
-
-            # if bar is full set bar_fullness to zero
-            if bar_fullness % full_bar == 0:
-                bar_fullness = 0
-
-        # If at the end of all this the bars are not full yet, raise an error
-        if not bar_fullness % full_bar == 0:
-            raise ValueError(
-                "There was an error while trying to tie the final note of a bar to the first note"
-                "of the subsequent bar. Try a different rhythm."
-            )
-
-        return notes, ties_at
-
 
 class Melody(thebeat.core.sequence.BaseSequence):
     """
@@ -794,7 +735,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         self.pitch_names = [str(pitch_name) for pitch_name in pitch_names_list]
 
-        # Add initial events
+        # Add events as named tuples
         self.events = self._make_namedtuples(
             rhythm=rhythm,
             iois=rhythm.iois,
@@ -807,6 +748,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self.time_signature = rhythm.time_signature
         self.beat_ms = rhythm.beat_ms
         self.key = key
+        self.integer_ratios = rhythm.integer_ratios
+        self.is_played = is_played
 
         # Check whether the provided IOIs result in a sequence only containing whole bars
         n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
@@ -972,7 +915,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
     def plot_melody(
         self,
         filepath: os.PathLike | str | None = None,
-        key: str | None = None,
         suppress_display: bool = False,
         figsize: tuple[float, float] | None = None,
         dpi: int = 600,
@@ -994,10 +936,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
         filepath
             Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.eps'.
             The desired file format will be selected based on what the filepath ends with.
-        key
-            The musical key to plot in. Can differ from the key used to construct the :class:`Melody` object.
-            Say you want to emphasize the accidentals (sharp or flat note), you can choose to plot the melody
-            in 'C'. The default is to plot in the key that was used to construct the object.
         suppress_display
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
@@ -1015,9 +953,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> m = Melody(r, 'CCGC')
         >>> m.plot_melody()  # doctest: +SKIP
 
-        >>> m.plot_melody(filepath='mymelody.png', suppress_display=True)  # doctest: +SKIP
+        >>> m.plot_melody(filepath='mymelody.png')  # doctest: +SKIP
 
-        >>> fig, ax = m.plot_melody(key='C', suppress_display=True)  # doctest: +SKIP
+        >>> fig, ax = m.plot_melody()  # doctest: +SKIP
 
         """
         if abjad is None:
@@ -1027,9 +965,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
-        key = self.key if key is None else key
-
-        lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
+        lp = self._get_lp_from_events()
 
         fig, ax = thebeat.helpers.plot_lp(
             lp, filepath=filepath, suppress_display=suppress_display, figsize=figsize, dpi=dpi
@@ -1374,7 +1310,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         return samples
 
-    def _get_lp_from_events(self, key: str, time_signature: tuple):
+    def _get_lp_from_events(self):
         # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
         # This because abjad 3.13 etc require Python 3.10.
         try:
@@ -1385,8 +1321,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
             def make_notes(*args):  # noqa: E306
                 return list(note_maker(*args))
 
-        time_signature = abjad.TimeSignature(time_signature)
-        pitch = abjad.NamedPitchClass(key)
+        time_signature = abjad.TimeSignature(self.time_signature)
+        pitch = abjad.NamedPitchClass(self.key)
         key = abjad.KeySignature(pitch)
         preamble = textwrap.dedent(
             r"""
@@ -1403,37 +1339,44 @@ class Melody(thebeat.core.sequence.BaseSequence):
              """
         )
 
-        pitch_names = [event.pitch_name for event in self.events]
+        pitches = [event.pitch_name for event in self.events]
         is_played = [event.is_played for event in self.events]
 
         # Get note durations
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
-        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-        integer_ratios = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-        total_duration = np.sum(integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        note_durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
+        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
 
         notes = []
 
-        for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
-            if is_played is True:
-                pitch = abjad.NamedPitch(pitch_name)
-                note = make_notes(pitch, note_duration)[0]
-            else:
-                note = abjad.Rest(note_duration)
-            notes.append(note)
+        # Here we insert another of the same type of is_played
+        # at the place where it was split
+        count = 0
+        is_played = self.is_played
 
-        voice = abjad.Voice(notes)
-        abjad.attach(time_signature, voice[0])
-        abjad.attach(key, voice[0])
+        # if we split a note at the end of a bar and tie it to the first note in the subsequent bar,
+        # we now suddenly have two notes instead of one. so we need to add another of the same
+        # boolean value to is_played for that note.
+        for tie_at in ties_at:
+            is_played.insert(tie_at + count, is_played[tie_at])
 
-        staff = abjad.Staff([voice])
+        # loop over the pitch duration and whether it is a note or rest, and add to notes
+        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
+            these_notes = make_notes(pitch, duration) if is_plyd else [abjad.Rest(duration)]
+            notes.extend(these_notes)
+            if len(these_notes) > 1:
+                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
+
+        # plot the notes
+        staff = abjad.Staff(notes)
+        # add ties at the places where _get_abjad_ties thinks they should be (most of the time this is skipped)
+        for tie_at in ties_at:
+            # but only for notes, not for rests
+            if is_played[tie_at]:
+                tie = abjad.Tie()
+                abjad.attach(tie, staff[tie_at])
+        abjad.attach(time_signature, staff[0])
+        abjad.attach(key, staff[0])
+
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
