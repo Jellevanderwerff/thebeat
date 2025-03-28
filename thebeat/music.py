@@ -95,7 +95,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> iois = [500, 250, 250, 500]
         >>> r = Rhythm(iois=iois, time_signature=(3, 4), beat_ms=250)
         >>> print(r.note_values)
-        [2 4 4 2]
+        [Fraction(1, 2), Fraction(1, 4), Fraction(1, 4), Fraction(1, 2)]
 
         """
 
@@ -108,7 +108,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         n_bars = np.sum(iois) / time_signature[0] / beat_ms
         if not n_bars.is_integer():
             raise ValueError("The provided inter-onset intervals do not amount to whole bars.")
-        self.n_bars = n_bars
+        self.n_bars = int(n_bars)
 
         # Call initializer of super class
         super().__init__(iois=iois, end_with_interval=True, name=name)
@@ -136,30 +136,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
     def __mul__(self, other):
         return self._repeat(times=other)
-
-    @property
-    def fractions(self) -> np.ndarray:
-        r"""Calculate how to describe the rhythm in fractions from the total duration of the sequence.
-
-        Example
-        -------
-
-        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms.
-        This can be described using the fractions :math:`\frac{1}{8}, \frac{2}{8}, \frac{4}{8}, \frac{1}{8}`,
-        so this method returns the fractions ``[1/8, 2/8, 4/8, 1/8]``.
-
-        Examples
-        --------
-        >>> r = Rhythm([250, 500, 1000, 250])
-        >>> print(r.fractions)
-        [Fraction(1, 8) Fraction(1, 4) Fraction(1, 2) Fraction(1, 8)]
-
-        """
-
-        floats = self.iois / np.sum(self.iois)
-
-        fractions = [Fraction.from_float(f) for f in floats]
-        return np.array(fractions)
 
     @property
     def integer_ratios(self) -> np.ndarray:
@@ -219,14 +195,14 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         [12 12 12  4  4  4]
 
         """
-        ratios = self.iois / self.beat_ms / 4
 
-        note_values = np.array([int(1 // ratio) for ratio in ratios])
+        float_estimates = self.iois / self.beat_ms
+        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
 
         return note_values
 
     @classmethod
-    def from_fractions(
+    def from_note_values(
         cls,
         fractions: list | np.ndarray,
         time_signature: tuple[int, int] = (4, 4),
@@ -236,13 +212,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
     ) -> Rhythm:
         r"""
 
-        This class method can be used for creating a Rhythm on the basis of fractions. The fractions
+        This class method can be used for creating a Rhythm on the basis of fractions (i.e. note values). The fractions
         can be input either as floats (e.g. 0.25) or as :class:`fractions.Fraction` objects.
 
         Parameters
         ----------
         fractions
-            Contains the fractions of the rhythm. For instance: ``[1, 2, 4]``.
+            The fractions of the rhythm. For instance: ``[1/4, 1/2, 1/4]``.
         time_signature
             The time signature of the rhythm. For instance: ``(4, 4)``.
         beat_ms
@@ -253,27 +229,16 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         name
             A name for the rhythm.
 
-        Example
-        -------
-        The fractions represent for each note the proportion of the bar that the note takes up,
-        taking into account the time signature. A few examples:
-
-        In 4/4 time, a quarter note would be 1/4, an eighth note 1/8, etc.
-        In 4/8 time, a quarter note would be 1/2, an eighth note 1/4, etc.
-
-        In 5/4 time, we would input a quarter note as 1/5, an eighth note as 1/10, etc.
-        In 5/8 time, we would input a dotted quarter note as 3/5, an eighth  note as 1/5, etc.
-
         Examples
         --------
-        >>> r = Rhythm.from_fractions([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
+        >>> r = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4], time_signature=(4, 4), beat_ms=500)
 
         >>> import fractions
         >>> dotted_halfnote = fractions.Fraction(3, 4)
-        >>> halfnote = fractions.Fraction(2, 4)
-        >>> r = Rhythm.from_fractions([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
+        >>> halfnote = fractions.Fraction(1, 2)
+        >>> r = Rhythm.from_note_values([dotted_halfnote, halfnote], time_signature=(5, 4), beat_ms=500)
 
-        >>> r = Rhythm.from_fractions([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
+        >>> r = Rhythm.from_note_values([1/8, 1/8, 1/8, 1/8], time_signature=(4, 8), beat_ms=500)
 
         """
 
@@ -337,64 +302,12 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         )
 
     @classmethod
-    def from_note_values(
-        cls,
-        note_values: np.typing.ArrayLike[int],
-        time_signature: tuple[int, int] = (4, 4),
-        beat_ms: int = 500,
-        is_played: np.typing.ArrayLike[bool] | None = None,
-        name: str | None = None,
-    ) -> Rhythm:
-        r"""Create a Rhythm object on the basis of note values (i.e. note durations).
-
-        Note values are input as the denominators of the fraction. A note value of ``2`` means a half note,
-        a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
-
-        Parameters
-        ----------
-        note_values
-            A list or array containing the denominators of the note values. A note value of ``2`` means a half note,
-            a note value of ``4`` means a quarternote etc. A triplet would be ``[12, 12, 12]``.
-        time_signature
-            A musical time signature, for instance: ``(4, 4)``. As a reminder: the upper number indicates
-            *how many beats* there are in a bar. The lower number indicates the denominator of the value that
-            indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
-            :math:`\frac{1}{8}` th notes.
-        beat_ms
-            The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
-            number in the time signature is 4.
-        is_played
-            A list or array containing booleans indicating whether a note should be played or not.
-            Defaults to ``[True, True, True, ...]``.
-        name
-            Optionally, you can give the Sequence object a name. This is used when printing, plotting, or writing
-            the Sequence object. It can always be retrieved and changed via :py:attr:`Rhythm.name`.
-
-        Examples
-        --------
-        >>> r = Rhythm.from_note_values([16, 16, 16, 16, 4, 4, 4], beat_ms=500)
-        >>> print(r.iois)
-        [125. 125. 125. 125. 500. 500. 500.]
-        """
-
-        ratios = np.array([1 / note * time_signature[1] for note in note_values])
-        iois = ratios * beat_ms
-
-        return cls(
-            iois=iois,
-            time_signature=time_signature,
-            beat_ms=beat_ms,
-            is_played=is_played,
-            name=name,
-        )
-
-    @classmethod
     def generate_random_rhythm(
         cls,
         n_bars: int = 1,
         beat_ms: int = 500,
         time_signature: tuple[int, int] = (4, 4),
-        allowed_note_values: np.typing.ArrayLike[int] | None = None,
+        allowed_note_values: np.typing.ArrayLike[Fraction, float, int] | None = None,
         n_rests: int = 0,
         rng: np.random.Generator | None = None,
         name: str | None = None,
@@ -419,8 +332,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
             :math:`\frac{1}{8}` th notes.
         allowed_note_values
-            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
-            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the allowed note values. A note value of ``1/2`` means a half
+            note, a note value of ``1/4`` means a quarternote etc. Defaults to ``[1/4, 1/8, 1/16]``.
         n_rests
             If desired, one can provide a number of rests to be inserted at random locations. These are placed after
             the random selection of note values.
@@ -441,7 +354,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         >>> import numpy as np  # not required, here for reproducability
         >>> generator = np.random.default_rng(seed=321)  # not required, here for reproducability
-        >>> r = Rhythm.generate_random_rhythm(beat_ms=1000,allowed_note_values=[2, 4, 8],rng=generator)
+        >>> r = Rhythm.generate_random_rhythm(beat_ms=1000, allowed_note_values=[1/2, 1/4, 1/8],rng=generator)
         >>> print(r.iois)
         [ 500. 1000.  500.  500. 1000.  500.]
         """
@@ -450,15 +363,17 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             rng = np.random.default_rng()
 
         if allowed_note_values is None:
-            allowed_note_values = [4, 8, 16]
+            allowed_note_values = [Fraction(1, 4), Fraction(1, 8), Fraction(1, 16)]
+        else:
+            allowed_note_values = [Fraction.from_float(val) if not isinstance(val, Fraction) else val for val in allowed_note_values]
 
         iois = np.empty(0)
 
-        all_ratios = thebeat.helpers.all_rhythmic_ratios(allowed_note_values, time_signature)
+        all_combinations = thebeat.helpers.all_combinations_of_note_values(allowed_note_values, time_signature)
 
-        for bar in range(n_bars):
-            ratios = rng.choice(all_ratios, 1)[0]
-            new_iois = ratios * 4 * beat_ms
+        for _ in range(n_bars):
+            fractions = rng.choice(all_combinations, 1)[0]
+            new_iois = fractions * beat_ms * time_signature[1]
             iois = np.append(iois, new_iois)
 
         # Make rests
@@ -598,7 +513,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         >>> fig, ax = r.plot_rhythm(print_staff=True, suppress_display=True)  # doctest: +SKIP
         >>> plt.show()  # doctest: +SKIP
 
-        >>> r = Rhythm.from_note_values([4, 4, 4, 4])
+        >>> r = Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4])
         >>> r.plot_rhythm(filepath='isochronous_rhythm.pdf')  # doctest: +SKIP
 
 
@@ -627,8 +542,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
-        durations = self._get_abjad_note_durations()
-        durations, ties_at = self._get_abjad_ties(durations)
+        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
         pitches = [abjad.NamedPitch("A3")] * len(durations)
 
         notes = []
@@ -645,9 +560,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             is_played.insert(tie_at + count, is_played[tie_at])
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = make_notes(pitch, duration)[0] if is_plyd else abjad.Rest(duration)
-            notes.append(note)
+        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
+            these_notes = make_notes(pitch, duration) if is_plyd else [abjad.Rest(duration)]
+            notes.extend(these_notes)
+            if len(these_notes) > 1:
+                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
 
         # plot the notes
         staff = abjad.Staff(notes)
@@ -741,64 +658,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             iois=self.iois, first_onset=0.0, end_with_interval=True, name=self.name
         )
 
-    def _get_abjad_note_durations(self):
-        """Get abjad note durations from the integer_ratios
-        #todo This needs to be done with lcm to avoid rounding problems,
-          though seems to work for now.
-        """
-        total_duration = np.sum(self.integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
-
-        return durations
-
-    def _get_abjad_ties(self, durations):
-        full_bar = self.time_signature[0] / self.time_signature[1]
-        # will be output
-        notes = []
-        ties_at = []
-
-        # Keep track of how full the current bar is
-        bar_fullness = 0
-
-        for i, note in enumerate(durations):
-            # if the note fits in the bar
-            if (note + bar_fullness) <= full_bar:
-                bar_fullness += note
-                notes.append(note)
-            # if note doesn't fit the bar
-            else:
-                # try to divide the note up into smaller bits
-                for division in (2, 4, 8):
-                    # if now it fits in the bar
-                    if (note / division) + bar_fullness <= 1:
-                        # we split up the original note into a small bit, and the rest (e.g. 1/4 and 3/4)
-                        split_notes = [note / division, note - (note / division)]
-                        # We need to remember which notes to tie later
-                        notes += split_notes
-                        ties_at.append(i)
-                        bar_fullness += sum(split_notes)
-                        bar_fullness -= full_bar
-                        break
-
-            # if bar is full set bar_fullness to zero
-            if bar_fullness % full_bar == 0:
-                bar_fullness = 0
-
-        # If at the end of all this the bars are not full yet, raise an error
-        if not bar_fullness % full_bar == 0:
-            raise ValueError(
-                "There was an error while trying to tie the final note of a bar to the first note"
-                "of the subsequent bar. Try a different rhythm."
-            )
-
-        return notes, ties_at
-
 
 class Melody(thebeat.core.sequence.BaseSequence):
     """
@@ -849,7 +708,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = thebeat.music.Rhythm.from_note_values([4, 4, 4, 4, 4, 4, 2])
+        >>> r = thebeat.music.Rhythm.from_note_values([1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 1/2])
         >>> mel = Melody(r, 'CCGGAAG')
 
         """
@@ -876,7 +735,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         self.pitch_names = [str(pitch_name) for pitch_name in pitch_names_list]
 
-        # Add initial events
+        # Add events as named tuples
         self.events = self._make_namedtuples(
             rhythm=rhythm,
             iois=rhythm.iois,
@@ -889,6 +748,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self.time_signature = rhythm.time_signature
         self.beat_ms = rhythm.beat_ms
         self.key = key
+        self.integer_ratios = rhythm.integer_ratios
+        self.is_played = is_played
 
         # Check whether the provided IOIs result in a sequence only containing whole bars
         n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
@@ -947,8 +808,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             If desired, one can provide a number of rests to be inserted at random locations. These are placed after
             the random selection of note values.
         allowed_note_values
-            A list or array containing the denominators of the allowed note values. A note value of ``2`` means a half
-            note, a note value of ``4`` means a quarternote etc. Defaults to ``[4, 8, 16]``.
+            A list or array containing the allowed note values. A note value of ``1/2`` means a half
+            note, a note value of ``1/4`` means a quarternote etc. Defaults to ``[1/4, 1/8, 1/16]``. Note that the meaning of the note values
+            depends on the time signature.
         rng
             A :class:`numpy.random.Generator` object. If not supplied :func:`numpy.random.default_rng` is
             used.
@@ -960,8 +822,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         --------
         >>> generator = np.random.default_rng(seed=123)
         >>> m = Melody.generate_random_melody(rng=generator)
-        >>> print(m.note_values)
-        [16 16 16 16 16 16 16  8  8 16  8 16 16]
+        >>> print(m.note_values) # doctest: +ELLIPSIS
+        [Fraction(1, 16), Fraction(1, 16), Fraction(1, 16), Fraction(1, 16), ...]
         >>> print(m.pitch_names)
         ["a'", "g'", "c'", "c''", "d'", "e'", "d'", "e'", "d'", "e'", "b'", "f'", "c''"]
 
@@ -978,7 +840,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
             rng = np.random.default_rng()
 
         if allowed_note_values is None:
-            allowed_note_values = [4, 8, 16]
+            allowed_note_values = [1/4, 1/8, 1/16]
 
         # Generate random rhythm and random tone_heights
         rhythm = thebeat.music.Rhythm.generate_random_rhythm(
@@ -1030,9 +892,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         """
 
-        ratios = self.iois / self.beat_ms / 4
-
-        note_values = np.array([int(1 // ratio) for ratio in ratios])
+        float_estimates = self.iois / self.beat_ms
+        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
 
         return note_values
 
@@ -1054,7 +915,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
     def plot_melody(
         self,
         filepath: os.PathLike | str | None = None,
-        key: str | None = None,
         suppress_display: bool = False,
         figsize: tuple[float, float] | None = None,
         dpi: int = 600,
@@ -1076,10 +936,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
         filepath
             Optionally, you can save the plot to a file. Supported file formats are only '.png' and '.eps'.
             The desired file format will be selected based on what the filepath ends with.
-        key
-            The musical key to plot in. Can differ from the key used to construct the :class:`Melody` object.
-            Say you want to emphasize the accidentals (sharp or flat note), you can choose to plot the melody
-            in 'C'. The default is to plot in the key that was used to construct the object.
         suppress_display
             If desired,you can choose to suppress displaying the plot in your IDE. This means that
             :func:`matplotlib.pyplot.show` is not called. This is useful when you just want to save the plot or
@@ -1097,9 +953,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
         >>> m = Melody(r, 'CCGC')
         >>> m.plot_melody()  # doctest: +SKIP
 
-        >>> m.plot_melody(filepath='mymelody.png', suppress_display=True)  # doctest: +SKIP
+        >>> m.plot_melody(filepath='mymelody.png')  # doctest: +SKIP
 
-        >>> fig, ax = m.plot_melody(key='C', suppress_display=True)  # doctest: +SKIP
+        >>> fig, ax = m.plot_melody()  # doctest: +SKIP
 
         """
         if abjad is None:
@@ -1109,9 +965,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
-        key = self.key if key is None else key
-
-        lp = self._get_lp_from_events(time_signature=self.time_signature, key=key)
+        lp = self._get_lp_from_events()
 
         fig, ax = thebeat.helpers.plot_lp(
             lp, filepath=filepath, suppress_display=suppress_display, figsize=figsize, dpi=dpi
@@ -1456,7 +1310,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         return samples
 
-    def _get_lp_from_events(self, key: str, time_signature: tuple):
+    def _get_lp_from_events(self):
         # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
         # This because abjad 3.13 etc require Python 3.10.
         try:
@@ -1467,8 +1321,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
             def make_notes(*args):  # noqa: E306
                 return list(note_maker(*args))
 
-        time_signature = abjad.TimeSignature(time_signature)
-        pitch = abjad.NamedPitchClass(key)
+        time_signature = abjad.TimeSignature(self.time_signature)
+        pitch = abjad.NamedPitchClass(self.key)
         key = abjad.KeySignature(pitch)
         preamble = textwrap.dedent(
             r"""
@@ -1485,37 +1339,44 @@ class Melody(thebeat.core.sequence.BaseSequence):
              """
         )
 
-        pitch_names = [event.pitch_name for event in self.events]
+        pitches = [event.pitch_name for event in self.events]
         is_played = [event.is_played for event in self.events]
 
         # Get note durations
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
-        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-        integer_ratios = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-        total_duration = np.sum(integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        note_durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
+        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
 
         notes = []
 
-        for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
-            if is_played is True:
-                pitch = abjad.NamedPitch(pitch_name)
-                note = make_notes(pitch, note_duration)[0]
-            else:
-                note = abjad.Rest(note_duration)
-            notes.append(note)
+        # Here we insert another of the same type of is_played
+        # at the place where it was split
+        count = 0
+        is_played = self.is_played
 
-        voice = abjad.Voice(notes)
-        abjad.attach(time_signature, voice[0])
-        abjad.attach(key, voice[0])
+        # if we split a note at the end of a bar and tie it to the first note in the subsequent bar,
+        # we now suddenly have two notes instead of one. so we need to add another of the same
+        # boolean value to is_played for that note.
+        for tie_at in ties_at:
+            is_played.insert(tie_at + count, is_played[tie_at])
 
-        staff = abjad.Staff([voice])
+        # loop over the pitch duration and whether it is a note or rest, and add to notes
+        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
+            these_notes = make_notes(pitch, duration) if is_plyd else [abjad.Rest(duration)]
+            notes.extend(these_notes)
+            if len(these_notes) > 1:
+                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
+
+        # plot the notes
+        staff = abjad.Staff(notes)
+        # add ties at the places where _get_abjad_ties thinks they should be (most of the time this is skipped)
+        for tie_at in ties_at:
+            # but only for notes, not for rests
+            if is_played[tie_at]:
+                tie = abjad.Tie()
+                abjad.attach(tie, staff[tie_at])
+        abjad.attach(time_signature, staff[0])
+        abjad.attach(key, staff[0])
+
         score = abjad.Score([staff])
         score_lp = abjad.lilypond(score)
 
