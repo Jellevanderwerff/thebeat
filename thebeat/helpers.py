@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import warnings
+from fractions import Fraction
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -66,12 +67,13 @@ def all_possibilities(numbers: list, target: float) -> np.ndarray:
     return np.array(res, dtype=object)
 
 
-def all_rhythmic_ratios(allowed_note_values: list | np.ndarray, time_signature: tuple[int, int]):
+def all_combinations_of_note_values(allowed_note_values: list | np.ndarray, time_signature: tuple[int, int]):
     # Find common denominator so we can work with integers, rather than floats
-    common_denom = np.lcm(np.lcm.reduce(allowed_note_values), time_signature[1])  # numpy.int64
+    allowed_note_values = [Fraction(note).limit_denominator() for note in allowed_note_values]
+    common_denom = np.lcm(np.lcm.reduce([note.denominator for note in allowed_note_values]), time_signature[1])  # numpy.int64
 
     # Which numerators are allowed?
-    allowed_numerators = common_denom // np.array(allowed_note_values)
+    allowed_numerators = [int(common_denom * note) for note in allowed_note_values]
 
     # How much do we need for one bar?
     full_bar = time_signature[0] * (1 / time_signature[1])
@@ -116,6 +118,67 @@ def check_sound_properties_sameness(objects: np.typing.ArrayLike):
         )
     else:
         return True
+
+
+def get_abjad_note_durations(integer_ratios, time_signature, n_bars):
+    """Get abjad note durations from the integer_ratios
+    #todo This needs to be done with lcm to avoid rounding problems,
+        though seems to work for now.
+    """
+    total_duration = np.sum(integer_ratios)
+    duration_of_bar = total_duration / n_bars
+    ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
+    numerators = ratios * time_signature[0]
+
+    durations = [
+        abjad.Duration(Fraction(numerator) / time_signature[1]) for numerator in numerators
+    ]
+
+    return durations
+
+
+def get_abjad_ties(durations, time_signature):
+    full_bar = time_signature[0] / time_signature[1]
+    # will be output
+    notes = []
+    ties_at = []
+
+    # Keep track of how full the current bar is
+    bar_fullness = 0
+
+    for note in durations:
+        # if the note fits in the bar
+        if (note + bar_fullness) <= full_bar:
+            bar_fullness += note
+            notes.append(note)
+        # if note doesn't fit the bar
+        else:
+            remains = note
+
+            while (remains + bar_fullness) > full_bar:
+                right_side = bar_fullness + remains - full_bar
+                left_side = remains - right_side
+                ties_at.append(len(notes))  # add tie at current index
+                notes.append(left_side)
+                remains = right_side
+                bar_fullness = 0
+
+            if remains != 0:
+                bar_fullness += remains
+                notes.append(remains)
+
+        # if bar is full set bar_fullness to zero
+        if bar_fullness % full_bar == 0:
+            bar_fullness = 0
+
+    # If at the end of all this the bars are not full yet, raise an error
+    if not bar_fullness % full_bar == 0:
+        raise ValueError(
+            "There was an error while trying to tie the final note of a bar to the first note"
+            "of the subsequent bar. Try a different rhythm."
+        )
+
+    return notes, ties_at
 
 
 def get_sound_with_metronome(
@@ -606,11 +669,11 @@ def resample(samples, input_fs, output_fs):
     return resampled, output_fs
 
 
-def rhythm_to_binary(rhythm: thebeat.music.Rhythm, smallest_note_value: int = 16):
+def rhythm_to_binary(rhythm: thebeat.music.Rhythm, smallest_note_value: Fraction = Fraction(1, 16)):
     """This helper function converts a rhythm to a binary representation."""
 
-    n_positions = smallest_note_value / rhythm.time_signature[1] * rhythm.time_signature[0]
-    if not n_positions.is_integer():
+    n_positions = (rhythm.n_bars / smallest_note_value) * rhythm.time_signature[0] / rhythm.time_signature[1]
+    if not n_positions.denominator == 1:
         raise ValueError(
             "Something went wrong while making the rhythmic grid. Try supplying a different "
             "'smallest_note_value'."
@@ -621,7 +684,7 @@ def rhythm_to_binary(rhythm: thebeat.music.Rhythm, smallest_note_value: int = 16
 
     # We multiply each fraction by the total length of the zeros array to get the respective positions
     # and add zero for the first onset
-    indices = np.append(0, np.cumsum(rhythm.fractions) * n_positions)
+    indices = np.append(0, np.cumsum(rhythm.iois / rhythm.duration)[:-1] * n_positions)
 
     # Check if any of the indices are not integers
     if np.any(indices % 1 != 0):
