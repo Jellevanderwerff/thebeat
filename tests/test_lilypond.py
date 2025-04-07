@@ -47,7 +47,7 @@ def test_lilypond_unavailable(monkeypatch):
     with pytest.raises(ImportError, match="This function or method requires lilypond for plotting notes"):
         rng = np.random.default_rng(42)
         melody = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
-        _ = melody.plot_melody(suppress_display=True)
+        _ = melody.plot_melody()
 
 
 @pytest.custom_mpl_image_compare(tolerance=3)
@@ -63,7 +63,7 @@ def test_lilypond_package(monkeypatch):
 
     rng = np.random.default_rng(42)
     melody = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
-    fig, _ = melody.plot_melody(suppress_display=True)
+    fig, _ = melody.plot_melody()
     return fig
 
 
@@ -80,7 +80,7 @@ def test_lilypond_system(monkeypatch):
 
     rng = np.random.default_rng(42)
     melody = thebeat.music.Melody.generate_random_melody(n_bars=2, key='G', octave=4, rng=rng)
-    fig, _ = melody.plot_melody(suppress_display=True)
+    fig, _ = melody.plot_melody()
     return fig
 
 
