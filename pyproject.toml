@@ -61,7 +61,7 @@ ignore = [
 minversion = "6.0"
 filterwarnings = [
     "error",
-    "ignore:'imghdr' is deprecated:DeprecationWarning"
+    "ignore:'mode' parameter is deprecated and will be removed in Pillow 13:DeprecationWarning"  # Matplotlib 3.9; fixed in 3.10, but not available for Python 3.9
 ]
 
 [tool.flake8]
