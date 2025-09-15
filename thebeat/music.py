@@ -636,7 +636,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
         for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = abjad.makers.make_notes(pitch, duration)[0] if is_plyd else abjad.Rest(duration)
+            note = abjad.makers.make_notes([pitch], [duration])[0] if is_plyd else abjad.Rest(duration)
             notes.append(note)
 
         # plot the notes
@@ -652,7 +652,13 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         if staff_type == "percussion":
             abjad.attach(abjad.Clef("percussion"), staff[0])
         elif staff_type == "rhythm":
-            staff.lilypond_type = "RhythmicStaff"
+            # In Abjad 3.26 and lower, this was a propety; now it's a setter member function.
+            # Abjad 2.28 requires at least Python 3.12; so this is a patch for backwards compatibility.
+            # Remove once support for 3.11 gets dropped.
+            try:
+                staff.set_lilypond_type("RhythmicStaff")
+            except AttributeError:
+                staff.lilypond_type = "RhythmicStaff"
         abjad.attach(time_signature, staff[0])
 
         # Make cleff transparent if necessary
@@ -978,8 +984,18 @@ class Melody(thebeat.core.sequence.BaseSequence):
             allowed_note_values=allowed_note_values,
             rng=rng,
         )
+
+        # In Abjad 3.26 and lower, these values were properties; now they are member functions.
+        # Abjad 2.28 requires at least Python 3.12; so this is a patch for backwards compatibility.
+        # Remove once support for 3.11 gets dropped.
+        def get_name(named_pitch):
+            try:
+                return named_pitch.name()
+            except TypeError:
+                return named_pitch.name
+
         pitch_names_possible = [
-            pitch.name for pitch in thebeat.utils.get_major_scale(tonic=key, octave=octave)
+            get_name(pitch) for pitch in thebeat.utils.get_major_scale(tonic=key, octave=octave)
         ]
 
         pitch_names_chosen = list(rng.choice(pitch_names_possible, size=len(rhythm.onsets)))
@@ -1404,6 +1420,15 @@ class Melody(thebeat.core.sequence.BaseSequence):
         else:
             event_durations = event_durations_ms
 
+        # In Abjad 3.26 and lower, these values were properties; now they are member functions.
+        # Abjad 2.28 requires at least Python 3.12; so this is a patch for backwards compatibility.
+        # Remove once support for 3.11 gets dropped.
+        def get_hertz(named_pitch):
+            try:
+                return named_pitch.hertz()
+            except TypeError:
+                return named_pitch.hertz
+
         # Loop over the events, synthesize event sound, and add all of them to the samples array at the appropriate
         # times.
         for event, duration_ms in zip(self.events, event_durations):
@@ -1411,7 +1436,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
                 event_samples = thebeat.helpers.synthesize_sound(
                     duration_ms=duration_ms,
                     fs=fs,
-                    freq=abjad.NamedPitch(event.pitch_name).hertz,
+                    freq=get_hertz(abjad.NamedPitch(event.pitch_name)),
                     n_channels=n_channels,
                     oscillator=oscillator,
                     amplitude=amplitude,
@@ -1486,7 +1511,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
             if is_played is True:
                 pitch = abjad.NamedPitch(pitch_name)
-                note = abjad.makers.make_notes(pitch, note_duration)[0]
+                note = abjad.makers.make_notes([pitch], [note_duration])[0]
             else:
                 note = abjad.Rest(note_duration)
             notes.append(note)
