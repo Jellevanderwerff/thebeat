@@ -811,8 +811,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
     :py:meth:`~Melody.generate_random_melody` method.
 
     Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
-    current version of `abjad` requires Python 3.10. The last version that supported Python 3.8-3.9 is
-    `this one <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
+    current version of `abjad` requires Python 3.12. The last version that supported Python 3.10-3.11 is
+    `Abjad 3.19 <https://pypi.org/project/abjad/3.19/>`_. The last version that supported Python 3.9 is
+    `Abjad 3.4 <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
     when you install `thebeat` with ``pip install thebeat[music-notation]``.
     For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
     """
