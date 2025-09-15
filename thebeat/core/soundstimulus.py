@@ -338,10 +338,19 @@ class SoundStimulus:
         note_strings = re.split(r"([A-Z])([0-9]?)", note_str)
         note_strings = [string for string in note_strings if string != ""]
 
+        # In Abjad 3.26 and lower, these values were properties; now they are member functions.
+        # Abjad 2.28 requires at least Python 3.12; so this is a patch for backwards compatibility.
+        # Remove once support for 3.11 gets dropped.
+        def get_hertz(named_pitch):
+            try:
+                return named_pitch.hertz()
+            except TypeError:
+                return named_pitch.hertz
+
         if len(note_strings) == 1:
-            freq = abjad.NamedPitch(note_strings[0], octave=4).hertz
+            freq = get_hertz(abjad.NamedPitch(note_strings[0], octave=4))
         elif len(note_strings) == 2:
-            freq = abjad.NamedPitch(note_strings[0], octave=int(note_strings[1])).hertz
+            freq = get_hertz(abjad.NamedPitch(note_strings[0], octave=int(note_strings[1])))
         else:
             raise ValueError("Please provide a string of format 'G' or 'G4'.")
 

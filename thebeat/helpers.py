@@ -36,11 +36,6 @@ from scipy.io import wavfile
 import thebeat.resources
 from thebeat._decorators import requires_lilypond
 
-try:
-    import abjad
-except ImportError:
-    abjad = None
-
 
 def all_possibilities(numbers: list, target: float) -> np.ndarray:
     """
