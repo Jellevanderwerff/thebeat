@@ -611,16 +611,6 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 "For more details, see https://thebeat.readthedocs.io/en/latest/installation.html."
             )
 
-        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
-        # This because abjad 3.13 etc require Python 3.10.
-        try:
-            make_notes = abjad.makers.make_notes
-        except AttributeError:
-            note_maker = abjad.makers.NoteMaker()
-
-            def make_notes(*args):  # noqa: E306
-                return list(note_maker(*args))
-
         # Preliminaries
         time_signature = abjad.TimeSignature(self.time_signature)
         remove_footers = """\n\\paper {\nindent = 0\\mm\nline-width = 110\\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
@@ -646,7 +636,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
         for pitch, duration, is_plyd in zip(pitches, durations, is_played):
-            note = make_notes(pitch, duration)[0] if is_plyd else abjad.Rest(duration)
+            note = abjad.makers.make_notes(pitch, duration)[0] if is_plyd else abjad.Rest(duration)
             notes.append(note)
 
         # plot the notes
@@ -812,8 +802,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
     Most of the functions require you to install `abjad <https://abjad.github.io/>`_. Please note that the
     current version of `abjad` requires Python 3.12. The last version that supported Python 3.10-3.11 is
-    `Abjad 3.19 <https://pypi.org/project/abjad/3.19/>`_. The last version that supported Python 3.9 is
-    `Abjad 3.4 <https://pypi.org/project/abjad/3.4/>`_. The correct version will be installed automatically
+    `Abjad 3.19 <https://pypi.org/project/abjad/3.19/>`_. The correct version will be installed automatically
     when you install `thebeat` with ``pip install thebeat[music-notation]``.
     For more details, see https://thebeat.readthedocs.io/en/latest/installation.html.
     """
@@ -1458,16 +1447,6 @@ class Melody(thebeat.core.sequence.BaseSequence):
         return samples
 
     def _get_lp_from_events(self, key: str, time_signature: tuple):
-        # Abjad 3.12 and lower use the NoteMaker class, which is deprecated in 3.13. This is a workaround for compatability with all versions.
-        # This because abjad 3.13 etc require Python 3.10.
-        try:
-            make_notes = abjad.makers.make_notes
-        except AttributeError:
-            note_maker = abjad.makers.NoteMaker()
-
-            def make_notes(*args):  # noqa: E306
-                return list(note_maker(*args))
-
         time_signature = abjad.TimeSignature(time_signature)
         pitch = abjad.NamedPitchClass(key)
         key = abjad.KeySignature(pitch)
@@ -1507,7 +1486,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         for pitch_name, note_duration, is_played in zip(pitch_names, note_durations, is_played):
             if is_played is True:
                 pitch = abjad.NamedPitch(pitch_name)
-                note = make_notes(pitch, note_duration)[0]
+                note = abjad.makers.make_notes(pitch, note_duration)[0]
             else:
                 note = abjad.Rest(note_duration)
             notes.append(note)

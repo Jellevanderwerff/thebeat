@@ -48,7 +48,7 @@ This will install *thebeat* with the optional dependencies [abjad](https://abjad
 and [Lilypond](https://lilypond.org).
 
 *thebeat* is actively tested on Linux, macOS, and Windows. We aim to provide support for all
-[supported versions](https://devguide.python.org/versions/) of Python (3.9 and higher).
+[supported versions](https://devguide.python.org/versions/) of Python (3.10 and higher).
 
 # Try directly via Binder
 If you first would like to try *thebeat*, or of you wish to use it in, for instance, an
