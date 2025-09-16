@@ -517,9 +517,9 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Make the notes
-        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
-        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
-        pitches = [abjad.NamedPitch("A3")] * len(durations)
+        full_durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        note_durations, ties_at = thebeat.helpers.get_abjad_ties(full_durations, self.time_signature)
+        pitches = [abjad.NamedPitch("A3")] * len(note_durations)
 
         notes = []
 
@@ -535,8 +535,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             is_played.insert(tie_at + count, is_played[tie_at])
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
-            these_notes = abjad.makers.make_notes([pitch], [duration]) if is_plyd else [abjad.Rest(duration)]
+        for i, (pitch, note_duration, is_plyd) in enumerate(zip(pitches, note_durations, is_played)):
+            these_notes = abjad.makers.make_notes([pitch], [note_duration]) if is_plyd else [abjad.Rest(note_duration)]
             notes.extend(these_notes)
             if len(these_notes) > 1:
                 ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
@@ -1320,12 +1320,12 @@ class Melody(thebeat.core.sequence.BaseSequence):
              """
         )
 
-        pitches = [event.pitch_name for event in self.events]
+        pitch_names = [event.pitch_name for event in self.events]
         is_played = [event.is_played for event in self.events]
 
         # Get note durations
-        durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
-        durations, ties_at = thebeat.helpers.get_abjad_ties(durations, self.time_signature)
+        full_durations = thebeat.helpers.get_abjad_note_durations(self.integer_ratios, self.time_signature, self.n_bars)
+        note_durations, ties_at = thebeat.helpers.get_abjad_ties(full_durations, self.time_signature)
 
         notes = []
 
@@ -1341,8 +1341,9 @@ class Melody(thebeat.core.sequence.BaseSequence):
             is_played.insert(tie_at + count, is_played[tie_at])
 
         # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for i, (pitch, duration, is_plyd) in enumerate(zip(pitches, durations, is_played)):
-            these_notes = abjad.makers.make_notes([pitch], [duration]) if is_plyd else [abjad.Rest(duration)]
+        for i, (pitch_name, note_duration, is_plyd) in enumerate(zip(pitch_names, note_durations, is_played)):
+            pitch = abjad.NamedPitch(pitch_name)
+            these_notes = abjad.makers.make_notes([pitch], [note_duration]) if is_plyd else [abjad.Rest(note_duration)]
             notes.extend(these_notes)
             if len(these_notes) > 1:
                 ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]

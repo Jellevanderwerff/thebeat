@@ -157,10 +157,10 @@ def get_abjad_ties(durations, time_signature):
 
             while (remains + bar_fullness) > full_bar:
                 right_side = bar_fullness + remains - full_bar
-                left_side = remains - right_side
+                left_side = abjad.Duration(remains - right_side)
                 ties_at.append(len(notes))  # add tie at current index
                 notes.append(left_side)
-                remains = right_side
+                remains = abjad.Duration(right_side)
                 bar_fullness = 0
 
             if remains != 0:
