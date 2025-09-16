@@ -323,9 +323,9 @@ class SoundStimulus:
 
         Examples
         --------
-        >>> stim = SoundStimulus.from_note('G',duration=20)
+        >>> stim = SoundStimulus.from_note('G', duration_ms=20)
 
-        >>> stim = SoundStimulus.from_note('G4',onramp_ms=10, offramp_ms=10, ramp='raised-cosine')
+        >>> stim = SoundStimulus.from_note('G4', onramp_ms=10, offramp_ms=10, ramp='raised-cosine')
         """
 
         if abjad is None:
