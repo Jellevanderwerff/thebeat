@@ -283,7 +283,7 @@ class SoundStimulus:
     def from_note(
         cls,
         note_str: str,
-        duration: int = 50,
+        duration_ms: int = 50,
         fs: int = 48000,
         amplitude: float = 1.0,
         oscillator: str = "sine",
@@ -357,7 +357,7 @@ class SoundStimulus:
         return SoundStimulus.generate(
             freq=freq,
             fs=fs,
-            duration_ms=duration,
+            duration_ms=duration_ms,
             amplitude=amplitude,
             oscillator=oscillator,
             onramp_ms=onramp_ms,

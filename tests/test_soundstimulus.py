@@ -30,7 +30,7 @@ def rng():
 def test_soundstimulus():
     stim = thebeat.core.soundstimulus.SoundStimulus.generate()
     assert stim.duration_ms == 50
-    stim = thebeat.core.SoundStimulus.from_note('G6', duration=1000, offramp_ms=10)
+    stim = thebeat.core.SoundStimulus.from_note('G6', duration_ms=1000, offramp_ms=10)
     assert stim.duration_ms == 1000
 
 
