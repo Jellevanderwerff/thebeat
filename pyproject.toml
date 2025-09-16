@@ -11,7 +11,7 @@ authors = [
     {name = "Yannick Jadoul", email = "yannick.jadoul@gmail.com"},
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["music", "rhythm", "timing", "cognitive science"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -36,8 +36,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 music-notation = [
-    "abjad ; python_version > '3.9'",
-    "abjad<=3.4 ; python_version <= '3.9'",
+    "abjad",
     "lilypond; sys_platform != 'darwin' or platform_machine != 'arm64'"
 ]
 
@@ -60,8 +59,7 @@ ignore = [
 [tool.pytest.ini_options]
 minversion = "6.0"
 filterwarnings = [
-    "error",
-    "ignore:'mode' parameter is deprecated and will be removed in Pillow 13:DeprecationWarning"  # Matplotlib 3.9; fixed in 3.10, but not available for Python 3.9
+    "error"
 ]
 
 [tool.flake8]
