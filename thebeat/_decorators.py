@@ -38,9 +38,10 @@ def requires_lilypond(f):
         if lilypond is not None:
             orig_path = os.environ["PATH"]
             os.environ["PATH"] = os.path.dirname(lilypond.executable()) + os.pathsep + os.environ["PATH"]
-        return_value = f(*args, **kwds)
-        if lilypond is not None:
-            os.environ["PATH"] = orig_path
-        return return_value
+        try:
+            return f(*args, **kwds)
+        finally:
+            if lilypond is not None:
+                os.environ["PATH"] = orig_path
 
     return requires_lilypond_wrapper
