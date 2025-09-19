@@ -166,19 +166,16 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         """
 
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        fractions = [Fraction(estimate).limit_denominator() for estimate in self.iois / self.duration]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-
-        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-
-        return np.array(vals)
+        return np.array([int(fr * lcm) for fr in fractions])
 
     @property
     def note_values(self):
         """
         This property returns the denominators of the note values in this sequence, calculated from the
-        inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note value of ``4`` means a
-        quarternote, etc. One triplet of three notes would be ``[12, 12, 12]``.
+        inter-onset intervals (IOIs). A note value of ``1/2`` means a half note. A note value of ``1/4`` means a
+        quarternote, etc. Three triplet eighth notes would be ``[1/12, 1/12, 1/12]``.
 
         Caution
         -------
@@ -187,20 +184,17 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Examples
         --------
-        >>> r = Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)  # doctest: +SKIP
-        >>> print(r.note_values)  # doctest: +SKIP
-        [4 2 8 8]
+        >>> r = Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)
+        >>> print(r.note_values)
+        [Fraction(1, 4), Fraction(1, 2), Fraction(1, 8), Fraction(1, 8)]
 
-        >>> r = Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
-        >>> print(r.note_values)  # doctest: +SKIP
-        [12 12 12  4  4  4]
+        >>> r = Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500)
+        >>> print(r.note_values)
+        [Fraction(1, 12), Fraction(1, 12), Fraction(1, 12), Fraction(1, 4), Fraction(1, 4), Fraction(1, 4)]
 
         """
 
-        float_estimates = self.iois / self.beat_ms
-        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
-
-        return note_values
+        return [Fraction(estimate).limit_denominator() / self.time_signature[1] for estimate in self.iois / self.beat_ms]
 
     @classmethod
     def from_note_values(
@@ -246,11 +240,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         """
 
-        fractions = np.array(fractions)
-
-        iois_as_fractions = fractions * beat_ms * time_signature[1]
-
-        iois = np.array([float(frac) for frac in iois_as_fractions])
+        beat_fractions = [Fraction(f).limit_denominator() * time_signature[1] for f in fractions]
+        iois = np.array([float(f * beat_ms) for f in beat_fractions])
 
         return cls(
             iois=iois,
@@ -369,16 +360,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         if allowed_note_values is None:
             allowed_note_values = [Fraction(1, 4), Fraction(1, 8), Fraction(1, 16)]
         else:
-            allowed_note_values = [Fraction.from_float(val).limit_denominator() if not isinstance(val, Fraction) else val for val in allowed_note_values]
-
-        iois = np.empty(0)
+            allowed_note_values = [Fraction(v).limit_denominator() for v in allowed_note_values]
 
         all_combinations = thebeat.helpers.all_note_combinations(allowed_note_values, time_signature)
-
-        for _ in range(n_bars):
-            fractions = rng.choice(all_combinations, 1)[0]
-            new_iois = fractions * beat_ms * time_signature[1]
-            iois = np.append(iois, new_iois)
+        bar_combination_idx = rng.choice(len(all_combinations), n_bars, replace=True)
+        iois = np.concatenate([all_combinations[i] * time_signature[1] * beat_ms for i in bar_combination_idx])
 
         # Make rests
         if n_rests > len(iois):
@@ -929,31 +915,23 @@ class Melody(thebeat.core.sequence.BaseSequence):
     def note_values(self):
         """
         This property returns the denominators of the note values in this sequence, calculated from the
-        inter-onset intervals (IOIs). A note value of ``2`` means a half note. A note value of ``4`` means a
-        quarternote, etc. One triplet of three notes would be ``[12, 12, 12]``.
-
-        Caution
-        -------
-        Please note that this function is basic (e.g. there is no support for dotted notes etc.). That's beyond
-        the scope of this package.
+        inter-onset intervals (IOIs). A note value of ``1/2`` means a half note. A note value of ``1/4`` means a
+        quarternote, etc. Three triplet eighth notes would be ``[1/12, 1/12, 1/12]``.
 
         Examples
         --------
         >>> r = thebeat.music.Rhythm([500, 1000, 250, 250], time_signature=(4, 4), beat_ms=500)
         >>> m = Melody(r, pitch_names='CCGC')
-        >>> print(r.note_values)  # doctest: +SKIP
-        [4 2 8 8]
+        >>> print(r.note_values)
+        [Fraction(1, 4), Fraction(1, 2), Fraction(1, 8), Fraction(1, 8)]
 
-        >>> r = thebeat.music.Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500]  # doctest: +SKIP
-        >>> print(r.note_values)  # doctest: +SKIP
-        [12 12 12  4  4  4]
+        >>> r = thebeat.music.Rhythm([166.66666667, 166.66666667, 166.66666667, 500, 500, 500], beat_ms=500)
+        >>> print(r.note_values)
+        [Fraction(1, 12), Fraction(1, 12), Fraction(1, 12), Fraction(1, 4), Fraction(1, 4), Fraction(1, 4)]
 
         """
 
-        float_estimates = self.iois / self.beat_ms
-        note_values = [Fraction.from_float(estimate) / self.time_signature[1] for estimate in float_estimates]
-
-        return note_values
+        return [Fraction(estimate).limit_denominator() / self.time_signature[1] for estimate in self.iois / self.beat_ms]
 
     def copy(self, deep: bool = True):
         """Returns a copy of itself. See :py:func:`copy.copy` for more information.
@@ -1402,7 +1380,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
         is_played = [event.is_played for event in self.events]
 
         # Get note durations
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        fractions = [Fraction(estimate).limit_denominator() for estimate in self.iois / self.duration]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
         integer_ratios = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
         total_duration = np.sum(integer_ratios)
