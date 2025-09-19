@@ -844,12 +844,9 @@ class Sequence(BaseSequence):
 
         """
 
-        fractions = [Fraction(int(ioi), int(self.duration)) for ioi in self.iois]
+        fractions = [Fraction(estimate) for estimate in self.iois / self.duration]
         lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-
-        vals = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-
-        return np.array(vals)
+        return np.array([int(fr * lcm) for fr in fractions])
 
     @property
     def interval_ratios_from_dyads(self) -> np.ndarray:
