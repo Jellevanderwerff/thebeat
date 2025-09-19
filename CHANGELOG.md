@@ -6,11 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Changed meaning of `note_value` naming throughout the Rhythm and Melody API: `note_values` are now `fractions.Fraction`s and correspond to the musical definitions of eighth/quarter/half/whole/... notes, providing more flexibility instead of the previous use (where integer denominators were used instead of actual fractions) (#130)
+
 ### Fixed
 - Fixed interpretation of `Sequence.generate_random_exponential`'s `lam` parameter, to match common interpretation of lambda parameters of exponential and Poisson distributions (#108)
 
 ### Removed
 - Removed `Sequence.generate_random_poisson`, potentially generating invalid sequences; refer to `Sequence.generate_random_exponetial` instead (#108)
+- Removed ambiguously defined `Rhythm.from_fractions` in favor of reworked `Rhythm.from_note_values` (#130)
 
 ## [0.2.0] - 2023-12-22
 ### Added
