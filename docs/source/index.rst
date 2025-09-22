@@ -21,8 +21,8 @@ The package was specifically designed to be useful for both skilled and novice p
         Here you can find instructions on how to install *thebeat*.
 
     .. grid-item-card::  :material-regular:`start;1.5em` Getting started
-        :link: getting-started
-        :link-type: ref
+        :link: gettingstarted.ipynb#Getting-started
+        :link-type: url
 
         Start using *thebeat* right away with an easy example and a short explanation of how the package works.
 
@@ -45,19 +45,19 @@ The package was specifically designed to be useful for both skilled and novice p
 
 .. grid:: 2
 
-        .. grid-item-card::  :material-regular:`api;1.5em` API reference
-            :link: api-reference
-            :link-type: ref
+    .. grid-item-card::  :material-regular:`api;1.5em` API reference
+        :link: api-reference
+        :link-type: ref
 
-            Here you can find the documentation of all functions included in *thebeat*.
+        Here you can find the documentation of all functions included in *thebeat*.
 
 
-        .. grid-item-card::  :material-regular:`check;1.5em` How to cite and references
-            :link: bibliography
-            :link-type: ref
+    .. grid-item-card::  :material-regular:`check;1.5em` How to cite and references
+        :link: bibliography
+        :link-type: ref
 
-            If you use *thebeat* in your research, please cite the package. Here you can find the reference, as well
-            as references used in the documentation.
+        If you use *thebeat* in your research, please cite the package. Here you can find the reference, as well
+        as references used in the documentation.
 
 
 .. toctree::
