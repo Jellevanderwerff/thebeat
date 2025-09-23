@@ -230,12 +230,18 @@ def plot_phase_differences(
     Parameters
     ----------
     test_sequence
-        The sequence or sequences to be compared to ``reference_sequence``. Can be a single
-        :py:class:`thebeat.core.Sequence` object, or a list or array of :py:class:`thebeat.core.Sequence` objects.
+        A sequence or a single time point to be compared with the reference sequence. Can either be a single event time,
+        or a Sequence, list, or NumPy array containing multiple events.
     reference_sequence
-        The reference sequence or sequences to be compared to ``test_sequence``. Can be a single
-        :py:class:`thebeat.core.Sequence` object, or a list or array of :py:class:`thebeat.core.Sequence` objects.
-        If both the test_sequence and reference sequences are lists or arrays, they must be of the same length.
+        The reference sequence. Can be a Sequence object, a list or array of Sequence objects, or a number.
+        In the latter case, the reference sequence will be an isochronous sequence with a constant IOI of that
+        number and the same length as ``sequence_1``.
+    reference_ioi
+        The IOI in the reference sequence that is used as the reference IOI. Can be either "containing" or "preceding".
+    window_size
+        The window size used for calculating the mean reference IOI. Only used if ``reference_ioi='preceding'``.
+    modulo
+        Return the phase differences modulo 360 degrees or not. Only has an effect if ``reference_ioi='preceding'``.
     circular_unit
         The unit of the circular data. Can be 'degrees' or 'radians'.
     binwidth
