@@ -72,6 +72,11 @@ def test_iois_property(rng):
     with pytest.raises(ValueError, match=r"Inter-onset intervals \(IOIs\) cannot be zero or negative"):
         seq.iois = [1, 2, 3, -1, 4, 5]
 
+    # test mean and median IOI
+    seq = thebeat.core.Sequence([500, 1000, 1500])
+    assert seq.mean_ioi == 1000
+    assert seq.median_ioi == 1000
+
 
 def test_onsets_property(rng):
     seq = thebeat.core.Sequence.generate_random_normal(10, 500, 25, rng=rng)
