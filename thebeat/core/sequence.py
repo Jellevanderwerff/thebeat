@@ -142,6 +142,11 @@ class BaseSequence:
         return np.float64(np.mean(self.iois))
 
     @property
+    def median_ioi(self) -> np.float64:
+        """The median inter-onset interval (IOI)."""
+        return np.float64(np.median(self.iois))
+
+    @property
     def duration(self) -> np.float64:
         """Property that returns the summed total of the inter-onset intervals."""
         return np.float64(np.sum(self.iois))
