@@ -641,25 +641,23 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         #todo This needs to be done with lcm to avoid rounding problems,
           though seems to work for now.
         """
-        total_duration = np.sum(self.integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in self.integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
-
-        return durations
+        return [abjad.Duration(nv.numerator, nv.denominator) for nv in self.note_values]
 
     def _get_abjad_ties(self, durations):
-        full_bar = self.time_signature[0] / self.time_signature[1]
+        def is_full_bar_multiple(bar_fullness, full_bar):
+            try:
+                return bar_fullness.as_fraction() % full_bar.as_fraction() == 0
+            except AttributeError:
+                # Abjad <3.30 had __mod__ defined on two Duration objects
+                return bar_fullness % full_bar == 0
+
+        full_bar = abjad.Duration(self.time_signature[0], self.time_signature[1])
         # will be output
         notes = []
         ties_at = []
 
         # Keep track of how full the current bar is
-        bar_fullness = 0
+        bar_fullness = abjad.Duration(0)
 
         for i, note in enumerate(durations):
             # if the note fits in the bar
@@ -682,11 +680,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                         break
 
             # if bar is full set bar_fullness to zero
-            if bar_fullness % full_bar == 0:
-                bar_fullness = 0
+            if is_full_bar_multiple(bar_fullness, full_bar):
+                bar_fullness = abjad.Duration(0)
 
         # If at the end of all this the bars are not full yet, raise an error
-        if not bar_fullness % full_bar == 0:
+        if not is_full_bar_multiple(bar_fullness, full_bar):
             raise ValueError(
                 "There was an error while trying to tie the final note of a bar to the first note"
                 "of the subsequent bar. Try a different rhythm."
@@ -1378,19 +1376,7 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         pitch_names = [event.pitch_name for event in self.events]
         is_played = [event.is_played for event in self.events]
-
-        # Get note durations
-        fractions = [Fraction(estimate).limit_denominator() for estimate in self.iois / self.duration]
-        lcm = np.lcm.reduce([fr.denominator for fr in fractions])
-        integer_ratios = [int(fr.numerator * lcm / fr.denominator) for fr in fractions]
-        total_duration = np.sum(integer_ratios)
-        duration_of_bar = total_duration / self.n_bars
-        ratios = np.array([ratio / duration_of_bar for ratio in integer_ratios])
-        numerators = ratios * self.time_signature[0]
-
-        note_durations = [
-            abjad.Duration(Fraction(numerator) / self.time_signature[1]) for numerator in numerators
-        ]
+        note_durations = [abjad.Duration(nv.numerator, nv.denominator) for nv in self.note_values]
 
         notes = []
 
