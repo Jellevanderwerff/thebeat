@@ -76,6 +76,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
             *how many beats* there are in a bar. The lower number indicates the denominator of the value that
             indicates *one beat*. So, in ``(4, 8)`` time, a bar would be filled if we have four
             :math:`\frac{1}{8}` th notes.
+            Note: This parameter is a tuple and not a :py:class:`~fraction.Fraction`, since time signatures
+            should not be simplified (e.g., a 6/8 signature will not be simplified to 3/4).
         beat_ms
             The value (in milliseconds) for the beat, i.e. the duration of a :math:`\frac{1}{4}` th note if the lower
             number in the time signature is 4.
@@ -101,6 +103,8 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         """
 
         # Save attributes
+        # Note: time_signature is a tuple instead of a Fraction, as it should not be
+        # simplified to lowest terms. For signatures, 4/4 isn't 1/1, and 6/8 isn't 3/4.
         self.time_signature = time_signature
         self.beat_ms = beat_ms
         self.is_played = [True] * len(iois) if not is_played else list(is_played)
@@ -543,7 +547,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         # plot the notes
         staff = abjad.Staff(notes)
-        # add ties at the places where _get_abjad_ties thinks they should be (most of the time this is skipped)
+        # add ties at the places where get_abjad_ties thinks they should be (most of the time this is skipped)
         for tie_at in ties_at:
             # but only for notes, not for rests
             if is_played[tie_at]:
