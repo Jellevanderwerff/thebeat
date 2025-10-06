@@ -125,52 +125,32 @@ def get_abjad_note_durations(note_values):
 
 
 def get_abjad_ties(durations, time_signature):
-    def is_full_bar_multiple(bar_fullness, full_bar):
-        try:
-            return bar_fullness.as_fraction() % full_bar.as_fraction() == 0
-        except AttributeError:
-            # Abjad <3.30 had __mod__ defined on two Duration objects
-            return bar_fullness % full_bar == 0
-
     full_bar = abjad.Duration(time_signature[0], time_signature[1])
-    # will be output
-    notes = []
-    ties_at = []
+    notes, ties_at = [], []  # Output of split notes and tie indices
 
     # Keep track of how full the current bar is
     bar_fullness = abjad.Duration(0)
 
     for note in durations:
-        # if the note fits in the bar
-        if (note + bar_fullness) <= full_bar:
-            bar_fullness += note
-            notes.append(note)
-        # if note doesn't fit the bar
-        else:
-            remains = note
-
-            while (remains + bar_fullness) > full_bar:
-                right_side = bar_fullness + remains - full_bar
-                left_side = remains - right_side
-                ties_at.append(len(notes))  # add tie at current index
-                notes.append(left_side)
-                remains = right_side
-                bar_fullness = abjad.Duration(0)
-
-            if remains != 0:
-                bar_fullness += remains
-                notes.append(remains)
-
-        # if bar is full set bar_fullness to zero
-        if is_full_bar_multiple(bar_fullness, full_bar):
+        # if the not does not fit the rest of the bar
+        while bar_fullness + note > full_bar:
+            # calculate how much still fits in the same bar
+            split_duration = full_bar - bar_fullness
+            ties_at.append(len(notes))  # add tie at current index
+            notes.append(split_duration)
+            note = note - split_duration
             bar_fullness = abjad.Duration(0)
 
-    # If at the end of all this the bars are not full yet, raise an error
-    if not is_full_bar_multiple(bar_fullness, full_bar):
-        raise ValueError(
-            "There was an error while trying to tie the final note of a bar to the first note"
-            "of the subsequent bar. Try a different rhythm."
-        )
+        # add the note, or the tied part of the note
+        notes.append(note)
+        bar_fullness += note
+
+        # if bar is full set bar_fullness to zero
+        if bar_fullness == full_bar:
+            bar_fullness = abjad.Duration(0)
+
+    # Assert that at the end of all this the last bar is full
+    assert bar_fullness == abjad.Duration(0), "Tied notes don't add up to full bar"
 
     return notes, ties_at
 
