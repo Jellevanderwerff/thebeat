@@ -230,6 +230,10 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Example
         -------
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms. If the time signature
+        is 4/4, and each quarter-note beat corresponds to 250 ms, then the note values correspond to
+        a quarter note, a half note, a full note, and another quarter note. Consequently, this method will
+        return ``[Fraction(1, 4), Fraction(1, 2), Fraction(1, 1), Fraction(1, 4)]``.
 
         Examples
         --------
