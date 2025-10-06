@@ -155,6 +155,23 @@ def get_abjad_ties(durations, time_signature):
     return split_notes
 
 
+def make_abjad_notes_and_rests(pitches, split_note_durations, is_played):
+    notes = []
+    for pitch, durations, is_plyd in zip(pitches, split_note_durations, is_played):
+        if is_plyd:
+            # All but the last of a split note duration needs to be tied
+            for note_duration in durations[:-1]:
+                these_notes = abjad.makers.make_notes([pitch], [note_duration])
+                abjad.attach(abjad.Tie(), these_notes[-1])
+                notes.extend(these_notes)
+            # The last split-up duration doesn't need to be tied
+            notes.extend(abjad.makers.make_notes([pitch], [durations[-1]]))
+        else:
+            notes.extend([abjad.Rest(note_duration) for note_duration in durations])
+
+    return notes
+
+
 def get_sound_with_metronome(
     samples: np.ndarray, fs: int, metronome_ioi: float, metronome_amplitude: float
 ) -> np.ndarray:
