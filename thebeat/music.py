@@ -524,39 +524,28 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         remove_footers = """\n\\paper {\nindent = 0\\mm\nline-width = 110\\mm\noddHeaderMarkup = ""\nevenHeaderMarkup = ""
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
-        # Make the notes
-        full_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
-        note_durations, ties_at = thebeat.helpers.get_abjad_ties(full_durations, self.time_signature)
+        # Get note durations
+        note_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
+        split_note_durations = thebeat.helpers.get_abjad_ties(note_durations, self.time_signature)
         pitches = [abjad.NamedPitch("A3")] * len(note_durations)
-
-        notes = []
-
-        # Here we insert another of the same type of is_played
-        # at the place where it was split
-        count = 0
         is_played = self.is_played
 
-        # if we split a note at the end of a bar and tie it to the first note in the subsequent bar,
-        # we now suddenly have two notes instead of one. so we need to add another of the same
-        # boolean value to is_played for that note.
-        for tie_at in ties_at:
-            is_played.insert(tie_at + count, is_played[tie_at])
+        # Make the notes
+        notes = []
+        for pitch, durations, is_plyd in zip(pitches, split_note_durations, is_played):
+            if is_plyd:
+                # All but the last of a split note duration needs to be tied
+                for note_duration in durations[:-1]:
+                    these_notes = abjad.makers.make_notes([pitch], [note_duration])
+                    abjad.attach(abjad.Tie(), these_notes[-1])
+                    notes.extend(these_notes)
+                # The last split-up duration doesn't need to be tied
+                notes.extend(abjad.makers.make_notes([pitch], [durations[-1]]))
+            else:
+                notes.extend([abjad.Rest(note_duration) for note_duration in durations])
 
-        # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for i, (pitch, note_duration, is_plyd) in enumerate(zip(pitches, note_durations, is_played)):
-            these_notes = abjad.makers.make_notes([pitch], [note_duration]) if is_plyd else [abjad.Rest(note_duration)]
-            notes.extend(these_notes)
-            if len(these_notes) > 1:
-                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
-
-        # plot the notes
+        # Plot the notes
         staff = abjad.Staff(notes)
-        # add ties at the places where get_abjad_ties thinks they should be (most of the time this is skipped)
-        for tie_at in ties_at:
-            # but only for notes, not for rests
-            if is_played[tie_at]:
-                tie = abjad.Tie()
-                abjad.attach(tie, staff[tie_at])
 
         # Change clef and staff type
         if staff_type == "percussion":
@@ -1332,38 +1321,27 @@ class Melody(thebeat.core.sequence.BaseSequence):
         is_played = [event.is_played for event in self.events]
 
         # Get note durations
-        full_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
-        note_durations, ties_at = thebeat.helpers.get_abjad_ties(full_durations, self.time_signature)
-
-        notes = []
-
-        # Here we insert another of the same type of is_played
-        # at the place where it was split
-        count = 0
+        note_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
+        split_note_durations = thebeat.helpers.get_abjad_ties(note_durations, self.time_signature)
         is_played = self.is_played
 
-        # if we split a note at the end of a bar and tie it to the first note in the subsequent bar,
-        # we now suddenly have two notes instead of one. so we need to add another of the same
-        # boolean value to is_played for that note.
-        for tie_at in ties_at:
-            is_played.insert(tie_at + count, is_played[tie_at])
-
-        # loop over the pitch duration and whether it is a note or rest, and add to notes
-        for i, (pitch_name, note_duration, is_plyd) in enumerate(zip(pitch_names, note_durations, is_played)):
+        # Make the notes
+        notes = []
+        for pitch_name, durations, is_plyd in zip(pitch_names, split_note_durations, is_played):
             pitch = abjad.NamedPitch(pitch_name)
-            these_notes = abjad.makers.make_notes([pitch], [note_duration]) if is_plyd else [abjad.Rest(note_duration)]
-            notes.extend(these_notes)
-            if len(these_notes) > 1:
-                ties_at = [tie if tie < i else tie + (len(these_notes) - 1) for tie in ties_at]
+            if is_plyd:
+                # All but the last of a split note duration needs to be tied
+                for note_duration in durations[:-1]:
+                    these_notes = abjad.makers.make_notes([pitch], [note_duration])
+                    abjad.attach(abjad.Tie(), these_notes[-1])
+                    notes.extend(these_notes)
+                # The last split-up duration doesn't need to be tied
+                notes.extend(abjad.makers.make_notes([pitch], [durations[-1]]))
+            else:
+                notes.extend([abjad.Rest(note_duration) for note_duration in durations])
 
-        # plot the notes
+        # Plot the notes
         staff = abjad.Staff(notes)
-        # add ties at the places where _get_abjad_ties thinks they should be (most of the time this is skipped)
-        for tie_at in ties_at:
-            # but only for notes, not for rests
-            if is_played[tie_at]:
-                tie = abjad.Tie()
-                abjad.attach(tie, staff[tie_at])
         abjad.attach(time_signature, staff[0])
         abjad.attach(key, staff[0])
 

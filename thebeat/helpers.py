@@ -126,23 +126,23 @@ def get_abjad_note_durations(note_values):
 
 def get_abjad_ties(durations, time_signature):
     full_bar = abjad.Duration(time_signature[0], time_signature[1])
-    notes, ties_at = [], []  # Output of split notes and tie indices
+    split_notes = []  # Return a list of list of split note durations
 
     # Keep track of how full the current bar is
     bar_fullness = abjad.Duration(0)
-
     for note in durations:
+        split_notes.append([])
+
         # if the not does not fit the rest of the bar
         while bar_fullness + note > full_bar:
             # calculate how much still fits in the same bar
             split_duration = full_bar - bar_fullness
-            ties_at.append(len(notes))  # add tie at current index
-            notes.append(split_duration)
+            split_notes[-1].append(split_duration)
             note = note - split_duration
             bar_fullness = abjad.Duration(0)
 
         # add the note, or the tied part of the note
-        notes.append(note)
+        split_notes[-1].append(note)
         bar_fullness += note
 
         # if bar is full set bar_fullness to zero
@@ -152,7 +152,7 @@ def get_abjad_ties(durations, time_signature):
     # Assert that at the end of all this the last bar is full
     assert bar_fullness == abjad.Duration(0), "Tied notes don't add up to full bar"
 
-    return notes, ties_at
+    return split_notes
 
 
 def get_sound_with_metronome(
