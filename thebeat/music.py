@@ -44,6 +44,55 @@ except ImportError:
     abjad = None
 
 
+def _get_abjad_note_durations(note_values):
+    return [abjad.Duration(nv.numerator, nv.denominator) for nv in note_values]
+
+
+def _get_abjad_ties(durations, time_signature):
+    full_bar = abjad.Duration(time_signature[0], time_signature[1])
+    split_notes = []  # Return a list of list of split note durations
+
+    # Keep track of how full the current bar is
+    bar_fullness = abjad.Duration(0)
+    for note in durations:
+        split_notes.append([])
+
+        # if the not does not fit the rest of the bar
+        while bar_fullness + note > full_bar:
+            # calculate how much still fits in the same bar
+            split_duration = full_bar - bar_fullness
+            split_notes[-1].append(split_duration)
+            note = note - split_duration
+            bar_fullness = abjad.Duration(0)
+
+        # add the note, or the tied part of the note
+        split_notes[-1].append(note)
+        bar_fullness += note
+
+        # if bar is full set bar_fullness to zero
+        if bar_fullness == full_bar:
+            bar_fullness = abjad.Duration(0)
+
+    return split_notes
+
+
+def _make_abjad_notes_and_rests(pitches, split_note_durations, is_played):
+    notes = []
+    for pitch, durations, is_plyd in zip(pitches, split_note_durations, is_played):
+        if is_plyd:
+            # All but the last of a split note duration needs to be tied
+            for note_duration in durations[:-1]:
+                these_notes = abjad.makers.make_notes([pitch], [note_duration])
+                abjad.attach(abjad.Tie(), these_notes[-1])
+                notes.extend(these_notes)
+            # The last split-up duration doesn't need to be tied
+            notes.extend(abjad.makers.make_notes([pitch], [durations[-1]]))
+        else:
+            notes.extend([abjad.Rest(note_duration) for note_duration in durations])
+
+    return notes
+
+
 class Rhythm(thebeat.core.sequence.BaseSequence):
     """
     The :py:class:`Rhythm` class can be used for working sequences that are rhythmical in the musical sense.
@@ -526,11 +575,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
                 oddFooterMarkup = ""\nevenFooterMarkup = ""\n} """
 
         # Get note durations and make the notes and rests
-        note_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
-        split_note_durations = thebeat.helpers.get_abjad_ties(note_durations, self.time_signature)
+        note_durations = _get_abjad_note_durations(self.note_values)
+        split_note_durations = _get_abjad_ties(note_durations, self.time_signature)
         pitches = [abjad.NamedPitch("A3")] * len(note_durations)
         is_played = self.is_played
-        notes = thebeat.helpers.make_abjad_notes_and_rests(pitches, split_note_durations, is_played)
+        notes = _make_abjad_notes_and_rests(pitches, split_note_durations, is_played)
 
         # Plot the notes
         staff = abjad.Staff(notes)
@@ -1306,11 +1355,11 @@ class Melody(thebeat.core.sequence.BaseSequence):
         )
 
         # Get note durations and make the notes and rests
-        note_durations = thebeat.helpers.get_abjad_note_durations(self.note_values)
-        split_note_durations = thebeat.helpers.get_abjad_ties(note_durations, self.time_signature)
+        note_durations = _get_abjad_note_durations(self.note_values)
+        split_note_durations = _get_abjad_ties(note_durations, self.time_signature)
         pitches = [abjad.NamedPitch(event.pitch_name) for event in self.events]
         is_played = [event.is_played for event in self.events]
-        notes = thebeat.helpers.make_abjad_notes_and_rests(pitches, split_note_durations, is_played)
+        notes = _make_abjad_notes_and_rests(pitches, split_note_durations, is_played)
 
         # Plot the notes
         staff = abjad.Staff(notes)
