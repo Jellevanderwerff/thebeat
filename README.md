@@ -90,7 +90,7 @@ this place is mostly for questioning methods, or for reporting bugs.
 the best place to go to with questions about how *thebeat* works.
 
 # License
-*thebeat* is distributed under the GPL-3 license. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
+*thebeat* is distributed under the GNU General Public License, version 3 or later. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
 
 # Collaborators
 The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for
