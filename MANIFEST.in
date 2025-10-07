@@ -1,4 +1,4 @@
-include *.md *.yml *.yaml
+include *.md *.yml *.yaml *.cff
 
 global-include requirements.txt
 
