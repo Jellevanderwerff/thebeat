@@ -36,7 +36,7 @@ def get_ioi_df(
         thebeat.core.Sequence | list[thebeat.core.Sequence] | np.ndarray[thebeat.core.Sequence]
     ),
     additional_functions: list[callable] | None = None,
-):
+) -> pd.DataFrame:
     """
     This function exports a Pandas :class:`pandas.DataFrame` with information about the provided
     :py:class:`thebeat.core.Sequence` objects in
@@ -134,7 +134,7 @@ def get_ioi_df(
     return output_df
 
 
-def get_major_scale(tonic: str, octave: int) -> list:
+def get_major_scale(tonic: str, octave: int) -> list[abjad.pitch.NamedPitch]:
     """Get the major scale for a given tonic and octave. Returns a list of :class:`abjad.pitch.NamedPitch` objects.
 
     Note
@@ -180,7 +180,7 @@ def get_major_scale(tonic: str, octave: int) -> list:
     return pitches
 
 
-def concatenate_sequences(sequences: np.typing.ArrayLike, name: str | None = None):
+def concatenate_sequences(sequences: np.typing.ArrayLike, name: str | None = None) -> thebeat.core.Sequence:
     """Concatenate an array or list of :py:class:`~thebeat.core.Sequence` objects.
 
     Note
@@ -222,7 +222,7 @@ def concatenate_sequences(sequences: np.typing.ArrayLike, name: str | None = Non
     return thebeat.core.Sequence(iois, end_with_interval=end_with_interval, name=name)
 
 
-def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike, name: str | None = None):
+def concatenate_soundsequences(sound_sequences: np.typing.ArrayLike, name: str | None = None) -> thebeat.core.SoundSequence:
     """Concatenate an array or list of :py:class:`~thebeat.core.SoundSequence` objects.
 
     Note
@@ -292,7 +292,7 @@ def concatenate_soundstimuli(sound_stimuli: np.ndarray | list, name: str | None 
     return thebeat.core.SoundStimulus(samples, fs, name=name)
 
 
-def concatenate_rhythms(rhythms: np.typing.ArrayLike, name: str | None = None):
+def concatenate_rhythms(rhythms: np.typing.ArrayLike, name: str | None = None) -> thebeat.music.Rhythm:
     """Concatenate an array or list of :py:class:`~thebeat.music.Rhythm` objects.
 
     Parameters
@@ -330,7 +330,7 @@ def concatenate_rhythms(rhythms: np.typing.ArrayLike, name: str | None = None):
 
 def merge_soundstimuli(
     sound_stimuli: np.typing.ArrayLike[thebeat.SoundStimulus], name: str | None = None
-):
+) -> thebeat.core.SoundStimulus:
     """Merge an array or list of :py:class:`~thebeat.core.SoundStimulus` objects.
     The sound samples for each of the objects will be overlaid on top of each other.
 
@@ -362,7 +362,7 @@ def merge_soundstimuli(
     return thebeat.core.SoundStimulus(samples=samples, fs=sound_stimuli[0].fs, name=name)
 
 
-def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence], name: str | None = None):
+def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence], name: str | None = None) -> thebeat.core.Sequence:
     """Merge an array or list of :py:class:`~thebeat.core.Sequence` objects.
     The the event onsets in each of the objects will be overlaid on top of each other.
 
@@ -396,7 +396,7 @@ def merge_sequences(sequences: np.typing.ArrayLike[thebeat.core.Sequence], name:
 
 def merge_soundsequences(
     sound_sequences: list[thebeat.core.SoundSequence], name: str | None = None
-):
+) -> thebeat.core.SoundSequence:
     """Merge a list or array of :py:class:`~thebeat.core.SoundSequence` objects.
     The event onsets in each of the objects will be overlaid on top of each other, after which the sounds
 
