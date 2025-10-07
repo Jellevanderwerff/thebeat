@@ -164,34 +164,6 @@ def get_sound_with_metronome(
     return sound_samples
 
 
-# todo Use NumPy functions
-def join_rhythms(iterator):
-    """
-    This function can join multiple Rhythm objects.
-    """
-
-    # Check whether iterable was passed
-    if not hasattr(iterator, "__iter__"):
-        raise TypeError("Please pass this function a list or other iterable object.")
-
-    # Check whether all the objects are of the same type
-    if not all(isinstance(rhythm, thebeat.music.Rhythm) for rhythm in iterator):
-        raise TypeError("You can only join multiple Rhythm objects.")
-
-    if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
-        raise ValueError("Provided rhythms should have the same time signatures.")
-
-    if not all(rhythm.beat_ms == iterator[0].beat_ms for rhythm in iterator):
-        raise ValueError("Provided rhythms should have same tempo (beat_ms).")
-
-    iois = [rhythm.iois for rhythm in iterator]
-    iois = np.concatenate(iois)
-
-    return thebeat.music.Rhythm(
-        iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms
-    )
-
-
 def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
     """
     Converts a sequence of onsets to a series of zeros and ones.
