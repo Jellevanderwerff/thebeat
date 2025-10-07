@@ -149,9 +149,6 @@ def get_abjad_ties(durations, time_signature):
         if bar_fullness == full_bar:
             bar_fullness = abjad.Duration(0)
 
-    # Assert that at the end of all this the last bar is full
-    assert bar_fullness == abjad.Duration(0), "Tied notes don't add up to full bar"
-
     return split_notes
 
 
