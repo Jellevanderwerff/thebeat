@@ -186,7 +186,7 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
         return f"Rhythm(n_bars={self.n_bars}, time_signature={self.time_signature})"
 
     def __add__(self, other):
-        return thebeat.helpers.join_rhythms([self, other])
+        return thebeat.utils.concatenate_rhythms([self, other])
 
     def __mul__(self, other):
         return self._repeat(times=other)

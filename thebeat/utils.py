@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 import thebeat.core
+import thebeat.music
 
 try:
     import abjad
@@ -287,6 +288,42 @@ def concatenate_soundstimuli(sound_stimuli: np.ndarray | list, name: str | None 
     fs = sound_stimuli[0].fs
 
     return thebeat.core.SoundStimulus(samples, fs, name=name)
+
+
+def concatenate_rhythms(rhythms: np.typing.ArrayLike, name: str | None = None):
+    """Concatenate an array or list of :py:class:`~thebeat.music.Rhythm` objects.
+
+    Parameters
+    ----------
+    rhythms
+        The to-be-concatenated objects.
+    name
+        Optionally, you can give the returned :py:class:`~thebeat.music.Rhythm`
+        object a name.
+
+    Returns
+    -------
+    object
+        The concatenated Rhythm
+    """
+
+    if not len(rhythms) >= 1:
+        raise ValueError("At least one Rhythm object is required to concatenate.")
+
+    # Check whether all the objects are of the same type
+    if not all(isinstance(obj, thebeat.music.Rhythm) for obj in rhythms):
+        raise TypeError("Please pass only Rhythm objects.")
+
+    time_signature = rhythms[0].time_signature
+    if not all(rhythm.time_signature == time_signature for rhythm in rhythms):
+        raise ValueError("Provided rhythms should have the same time signatures.")
+
+    beat_ms = rhythms[0].beat_ms
+    if not all(rhythm.beat_ms == beat_ms for rhythm in rhythms):
+        raise ValueError("Provided rhythms should have same tempo (beat_ms).")
+
+    iois = np.concatenate([rhythm.iois for rhythm in rhythms])
+    return thebeat.music.Rhythm(iois, time_signature=time_signature, beat_ms=beat_ms, name=name)
 
 
 def merge_soundstimuli(
