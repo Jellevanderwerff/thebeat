@@ -43,6 +43,40 @@ def test_melody_plot():
     return fig
 
 
+# Not sure why, but these four tests come out slightly differently on other platforms
+# Hence, put tolerance=4, until one day LilyPond would be more consistent across OSes
+@pytest.custom_mpl_image_compare(tolerance=4)
+def test_melody_note_ties():
+    r = thebeat.music.Rhythm.from_note_values([1/4, 2, 3/4], beat_ms=500, time_signature=(4, 4))
+    m = thebeat.music.Melody(r, 'CDE')
+    fig, ax = m.plot_melody()
+    return fig
+
+
+@pytest.custom_mpl_image_compare(tolerance=4)
+def test_melody_note_ties2():
+    r = thebeat.music.Rhythm.from_note_values([1/16, 1/16, 1/16, 5/16, 5/16, 1/16, 1/16, 1/16], beat_ms=500, time_signature=(4, 4))
+    m = thebeat.music.Melody(r, 'CDEFGABC')
+    fig, ax = m.plot_melody()
+    return fig
+
+
+@pytest.custom_mpl_image_compare(tolerance=4)
+def test_melody_note_ties3():
+    r = thebeat.music.Rhythm.from_integer_ratios([1, 2, 3, 2, 1, 2, 3, 2], beat_ms=500, time_signature=(2, 4))
+    m = thebeat.music.Melody(r, 'CDEFGABC')
+    fig, ax = m.plot_melody()
+    return fig
+
+
+@pytest.custom_mpl_image_compare(tolerance=4)
+def test_melody_note_ties4():
+    r = thebeat.music.Rhythm.from_integer_ratios([2, 3, 1, 2], beat_ms=600, time_signature=(4, 4))
+    m = thebeat.music.Melody(r, 'CDEF')
+    fig, ax = m.plot_melody()
+    return fig
+
+
 def test_melody_copy():
     m = thebeat.music.Melody(thebeat.music.Rhythm([500, 500, 500, 500]), 'CEGC', name="test")
     m2 = m.copy()
