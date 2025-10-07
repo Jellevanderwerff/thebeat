@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: thebeat
+message: "If you use this software, please cite it using the metadata from 'preferred-citation'."
+type: software
+authors:
+  - given-names: Jelle
+    family-names: van der Werff
+    orcid: "https://orcid.org/0000-0003-3575-7989"
+  - given-names: Yannick
+    family-names: Jadoul
+    orcid: "https://orcid.org/0000-0003-0540-3135"
+repository-code: "https://github.com/Jellevanderwerff/thebeat"
+url: "https://thebeat.readthedocs.io/"
+license: GPL-3.0-or-later
+preferred-citation:
+  type: article
+  authors:
+  - given-names: Jelle
+    family-names: van der Werff
+    orcid: "https://orcid.org/0000-0003-3575-7989"
+  - given-names: Andrea
+    family-names: Ravignani
+    orcid: "https://orcid.org/0000-0002-1058-0024"
+  - given-names: Yannick
+    family-names: Jadoul
+    orcid: "https://orcid.org/0000-0003-0540-3135"
+  doi: "10.3758/s13428-023-02334-8"
+  journal: "Behavior Research Methods"
+  month: 2
+  start: 3725
+  end: 3736
+  title: "thebeat: A Python package for working with rhythms and other temporal sequences"
+  issue: 4
+  volume: 56
+  year: 2024
