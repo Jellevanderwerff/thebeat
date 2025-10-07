@@ -230,10 +230,11 @@ class Rhythm(thebeat.core.sequence.BaseSequence):
 
         Example
         -------
-        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms. If the time signature
-        is 4/4, and each quarter-note beat corresponds to 250 ms, then the note values correspond to
-        a quarter note, a half note, a full note, and another quarter note. Consequently, this method will
-        return ``[Fraction(1, 4), Fraction(1, 2), Fraction(1, 1), Fraction(1, 4)]``.
+        A sequence of IOIs ``[250, 500, 1000, 250]`` has a total duration of 2000 ms. If the
+        time signature is 4/4 (``time_signature=(4, 4)``), and each quarter-note beat corresponds
+        to 250 ms (``beat_ms=250``), then the note values correspond to a quarter note, a half
+        note, a full note, and another quarter note. Consequently, this method will return
+        ``[Fraction(1, 4), Fraction(1, 2), Fraction(1, 1), Fraction(1, 4)]``.
 
         Examples
         --------
@@ -712,8 +713,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
         self.time_signature = rhythm.time_signature
         self.beat_ms = rhythm.beat_ms
         self.key = key
-        self.integer_ratios = rhythm.integer_ratios
-        self.is_played = is_played
+        self.integer_ratios = rhythm.integer_ratios  # TODO: Remove or refactor
+        self.is_played = is_played  # TODO: Duplicate information with self.events; remove or refactor
 
         # Check whether the provided IOIs result in a sequence only containing whole bars
         n_bars = np.sum(rhythm.iois) / self.time_signature[0] / self.beat_ms
