@@ -72,10 +72,15 @@ class SoundStimulus:
         if samples.ndim == 1:
             n_channels = 1
         elif samples.ndim == 2:
-            n_channels = 2
+            n_channels = samples.shape[1]
+            print(n_channels)
+            if n_channels > 2:
+                raise ValueError(
+                    "Wrong number of channels in given samples array. Can only be 1 (mono) or 2 (stereo)."
+                )
         else:
             raise ValueError(
-                "Wrong number of dimensions in given samples. Can only be 1 (mono) or 2 (stereo)."
+                "Wrong number of dimensions in given samples array. Can only be 1 (mono) or 2 (mono/stereo)."
             )
 
         # Save attributes
@@ -389,7 +394,10 @@ class SoundStimulus:
             warnings.warn("Sampling frequency was not a round number. It was rounded to the nearest integer.")
         fs = int(sound_object.sampling_frequency)
 
-        samples = sound_object.values.T
+        if sound_object.n_channels == 1:
+            samples = sound_object.values[0, :]
+        else:
+            samples = sound_object.values.T
 
         return cls(samples, fs, name)
 
