@@ -14,9 +14,7 @@ When using *thebeat* in your research, please cite using the following reference
 
     .. tab-item:: APA 7
 
-        .. code-block:: text
-
-            van der Werff, J., Ravignani, A., & Jadoul, Y. (2024). thebeat: A python package for working with rhythms and other temporal sequences. *Behavior Research Methods*, *56*\ (4), 3725–3736. https://doi.org/10.3758/s13428-023-02334-8
+        van der Werff, J., Ravignani, A., & Jadoul, Y. (2024). thebeat: A python package for working with rhythms and other temporal sequences. *Behavior Research Methods*, *56*\ (4), 3725–3736. https://doi.org/10.3758/s13428-023-02334-8
 
     .. tab-item:: BibTeX
 
