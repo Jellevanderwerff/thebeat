@@ -3,4 +3,4 @@ pytest-mpl
 
 numpy>=2
 lilypond<2.25; sys_platform != 'darwin' or platform_machine != 'arm64'
-praat-parselmouth
+praat-parselmouth; python_version < '3.14'

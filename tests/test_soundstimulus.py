@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with thebeat.  If not, see <https://www.gnu.org/licenses/>.
 
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
-import parselmouth
 import pytest
 
 import thebeat.core
@@ -94,8 +95,11 @@ def test_copy():
     assert s2.name == 'test'
 
 
+@pytest.mark.skipif(sys.version_info >= (3, 14), reason="No Parselmouth wheels for Python 3.14 yet")
 @pytest.mark.parametrize("fs", [16000, 44100])
 def test_from_parselmouth(fs, tmp_path):
+    import parselmouth
+
     samples = 0.99 * np.sin(2 * np.pi * 440 * (np.arange(0.270 * fs) / fs))
     sound = parselmouth.Sound(samples, fs)
     sound_stimulus = thebeat.SoundStimulus.from_parselmouth(sound)
