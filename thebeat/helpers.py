@@ -164,54 +164,6 @@ def get_sound_with_metronome(
     return sound_samples
 
 
-# todo Use NumPy functions
-def join_rhythms(iterator):
-    """
-    This function can join multiple Rhythm objects.
-    """
-
-    # Check whether iterable was passed
-    if not hasattr(iterator, "__iter__"):
-        raise TypeError("Please pass this function a list or other iterable object.")
-
-    # Check whether all the objects are of the same type
-    if not all(isinstance(rhythm, thebeat.music.Rhythm) for rhythm in iterator):
-        raise TypeError("You can only join multiple Rhythm objects.")
-
-    if not all(rhythm.time_signature == iterator[0].time_signature for rhythm in iterator):
-        raise ValueError("Provided rhythms should have the same time signatures.")
-
-    if not all(rhythm.beat_ms == iterator[0].beat_ms for rhythm in iterator):
-        raise ValueError("Provided rhythms should have same tempo (beat_ms).")
-
-    iois = [rhythm.iois for rhythm in iterator]
-    iois = np.concatenate(iois)
-
-    return thebeat.music.Rhythm(
-        iois, time_signature=iterator[0].time_signature, beat_ms=iterator[0].beat_ms
-    )
-
-
-def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int):
-    """
-    Converts a sequence of onsets to a series of zeros and ones.
-    Ones for the onsets.
-    """
-    sequence_end = sequence.onsets[-1]
-    if sequence.end_with_interval:
-        sequence_end += sequence.iois[-1]
-
-    n_samples = int(sequence_end / resolution)
-    if not sequence.end_with_interval:
-        n_samples += 1
-
-    signal = np.zeros(n_samples, dtype=np.int64)
-    one_indices = (sequence.onsets / resolution).astype(int)
-    signal[one_indices] = 1
-
-    return signal
-
-
 def make_ramps(samples, fs, onramp_ms, offramp_ms, ramp_type):
     """Internal function used to create on- and offramps. Supports 'linear' and 'raised-cosine' ramps."""
 
@@ -575,38 +527,6 @@ def resample(samples, input_fs, output_fs):
     resampled = scipy.signal.resample(samples, int(len(samples) * resample_factor))
 
     return resampled, output_fs
-
-
-def rhythm_to_binary(rhythm: thebeat.music.Rhythm, smallest_note_value: Fraction = Fraction(1, 16)):
-    """This helper function converts a rhythm to a binary representation."""
-
-    n_positions = (rhythm.n_bars / smallest_note_value) * rhythm.time_signature[0] / rhythm.time_signature[1]
-    if not n_positions.denominator == 1:
-        raise ValueError(
-            "Something went wrong while making the rhythmic grid. Try supplying a different "
-            "'smallest_note_value'."
-        )
-
-    # Create empty zeros array
-    signal = np.zeros(int(n_positions))
-
-    # We multiply each fraction by the total length of the zeros array to get the respective positions
-    # and add zero for the first onset
-    indices = np.append(0, np.cumsum(rhythm.iois / rhythm.duration)[:-1] * n_positions)
-
-    # Check if any of the indices are not integers
-    if np.any(indices % 1 != 0):
-        raise ValueError(
-            "The smallest_note_value that you provided is longer than the shortest note in the "
-            "rhythm. Please provide a shorter note value as the smallest_note_value (i.e. a larger "
-            "number)."
-        )
-
-    for index, is_played in zip(indices, rhythm.is_played):
-        if is_played:
-            signal[int(index)] = 1
-
-    return signal
 
 
 def synthesize_sound(

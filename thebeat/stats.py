@@ -230,7 +230,7 @@ def acf_values(
 
     """
 
-    signal = thebeat.helpers.sequence_to_binary(sequence, resolution)
+    signal = thebeat.utils.sequence_to_binary(sequence, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:
@@ -445,8 +445,8 @@ def ccf_values(
     """
 
     # Make into 0's and 1's
-    test_signal = thebeat.helpers.sequence_to_binary(test_sequence, resolution)
-    ref_signal = thebeat.helpers.sequence_to_binary(reference_sequence, resolution)
+    test_signal = thebeat.utils.sequence_to_binary(test_sequence, resolution)
+    ref_signal = thebeat.utils.sequence_to_binary(reference_sequence, resolution)
 
     # npdf
     if smoothing_window and smoothing_sd:
@@ -510,10 +510,10 @@ def edit_distance_rhythm(
     ):
         raise TypeError("test_rhythm and reference_rhythm must be of type Rhythm")
 
-    test_string = thebeat.helpers.rhythm_to_binary(
+    test_string = thebeat.utils.rhythm_to_binary(
         rhythm=test_rhythm, smallest_note_value=smallest_note_value
     )
-    reference_string = thebeat.helpers.rhythm_to_binary(
+    reference_string = thebeat.utils.rhythm_to_binary(
         rhythm=reference_rhythm, smallest_note_value=smallest_note_value
     )
 
@@ -564,8 +564,8 @@ def edit_distance_sequence(
             "for instance using Sequence.quantize_iois()"
         )
 
-    test_string = thebeat.helpers.sequence_to_binary(sequence=test_sequence, resolution=resolution)
-    reference_string = thebeat.helpers.sequence_to_binary(
+    test_string = thebeat.utils.sequence_to_binary(sequence=test_sequence, resolution=resolution)
+    reference_string = thebeat.utils.sequence_to_binary(
         sequence=reference_sequence, resolution=resolution
     )
 
@@ -631,7 +631,7 @@ def fft_values(
     step_size = unit_size / 1000
 
     # Make a sequence of ones and zeroes (we use IOIs here to account for sequences that end with onsets, or with first onset different than 0)
-    timeseries = thebeat.helpers.sequence_to_binary(thebeat.Sequence(sequence.iois, end_with_interval=True), resolution=step_size)
+    timeseries = thebeat.utils.sequence_to_binary(thebeat.Sequence(sequence.iois, end_with_interval=True), resolution=step_size)
 
     # Remove DC component if necessary
     if remove_dc:

@@ -10,8 +10,8 @@ Here you can find a complete overview of all the different classes, methods, and
     :maxdepth: 1
 
     Core classes<core.rst>
-    Extras<extras.rst>
     Linguistics<linguistics.rst>
     Music<music.rst>
     Stats<stats.rst>
+    Utilities<extras/utilities.rst>
     Visualization<visualization.rst>
