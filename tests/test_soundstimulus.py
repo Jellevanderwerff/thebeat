@@ -17,6 +17,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import parselmouth
 import pytest
 
 import thebeat.core
@@ -91,3 +92,37 @@ def test_copy():
     s.name = "test2"
     assert s.name == 'test2'
     assert s2.name == 'test'
+
+
+@pytest.mark.parametrize("fs", [16000, 44100])
+def test_from_parselmouth(fs, tmp_path):
+    samples = 0.99 * np.sin(2 * np.pi * 440 * (np.arange(0.270 * fs) / fs))
+    sound = parselmouth.Sound(samples, fs)
+    sound_stimulus = thebeat.SoundStimulus.from_parselmouth(sound)
+    assert sound_stimulus.duration_s == 0.270
+    assert sound_stimulus.duration_ms == 270
+    assert sound_stimulus.fs == fs
+    assert sound_stimulus.n_channels == 1
+    assert sound_stimulus.name is None
+
+    tmp_path_parselmouth = tmp_path / "test_parselmouth.wav"
+    sound.save(str(tmp_path_parselmouth), 'WAV')
+    samples_parselmouth_thebeat = thebeat.SoundStimulus.from_wav(tmp_path_parselmouth).samples
+    tmp_path_thebeat = tmp_path / "test_from_parselmouth.wav"
+    sound_stimulus.write_wav(tmp_path_thebeat, dtype=np.int16)
+    samples_thebeat_parselmouth = parselmouth.Sound(str(tmp_path_thebeat)).values
+    assert np.allclose(samples_parselmouth_thebeat, samples_thebeat_parselmouth[0, :], rtol=1e-03, atol=1e-04)
+
+    samples = 0.99 * np.sin(2 * np.pi * 440 * (np.arange(0.270 * fs * 2).reshape((2, -1)) / fs))
+    sound = parselmouth.Sound(samples, fs)
+    sound_stimulus = thebeat.SoundStimulus.from_parselmouth(sound, name='two_channels')
+    assert sound_stimulus.duration_s == 0.270
+    assert sound_stimulus.duration_ms == 270
+    assert sound_stimulus.fs == fs
+    assert sound_stimulus.n_channels == 2
+    assert sound_stimulus.name == 'two_channels'
+
+    samples = 0.99 * np.sin(2 * np.pi * 440 * (np.arange(0.270 * fs * 5).reshape((5, -1)) / fs))
+    sound = parselmouth.Sound(samples, fs)
+    with pytest.raises(ValueError, match=r"Wrong number of channels in given samples array"):
+        sound_stimulus = thebeat.SoundStimulus.from_parselmouth(sound)
