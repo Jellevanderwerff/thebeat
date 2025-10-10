@@ -1,5 +1,5 @@
 project = "thebeat"
-copyright = "2023, Jelle van der Werff, Andrea Ravignani, & Yannick Jadoul"
+copyright = "2023-2025, Jelle van der Werff, Andrea Ravignani, & Yannick Jadoul"
 author = "Jelle van der Werff, Andrea Ravignani, & Yannick Jadoul"
 
 import os
