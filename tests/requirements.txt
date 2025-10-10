@@ -1,6 +1,5 @@
 pytest
 pytest-mpl
-pyarrow
 
 numpy>=2
 lilypond<2.25; sys_platform != 'darwin' or platform_machine != 'arm64'
