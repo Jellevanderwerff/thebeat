@@ -93,7 +93,7 @@ the best place to go to with questions about how *thebeat* works.
 *thebeat* is distributed under the GNU General Public License, version 3 or later. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
 
 # Collaborators
-The package was developed by the Comparative Bioacoustics Group at the Max Planck Institute for
-Psycholinguistics, in Nijmegen, the Netherlands.
+The package was initially developed by the Comparative Bioacoustics Group at the Max Planck Institute for
+Psycholinguistics, in Nijmegen, the Netherlands. It is currently maintained by the same group at Sapienza University of Rome, Italy.
 
 The collaborators were: Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
