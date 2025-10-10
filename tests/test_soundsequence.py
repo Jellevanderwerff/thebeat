@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023  Jelle van der Werff
+# Copyright (C) 2022-2025  Jelle van der Werff
 #
 # This file is part of thebeat.
 #
