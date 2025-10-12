@@ -545,7 +545,7 @@ def synthesize_sound(
     n_samples = fs * t
     if not n_samples.is_integer():
         warnings.warn(thebeat._warnings.framerounding_soundsynthesis)
-    n_samples = int(np.ceil(n_samples))
+    n_samples = round(n_samples)
 
     samples = np.arange(n_samples, dtype=np.float64) / fs
 

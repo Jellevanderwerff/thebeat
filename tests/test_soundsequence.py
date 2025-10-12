@@ -128,7 +128,7 @@ def test_multichannel(tmp_path):
 
 
 def test_soundsequence_rounding_warning(rng):
-    with pytest.warns(UserWarning, match=r"the exact start or end positions in frames \(i.e. samples\) were rounded off to the neirest integer ceiling"):
+    with pytest.warns(UserWarning, match=r"the exact start or end positions in frames \(i.e. samples\) were rounded off to the nearest integer"):
         seq = thebeat.core.Sequence.generate_random_normal(10, 500, 50, rng=rng)
         stim = thebeat.core.SoundStimulus.generate()
         thebeat.core.SoundSequence(stim, seq)

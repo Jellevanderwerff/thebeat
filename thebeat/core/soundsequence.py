@@ -483,18 +483,18 @@ class SoundSequence(BaseSequence):
         """Internal function used for combining different SoundStimulus samples and a passed
         Sequence object into one array of samples containing the sound of a SoundSequence."""
 
+        assert onsets[0] >= 0  # Should be taken care of by caller (SoundSequence.__init__)
+
         # Generate an array of silence that has the length of all the onsets + one final sound.
         # In the case of a sequence that ends with an interval, we add the final ioi.
         # The dtype is important, because that determines the values that the magnitudes can take.
         if self.end_with_interval:
             array_length = (onsets[-1] + self.iois[-1]) / 1000 * self.fs
-        elif not self.end_with_interval:
-            array_length = (onsets[-1] / 1000 * self.fs) + sounds[-1].samples.shape[0]
         else:
-            raise ValueError("Error during calculation of array_length")
+            array_length = (onsets[-1] / 1000 * self.fs) + sounds[-1].samples.shape[0]
 
-        # Round off array length to ceiling if necessary
-        array_length = int(np.ceil(array_length))
+        # Round off array length if necessary
+        array_length = round(array_length)
 
         if self.n_channels == 1:
             samples = np.zeros(array_length, dtype=np.float64)
@@ -506,15 +506,14 @@ class SoundSequence(BaseSequence):
         for sound, onset in samples_with_onsets:
             # Calculate start and end point in frames
             start_pos = onset * self.fs / 1000
-            end_pos = start_pos + sound.shape[0]
 
             # Check whether there was frame rounding
-            if not start_pos.is_integer() or not end_pos.is_integer():
+            if not start_pos.is_integer():
                 warnings.warn(thebeat._warnings.framerounding_soundseq)
 
             # Now we can safely round
-            start_pos = int(start_pos)
-            end_pos = int(end_pos)
+            start_pos = round(start_pos)
+            end_pos = start_pos + sound.shape[0]
 
             # Add the sound to the samples array. For stereo, do this for both channels.
             if self.n_channels == 1:

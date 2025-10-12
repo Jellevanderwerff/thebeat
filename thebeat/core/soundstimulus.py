@@ -389,9 +389,9 @@ class SoundStimulus:
             raise TypeError("Please provide a parselmouth.Sound object.")
 
         fs = sound_object.sampling_frequency
-        # Parselmouth's sampling frequency is always a floating-point number, so we convert and warn if it was not a round number.
+        # Parselmouth's sampling frequency is always a floating-point number, so we convert to int and warn if necessary
         if not fs.is_integer():
-            warnings.warn("Sampling frequency was not a round number. It was rounded to the nearest integer.")
+            warnings.warn("Sampling frequency was not an integer. It was rounded to the nearest integer.")
         fs = int(sound_object.sampling_frequency)
 
         if sound_object.n_channels == 1:

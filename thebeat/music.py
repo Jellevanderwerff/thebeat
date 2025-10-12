@@ -1266,8 +1266,8 @@ class Melody(thebeat.core.sequence.BaseSequence):
 
         # Avoid rounding issues
         if not n_frames.is_integer():
-            warnings.warn(thebeat._warnings.framerounding)
-        n_frames = int(np.ceil(n_frames))
+            warnings.warn(thebeat._warnings.framerounding_melody)
+        n_frames = round(n_frames)
 
         # Create empty array with length n_frames
         if n_channels == 1:
@@ -1317,11 +1317,10 @@ class Melody(thebeat.core.sequence.BaseSequence):
                 # Calculate start- and end locations for inserting the event into the output array
                 # and warn if the location in terms of frames was rounded off.
                 start_pos = event.onset_ms / 1000 * fs
+                if not start_pos.is_integer():
+                    warnings.warn(thebeat._warnings.framerounding_melody)
+                start_pos = round(start_pos)
                 end_pos = start_pos + event_samples.shape[0]
-                if not start_pos.is_integer() or not end_pos.is_integer():
-                    warnings.warn(thebeat._warnings.framerounding)
-                start_pos = int(np.ceil(start_pos))
-                end_pos = int(np.ceil(end_pos))
 
                 # Add event samples to output array
                 samples[start_pos:end_pos] = samples[start_pos:end_pos] + event_samples
