@@ -102,15 +102,13 @@ def check_for_overlap(sounds_durations, onsets):
 def check_sound_properties_sameness(objects: np.typing.ArrayLike):
     """This helper function checks whether the objects in the passed iterable have the same sound properties.
     Raises errors if properties are not the same."""
+
+    assert all(obj.samples.dtype == np.float64 for obj in objects), "Samples array of SoundStimulus should have been converted"
+
     if not all(obj.fs == objects[0].fs for obj in objects):
         raise ValueError("The objects do not have the same sampling frequency.")
     elif not all(obj.n_channels == objects[0].n_channels for obj in objects):
         raise ValueError("These objects do not have the same number of channels.")
-    elif not all(obj.dtype == objects[0].dtype for obj in objects):
-        raise ValueError(
-            "These objects do not have the same Numpy data type. Check out "
-            "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html for info."
-        )
     else:
         return True
 
@@ -537,12 +535,9 @@ def play_samples(
     sd.wait()
 
 
-def read_wav(filepath: str | os.PathLike, new_fs: int | None):
-    """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
-    If dtype is different from np.float64, it converts the samples to that."""
-    file_fs, samples = scipy.io.wavfile.read(filepath)
+def normalize_samples_dtype(samples: np.ndarray):
+    """Change dtype so we always have float64"""
 
-    # Change dtype so we always have float64
     if samples.dtype == "int16":
         samples = samples.astype(np.float64, order="C") / 2**15
     elif samples.dtype == "int32":
@@ -556,6 +551,17 @@ def read_wav(filepath: str | os.PathLike, new_fs: int | None):
             "Unknown dtype for wav file. 'int16', 'int32', 'float32' and 'float64' are supported:'"
             "https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html"
         )
+
+    return samples
+
+
+def read_wav(filepath: str | os.PathLike, new_fs: int | None):
+    """Internal function used to read a wave file. Returns the wave file's samples and the sampling frequency.
+    If dtype is different from np.float64, it converts the samples to that."""
+    file_fs, samples = scipy.io.wavfile.read(filepath)
+
+    # Change dtype so we always have float64
+    samples = normalize_samples_dtype(samples)
 
     # Resample if necessary
     if new_fs is None:

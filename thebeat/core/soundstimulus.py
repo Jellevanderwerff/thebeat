@@ -73,20 +73,20 @@ class SoundStimulus:
             n_channels = 1
         elif samples.ndim == 2:
             n_channels = samples.shape[1]
-            print(n_channels)
-            if n_channels > 2:
+            if n_channels != 2:
                 raise ValueError(
-                    "Wrong number of channels in given samples array. Can only be 1 (mono) or 2 (stereo)."
+                    "Wrong number of channels in given 2D samples array. Can only be 2 (stereo)."
                 )
         else:
             raise ValueError(
-                "Wrong number of dimensions in given samples array. Can only be 1 (mono) or 2 (mono/stereo)."
+                "Wrong number of dimensions in given samples array. Can only be 1 (mono) or 2 (stereo)."
             )
+
+        samples = thebeat.helpers.normalize_samples_dtype(samples)
 
         # Save attributes
         self.samples = samples
         self.fs = fs
-        self.dtype = samples.dtype
         self.n_channels = n_channels
         self.name = name
 

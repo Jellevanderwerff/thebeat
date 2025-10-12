@@ -128,5 +128,5 @@ def test_from_parselmouth(fs, tmp_path):
 
     samples = 0.99 * np.sin(2 * np.pi * 440 * (np.arange(0.270 * fs * 5).reshape((5, -1)) / fs))
     sound = parselmouth.Sound(samples, fs)
-    with pytest.raises(ValueError, match=r"Wrong number of channels in given samples array"):
+    with pytest.raises(ValueError, match=r"Wrong number of channels in given 2D samples array"):
         sound_stimulus = thebeat.SoundStimulus.from_parselmouth(sound)
