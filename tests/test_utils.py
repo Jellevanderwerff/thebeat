@@ -69,6 +69,10 @@ def test_sequence_to_binary():
     assert len(binary) == 3500
     assert list(np.flatnonzero(binary)) == [1000, 1500, 2500, 2750, 3250]
 
+    seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], first_onset=-1000)
+    with pytest.raises(ValueError, match="Cannot turn a sequence to binary with onsets before time 0."):
+        thebeat.utils.sequence_to_binary(seq, resolution=1)
+
 
 def test_sequence_to_binary_resolution():
     seq = thebeat.core.Sequence([500, 1000, 250, 500, 250], end_with_interval=False)
@@ -91,15 +95,15 @@ def test_sequence_to_binary_resolution():
 
     binary = thebeat.utils.sequence_to_binary(seq, resolution=3)
     assert len(binary) == 834
-    assert list(np.flatnonzero(binary)) == [0, 166, 500, 583, 750, 833]
+    assert list(np.flatnonzero(binary)) == [0, 167, 500, 583, 750, 833]
 
 
 def test_rhythm_to_binary():
     # Should raise error because there are 1/8th notes but the provides smallest note value is a 1/4th note
     with pytest.raises(ValueError):
         rhythm = thebeat.music.Rhythm.from_note_values([1/4, 1/8, 1/8, 1/4, 1/4])
-        print(thebeat.utils.rhythm_to_binary(rhythm, smallest_note_value=Fraction(1, 4)))
+        thebeat.utils.rhythm_to_binary(rhythm, smallest_note_value=Fraction(1, 4))
 
     # Should not raise error
-    binary = thebeat.utils.rhythm_to_binary(rhythm, smallest_note_value=Fraction(1, 8))
+    binary = thebeat.utils.rhythm_to_binary(rhythm, smallest_note_value=1/8)
     assert np.all(binary == [1., 0., 1., 1., 1., 0., 1., 0.])
