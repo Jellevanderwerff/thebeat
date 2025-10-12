@@ -9,3 +9,7 @@ div.navbar-brand-box a.navbar-brand img {
 h1 {
     font-family: 'Unbounded', cursive !important;
 }
+
+#rtd-footer-container {
+    margin-top: 0px !important;
+}
