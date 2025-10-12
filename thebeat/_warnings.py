@@ -17,7 +17,7 @@
 
 framerounding_soundseq = (
     "thebeat: For one or more of the used sounds, the exact start or end positions in frames (i.e. "
-    "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem. "
+    "samples) were rounded off to the nearest integer. This shouldn't be a problem.\n"
     "To get rid of this warning, try rounding off the onsets in the passed Sequence object "
     "by calling Sequence.round_onsets() before passing the object to the SoundSequence "
     "constructor."
@@ -25,13 +25,13 @@ framerounding_soundseq = (
 
 framerounding_melody = (
     "thebeat: For one or more of the used sounds, the exact start or end positions in frames (i.e. "
-    "samples) were rounded off to the neirest integer ceiling. This shouldn't be a problem."
+    "samples) were rounded off to the nearest integer. This shouldn't be a problem.\n"
     "To get rid of this warning, try using a sampling frequency of 48000 Hz, or a different"
     "beat_ms."
 )
 
 framerounding_soundsynthesis = (
-    "thebeat: During sound synthesis, the number of frames was rounded off. This shouldn't be a problem. "
+    "thebeat: During sound synthesis, the number of frames was rounded off. This shouldn't be a problem.\n"
     "To get rid of this warning, try using a combination of sound duration (in seconds) and sampling "
     "frequency that results in integer values."
 )
