@@ -21,12 +21,14 @@ When using *thebeat* in your research, please cite using the following reference
         .. code-block:: text
 
             @article{vanderwerffThebeatPythonPackage2024,
-            title = {thebeat: {{A Python}} Package for Working with Rhythms and Other Temporal Sequences},
-            author = {{van der Werff}, Jelle and Ravignani, Andrea and Jadoul, Yannick},
-            year = {2024},
-            journal = {Behavior Research Methods},
-            doi = {10.3758/s13428-023-02334-8}
+              title = {thebeat: {{A Python}} Package for Working with Rhythms and Other Temporal Sequences},
+              author = {{van der Werff}, Jelle and Ravignani, Andrea and Jadoul, Yannick},
+              year = {2024},
+              journal = {Behavior Research Methods},
+              doi = {10.3758/s13428-023-02334-8}
             }
+
+The article is an Open Access publication. Read it `here <https://link.springer.com/article/10.3758/s13428-023-02334-8>`_!
 
 **********
 References
