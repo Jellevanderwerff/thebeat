@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+_Nothing yet_
+
+## [0.3.0] - 2025-10-12
 ### Added
 - Added tests for Apple Silicon support (#88).
 - Added and tested support for Python 3.12, 3.13, and 3.14 (#91, #138).
 - Added three functions to `utils` module (`concatenate_rhythms`, `sequence_to_binary`, `rhythm_to_binary`), which were previously only internal in `thebeat.helpers` (#136).
+- Changed meaning of `note_value` naming throughout the Rhythm and Melody API: `note_values` are now `fractions.Fraction`s and correspond to the musical definitions of eighth/quarter/half/whole/... notes, providing more flexibility instead of the previous use (where integer denominators were used instead of actual fractions) (#130)
 
 ### Changed
 - The optional dependencies for music notation are now named `[music-notation]` instead of `[music_notation]`, following Python packaging conventions (#93). Nothing changes for the user since `pip` already normalized those names.
@@ -61,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First version of the online documentation.
 - Basic CI setup.
 
-[Unreleased]: https://github.com/Jellevanderwerff/thebeat/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Jellevanderwerff/thebeat/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Jellevanderwerff/thebeat/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Jellevanderwerff/thebeat/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Jellevanderwerff/thebeat/releases/tag/v0.1.0
