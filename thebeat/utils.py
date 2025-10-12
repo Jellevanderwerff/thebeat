@@ -481,25 +481,26 @@ def rhythm_to_binary(rhythm: thebeat.music.Rhythm, smallest_note_value: float | 
             "Something went wrong while making the rhythmic grid. Try supplying a different "
             "'smallest_note_value'."
         )
+    n_positions = int(n_positions)
 
     # Create empty zeros array
-    signal = np.zeros(int(n_positions), dtype=np.uint8)
+    signal = np.zeros(n_positions, dtype=np.uint8)
 
     # We multiply each fraction by the total length of the zeros array to get the respective positions
     # and add zero for the first onset
-    indices = np.append(0, np.cumsum(rhythm.iois / rhythm.duration)[:-1] * n_positions)
+    indices_float = rhythm.onsets / rhythm.duration * n_positions
 
     # Check if any of the indices are not integers
-    if np.any(indices % 1 != 0):
+    if np.any(indices_float % 1 != 0):
         raise ValueError(
             "The smallest_note_value that you provided is longer than the shortest note in the "
             "rhythm. Please provide a shorter note value as the smallest_note_value (i.e. a larger "
             "number)."
         )
+    indices = np.round(indices_float).astype(int)
 
-    for index, is_played in zip(indices, rhythm.is_played):
-        if is_played:
-            signal[int(index)] = 1
+    played_indices = indices[rhythm.is_played]
+    signal[played_indices] = 1
 
     return signal
 
@@ -518,9 +519,9 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int | float)
     --------
     >>> seq = thebeat.Sequence([110, 185, 90])
     >>> sequence_to_binary(seq, resolution=100)
-    array([1, 1, 1, 1], dtype=uint8)
+    array([1, 1, 0, 1, 1], dtype=uint8)
     >>> sequence_to_binary(seq, resolution=50)
-    array([1, 0, 1, 0, 0, 1, 0, 1], dtype=uint8)
+    array([1, 0, 1, 0, 0, 0, 1, 0, 1], dtype=uint8)
 
     Parameters
     ----------
@@ -535,16 +536,24 @@ def sequence_to_binary(sequence: thebeat.core.Sequence, resolution: int | float)
         The binary representation of the sequence.
     """
 
+    if sequence.onsets[0] < 0:
+        raise ValueError(
+            "Cannot turn a sequence to binary with onsets before time 0.\n"
+            f"First onset: {sequence.onsets[0]}\n"
+            "This can be easily fixed by shifting your events:\n"
+            "`sequence.onsets = sequence.onsets - sequence.onsets[0]`."
+        )
+
     sequence_end = sequence.onsets[-1]
     if sequence.end_with_interval:
         sequence_end += sequence.iois[-1]
 
-    n_samples = int(sequence_end / resolution)  # TODO: Round correctly
+    n_samples = round(sequence_end / resolution)
     if not sequence.end_with_interval:
         n_samples += 1
 
     signal = np.zeros(n_samples, dtype=np.uint8)
-    one_indices = (sequence.onsets / resolution).astype(int)  # TODO: Round correctly
+    one_indices = np.round(sequence.onsets / resolution).astype(int)
     signal[one_indices] = 1
 
     return signal
