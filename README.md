@@ -92,8 +92,14 @@ the best place to go to with questions about how *thebeat* works.
 # License
 *thebeat* is distributed under the GNU General Public License, version 3 or later. You are free to distribute or modify the code, both for non-commercial and commercial use. See [here](https://choosealicense.com/licenses/gpl-3.0/) for more info.
 
-# Collaborators
+# Acknowledgements
 The package was initially developed by the Comparative Bioacoustics Group at the Max Planck Institute for
-Psycholinguistics, in Nijmegen, the Netherlands. It is currently maintained by the same group at Sapienza University of Rome, Italy.
+Psycholinguistics, in Nijmegen, the Netherlands. It is currently maintained by the same group at Sapienza
+University of Rome, Italy.
 
-The collaborators were: Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
+The collaborators are Jelle van der Werff, Andrea Ravignani, and Yannick Jadoul.
+
+*thebeat* was described in [an article](https://link.springer.com/article/10.3758/s13428-023-02334-8) in *Behavior Research Methods*:
+> van der Werff, J., Ravignani, A., & Jadoul, Y. (2024). thebeat: A python package for working with rhythms and other temporal sequences. Behavior Research Methods, 56(4), 3725–3736. https://doi.org/10.3758/s13428-023-02334-8
+
+Check out [the documentation](https://thebeat.readthedocs.io/en/stable/bibliography.html#bibliography) for more details on citing *thebeat*.
