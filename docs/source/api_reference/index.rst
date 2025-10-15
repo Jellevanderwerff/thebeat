@@ -13,5 +13,5 @@ Here you can find a complete overview of all the different classes, methods, and
     Linguistics<linguistics.rst>
     Music<music.rst>
     Stats<stats.rst>
-    Utilities<extras/utilities.rst>
+    Utilities<utilities.rst>
     Visualization<visualization.rst>
