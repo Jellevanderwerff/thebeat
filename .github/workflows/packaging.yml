@@ -46,7 +46,7 @@ jobs:
           python -m twine check dist/*
 
       - name: Upload built packages
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: packages
           path: dist/*
