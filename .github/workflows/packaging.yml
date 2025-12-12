@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: Collect wheel and sdist
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: packages
           path: dist
