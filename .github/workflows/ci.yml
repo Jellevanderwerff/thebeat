@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload pytest-mpl results
         if: failure() && matrix.python-version == '3.13' && steps.pytest.conclusion == 'failure'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pytest-mpl-results-${{ runner.os }}${{ matrix.os == 'macos-latest' && '_arm64' || '' }}
           path: pytest_mpl_results/
