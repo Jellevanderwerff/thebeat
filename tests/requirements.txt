@@ -1,6 +1,6 @@
 pytest
 pytest-mpl
 
-numpy>=2
+numpy>=2.2.6
 lilypond<2.25; sys_platform != 'darwin' or platform_machine != 'arm64'
 praat-parselmouth; python_version < '3.14'
